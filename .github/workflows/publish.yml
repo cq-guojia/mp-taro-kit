@@ -21,4 +21,4 @@ jobs:
           package-manager-cache: false
       - run: npm install -g npm@latest
       # shortcut: 暂无依赖与构建产物，src/ 落地后补 npm ci + build + test
-      - run: npm stage publish
+      - run: npm publish --access public
