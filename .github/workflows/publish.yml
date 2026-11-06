@@ -20,5 +20,11 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
       - run: npm install -g npm@latest
-      # shortcut: 暂无依赖与构建产物，src/ 落地后补 npm ci + build + test
+      # peerDependencies 由宿主提供，库本身不安装；避免 npm 把整套 Taro/React 装进 CI
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build
+      - run: npm test
+      # dist/ 为空时直接失败，避免误打 tag 发出只有 README 的空包
+      - run: npm run guard
+      - run: npm pack --dry-run
       - run: npm publish --access public
