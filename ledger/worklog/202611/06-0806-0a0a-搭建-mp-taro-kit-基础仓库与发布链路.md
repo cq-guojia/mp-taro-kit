@@ -1,7 +1,7 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-06 12:01:30 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-06 12:58:39 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -17,13 +17,13 @@
 
 参照自己做 DSH 插件（`dsh-plugin-core`）的经验：最初没抽象，各插件各写一套，后来返工重构、把控件收口进基础库。这次想避免同一段路走两遍——先把底层库抽出来由自己维护，业务项目只消费。
 
-目标：在 `/code/open-lab/mp-taro-kit` 建一个**公开、不涉具体业务**的小程序 UI 基础库（Taro + React 实现）。本任务只做前期基础工作，不写业务组件。
+目标：在 `/code/open-lab/mp-taro-kit` 建一个**公开、不含具体业务内容**的小程序基础库（kit，Taro + React 实现）。之所以不叫 UI 库，是因为能力域不止界面：除 UI 容器能力外，还会收纳跨项目通用的操作功能封装。本任务只做前期基础工作，不写业务组件。
 
 ### 讨论过程与结论（按问答顺序，附理由）
 
 1. **要不要抽一套 UI 库、靠配置覆盖样式？**
    能抽，但「配一套就变成自己的风格」只成立于 token 级差异（颜色、圆角、间距、字号、动画时长）。结构级差异（异形弹窗、图片位、按钮位置）没法用配置覆盖，只能靠插槽。
-   用户拍板：**业务内容不进核心库**。「异形图片」只是举例，泛指各项目自己的内容与结构；库只提供容器能力（遮罩、底部弹出、下拉、手势、安全区），内容从 `children` 传入。
+   用户拍板：**业务内容不进核心库**。「异形图片」只是举例，泛指各项目自己的内容与结构；UI 组件只提供容器能力（遮罩、底部弹出、下拉、手势、安全区），内容从 `children` 传入。（此处「库只提供容器能力」是当时针对 UI 组件的口径；2026-11-06 用户已把库整体定位改为基础库 kit，见「已拍板」。）
 
 2. **用微信小程序插件（plugin）还是 npm 包？**
    用 npm 包。理由：插件有独立样式作用域，宿主改不到插件内部样式——第 1 条的主题覆盖直接作废；插件还要独立 appid、提交审核、每个宿主项目去后台单独「添加插件」，与「自己维护、改完所有项目立刻生效」的目标冲突。
@@ -46,14 +46,15 @@
 
 - 形态：npm 包，非微信插件。
 - 包名：`mp-taro-kit`，单包不拆。
+- 定位（2026-11-06 用户明确纠正）：**基础库（kit），不只是 UI 库**。名称不带 UI 正因能力域不止界面；UI 容器能力只是能力域之一，还会放跨项目通用的操作功能封装。能力域开放，不以当前清单为边界，判断归属去找纳入与排除的规则。
 - Skyline 主路径 + WebView 必须可用；独占 API 默认不用，必须用时页面级提示。
-- 业务内容不进库，库只提供容器能力（`children` / 插槽注入）。
+- 具体业务内容与业务数据不进库（UI 组件内容由 `children` / 插槽注入）；跨项目通用的操作功能封装属于本库。
 - 按需 `import`，靠 tree-shaking 控体积。
 
 ### 技术约束（讨论中形成，附理由）
 
 - **对外样式值必须走 CSS 变量，库内部照用 Sass**。理由：宿主要能覆盖库样式而不改库源码。Sass 变量在编译期被替换成固定值，发布后宿主改不了（只能用 `!important` 硬压）；CSS 变量留在产物里、运行期可继承、全局生效，宿主在 `app.scss` 改一行即可换肤。分工：库内部嵌套 / mixin / 计算照用 Sass，对外的颜色、圆角、间距、字号、动画时长写成 `var(--mp-*, 兜底值)`。Skyline 与 WebView 都支持 CSS 变量（Skyline 需安卓 8.0.35 / iOS 8.0.38+，简写属性内 `var()` 不生效，须写长写属性）。
-- **组件不 `import` 宿主的私有模块（router / store / constants）**。准确含义：禁止的是「库源码指向宿主项目的相对路径 import」，不是禁止使用路由 / 请求 / 权限能力。能力由宿主通过 props / 回调注入（如 `canGoBack`、`onBack`）；路由、请求、权限这类框架层能力可另抽独立包，不塞进 UI 包（否则只要一个 Button 的项目会被拖进整个请求层）。现有 `nav-bar` 是反例（`nav-bar.tsx:25-27` 依赖 router / store / constants），抽离时改成外部传入系统信息与回调。用户认可「先这么定，要撤再撤」。
+- **组件不 `import` 宿主的私有模块（router / store / constants）**。准确含义：禁止的是「库源码指向宿主项目的相对路径 import」，不是禁止使用路由 / 请求 / 权限能力。能力由宿主通过 props / 回调注入（如 `canGoBack`、`onBack`）；路由、请求、权限这类框架层操作能力属于跨项目通用的操作功能封装，2026-11-06 用户改口径：**收进 `mp-taro-kit` 单包，不再另抽独立包**，但仍须按能力域隔离、按需 `import`，避免只用 Button 的项目被拖进整个请求层。现有 `nav-bar` 是反例（`nav-bar.tsx:25-27` 依赖 router / store / constants），抽离时改成外部传入系统信息与回调。原「独立包 / 先这么定，要撤再撤」的口径就此撤掉。
 - **命令式 API 自带挂载点，不依赖宿主 store**。理由同上：宿主 store 是项目私有的，库若订阅宿主 `ui` 域，就绑死在某个项目上。
 - **组件必须开箱即用**：声明式组件（`<Dialog open ...>`）与命令式 API（`showToast()` / `confirm()`）都要直接可用，使用者不写遮罩、不搭 div；遮罩、面板、进出动画由库内部实现。代价是宿主需在页面基座挂一次 `<OverlayHost />`，作为命令式 API 的渲染位置。
 
@@ -99,10 +100,11 @@
 - `npm stage approve <stage-id>` 与 `npm trust list` 在本机均返回 EOTP（需 2FA），`npm stage list` 免 OTP 可读；Actions job 日志接口需 admin 权限，现有 token 取不到（403）。
 - **权限 ≠ 命令**：Trusted Publisher 的 `Allowed actions` 只决定授信允许什么，实际行为由 workflow 里执行的命令决定。用户在设置页勾了 `Allow npm publish`（未勾 `Allow npm dist-tag`），但当时 workflow 跑的是 `npm stage publish`，所以 0.0.2 仍为 Staged。已把 `publish.yml` 末行改为 `npm publish --access public`（提交 `921bbb0`）。
 - 更正前记：连接的**必填字段**（provider / owner / repo / workflow filename）建后不可改，但 `Allowed actions` 可在 npm 设置页编辑后 Save changes，无需删连接重建。
+- 2026-11-06 用户纠正项目定位：`mp-taro-kit` 是**基础库（kit）不是 UI 库**，还会放跨项目通用的操作功能封装，能力域开放、不以当前清单为边界；已据此改 Background 目标、已拍板、技术约束（撤掉「框架层能力另抽独立包」），并同步改 hindsight bank 模板 `/workspace/NAS-Docker/_Config/hindsight/templates/Agent::Code::open-lab.mp-taro-kit.json` 的三段 mission、`package-identity-and-boundary-rules` 模型、subsystem 标签与相关 directive。
 
 ## Conclusion
 
-已完成 GitHub 公开仓库 `cq-guojia/mp-taro-kit`、npm `mp-taro-kit` 占名（latest 0.0.1）、Trusted Publisher OIDC 链路（tag `v0.0.2` 触发 CI，stage publish 成功）。留的坑：用户已勾选 `Allow npm publish` 但需点 Save changes 才生效；workflow 已改直接发布却还没跑过一次（`v0.0.2` 那次跑的是旧命令，产出 staged release `c9dfdcf6-…` 仍悬着，建议 Reject）；stage publish 是否算「2 天内首次成功发布」未在官方文档中查到明确口径，用直接发布验证可绕开此不确定；目录结构与抽样范围（To Do 4、5）未开工。决议固定：三条技术约束（对外样式值走 CSS 变量、宿主能力靠注入、命令式 API 自带挂载点）+ 组件开箱即用；「props 只增不改、token 只增不改名」因开发期不采用已移除，成熟期再评估。
+已完成 GitHub 公开仓库 `cq-guojia/mp-taro-kit`、npm `mp-taro-kit` 占名（latest 0.0.1）、Trusted Publisher OIDC 链路（tag `v0.0.2` 触发 CI，stage publish 成功）。留的坑：用户已勾选 `Allow npm publish` 但需点 Save changes 才生效；workflow 已改直接发布却还没跑过一次（`v0.0.2` 那次跑的是旧命令，产出 staged release `c9dfdcf6-…` 仍悬着，建议 Reject）；stage publish 是否算「2 天内首次成功发布」未在官方文档中查到明确口径，用直接发布验证可绕开此不确定；目录结构与抽样范围（To Do 4、5）未开工。项目定位已定：基础库（kit）而非 UI 库，能力域开放，通用操作功能封装属于本库。决议固定：三条技术约束（对外样式值走 CSS 变量、宿主能力靠注入、命令式 API 自带挂载点）+ 组件开箱即用；「props 只增不改、token 只增不改名」因开发期不采用已移除，成熟期再评估。
 
 ## Execution Log
 
@@ -127,3 +129,4 @@
 - 2026-11-06 09:26:33 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · registry 核验 mp-taro-kit 已有 0.0.0-stage/0.0.1、latest=0.0.1，To Do 1、2 收掉；按 npm 官方文档建 .github/workflows/publish.yml（OIDC + npm stage publish）并推送 f23cde6，新增第 3 项 Trusted Publisher 连接待用户在 npmjs.com 提交且 2 天内完成首次发布验证
 - 2026-11-06 09:34:07 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户提交 Trusted Publisher 表单后 bump 0.0.2 + tag v0.0.2 触发 CI：run 42195655412 全绿，npm stage publish 走 OIDC 成功；staged release c9dfdcf6-b24f-423c-960e-a115084dfd63 待用户 2FA 审批，registry 仍只有 0.0.1
 - 2026-11-06 12:01:30 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 澄清权限与命令的区别：用户已勾 Allow npm publish 但 workflow 跑的是 npm stage publish 故 0.0.2 仍 Staged；已把 publish.yml 改为 npm publish --access public 并推送 921bbb0，待用户 Save changes + 明确发版后跑直接发布验证
+- 2026-11-06 12:58:39 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户纠正定位：mp-taro-kit 是基础库（kit）不是 UI 库，还会放跨项目通用操作功能封装，能力域开放不以清单为边界；已改 Background 目标/已拍板/技术约束（撤掉框架层能力另抽独立包）/Process/Conclusion，并同步改 hindsight 模板三段 mission、模型①、subsystem 标签与 directive
