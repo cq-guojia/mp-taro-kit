@@ -1,0 +1,19 @@
+{
+  "name": "mp-taro-kit",
+  "version": "0.0.1",
+  "description": "基于 Taro + React 的小程序 UI 基础库（占位发布，API 未定）",
+  "license": "MIT",
+  "files": [
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cq-guojia/mp-taro-kit.git"
+  },
+  "keywords": [
+    "taro",
+    "weapp",
+    "mini-program",
+    "ui"
+  ]
+}
