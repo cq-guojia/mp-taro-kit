@@ -1,7 +1,7 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-06 09:02:22 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-06 09:04:36 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -72,7 +72,7 @@
 
 ## Next
 
-第 1、2 项完成后，进第 3 项：在 `/code/open-lab/mp-taro-kit` 下产出目录骨架方案（组件 / token / dist / docs 的落位），方案确认后再进第 4 项。
+第 1、2 项收尾：GitHub 推送需用户给写权限凭据（SSH key 被 `cq-guojia` 组织拒绝，现有两个 `GITHUB_TOKEN` 都只有 pull）；npm 发布需用户给 OTP 或可跳过 2FA 的 automation token。两项通后进第 3 项目录骨架方案。
 
 ## Process
 
@@ -85,6 +85,10 @@
 - 宿主的构建补丁（伪元素冒号、inset 展开、hex→rgba、wxs 镜像、definePageConfig 剥离）在 `koc-weapp-zuche/config/index.ts:58-133`，抽 UI 包带不走，不属本任务范围。
 - 名字核查：npm `mp-taro-kit` registry 404（未占用）；GitHub `mp-taro` org 404（未占用）。
 - 台账标签限制：含中文时最多 4 字（建任务时被拒一次，已改「组件库」）。
+- GitHub 仓库实建在组织 `cq-guojia/mp-taro-kit`（public，默认分支 main，空仓），非最初猜测的 `mp-taro` 组织；`package.json` 的 repository 已按此修正。
+- 本机 SSH key 认证为 `cqguojia`，但推送 `cq-guojia/mp-taro-kit` 被拒（Permission denied）；环境里两个 GitHub token 的 permissions 均为 `pull: true, push: false`。
+- `npm login` 成功（`npm whoami` = guojia），但 `npm publish --access public` 返回 EOTP：`npm login` 拿到的 web token 发布需二次验证，需 OTP 或 automation token。
+- 本地骨架已就绪：`git init -b main`、`.gitignore`（含 `.codebuddy/`）、`README.md`、占位 `package.json`（0.0.1、MIT、files 只含 README），首次提交 `d18f7b6` 已生成待推送。
 
 ## Conclusion
 
@@ -107,3 +111,4 @@
 - 2026-11-06 08:46:31 · claim · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · claimed → doing
 - 2026-11-06 08:47:05 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户调整顺序：GitHub 建仓与 npm 占名提前，目录结构与抽样范围后置；已改 To Do 与 Next。环境核查：本机无 gh CLI，npm 登录态 401 失效，/code/open-lab/mp-taro-kit 尚未 git init
 - 2026-11-06 09:02:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 重新应用顺序调整（首轮正文被回滚）；查得 GitHub 仓库为 cq-guojia/mp-taro-kit（public，main，空仓），已修正 package.json 的 repository 字段；本机 SSH key 认证 cqguojia 成功，npm 登录态 guojia
+- 2026-11-06 09:04:36 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 本地骨架与首次提交 d18f7b6 完成；GitHub 仓库 cq-guojia/mp-taro-kit 已建但 SSH 推送被拒（token 均只读），npm publish 撞 EOTP，待用户给写权限凭据与 OTP/automation token
