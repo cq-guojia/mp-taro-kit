@@ -1,7 +1,7 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-06 09:14:10 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-06 09:16:02 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -65,14 +65,14 @@
 
 按先后顺序，一条做完再下一条（2026-11-06 用户调整顺序：先把 GitHub 与 npm 的壳建起来，再定目录结构与抽样范围）：
 
-1. **建 GitHub 仓库**：公开仓库，仓库名与包名一致（`mp-taro-kit`）。
-2. **建 NPM 仓库**：在 npm 占住 `mp-taro-kit`（已核未被占用），确认发布配置（`--access public`）。
+1. ~~**建 GitHub 仓库**：公开仓库，仓库名与包名一致（`mp-taro-kit`）。~~ 已完成：所有者把 `cqguojia` 加为 Write 协作者后，首次提交成功推送，远端 main = `ef85616`。
+2. **建 NPM 仓库**：在 npm 占住 `mp-taro-kit`（已核未被占用），确认发布配置（`--access public`）。占位包已备好，待用户带 OTP 执行 `npm publish`。
 3. **定文件怎么存放**：给出仓库目录结构与源码组织（组件、token、构建产物、文档各放哪）。
 4. **定要抽哪些内容**：从 `koc-weapp-zuche` 现有组件里筛，分清「可直接搬」「需改造成注入」「留在项目侧」三档。
 
 ## Next
 
-第 1、2 项收尾：GitHub 推送需所有者 `cq-guojia` 把 agent 账号 `cqguojia` 加为该仓库 Write 协作者（或提供所有者的 PAT）；npm 发布需用户给 OTP 或可跳过 2FA 的 automation token。两项通后进第 3 项目录骨架方案。
+第 2 项收尾：用户在终端跑 `npm publish --access public --otp <当前6位验证码>`；发布后 agent 用 `npm view mp-taro-kit@0.0.1 version` 核验并把 To Do 2 收掉，进第 3 项目录骨架方案。
 
 ## Process
 
@@ -114,3 +114,4 @@
 - 2026-11-06 09:02:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 重新应用顺序调整（首轮正文被回滚）；查得 GitHub 仓库为 cq-guojia/mp-taro-kit（public，main，空仓），已修正 package.json 的 repository 字段；本机 SSH key 认证 cqguojia 成功，npm 登录态 guojia
 - 2026-11-06 09:04:36 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 本地骨架与首次提交 d18f7b6 完成；GitHub 仓库 cq-guojia/mp-taro-kit 已建但 SSH 推送被拒（token 均只读），npm publish 撞 EOTP，待用户给写权限凭据与 OTP/automation token
 - 2026-11-06 09:14:10 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 定位推送失败根因：GitHub 是两个个人账号，仓库所有者 cq-guojia，本机 SSH key/token 属于 cqguojia(cq-guojia-agent) 且只读；需所有者加 Write 协作者或提供 PAT
+- 2026-11-06 09:16:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 所有者把 cqguojia 加为 Write 协作者后 git push -u origin main 成功，远端 main=ef85616；npm view mp-taro-kit@0.0.1 仍 404，占位发布待用户带 OTP 执行
