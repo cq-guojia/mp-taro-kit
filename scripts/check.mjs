@@ -59,15 +59,19 @@ async function collect(dir) {
 }
 if (existsSync(distDir)) await collect(distDir)
 
+if (release) {
+  if (artifacts === 0) errors.push('dist/ 没有构建产物，拒绝发布空包；请先落源码并接入 TS/SCSS 编译器')
+  for (const required of ['index.js', 'index.cjs', 'index.d.ts']) {
+    if (!existsSync(path.join(distDir, required))) {
+      errors.push(`dist/ 缺少 ${required}，拒绝发布只有样式或半成品的包`)
+    }
+  }
+}
 if (errors.length > 0) {
   for (const error of errors) console.error(`[FAIL] ${error}`)
   process.exit(1)
 }
-if (release && artifacts === 0) {
-  console.error('[FAIL] dist/ 没有构建产物，拒绝发布空包；请先落源码并接入 TS/SCSS 编译器')
-  process.exit(1)
-}
 if (artifacts === 0) {
-  console.warn('[warn] dist/ 暂无产物（骨架阶段，源码未落）；npm run guard 会拒绝发版')
+  console.warn('[warn] dist/ 暂无产物（骨架阶段，源码未落）；pnpm run guard 会拒绝发版')
 }
 console.log(`[check] 包清单自洽性通过，dist 产物 ${artifacts} 个`)

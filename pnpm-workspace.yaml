@@ -1,0 +1,8 @@
+# pnpm 12 的专用设置放在 pnpm-workspace.yaml（.npmrc 的 auto-install-peers 已不生效）
+# peerDependencies 由宿主项目提供，库本身不安装
+autoInstallPeers: false
+
+# @parcel/watcher 是 sass 的可选依赖，只服务 --watch；本库构建只用 sass.compile()，不需要它的原生构建脚本。
+# pnpm 12 的写法是 allowBuilds（老的 ignoredBuiltDependencies 不会让 install/add 静默）
+allowBuilds:
+  '@parcel/watcher': false

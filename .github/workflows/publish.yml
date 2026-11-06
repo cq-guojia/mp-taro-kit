@@ -14,17 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-          package-manager-cache: false
-      - run: npm install -g npm@latest
-      # peerDependencies 由宿主提供，库本身不安装；避免 npm 把整套 Taro/React 装进 CI
-      - run: npm ci --legacy-peer-deps
-      - run: npm run build
-      - run: npm test
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm test
       # dist/ 为空时直接失败，避免误打 tag 发出只有 README 的空包
-      - run: npm run guard
-      - run: npm pack --dry-run
-      - run: npm publish --access public
+      - run: pnpm run guard
+      - run: pnpm pack --dry-run
+      - run: pnpm publish --access public --no-git-checks

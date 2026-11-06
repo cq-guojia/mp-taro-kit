@@ -1,0 +1,10 @@
+/* mp-taro-kit 对外样式变量入口。
+   token 清单与取值待能力清单定稿后补齐；此处只保留覆盖已定五类样式值的最小占位，
+   保证 ./styles/tokens 出口有实体、宿主可 import。 */
+:root {
+  --mp-color-primary: #1677ff;
+  --mp-radius-md: 8px;
+  --mp-space-md: 12px;
+  --mp-font-size-md: 14px;
+  --mp-duration-base: 200ms;
+}
