@@ -1,7 +1,7 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-06 09:16:02 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-06 09:26:33 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -65,14 +65,15 @@
 
 按先后顺序，一条做完再下一条（2026-11-06 用户调整顺序：先把 GitHub 与 npm 的壳建起来，再定目录结构与抽样范围）：
 
-1. ~~**建 GitHub 仓库**：公开仓库，仓库名与包名一致（`mp-taro-kit`）。~~ 已完成：所有者把 `cqguojia` 加为 Write 协作者后，首次提交成功推送，远端 main = `ef85616`。
-2. **建 NPM 仓库**：在 npm 占住 `mp-taro-kit`（已核未被占用），确认发布配置（`--access public`）。占位包已备好，待用户带 OTP 执行 `npm publish`。
-3. **定文件怎么存放**：给出仓库目录结构与源码组织（组件、token、构建产物、文档各放哪）。
-4. **定要抽哪些内容**：从 `koc-weapp-zuche` 现有组件里筛，分清「可直接搬」「需改造成注入」「留在项目侧」三档。
+1. ~~**建 GitHub 仓库**：公开仓库，仓库名与包名一致（`mp-taro-kit`）。~~ 已完成：所有者把 `cqguojia` 加为 Write 协作者后推送成功，远端 main = `f23cde6`。
+2. ~~**建 NPM 仓库**：在 npm 占住 `mp-taro-kit`，确认发布配置（`--access public`）。~~ 已完成：registry 有 `0.0.0-stage` 与 `0.0.1`，`latest = 0.0.1`。
+3. **建 Trusted Publisher（OIDC）连接**：`.github/workflows/publish.yml` 已推送；待用户在 npmjs.com 表单点「Set up connection」，并在 2 天内完成首次成功发布验证（否则连接过期作废）。
+4. **定文件怎么存放**：给出仓库目录结构与源码组织（组件、token、构建产物、文档各放哪）。
+5. **定要抽哪些内容**：从 `koc-weapp-zuche` 现有组件里筛，分清「可直接搬」「需改造成注入」「留在项目侧」三档。
 
 ## Next
 
-第 2 项收尾：用户在终端跑 `npm publish --access public --otp <当前6位验证码>`；发布后 agent 用 `npm view mp-taro-kit@0.0.1 version` 核验并把 To Do 2 收掉，进第 3 项目录骨架方案。
+第 3 项：用户在 npmjs.com 的 Trusted Publisher 表单填 `cq-guojia` / `mp-taro-kit` / `publish.yml`（环境名留空、Allowed actions 保持不勾）并点「Set up connection」；之后由用户明确说「发版」才 bump 版本 + 打 tag 做首次验证发布。
 
 ## Process
 
@@ -85,11 +86,14 @@
 - 宿主的构建补丁（伪元素冒号、inset 展开、hex→rgba、wxs 镜像、definePageConfig 剥离）在 `koc-weapp-zuche/config/index.ts:58-133`，抽 UI 包带不走，不属本任务范围。
 - 名字核查：npm `mp-taro-kit` registry 404（未占用）；GitHub `mp-taro` org 404（未占用）。
 - 台账标签限制：含中文时最多 4 字（建任务时被拒一次，已改「组件库」）。
-- GitHub 仓库实建在组织 `cq-guojia/mp-taro-kit`（public，默认分支 main，空仓），非最初猜测的 `mp-taro` 组织；`package.json` 的 repository 已按此修正。
+- GitHub 仓库实建在个人账号 `cq-guojia/mp-taro-kit`（public，默认分支 main，空仓），非最初猜测的 `mp-taro` 组织；`package.json` 的 repository 已按此修正。
 - 本机 SSH key 认证为 `cqguojia`，但推送 `cq-guojia/mp-taro-kit` 被拒（Permission denied）；环境里两个 GitHub token 的 permissions 均为 `pull: true, push: false`。
 - 根因是**两个 GitHub 个人账号**：仓库所有者 `cq-guojia`（显示名 GuoJia）与本机身份 `cqguojia`（显示名 cq-guojia-agent）不同；`api.github.com/orgs/cq-guojia` 404、`users/cq-guojia` type=User，仓库 owner.type=User。换终端/换协议无效，须给 agent 账号开写权限或改用所有者的 PAT。
 - `npm login` 成功（`npm whoami` = guojia），但 `npm publish --access public` 返回 EOTP：`npm login` 拿到的 web token 发布需二次验证，需 OTP 或 automation token。
 - 本地骨架已就绪：`git init -b main`、`.gitignore`（含 `.codebuddy/`）、`README.md`、占位 `package.json`（0.0.1、MIT、files 只含 README），首次提交 `d18f7b6` 已生成待推送。
+- npm Trusted Publisher 官方要求（`docs.npmjs.com/trusted-publishers`，2026-11-06 检索）：npm CLI ≥ 11.5.1 / Node ≥ 22.14.0；workflow 文件必须存在于 `.github/workflows/` 且文件名与表单完全一致；`permissions: id-token: write`；`setup-node` 配 `registry-url: https://registry.npmjs.org`；`package.json` 的 `repository.url` 必须与仓库匹配；连接建好后 2 天内必须完成首次成功发布，否则过期且不可编辑，只能删掉重建；连接建立后必填字段不可改。
+- 官方 staged publishing（`docs.npmjs.com/staged-publishing`）：`npm stage publish` 不需 2FA，需维护者在 npmjs.com「Staged Packages」或 `npm stage approve <stage-id>` 用 2FA 审批后才真正发版；CLI 需 ≥ 11.15.0。给不存在的包 stage publish 会生成公开的 `0.0.0-stage` 占位版本——registry 里那个版本由此而来。
+- `.github/workflows/publish.yml`（提交 `f23cde6`）：`push: tags: v*` 触发、`id-token: write`、Node 24、`npm install -g npm@latest`、`npm stage publish`；暂未加 `npm ci` / build / test（当前零依赖、无源码），已用 `shortcut:` 注释标注。
 
 ## Conclusion
 
@@ -115,3 +119,4 @@
 - 2026-11-06 09:04:36 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 本地骨架与首次提交 d18f7b6 完成；GitHub 仓库 cq-guojia/mp-taro-kit 已建但 SSH 推送被拒（token 均只读），npm publish 撞 EOTP，待用户给写权限凭据与 OTP/automation token
 - 2026-11-06 09:14:10 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 定位推送失败根因：GitHub 是两个个人账号，仓库所有者 cq-guojia，本机 SSH key/token 属于 cqguojia(cq-guojia-agent) 且只读；需所有者加 Write 协作者或提供 PAT
 - 2026-11-06 09:16:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 所有者把 cqguojia 加为 Write 协作者后 git push -u origin main 成功，远端 main=ef85616；npm view mp-taro-kit@0.0.1 仍 404，占位发布待用户带 OTP 执行
+- 2026-11-06 09:26:33 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · registry 核验 mp-taro-kit 已有 0.0.0-stage/0.0.1、latest=0.0.1，To Do 1、2 收掉；按 npm 官方文档建 .github/workflows/publish.yml（OIDC + npm stage publish）并推送 f23cde6，新增第 3 项 Trusted Publisher 连接待用户在 npmjs.com 提交且 2 天内完成首次发布验证

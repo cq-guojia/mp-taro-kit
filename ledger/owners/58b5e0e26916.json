@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路": {"category": "基础建设", "created": "2026-11-06 08:06:05", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-06 08:06:34", "status": "doing", "tags": ["mp-taro-kit", "Taro", "组件库", "npm", "GitHub"], "title": "搭建 mp-taro-kit 基础仓库与发布链路", "updated": "2026-11-06 09:16:02", "worklog": "worklog/202611/06-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路.md"}
+    "20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路": {"category": "基础建设", "created": "2026-11-06 08:06:05", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-06 08:06:34", "status": "doing", "tags": ["mp-taro-kit", "Taro", "组件库", "npm", "GitHub"], "title": "搭建 mp-taro-kit 基础仓库与发布链路", "updated": "2026-11-06 09:26:33", "worklog": "worklog/202611/06-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路.md"}
   },
   "version": "20261022000000"
 }
