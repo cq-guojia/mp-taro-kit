@@ -1,7 +1,7 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-06 12:58:39 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-06 13:42:06 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -101,6 +101,8 @@
 - **权限 ≠ 命令**：Trusted Publisher 的 `Allowed actions` 只决定授信允许什么，实际行为由 workflow 里执行的命令决定。用户在设置页勾了 `Allow npm publish`（未勾 `Allow npm dist-tag`），但当时 workflow 跑的是 `npm stage publish`，所以 0.0.2 仍为 Staged。已把 `publish.yml` 末行改为 `npm publish --access public`（提交 `921bbb0`）。
 - 更正前记：连接的**必填字段**（provider / owner / repo / workflow filename）建后不可改，但 `Allowed actions` 可在 npm 设置页编辑后 Save changes，无需删连接重建。
 - 2026-11-06 用户纠正项目定位：`mp-taro-kit` 是**基础库（kit）不是 UI 库**，还会放跨项目通用的操作功能封装，能力域开放、不以当前清单为边界；已据此改 Background 目标、已拍板、技术约束（撤掉「框架层能力另抽独立包」），并同步改 hindsight bank 模板 `/workspace/NAS-Docker/_Config/hindsight/templates/Agent::Code::open-lab.mp-taro-kit.json` 的三段 mission、`package-identity-and-boundary-rules` 模型、subsystem 标签与相关 directive。
+- 2026-11-06 抽样范围调研（**讨论稿，未拍板**）：两个候选来源项目已通读并核实——`koc-weapp-zuche-user` 并非原生小程序，而是 Taro 3.6.36 + React 18 + Redux 的老基建（起于 2022，`src/components/` 27 个 tsx），值钱的是 `src/lib/utils.ts`（1139 行，事件总线 + 全局弹窗 Promise 化）、四层弹窗基座 `MasterModal*` + `Overlay`、`src/api/weapp.ts`（30+ wx API 薄封装）；`koc-weapp-zuche` 是 Taro 4.3.0 + Vite + RTK + alova 的新框架，`src/components/` 仅 4 个 tsx、`src/utils/` 仅 3 文件，alert/confirm/toast/遮罩原语/独立 Icon/OverlayHost 全部只在设计文档与未结案台账里（`page-master.tsx:6-8` 是待办注释）。**两项目都没有 CSS 变量、没有 token 集中定义**：新项目只有 17 个 Sass 语义色（`styles/_variables.scss`）编译期注入，老项目颜色硬编码散落；都没有独立 Button（含按钮内 loading 转圈）、NavBar（老项目 20+ 页重复内联）、分页/下拉容器、时间/字符串/数字 utils。老项目依赖 4 个私有 npm 包 `koc-common-{string,datetimex,sleep,return}`（源码不在仓库），新项目无对应实现。
+- 「配错」在两个项目里精确检索 `配错 / peicuo / 错配 / adapter` 均 0 命中；最可能是「配置」即老项目远程配置中心 `APPConfig`（`api/user.ts:184-211` 拉、`lib/utils.ts:925-940` 5 分钟缓存、8+ UI 消费），次之是「商户及应用 ID 不匹配」校验（`lib/utils.ts:886-890`）——待用户确认指哪一个。「Story」检索无真实模块，最可能是 `store`（Redux/RTK）的口误。
 
 ## Conclusion
 
@@ -130,3 +132,4 @@
 - 2026-11-06 09:34:07 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户提交 Trusted Publisher 表单后 bump 0.0.2 + tag v0.0.2 触发 CI：run 42195655412 全绿，npm stage publish 走 OIDC 成功；staged release c9dfdcf6-b24f-423c-960e-a115084dfd63 待用户 2FA 审批，registry 仍只有 0.0.1
 - 2026-11-06 12:01:30 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 澄清权限与命令的区别：用户已勾 Allow npm publish 但 workflow 跑的是 npm stage publish 故 0.0.2 仍 Staged；已把 publish.yml 改为 npm publish --access public 并推送 921bbb0，待用户 Save changes + 明确发版后跑直接发布验证
 - 2026-11-06 12:58:39 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户纠正定位：mp-taro-kit 是基础库（kit）不是 UI 库，还会放跨项目通用操作功能封装，能力域开放不以清单为边界；已改 Background 目标/已拍板/技术约束（撤掉框架层能力另抽独立包）/Process/Conclusion，并同步改 hindsight 模板三段 mission、模型①、subsystem 标签与 directive
+- 2026-11-06 13:42:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 发版按用户要求推迟到基础框架完成后；通读 koc-weapp-zuche-user(Taro3.6) 与 koc-weapp-zuche(Taro4.3) 两项目，调研结论（讨论稿、未拍板）已记入 Process，含两项目无 CSS 变量/无 Button/NavBar/分页容器/纯 utils、配错与 Story 待用户确认
