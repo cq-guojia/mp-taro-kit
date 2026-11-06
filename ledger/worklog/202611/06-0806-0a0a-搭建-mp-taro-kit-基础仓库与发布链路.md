@@ -1,7 +1,7 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-06 13:57:23 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-06 14:03:55 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -13,11 +13,11 @@
 
 ### 起因
 
-用户手上管理多个企业定制的小程序项目（不止 `koc-weapp-zuche`），每个项目都在重复实现同一批 UI 骨架：弹出层、遮罩、加载屏蔽、按钮 loading、导航栏、下拉/侧滑面板。差别主要在配色与业务内容，交互套路本身一致。
+用户手上与以后会有多个小程序项目，都需要同一批基础控件与基础操作方法：弹出层、遮罩、加载屏蔽、按钮 loading、导航栏、下拉/侧滑面板，以及常用的操作封装。先把这个**通用基础库**做好，以后由这些项目消费；本库与任何老项目的迁移工作无关。
 
 参照自己做 DSH 插件（`dsh-plugin-core`）的经验：最初没抽象，各插件各写一套，后来返工重构、把控件收口进基础库。这次想避免同一段路走两遍——先把底层库抽出来由自己维护，业务项目只消费。
 
-目标：在 `/code/open-lab/mp-taro-kit` 建一个**公开、不含具体业务内容**的小程序基础库（kit，Taro + React 实现）。之所以不叫 UI 库，是因为能力域不止界面：除 UI 容器能力外，还会收纳跨项目通用的操作功能封装。本任务只做前期基础工作，不写业务组件。
+目标：在 `/code/open-lab/mp-taro-kit` 建一个**公开、不含具体业务内容**的、基于**最新版 Taro + React** 的小程序通用基础库（kit）——小程序版的「基础控件核心 + 基础操作方法」，相当于 `dsh-plugin-core` 在小程序形态下的对应物。之所以不叫 UI 库，是因为除基础控件外还收纳通用的操作功能封装。三个现有项目只用来**参考「有哪些功能」与「怎么抽象」**，不搬实现、不服务于任何老项目迁移；老项目只是日后的消费者之一。
 
 ### 讨论过程与结论（按问答顺序，附理由）
 
@@ -64,17 +64,17 @@
 
 ## To Do
 
-按先后顺序，一条做完再下一条（2026-11-06 用户调整顺序：先把 GitHub 与 npm 的壳建起来，再定目录结构与抽样范围）：
+按先后顺序，一条做完再下一条（2026-11-06 用户调整顺序：先把 GitHub 与 npm 的壳建起来，再定能力清单与目录结构）：
 
 1. ~~**建 GitHub 仓库**：公开仓库，仓库名与包名一致（`mp-taro-kit`）。~~ 已完成：所有者把 `cqguojia` 加为 Write 协作者后推送成功，远端 main = `f23cde6`。
 2. ~~**建 NPM 仓库**：在 npm 占住 `mp-taro-kit`，确认发布配置（`--access public`）。~~ 已完成：registry 有 `0.0.0-stage` 与 `0.0.1`，`latest = 0.0.1`。
 3. **建 Trusted Publisher（OIDC）连接**：表单已提交、用户勾选 `Allow npm publish`、OIDC 已在 `v0.0.2` 的 stage publish 中验证可用；`publish.yml` 已改为 `npm publish --access public`（提交 `921bbb0`）。**剩最后一步**：用户在设置页点 Save changes 让权限生效、处理悬着的 staged 0.0.2，再由用户明确说「发版」触发一次直接发布，完成 2 天内的首次发布验证。
 4. **定能力域与文件怎么存放**：按基础库（kit）定位划能力域、定域间依赖方向，再给目录结构与源码组织（各能力域、token、构建产物、文档各放哪）。
-5. **定能力清单与抽象契约**（**不是搬实现**）：以 `koc-weapp-zuche-user` / `koc-weapp-zuche` 为「有哪些功能」的参考、`dsh-plugin-core` 为「成熟抽象经验」的参考，重新设计 UI 容器、通用操作封装、状态/通知/数据机制、纯 utils 的契约与边界，再用 Taro 实现。
+5. **定能力清单与抽象契约**（**不是搬实现**）：基于最新版 Taro，重新设计**基础控件核心（UI 基础控件）+ 基础操作方法**的清单与契约。三个项目只作参考（两个 KOC 项目看「有哪些功能」、`dsh-plugin-core` 看「成熟抽象经验」）；与老项目迁移无关。
 
 ## Next
 
-当前议题是第 4、5 项：**参考功能清单、重新抽象，不搬实现**（三个参考源：两个 KOC 项目看「有哪些功能」，`dsh-plugin-core` 看「成熟抽象经验」）。待用户拍板能力域划分、Taro 基线、宿主能力注入边界、样式覆盖机制、纯 utils 边界后，再进目录骨架与契约设计。第 3 项发版按用户明确要求**推迟到最基础框架打完之后**；届时再点 Save changes、Reject staged 0.0.2、由用户说「发版」触发直接发布验证。
+当前议题是第 4、5 项：**基于最新版 Taro（已定，不再讨论基线）做小程序版「基础控件核心 + 基础操作方法」**；三个项目只作参考，不搬实现、与迁移无关。下一步先产出能力清单草案（基础控件 + 基础操作方法两块），再定目录骨架与契约。第 3 项发版按用户明确要求**推迟到最基础框架打完之后**；届时再点 Save changes、Reject staged 0.0.2、由用户说「发版」触发直接发布验证。
 
 ## Process
 
@@ -106,6 +106,7 @@
 - 2026-11-06 用户纠正工作方法（**已拍板**）：**不是搬这两个项目，也不是把原功能原封不动搬过来**；它们只用来回答「有哪些功能」，实现要用最合理、最成熟的工程经验**重新抽象**。上一轮「可直接搬 / 需改造成注入 / 留在项目侧」三档措辞已作废，To Do 5 改为「定能力清单与抽象契约」。
 - 第三个参考源 `/code/dsh-plugins/dsh-plugin-core`（v0.35.2，单包 + 10 条子路径导出；运行时宿主实为 DSH 客户端插件、真实 DOM/React，不是小程序）：用户指出其中已有按钮 loading 转圈、alert、confirm 等抽象成果，表现形式不同但**要抽象的东西差不多**，且状态处理、数据记录、通知中心也值得借鉴。已通读并核实：`src/ui/actions/Button.ts:88-92,176-205` 的 `onClick` 返回 Promise 即自动 loading/禁用/防连点、reject 不吞错、转圈统一复用 `Loader`、`loadingText` 锁宽防跳；`src/ui/feedback/modal-host.ts:106-110,166-171` 的 `confirmModal/alertModal` 全 Promise、懒建常驻宿主、栈式条目、空栈回收；`src/ui/infra/toast-host.ts:1-22` / `loading-host.ts:76-103` 用 `Symbol.for` 跨副本单例 + 单槽 Loading + 句柄 id；`src/ui/infra/host-data.ts:33-67` 是 `getSnapshot/subscribe` 型 observable，`ticker.ts` 全局唯一心跳，`*-logic.ts` 纯函数状态机；`src/design/` 是零 React 的 token 层、组件只认 `var(--dshpc-*)`、换肤即覆盖同名变量；`src/utils/` 零 ui/React/DOM/宿主依赖、失败不抛给兜底、内置中英字典 + `translate` 覆盖点。**该库没有自研事件总线/通知中心**（Toast 队列交给 sonner），也没有数据持久化（仅 PanelDock 一处 localStorage）。
 - 三方分工：`koc` 两项目提供「业务里真实需要哪些功能」（老项目还有 `Taro.eventCenter` + `Utils.O*` 事件 Promise 化派发、新项目有注入式 `loading-scheduler` 与 `src/router/` 全量）；`dsh-plugin-core` 提供「控件粒度与分类、Promise 化 API、异步锁定契约、token 分层、全局唯一通知/加载管理器、逻辑与渲染分离、约定写成自检」这些成熟经验。**不能照进 Taro 的**：DOM/CSS 运行时注入风格串、`body[data-ds-dark-theme]` 判据、官方 primitives 与 `__ModuleLoader__`、宿主 ctx/HTTP 路由注入、React Context/portal、具体视觉档位、`adv/session` 业务镜像；以及该项目已反转/过期的结论（L0-L4 只是规划稿、ErrorBoundary 已删、README 子路径与代码不符、旧 `Loading` 已 deprecated）。
+- 2026-11-06 用户再次纠正范围（**已拍板，此前把范围带偏的说法作废**）：**一律用最新版 Taro**，不做 Taro 基线选择、不讨论老项目升级；本库是给现在和以后 N 多个项目用的**通用组件基础库**，与 `koc-weapp-zuche-user` / `koc-weapp-zuche` 的迁移工作**完全无关**，迁移是用户之后自己做的事，不在本任务范围内；三个项目**只作参考**（参考有哪些功能、参考怎么抽象），不搬实现。本轮要抽象的是「基于最新版 Taro 小程序的 **UI 基础控件核心 + 基础操作方法**」，即小程序形态下 `dsh-plugin-core` 的对应物。已据此改起因、目标、To Do 5 与 Next。
 
 ## Conclusion
 
@@ -137,3 +138,4 @@
 - 2026-11-06 12:58:39 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户纠正定位：mp-taro-kit 是基础库（kit）不是 UI 库，还会放跨项目通用操作功能封装，能力域开放不以清单为边界；已改 Background 目标/已拍板/技术约束（撤掉框架层能力另抽独立包）/Process/Conclusion，并同步改 hindsight 模板三段 mission、模型①、subsystem 标签与 directive
 - 2026-11-06 13:42:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 发版按用户要求推迟到基础框架完成后；通读 koc-weapp-zuche-user(Taro3.6) 与 koc-weapp-zuche(Taro4.3) 两项目，调研结论（讨论稿、未拍板）已记入 Process，含两项目无 CSS 变量/无 Button/NavBar/分页容器/纯 utils、配错与 Story 待用户确认
 - 2026-11-06 13:57:23 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户拍板工作方法：不搬实现，只参考功能清单 + 用成熟经验重新抽象；发版推迟到基础框架完成。新增第三个参考源 dsh-plugin-core 并通读（Button Promise 自动 loading、Promise 化弹窗宿主、跨副本单例通知/加载、token 分层、零依赖 utils、logic 与渲染分离），已改 To Do 4/5 与 Next 措辞并补 Process 调研证据
+- 2026-11-06 14:03:55 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户拍板收紧范围：一律最新版 Taro，与老项目迁移完全无关，三个项目只作参考不搬实现；目标是最新版 Taro 小程序版『基础控件核心 + 基础操作方法』（对应 dsh-plugin-core）。已改起因/目标/To Do 5/Next 并补已拍板记录
