@@ -1,7 +1,7 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-06 09:34:07 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-06 12:01:30 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -67,13 +67,13 @@
 
 1. ~~**建 GitHub 仓库**：公开仓库，仓库名与包名一致（`mp-taro-kit`）。~~ 已完成：所有者把 `cqguojia` 加为 Write 协作者后推送成功，远端 main = `f23cde6`。
 2. ~~**建 NPM 仓库**：在 npm 占住 `mp-taro-kit`，确认发布配置（`--access public`）。~~ 已完成：registry 有 `0.0.0-stage` 与 `0.0.1`，`latest = 0.0.1`。
-3. **建 Trusted Publisher（OIDC）连接**：表单已提交、`publish.yml` 已推送、`v0.0.2` 触发 CI 且 `npm stage publish` 成功（OIDC 已通）。**剩最后一步**：用户用 2FA 审批 staged release `c9dfdcf6-b24f-423c-960e-a115084dfd63`，并确认连接是否已完成 2 天内的首次发布验证。
+3. **建 Trusted Publisher（OIDC）连接**：表单已提交、用户勾选 `Allow npm publish`、OIDC 已在 `v0.0.2` 的 stage publish 中验证可用；`publish.yml` 已改为 `npm publish --access public`（提交 `921bbb0`）。**剩最后一步**：用户在设置页点 Save changes 让权限生效、处理悬着的 staged 0.0.2，再由用户明确说「发版」触发一次直接发布，完成 2 天内的首次发布验证。
 4. **定文件怎么存放**：给出仓库目录结构与源码组织（组件、token、构建产物、文档各放哪）。
 5. **定要抽哪些内容**：从 `koc-weapp-zuche` 现有组件里筛，分清「可直接搬」「需改造成注入」「留在项目侧」三档。
 
 ## Next
 
-第 3 项收尾：用户在 npmjs.com「Staged Packages」点 Approve（或 `npm stage approve c9dfdcf6-b24f-423c-960e-a115084dfd63 --otp <6位码>`）完成 2FA 审批；agent 随后用 `npm view mp-taro-kit@0.0.2 version` 核验并进第 4 项目录骨架方案。
+第 3 项收尾：用户在 npm 设置页点 Save changes、在「Staged Packages」Reject 掉 `c9dfdcf6-b24f-423c-960e-a115084dfd63`；用户说「发版」后 agent bump 0.0.3 + 打 `v0.0.3` 触发直接发布，核 Actions run 与 `npm view mp-taro-kit@0.0.3 version`，再进第 4 项目录骨架方案。
 
 ## Process
 
@@ -97,10 +97,12 @@
 - 首次验证发布：`package.json` bump 到 `0.0.2`、提交 `b4184fd`、tag `v0.0.2` 推送后，Actions run `42195655412`（`https://github.com/cq-guojia/mp-taro-kit/actions/runs/42195655412`）全部步骤 success，含 `npm stage publish`——OIDC 授信生效，且证明 `repository.url` 的 `git+https://…git` 写法被接受。
 - `npm stage list mp-taro-kit` 返回 staged release `c9dfdcf6-b24f-423c-960e-a115084dfd63`（version 0.0.2、tag latest、`staged by: GitHub Actions (trusted automation)`、status staged）；registry 此时仍只有 `0.0.0-stage`/`0.0.1`，`latest = 0.0.1`。
 - `npm stage approve <stage-id>` 与 `npm trust list` 在本机均返回 EOTP（需 2FA），`npm stage list` 免 OTP 可读；Actions job 日志接口需 admin 权限，现有 token 取不到（403）。
+- **权限 ≠ 命令**：Trusted Publisher 的 `Allowed actions` 只决定授信允许什么，实际行为由 workflow 里执行的命令决定。用户在设置页勾了 `Allow npm publish`（未勾 `Allow npm dist-tag`），但当时 workflow 跑的是 `npm stage publish`，所以 0.0.2 仍为 Staged。已把 `publish.yml` 末行改为 `npm publish --access public`（提交 `921bbb0`）。
+- 更正前记：连接的**必填字段**（provider / owner / repo / workflow filename）建后不可改，但 `Allowed actions` 可在 npm 设置页编辑后 Save changes，无需删连接重建。
 
 ## Conclusion
 
-已完成 GitHub 公开仓库 `cq-guojia/mp-taro-kit`、npm `mp-taro-kit` 占名（latest 0.0.1）、Trusted Publisher OIDC 链路（tag `v0.0.2` 触发 CI，stage publish 成功）。留的坑：0.0.2 仍待用户 2FA 审批才上线；stage publish 是否算「2 天内首次成功发布」未在官方文档中查到明确口径，需在 npmjs.com 连接状态处确认；目录结构与抽样范围（To Do 4、5）未开工。决议固定：三条技术约束（对外样式值走 CSS 变量、宿主能力靠注入、命令式 API 自带挂载点）+ 组件开箱即用；「props 只增不改、token 只增不改名」因开发期不采用已移除，成熟期再评估。
+已完成 GitHub 公开仓库 `cq-guojia/mp-taro-kit`、npm `mp-taro-kit` 占名（latest 0.0.1）、Trusted Publisher OIDC 链路（tag `v0.0.2` 触发 CI，stage publish 成功）。留的坑：用户已勾选 `Allow npm publish` 但需点 Save changes 才生效；workflow 已改直接发布却还没跑过一次（`v0.0.2` 那次跑的是旧命令，产出 staged release `c9dfdcf6-…` 仍悬着，建议 Reject）；stage publish 是否算「2 天内首次成功发布」未在官方文档中查到明确口径，用直接发布验证可绕开此不确定；目录结构与抽样范围（To Do 4、5）未开工。决议固定：三条技术约束（对外样式值走 CSS 变量、宿主能力靠注入、命令式 API 自带挂载点）+ 组件开箱即用；「props 只增不改、token 只增不改名」因开发期不采用已移除，成熟期再评估。
 
 ## Execution Log
 
@@ -124,3 +126,4 @@
 - 2026-11-06 09:16:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 所有者把 cqguojia 加为 Write 协作者后 git push -u origin main 成功，远端 main=ef85616；npm view mp-taro-kit@0.0.1 仍 404，占位发布待用户带 OTP 执行
 - 2026-11-06 09:26:33 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · registry 核验 mp-taro-kit 已有 0.0.0-stage/0.0.1、latest=0.0.1，To Do 1、2 收掉；按 npm 官方文档建 .github/workflows/publish.yml（OIDC + npm stage publish）并推送 f23cde6，新增第 3 项 Trusted Publisher 连接待用户在 npmjs.com 提交且 2 天内完成首次发布验证
 - 2026-11-06 09:34:07 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户提交 Trusted Publisher 表单后 bump 0.0.2 + tag v0.0.2 触发 CI：run 42195655412 全绿，npm stage publish 走 OIDC 成功；staged release c9dfdcf6-b24f-423c-960e-a115084dfd63 待用户 2FA 审批，registry 仍只有 0.0.1
+- 2026-11-06 12:01:30 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 澄清权限与命令的区别：用户已勾 Allow npm publish 但 workflow 跑的是 npm stage publish 故 0.0.2 仍 Staged；已把 publish.yml 改为 npm publish --access public 并推送 921bbb0，待用户 Save changes + 明确发版后跑直接发布验证
