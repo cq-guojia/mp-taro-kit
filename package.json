@@ -1,6 +1,6 @@
 {
   "name": "mp-taro-kit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "基于 Taro + React 的小程序 UI 基础库（占位发布，API 未定）",
   "license": "MIT",
   "files": [
