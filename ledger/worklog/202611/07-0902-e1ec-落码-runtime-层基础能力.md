@@ -1,7 +1,7 @@
 # 20261107-0902-e1ec-落码-runtime-层基础能力: 落码 runtime 层基础能力
 
 - **Tags**: runtime, 基础能力, 抽象契约, 能力清单
-- **Status**: doing · 2026-11-07 09:53:06 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-07 10:18:02 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-07 09:02:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -32,26 +32,30 @@
 
 ## To Do
 
-1. **定 `runtime` 层能力清单与抽象契约**（先出草案给用户拍板）：评审骨架的 Promise 工具（如 `sleep` / `withTimeout` / `retry` / `deferred`）、单例（`createSingleton` / 懒加载单例）、overlay 栈（push / pop / 清空 / 层级）是否照用、每类的边界与函数粒度、命名与目录组织、错误口径（失败不抛 / 返回兜底或拒绝 Promise 的约定）、`./runtime` 出口契约与按需 import 粒度、对外兼容性口径（签名变更给迁移步骤 / 回滚路径 / 回归宿主清单）。还要回答「`runtime` 是否收纳平台定时器 / 事件总线之类能力（走注入）」。
-2. **落码 `src/runtime/`**：按拍板实现，`src/runtime/index.ts` 从 `export {}` 换成具名导出；不改 `package.json` 的 exports、`scripts/*.mjs`、`src/index.ts`、其他能力域。
-3. **等用户给的东西**：能力范围与模块划分、函数签名风格、异步错误口径。拍板前不改代码。
-4. **补真验证**：新增 `tests/runtime.test.mjs`（Node 内置 `node:test`），并把 `package.json:59` 的 `test` 扩成能跑多个测试文件。**坑已验证**：Node v24.20.0 下 `node --test tests/` 会把目录当模块入口报 `Cannot find module .../tests`，须用文件 glob（如 `node --test tests/*.test.mjs`），别重试裸目录。
-5. **落码后按 CI 顺序复验**：`pnpm install --frozen-lockfile` → `pnpm run build` → `pnpm test` → `pnpm run guard` → `pnpm pack --dry-run` 全 exit=0；`koc-codelint` L0~L5 全过；核 `dist/runtime/*` 与 `./runtime` 出口目标一致、`dist/` 产物数按新增模块数增加（不硬套 38）。
-6. **不属本任务但须记的欠账**：`core` / `ui` 落码；宿主 demo 双端实机验证（`--mptk-*` 的 `page` / px、i18n 由宿主加载的路径）；bump `0.0.4`+ 发版；只过 build / test / 类型检查不算验证。
+1. ~~**定 `runtime` 层能力清单与抽象契约**~~ 已定稿（用户「行，我明白了，继续实施吧」澄清概念后，「你先做」= 拍板授权）。**定稿清单覆盖本节初版错误口径**：`thenable`（isThenable / isSuccess）、`singleton`（createSingleton）、`overlay-stack`（createOverlayStack）、`notify`（createNotifyCenter）、`loading-slot`（createLoadingSlot）五模块。原写的 `sleep` / `withTimeout` / `retry` / `deferred` 全部作废：`sleep` 不记事属 utils（当前定稿未含，不擅自加）、`withTimeout`/`retry` 归 core/request、`deferred` 是实现细节；平台定时器 / 事件总线不收、走注入；本地存储不碰。契约：零平台依赖、纯内存共享状态、失败不抛返回兜底、runtime 不渲染（只暴露 getSnapshot / subscribe）、栈不内置 resolve。
+2. ~~**落码 `src/runtime/`**~~ 已落码：五模块 + `index.ts` 具名导出；未改 `package.json` 的 exports、`scripts/*.mjs`、`src/index.ts`、其他能力域。
+3. ~~**等用户给的东西**~~ 用户「你先做」= 授权按草案建议口径落码，三项待拍板按建议实现：栈交还 payload 由 ui 自己 resolve、notify 默认 `limit = 3`、单例键前缀 `mptk/` 且不暴露 reset。
+4. ~~**补真验证**~~ 已落 `tests/runtime.test.mjs` 9 组断言；`package.json:59` 的 `test` 扩成 `node --test tests/*.test.mjs`（文件 glob，裸目录坑已避开）。
+5. ~~**落码后按 CI 顺序复验**~~ 已全过：`pnpm install --frozen-lockfile` → build（dist 38→53）→ test（16/16）→ guard → `pnpm pack --dry-run` 全 exit=0；ESM `dist/runtime/index.js` 与 CJS `dist/runtime/index.cjs` 双端加载通过；`koc-codelint` 8 文件 L0~L5 全过；无 `__pycache__` / `*.pyc`；`dist/runtime/` 18 个产物与 `./runtime` 出口目标一致。
+6. **待用户验收**：交付待验收，状态留 `doing`；验收看 `src/runtime/` 六个文件与 `tests/runtime.test.mjs`。契约已逐文件向用户讲完（2026-11-07）。
+7. **不属本任务但须记的欠账**：`core` / `ui` 落码；宿主 demo 双端实机验证（`--mptk-*` 的 `page` / px、i18n 由宿主加载路径、跨副本是否真出现两份模块实例）；bump `0.0.4`+ 发版；本轮 8 个代码文件尚未提交 / 未 push；只过 build / test / 类型检查不算验证。
 
 ## Next
 
-只读核对现状后产出**草案**（放对话里、不落盘、不改文件）：`src/runtime/index.ts:1-2` 骨架、`package.json:28-32` 的 `./runtime` 出口与 `scripts/check.mjs:11-14` 必需出口清单、`package.json:59` 的 test 接线、`/code/dsh-plugins/dsh-plugin-core/src/` 里 Promise / 单例 / overlay 栈的抽象经验、KOC 项目的注入器/装配点模式（作验证样本）；据此给出 `runtime` 层能力清单 + 抽象契约草案（模块划分、函数签名风格、异步错误口径），请用户拍板范围。拍板后再落码，然后按 To Do 5 的 CI 顺序复验。
+交付待验收，任务留 `doing`。下一具体动作由用户一句话定向：① 说「close 掉」→ 补完正文并记 log 后跑 `close --summary`；② 说「提交」→ build 复验后 `commit` + `push`（当前 HEAD `60f8d45` 只含台账自动签入，8 个代码文件仍在工作区）；③ 说「建下个任务」→ 按评审顺序 `runtime → { core, ui }` 开 `core` 层。未获明确指令前不改代码、不提交、不建任务。
 
 ## Process
 
 - 2026-11-07 建任务并认领：用户「行，这个任务做完了，就把这个任务 close 掉，然后建下个任务吧」，用 `progress new --title "落码 runtime 层基础能力" --tags "runtime,基础能力,抽象契约,能力清单" --category "开发" --self` 一次完成（归自己名下、状态 `doing`），任务号 `20261107-0902-e1ec-落码-runtime-层基础能力`，落 `ledger/owners/58b5e0e26916.json`，过程文档 `ledger/worklog/202611/07-0902-e1ec-落码-runtime-层基础能力.md`；`list --mine --json` 复核 `mine: true`、`status: doing`。
 - 承接 utils 结案：`ledger/history/202611.md:7` 记 `result: done`（17:02:42），代码提交 `d2245d7`。台账写命令按脚本默认同步签入，未用 `--no-sync`——按 `troubleshooting.md:119,121` 的默认行为只 `git add` 台账路径，不会把代码文件带进台账提交。
-- 本轮**未改任何代码 / 未装依赖 / 未 bump / 未打 tag / 未发版**。
+- 2026-11-07 建任务当轮**未改任何代码 / 未装依赖 / 未 bump / 未打 tag / 未发版**。
+- 2026-11-07 概念澄清（只读，多轮）：用户连续质疑「`sleep` 为何在 runtime」「runtime 与 core 有何区别」「runtime 的状态是否需本地存储」，重查 `06-0806...md:112-113`、本文件 `:28` 与 `dsh-plugin-core` 的 `modal-host.ts:19-54,106-164` / `loading-host.ts:3-23` / `thenable.ts:1-14`，确认 runtime = 零平台依赖的共享内存状态层（为 core ↔ ui 消环），不持久化、不渲染、不收定时器。分层判据定为「渲不渲染」「记不记事且要不要共享」「能否碰 Taro / wx」。初版 To Do 1 的 Promise 工具口径就此作废。
+- 2026-11-07 落码与复验（用户「你先做」授权）：五模块 + 出口、9 组自检、test 脚本扩 glob。`koc-codelint` 首轮 L1 biome 报 `tests/runtime.test.mjs:15-16` 的 `noThenProperty`（对象字面量定义 `then`），未加豁免、未删断言，改用 `Object.defineProperty` 运行时挂载后 L0~L5 全过；CI 顺序全 exit=0、dist 38→53、ESM+CJS 双端加载通过。
+- 2026-11-07 分包口径（用户确认「微信小程序分包肯定有」）：分包存在是既成事实，但「有分包 ⇒ 同一模块被打成两份实例」仍属**未验证假设**；`Symbol.for` + `globalThis` 只跨同一 JS 运行时内的多份模块，`singleton` 定性为防御性保险而非刚需。宿主 demo 阶段可用 `grep -ro "function createNotifyCenter" <产物目录> | wc -l` 判定，不用改库代码。
 
 ## Conclusion
 
-新任务「落码 runtime 层基础能力」已建并认领到本机名下，状态 `doing`；前因（design / utils 结案、评审顺序第三层）、现状、边界约束、待拍板项与验证欠账均已写明。**留的坑**：`runtime` 能力范围、模块划分与函数签名待用户拍板；`package.json:59` 的 test 只跑 utils 自检，新增测试须扩脚本且不能用裸目录；双端实机验证、`0.0.4`+ 发版、`core` / `ui` 落码仍是后续欠账；`docs/README.md` 按用户要求不建。
+`runtime` 层已按定稿契约落码并交付待验收，状态留 `doing`。产出：`src/runtime/` 五模块 + `index.ts` 具名导出、`tests/runtime.test.mjs` 9 组断言、`package.json:59` 的 test 入口扩成文件 glob；`dist/runtime/` 18 个产物、`dist` 共 53 个；CI 顺序全 exit=0、`pnpm test` 16/16、ESM+CJS 双端加载通过、`koc-codelint` 8 文件 L0~L5 全过、无缓存残留。契约：零平台依赖、纯内存共享状态、失败不抛返回兜底、不渲染不持久化、栈不内置 resolve。**留的坑**：① 8 个代码文件尚未提交 / 未 push；② 宿主 demo 双端实机验证（`--mptk-*` 的 `page` / px、i18n 由宿主加载路径、跨副本是否真出现两份实例）未做，不能宣称能力可用；③ `core` / `ui` 落码与 `0.0.4`+ 发版仍是后续欠账；④ `docs/README.md` 按用户要求不建。2026-11-07 用户「我都搞明白了，继续推进吧」后同步正文前五节，正文不作为验收结论，等用户明确指令再定向下一步。
 
 ## Execution Log
 
@@ -61,3 +65,4 @@
 - 2026-11-07 09:04:17 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 建并认领后写好前五节：Background 记触发原话、design/utils 两层结案与 93d2d83/d2245d7、评审顺序为何第三层是 runtime、src/runtime/index.ts:1-2 骨架与 dist 38 产物现状、package.json:59 test 只跑 utils 自检需扩、pnpm/参考不搬运/上万个项目用/零依赖/双端约束；To Do 6 条含能力清单草案、落码、待拍板项、自检（Node 24 裸目录坑）、CI 复验、验证欠账；Next 指向只读核对后出草案；未改任何代码/未装依赖/未发版
 - 2026-11-07 09:48:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · runtime 概念澄清后重定契约：To Do 1 的 sleep/withTimeout/retry/deferred 口径作废，正确清单为 thenable/singleton/overlay-stack/notify/loading-slot 五模块；runtime 零平台依赖、纯内存共享状态、不碰 wx.setStorage、不收定时器与事件总线；契约草案已出，按 To Do 3 拍板前不改代码
 - 2026-11-07 09:53:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · runtime 层落码完成：src/runtime/ 五模块 thenable/singleton/overlay-stack/notify/loading-slot + index.ts 具名导出；tests/runtime.test.mjs 9 组断言、package.json:59 test 扩成 tests/*.test.mjs；dist 38→53 产物（runtime 18）、CI 顺序 install/build/test/guard/pack 全 exit=0、pnpm test 16/16、ESM+CJS 双端加载通过、koc-codelint 8 文件 L0~L5 全过（biome noThenProperty 改为运行时挂载 then 修复）；未 bump/未 tag/未发版/未提交
+- 2026-11-07 10:18:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 同步正文前五节至交付待验收：修正 To Do 1 的 sleep/withTimeout/retry/deferred 错误口径为五模块定稿清单、划掉 To Do 1~5、补过程证据（概念澄清、biome noThenProperty 修复、分包口径）与 Conclusion；Next 列为 close / 提交 / 建 core 任务三条待用户定向；本轮只改 worklog 正文，未改代码、未提交、未建任务
