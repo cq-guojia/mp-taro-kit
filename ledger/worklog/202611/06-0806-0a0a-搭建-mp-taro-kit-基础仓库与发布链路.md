@@ -1,8 +1,9 @@
 # 20261106-0806-0a0a-搭建-mp-taro-kit-基础仓库与发布链路: 搭建 mp-taro-kit 基础仓库与发布链路
 
 - **Tags**: mp-taro-kit, Taro, 组件库, npm, GitHub
-- **Status**: doing · 2026-11-07 02:13:41 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: done · 2026-11-07 02:20:26 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-06 08:06:05 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Sealed**: 2026-11-07 02:20:26 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
      The `- **Tags**: …` line is inserted at the top by new --tags; omitted when there are no tags
@@ -164,3 +165,4 @@
 - 2026-11-06 17:19:30 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 2026-11-07 用户拍板任务完成判据：基础构建好 + 新发版流程跑通 + 不落码即算完成，能力清单与所有落码归入下一个任务；已把 To Do 5 移出、作废「先定 runtime 契约落第一批源码」计划，Next 改为发版链路步骤与结案条件；Process/Conclusion 同步现状（270609d 已推送、version 0.0.2、registry latest 0.0.1、未发版）；收口前待拍板 ./ui/* 悬空出口
 - 2026-11-06 17:25:03 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 2026-11-07 悬空出口拍板选 A：保留 ./ui/* 与 ./ui/*/style、什么都不改，代码侧冻结；理由与后果已写进 To Do 4/Next/Process/Conclusion；剩余仅用户侧 Save changes + Reject staged 0.0.2，待用户说「发版」后 bump + 打新 tag（v0.0.2 已占用）→ CI → 核验 → 用户说「结束掉」才 close
 - 2026-11-07 02:13:41 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 2026-11-07 发版跑通：bump 0.0.3 + commit 24bb863 + annotated tag v0.0.3 推送触发 publish.yml；registry latest=0.0.3、attestations=true、已发布 tarball 22 文件含 20 个 dist；三项完成判据达成；To Do 3/Next/Process/Conclusion 已同步；等用户说「结束掉」才 close
+- 2026-11-07 02:20:26 · close · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · sealed: 基础构建 + 新发版流程跑通：0.0.3 经 v0.0.3 tag 触发 publish.yml 直接发布上 registry，OIDC attestations 生效，tarball 含 20 个 dist 产物；按用户判据不落码，能力清单与实现归入下一个任务；用户于 2026-11-07 确认 0.0.3 上线并指令结案
