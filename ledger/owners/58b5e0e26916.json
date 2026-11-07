@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261107-0400-4e9f-落码-utils-层纯函数": {"category": "开发", "created": "2026-11-07 04:00:42", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 04:00:42", "status": "doing", "tags": ["utils", "纯函数", "抽象契约", "能力清单"], "title": "落码 utils 层纯函数", "updated": "2026-11-07 04:01:57", "worklog": "worklog/202611/07-0400-4e9f-落码-utils-层纯函数.md"}
+    "20261107-0400-4e9f-落码-utils-层纯函数": {"category": "开发", "created": "2026-11-07 04:00:42", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 04:00:42", "status": "doing", "tags": ["utils", "纯函数", "抽象契约", "能力清单"], "title": "落码 utils 层纯函数", "updated": "2026-11-07 04:43:41", "worklog": "worklog/202611/07-0400-4e9f-落码-utils-层纯函数.md"}
   },
   "version": "20261022000000"
 }
