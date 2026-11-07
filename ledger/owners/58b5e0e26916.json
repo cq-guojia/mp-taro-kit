@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261107-0902-e1ec-落码-runtime-层基础能力": {"category": "开发", "created": "2026-11-07 09:02:51", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 09:02:51", "status": "doing", "tags": ["runtime", "基础能力", "抽象契约", "能力清单"], "title": "落码 runtime 层基础能力", "updated": "2026-11-07 09:04:17", "worklog": "worklog/202611/07-0902-e1ec-落码-runtime-层基础能力.md"}
+    "20261107-0902-e1ec-落码-runtime-层基础能力": {"category": "开发", "created": "2026-11-07 09:02:51", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 09:02:51", "status": "doing", "tags": ["runtime", "基础能力", "抽象契约", "能力清单"], "title": "落码 runtime 层基础能力", "updated": "2026-11-07 09:48:02", "worklog": "worklog/202611/07-0902-e1ec-落码-runtime-层基础能力.md"}
   },
   "version": "20261022000000"
 }
