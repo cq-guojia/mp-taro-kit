@@ -1,0 +1,28 @@
+{
+  "name": "mp-taro-kit-demo",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev:weapp": "taro build --type weapp --watch",
+    "build:weapp": "taro build --type weapp"
+  },
+  "dependencies": {
+    "@tarojs/components": "^4.3.2",
+    "@tarojs/react": "^4.3.2",
+    "@tarojs/runtime": "^4.3.2",
+    "@tarojs/shared": "^4.3.2",
+    "@tarojs/taro": "^4.3.2",
+    "mp-taro-kit": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tarojs/cli": "^4.3.2",
+    "@tarojs/plugin-framework-react": "^4.3.2",
+    "@tarojs/plugin-platform-weapp": "^4.3.2",
+    "@tarojs/vite-runner": "^4.3.2",
+    "@types/react": "^19.3.0",
+    "babel-preset-taro": "^4.3.2",
+    "typescript": "^5.9.3"
+  }
+}

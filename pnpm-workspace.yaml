@@ -1,4 +1,8 @@
 # pnpm 12 的专用设置放在 pnpm-workspace.yaml（.npmrc 的 auto-install-peers 已不生效）
+# demo/ 是仓库内的 Taro 小程序宿主，由它提供 React / Taro 运行时 peer。
+packages:
+  - 'demo'
+
 # 运行时 peerDependencies（React / Taro）仍由宿主项目提供，库不打包它们；
 # devDependencies 里只放编译期类型包（@types/react / @tarojs/components），供 TS 与 JSX 类型检查，
 # 不进发布产物（package.json 的 files 只含 dist + README.md）。
@@ -8,3 +12,10 @@ autoInstallPeers: false
 # pnpm 12 的写法是 allowBuilds（老的 ignoredBuiltDependencies 不会让 install/add 静默）
 allowBuilds:
   '@parcel/watcher': false
+  # demo 的 Taro 工具链需要原生绑定与打包器的构建脚本；pnpm 12 默认全部忽略，须显式放行。
+  '@swc/core': true
+  '@tarojs/binding': true
+  '@tarojs/cli': true
+  'core-js': true
+  'core-js-pure': true
+  'esbuild': true
