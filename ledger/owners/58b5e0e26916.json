@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261107-1545-30de-建-demo-小程序的数据结构与目录": {"category": "开发", "created": "2026-11-07 15:45:13", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 15:45:13", "status": "doing", "tags": ["demo", "目录结构", "页面组织", "双端验证", "调研"], "title": "建 demo 小程序的数据结构与目录", "updated": "2026-11-07 15:45:13", "worklog": "worklog/202611/07-1545-30de-建-demo-小程序的数据结构与目录.md"}
+    "20261107-1545-30de-建-demo-小程序的数据结构与目录": {"category": "开发", "created": "2026-11-07 15:45:13", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 15:45:13", "status": "doing", "tags": ["demo", "目录结构", "页面组织", "双端验证", "调研"], "title": "建 demo 小程序的数据结构与目录", "updated": "2026-11-07 15:47:54", "worklog": "worklog/202611/07-1545-30de-建-demo-小程序的数据结构与目录.md"}
   },
   "version": "20261022000000"
 }
