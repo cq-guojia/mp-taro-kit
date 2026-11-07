@@ -1,8 +1,9 @@
 # 20261107-0305-6f80-定稿-design-层-token-契约: 定稿 design 层 token 契约
 
 - **Tags**: 设计, token, 样式契约, 能力清单
-- **Status**: doing · 2026-11-07 04:00:22 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: done · 2026-11-07 04:00:26 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-07 03:05:44 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Sealed**: 2026-11-07 04:00:26 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
      The `- **Tags**: …` line is inserted at the top by new --tags; omitted when there are no tags
@@ -62,3 +63,4 @@
 - 2026-11-07 03:08:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 建任务并认领：new --tags 设计,token,样式契约,能力清单 --category 设计（首次标签超 4 字被拒）；claim 后 doing/mine=true；前五节写明前因后果（上一任务 0.0.3 结案、评审顺序 design 先、--mp-* 隐形契约、0.0.3 为空壳包）与顺序分歧；未改任何代码、未装依赖、未发版
 - 2026-11-07 03:47:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按拍板落码并交付待验收：src/design/tokens.css:5-60 改 page + --mptk-* 全条目（对齐 dsh-plugin-core 通用层）、README.md:6 同步 var(--mptk-*) 与 styles/tokens 口径；CI 链 install/build/test/guard/pack 全 exit=0、dist 20 产物、源与两份 tokens.css 一致、koc-codelint 2 文件 L0~L5 全过；未提交/未 bump/未 tag；To Do/Next/Process/Conclusion 已同步
 - 2026-11-07 04:00:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户验收通过并指令结案：To Do 5 划掉、Next 改为结案后由 utils 新任务承接、Conclusion 补 93d2d83 提交推送与未发版口径；代码自复验后未再改动；准备 close
+- 2026-11-07 04:00:26 · close · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · sealed: design 层 token 契约定稿并落码：--mptk-* 前缀按 dsh-plugin-core 通用层对齐、page 挂载、八组通用 token 唯一真源，README.md 同步换肤口径；CI 链 install/build/test/guard/pack 全 exit=0、dist 20 产物、koc-codelint L0~L5 全过；改动随 93d2d83 提交推送。双端实机验证与 0.0.4+ 发版移交后续任务。
