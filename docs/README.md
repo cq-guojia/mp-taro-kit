@@ -4,7 +4,12 @@
 
 ## 目录
 
-- [架构](architecture/) — 系统结构、依赖方向、关键链路与不可破约束，另含演示站页与能力域映射。
-- [对外契约](api/) — 出口清单、运行时约定与 peer 版本下限。
-- [开发](development/) — 本地构建、自检顺序与工程约定。
-- [依赖](dependencies/) — 编译期工具链与外部依赖的已核实行为、限制。
+- architecture/
+  - [演示站页与能力域映射](architecture/demo-mapping.md) — 演示站页分组、Taro 入口约定与库侧路径三层对应
+  - [架构总览](architecture/overview.md) — 五个能力域的分层、依赖方向、关键链路与不可破约束
+- api/
+  - [对外契约](api/exports.md) — exports 子路径形态、挂载与注入约定、peer 版本下限
+- development/
+  - [本地开发与验证](development/build-and-test.md) — 构建与自检顺序、工程约定，以及实机验证不在这套自检内的边界
+- dependencies/
+  - [编译期工具链](dependencies/compiler-toolchain.md) — TypeScript / Sass / pnpm 的已核实行为、版本真源与已知限制

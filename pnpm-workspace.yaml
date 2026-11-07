@@ -8,6 +8,11 @@ packages:
 # 不进发布产物（package.json 的 files 只含 dist + README.md）。
 autoInstallPeers: false
 
+# Taro 把主库 dist 里的 @tarojs/components 重写成平台插件的裸包名；
+# dist 位于工作区根、不在 demo 的 node_modules 树下，需把该插件公开提升到根才能解析。
+publicHoistPattern:
+  - '@tarojs/plugin-platform-weapp'
+
 # @parcel/watcher 是 sass 的可选依赖，只服务 --watch；本库构建只用 sass.compile()，不需要它的原生构建脚本。
 # pnpm 12 的写法是 allowBuilds（老的 ignoredBuiltDependencies 不会让 install/add 静默）
 allowBuilds:

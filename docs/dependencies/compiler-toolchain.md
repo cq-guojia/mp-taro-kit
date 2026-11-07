@@ -18,7 +18,7 @@ TypeScript 与 Sass 负责把 `src/` 编成 `dist/`；`@types/react` 与 `@taroj
 
 - TypeScript 7.x 是 native 版编译器，缺少 `createProgram` 等编程 API；`build.mjs` 依赖这些 API，版本必须留在 5.x。
 - `@tarojs/components` 的类型 peer 期望同版本 `@tarojs/taro`；在 `autoInstallPeers: false` 下 `pnpm peers check` 会留一条缺 peer 告警，不影响编译、CI 与产物，补装需在 `devDependencies` 里显式加。
-- React 19 类型下 `import("react").JSX.Element` 能否解析尚无实机证据，属未验证假设。
+- React 19 类型下组件 `.d.ts` 的 `import("react").JSX.Element` 已由 demo 的 `tsc --noEmit` 零诊断确认可解析；这仅是类型层结论，Skyline / WebView 实机渲染仍无证据，不能据此宣称双端可用。
 - `@parcel/watcher` 是 Sass 的可选依赖，只服务 `--watch`；本库构建只用 `sass.compile()`，不需要它的原生构建产物。
 - `--mptk-*` 的 `page` 挂载与 px 单位在 Skyline / WebView 双端的表现无实机证据，属未验证假设，须在 `demo/` 宿主里确认。
 - 上游 Taro 类型包对 React 版本的 peer 限制可能比本库 `peerDependencies` 更窄，接入高版本 React 的宿主需自行核对类型层。
@@ -27,3 +27,4 @@ TypeScript 与 Sass 负责把 `src/` 编成 `dist/`；`@types/react` 与 `@taroj
 
 - 2026-11-07 22:38:06：新建
 - 2026-11-07 22:40:05：填实编译期工具链的已核实行为与限制
+- 2026-11-08 01:32:55：React 19 类型解析由未验证假设改为 tsc --noEmit 零诊断的结论，保留实机验证边界

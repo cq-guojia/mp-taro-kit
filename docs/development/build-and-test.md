@@ -20,9 +20,10 @@ pnpm run build
 pnpm test
 pnpm run guard
 pnpm pack --dry-run
+pnpm --filter mp-taro-kit-demo build:weapp
 ```
 
-`pnpm run build` 清空并重建 `dist/`；`pnpm test` 先跑 `scripts/check.mjs` 的包清单自检，再由 Node test runner 跑 `tests/*.test.mjs`；`pnpm run guard` 走 `--release`，追加校验 `dist/` 非空与根入口三件套齐全。
+`pnpm run build` 清空并重建 `dist/`；`pnpm test` 先跑 `scripts/check.mjs` 的包清单自检，再由 Node test runner 跑 `tests/*.test.mjs`；`pnpm run guard` 走 `--release`，追加校验 `dist/` 非空与根入口三件套齐全。演示站构建消费同一个 `dist/`，必须排在 `build` 之后，产物落在 `demo/dist/`。
 
 ## 测试
 
@@ -50,3 +51,4 @@ pnpm pack --dry-run
 
 - 2026-11-07 22:38:05：新建
 - 2026-11-07 22:40:05：填实构建命令、自检覆盖与工程约定
+- 2026-11-08 01:32:55：构建顺序补演示站 build:weapp 及其依赖 dist 的说明
