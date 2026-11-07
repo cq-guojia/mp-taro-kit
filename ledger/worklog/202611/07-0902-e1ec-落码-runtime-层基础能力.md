@@ -1,7 +1,7 @@
 # 20261107-0902-e1ec-落码-runtime-层基础能力: 落码 runtime 层基础能力
 
 - **Tags**: runtime, 基础能力, 抽象契约, 能力清单
-- **Status**: doing · 2026-11-07 10:18:02 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-07 10:25:06 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-07 09:02:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -37,12 +37,12 @@
 3. ~~**等用户给的东西**~~ 用户「你先做」= 授权按草案建议口径落码，三项待拍板按建议实现：栈交还 payload 由 ui 自己 resolve、notify 默认 `limit = 3`、单例键前缀 `mptk/` 且不暴露 reset。
 4. ~~**补真验证**~~ 已落 `tests/runtime.test.mjs` 9 组断言；`package.json:59` 的 `test` 扩成 `node --test tests/*.test.mjs`（文件 glob，裸目录坑已避开）。
 5. ~~**落码后按 CI 顺序复验**~~ 已全过：`pnpm install --frozen-lockfile` → build（dist 38→53）→ test（16/16）→ guard → `pnpm pack --dry-run` 全 exit=0；ESM `dist/runtime/index.js` 与 CJS `dist/runtime/index.cjs` 双端加载通过；`koc-codelint` 8 文件 L0~L5 全过；无 `__pycache__` / `*.pyc`；`dist/runtime/` 18 个产物与 `./runtime` 出口目标一致。
-6. **待用户验收**：交付待验收，状态留 `doing`；验收看 `src/runtime/` 六个文件与 `tests/runtime.test.mjs`。契约已逐文件向用户讲完（2026-11-07）。
-7. **不属本任务但须记的欠账**：`core` / `ui` 落码；宿主 demo 双端实机验证（`--mptk-*` 的 `page` / px、i18n 由宿主加载路径、跨副本是否真出现两份模块实例）；bump `0.0.4`+ 发版；本轮 8 个代码文件尚未提交 / 未 push；只过 build / test / 类型检查不算验证。
+6. ~~**待用户验收**~~ 已验收通过（2026-11-07 用户「这个做完了是吧，那就提交 close 掉，建下一个任务」= 验收通过并指令结案）。提交前按 CI 顺序复验全过，8 个代码文件已于 `ebe918c` 提交并 push 到 main。
+7. **不属本任务但须记的欠账**：`core` / `ui` 落码；宿主 demo 双端实机验证（`--mptk-*` 的 `page` / px、i18n 由宿主加载路径、跨副本是否真出现两份模块实例）；bump `0.0.4`+ 发版；只过 build / test / 类型检查不算验证。
 
 ## Next
 
-交付待验收，任务留 `doing`。下一具体动作由用户一句话定向：① 说「close 掉」→ 补完正文并记 log 后跑 `close --summary`；② 说「提交」→ build 复验后 `commit` + `push`（当前 HEAD `60f8d45` 只含台账自动签入，8 个代码文件仍在工作区）；③ 说「建下个任务」→ 按评审顺序 `runtime → { core, ui }` 开 `core` 层。未获明确指令前不改代码、不提交、不建任务。
+本任务已结案，正文封卷只读。下一具体动作由按评审顺序 `runtime → { core, ui }` 新建的 `core` 层任务承接：先只读核对 `src/core/index.ts` 骨架与 `package.json:38-42` 的 `./core` 出口，再定 `core` 层能力清单与抽象契约草案。
 
 ## Process
 
@@ -55,7 +55,7 @@
 
 ## Conclusion
 
-`runtime` 层已按定稿契约落码并交付待验收，状态留 `doing`。产出：`src/runtime/` 五模块 + `index.ts` 具名导出、`tests/runtime.test.mjs` 9 组断言、`package.json:59` 的 test 入口扩成文件 glob；`dist/runtime/` 18 个产物、`dist` 共 53 个；CI 顺序全 exit=0、`pnpm test` 16/16、ESM+CJS 双端加载通过、`koc-codelint` 8 文件 L0~L5 全过、无缓存残留。契约：零平台依赖、纯内存共享状态、失败不抛返回兜底、不渲染不持久化、栈不内置 resolve。**留的坑**：① 8 个代码文件尚未提交 / 未 push；② 宿主 demo 双端实机验证（`--mptk-*` 的 `page` / px、i18n 由宿主加载路径、跨副本是否真出现两份实例）未做，不能宣称能力可用；③ `core` / `ui` 落码与 `0.0.4`+ 发版仍是后续欠账；④ `docs/README.md` 按用户要求不建。2026-11-07 用户「我都搞明白了，继续推进吧」后同步正文前五节，正文不作为验收结论，等用户明确指令再定向下一步。
+`runtime` 层已按定稿契约落码、验收通过并结案。产出：`src/runtime/` 五模块 + `index.ts` 具名导出、`tests/runtime.test.mjs` 9 组断言、`package.json:59` 的 test 入口扩成文件 glob；`dist/runtime/` 18 个产物、`dist` 共 53 个；CI 顺序全 exit=0、`pnpm test` 16/16、ESM+CJS 双端加载通过、`koc-codelint` 8 文件 L0~L5 全过、无缓存残留。契约：零平台依赖、纯内存共享状态、失败不抛返回兜底、不渲染不持久化、栈不内置 resolve。代码提交 `ebe918c`（8 文件、375 行增）已 push 到 main，未 bump / 未 tag / 未发版，普通 push 不触发 `publish.yml`（只认 `tags: v*`）。**留的坑**：① 宿主 demo 双端实机验证（`--mptk-*` 的 `page` / px、i18n 由宿主加载路径、跨副本是否真出现两份实例）未做，不能宣称能力可用；② `core` / `ui` 落码与 `0.0.4`+ 发版仍是后续欠账；③ `docs/README.md` 按用户要求不建。2026-11-07 用户「这个做完了是吧，那就提交 close 掉，建下一个任务」= 验收通过并指令结案，正文封卷只读。
 
 ## Execution Log
 
@@ -66,3 +66,4 @@
 - 2026-11-07 09:48:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · runtime 概念澄清后重定契约：To Do 1 的 sleep/withTimeout/retry/deferred 口径作废，正确清单为 thenable/singleton/overlay-stack/notify/loading-slot 五模块；runtime 零平台依赖、纯内存共享状态、不碰 wx.setStorage、不收定时器与事件总线；契约草案已出，按 To Do 3 拍板前不改代码
 - 2026-11-07 09:53:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · runtime 层落码完成：src/runtime/ 五模块 thenable/singleton/overlay-stack/notify/loading-slot + index.ts 具名导出；tests/runtime.test.mjs 9 组断言、package.json:59 test 扩成 tests/*.test.mjs；dist 38→53 产物（runtime 18）、CI 顺序 install/build/test/guard/pack 全 exit=0、pnpm test 16/16、ESM+CJS 双端加载通过、koc-codelint 8 文件 L0~L5 全过（biome noThenProperty 改为运行时挂载 then 修复）；未 bump/未 tag/未发版/未提交
 - 2026-11-07 10:18:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 同步正文前五节至交付待验收：修正 To Do 1 的 sleep/withTimeout/retry/deferred 错误口径为五模块定稿清单、划掉 To Do 1~5、补过程证据（概念澄清、biome noThenProperty 修复、分包口径）与 Conclusion；Next 列为 close / 提交 / 建 core 任务三条待用户定向；本轮只改 worklog 正文，未改代码、未提交、未建任务
+- 2026-11-07 10:25:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 验收通过并同步正文：用户确认做完后，提交前 CI 顺序复验全过、koc-codelint 8 文件 L0~L5 全过；8 个代码文件由 ebe918c 提交并 push main；To Do 6 待验收划掉、Conclusion 补结案结论与提交号、Next 改为 core 层新任务承接
