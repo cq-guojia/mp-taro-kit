@@ -1,7 +1,7 @@
 # 20261107-0902-e1ec-落码-runtime-层基础能力: 落码 runtime 层基础能力
 
 - **Tags**: runtime, 基础能力, 抽象契约, 能力清单
-- **Status**: doing · 2026-11-07 09:48:02 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-07 09:53:06 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-07 09:02:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -60,3 +60,4 @@
 - 2026-11-07 09:02:51 · new · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · created and claimed
 - 2026-11-07 09:04:17 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 建并认领后写好前五节：Background 记触发原话、design/utils 两层结案与 93d2d83/d2245d7、评审顺序为何第三层是 runtime、src/runtime/index.ts:1-2 骨架与 dist 38 产物现状、package.json:59 test 只跑 utils 自检需扩、pnpm/参考不搬运/上万个项目用/零依赖/双端约束；To Do 6 条含能力清单草案、落码、待拍板项、自检（Node 24 裸目录坑）、CI 复验、验证欠账；Next 指向只读核对后出草案；未改任何代码/未装依赖/未发版
 - 2026-11-07 09:48:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · runtime 概念澄清后重定契约：To Do 1 的 sleep/withTimeout/retry/deferred 口径作废，正确清单为 thenable/singleton/overlay-stack/notify/loading-slot 五模块；runtime 零平台依赖、纯内存共享状态、不碰 wx.setStorage、不收定时器与事件总线；契约草案已出，按 To Do 3 拍板前不改代码
+- 2026-11-07 09:53:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · runtime 层落码完成：src/runtime/ 五模块 thenable/singleton/overlay-stack/notify/loading-slot + index.ts 具名导出；tests/runtime.test.mjs 9 组断言、package.json:59 test 扩成 tests/*.test.mjs；dist 38→53 产物（runtime 18）、CI 顺序 install/build/test/guard/pack 全 exit=0、pnpm test 16/16、ESM+CJS 双端加载通过、koc-codelint 8 文件 L0~L5 全过（biome noThenProperty 改为运行时挂载 then 修复）；未 bump/未 tag/未发版/未提交
