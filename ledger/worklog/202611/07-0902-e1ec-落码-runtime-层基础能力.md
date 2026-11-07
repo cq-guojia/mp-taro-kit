@@ -1,8 +1,9 @@
 # 20261107-0902-e1ec-落码-runtime-层基础能力: 落码 runtime 层基础能力
 
-- **Tags**: runtime, 基础能力, 抽象契约, 能力清单
-- **Status**: doing · 2026-11-07 10:25:06 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Tags**: runtime, 共享状态, 基础能力, 自检
+- **Status**: done · 2026-11-07 10:25:12 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-07 09:02:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Sealed**: 2026-11-07 10:25:12 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
      The `- **Tags**: …` line is inserted at the top by new --tags; omitted when there are no tags
@@ -67,3 +68,4 @@
 - 2026-11-07 09:53:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · runtime 层落码完成：src/runtime/ 五模块 thenable/singleton/overlay-stack/notify/loading-slot + index.ts 具名导出；tests/runtime.test.mjs 9 组断言、package.json:59 test 扩成 tests/*.test.mjs；dist 38→53 产物（runtime 18）、CI 顺序 install/build/test/guard/pack 全 exit=0、pnpm test 16/16、ESM+CJS 双端加载通过、koc-codelint 8 文件 L0~L5 全过（biome noThenProperty 改为运行时挂载 then 修复）；未 bump/未 tag/未发版/未提交
 - 2026-11-07 10:18:02 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 同步正文前五节至交付待验收：修正 To Do 1 的 sleep/withTimeout/retry/deferred 错误口径为五模块定稿清单、划掉 To Do 1~5、补过程证据（概念澄清、biome noThenProperty 修复、分包口径）与 Conclusion；Next 列为 close / 提交 / 建 core 任务三条待用户定向；本轮只改 worklog 正文，未改代码、未提交、未建任务
 - 2026-11-07 10:25:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 验收通过并同步正文：用户确认做完后，提交前 CI 顺序复验全过、koc-codelint 8 文件 L0~L5 全过；8 个代码文件由 ebe918c 提交并 push main；To Do 6 待验收划掉、Conclusion 补结案结论与提交号、Next 改为 core 层新任务承接
+- 2026-11-07 10:25:12 · close · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · sealed: runtime 层落码并验收通过：五模块加单点出口、9 组自检；CI 顺序全过、pnpm test 16/16、dist 38 到 53 产物、ESM+CJS 双端加载通过、koc-codelint 8 文件 L0~L5 全过；代码提交 ebe918c 已 push main；未 bump 未 tag 未发版
