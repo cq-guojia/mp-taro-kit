@@ -1,6 +1,6 @@
 {
   "name": "mp-taro-kit",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "基于 Taro + React 的小程序基础库（kit）：UI 容器能力与通用操作功能封装（占位发布，API 未定）",
   "license": "MIT",
   "type": "module",

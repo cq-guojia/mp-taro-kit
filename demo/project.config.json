@@ -2,7 +2,7 @@
   "miniprogramRoot": "./dist",
   "projectname": "mp-taro-kit-demo",
   "description": "mp-taro-kit 能力演示站",
-  "appid": "touristappid",
+  "appid": "wx3f4aef9e0304a9be",
   "setting": {
     "urlCheck": false,
     "es6": false,
