@@ -1,6 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
+    "20261107-1651-7250-搭-demo-小程序演示站": {"category": "开发", "created": "2026-11-07 16:51:05", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 16:51:05", "status": "doing", "tags": ["demo", "演示站", "最新依赖", "双端验证", "页面"], "title": "搭 demo 小程序演示站", "updated": "2026-11-07 16:51:05", "worklog": "worklog/202611/07-1651-7250-搭-demo-小程序演示站.md"}
   },
   "version": "20261022000000"
 }
