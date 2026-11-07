@@ -1,7 +1,7 @@
 # 20261107-0305-6f80-定稿-design-层-token-契约: 定稿 design 层 token 契约
 
 - **Tags**: 设计, token, 样式契约, 能力清单
-- **Status**: doing · 2026-11-07 03:47:57 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-07 04:00:22 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-07 03:05:44 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -32,12 +32,12 @@
 2. ~~**把 `src/design/tokens.css` 从占位定稿**~~ 已落码（`src/design/tokens.css:5-60`，`page` + `--mptk-*` 全条目）。
 3. ~~**等用户给的东西**~~ 用户已拍板前缀与「按 DSH 对齐」原则；其余（数值、单位、挂载选择器、兜底语义、design 层范围）由助手按该原则直接判定，不再挂起。
 4. ~~**落码后按 CI 顺序复验**~~ 已全过，实测输出见 Process。
-5. **待用户验收**：验收看 `src/design/tokens.css` 的前缀 / `page` 挂载 / 条目，`README.md:6` 的口径，以及 Process 的复验结果；验收通过才进入下一层 `utils`。
-6. **不属本任务但须记的验证欠账**：`--mptk-*` CSS 变量在 Skyline / WebView 双端的可用性（`page` 挂载与 px 单位）要宿主 demo 实机验证；只过 build / test / 类型检查不算验证（验证状态严格区分「双端实机验证过 / 已源码级核实 / 未验证假设」）。
+5. ~~**待用户验收**~~ 用户 2026-11-07 原话「行，这个任务做完了就把它 close 掉吧」= 验收通过并指令结案。
+6. **不属本任务但须记的验证欠账**（移交宿主 demo 阶段）：`--mptk-*` CSS 变量在 Skyline / WebView 双端的可用性（`page` 挂载与 px 单位）要宿主 demo 实机验证；只过 build / test / 类型检查不算验证（验证状态严格区分「双端实机验证过 / 已源码级核实 / 未验证假设」）。
 
 ## Next
 
-已交付待验收，任务留 `doing`。验收看三处：`src/design/tokens.css:5-60` 的 `--mptk-*` 前缀、`page` 挂载与八组通用条目是否合拍；`README.md:6` 的 `var(--mptk-*)` + `mp-taro-kit/styles/tokens` 口径；Process 末两条的 CI 复验与 `koc-codelint` 实测输出。用户验收后才按评审顺序进入下一层 `utils`（`design → utils → runtime → { core, ui } → 宿主 demo 双端验证`）。
+本任务已结案，正文封卷只读。下一层 `utils` 由新任务承接（评审顺序 `design → utils → runtime → { core, ui } → 宿主 demo 双端验证`）；双端实机验证欠账与 `0.0.4`+ 发版一并留在后续任务，不在本任务补。
 
 ## Process
 
@@ -51,7 +51,7 @@
 
 ## Conclusion
 
-`design` 层 token 契约已定稿并落码：前缀 `--mptk-`（弃 `--mp-`），变量名 `--mptk-<类别>-<档位>`；唯一真源 `src/design/tokens.css`，组件只写 `var(--mptk-x)`、不自带兜底值，宿主 `import 'mp-taro-kit/styles/tokens'` 后覆盖同名变量换肤；通用层命名按 `dsh-plugin-core` 对齐（`fg` / `surface` / `border` / 语义色分层、`radius-*`、`space-1..4`、`font-*` + `line-*` 成对、`dur*`），数值取其通用标尺；挂载 `page`；design 层只做 token 真源，不收 `theme.ts` / `safe-area`，阴影与 `z-*` 留到 UI 层需要时再加。CI 顺序复验与 `koc-codelint` 全过，`dist/` 仍 20 个产物、`./styles/tokens` 目标与源码一致。**留的坑**：① `page` 挂载与 px 单位在 Skyline / WebView 双端的表现仍是未验证假设，须宿主 demo 实机验证，不能宣称能力可用；② `0.0.3` 仍是空壳骨架包，能力落码后须 bump `0.0.4`+ 才发得出去（本轮未提交 / 未 bump / 未 tag / 未发版）；③ Hindsight 记忆页与上一任务已 close 的 worklog 里仍是 `--mp-*` 旧口径，属历史记录不回改；④ 上一任务已 close 的 worklog 顺序口径与评审顺序不一致，同样只记录不回改。任务留 `doing` 待用户验收。
+`design` 层 token 契约已定稿并落码：前缀 `--mptk-`（弃 `--mp-`），变量名 `--mptk-<类别>-<档位>`；唯一真源 `src/design/tokens.css`，组件只写 `var(--mptk-x)`、不自带兜底值，宿主 `import 'mp-taro-kit/styles/tokens'` 后覆盖同名变量换肤；通用层命名按 `dsh-plugin-core` 对齐（`fg` / `surface` / `border` / 语义色分层、`radius-*`、`space-1..4`、`font-*` + `line-*` 成对、`dur*`），数值取其通用标尺；挂载 `page`；design 层只做 token 真源，不收 `theme.ts` / `safe-area`，阴影与 `z-*` 留到 UI 层需要时再加。CI 顺序复验与 `koc-codelint` 全过，`dist/` 仍 20 个产物、`./styles/tokens` 目标与源码一致。**留的坑**：① `page` 挂载与 px 单位在 Skyline / WebView 双端的表现仍是未验证假设，须宿主 demo 实机验证，不能宣称能力可用；② `0.0.3` 仍是空壳骨架包，能力落码后须 bump `0.0.4`+ 才发得出去；③ Hindsight 记忆页与上一任务已 close 的 worklog 里仍是 `--mp-*` 旧口径，属历史记录不回改；④ 上一任务已 close 的 worklog 顺序口径与评审顺序不一致，同样只记录不回改。代码与文档已于 `93d2d83` 提交并推送 main（普通 push 不触发发版，`.github/workflows/publish.yml:3-6` 只认 `push: tags: v*`），未 bump / 未 tag / 未发版。2026-11-07 用户确认「这个任务做完了就把它 close 掉吧」，按正常结案 `close`，不留 `doing`。
 
 ## Execution Log
 
@@ -61,3 +61,4 @@
 - 2026-11-07 03:06:41 · claim · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · claimed → doing
 - 2026-11-07 03:08:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 建任务并认领：new --tags 设计,token,样式契约,能力清单 --category 设计（首次标签超 4 字被拒）；claim 后 doing/mine=true；前五节写明前因后果（上一任务 0.0.3 结案、评审顺序 design 先、--mp-* 隐形契约、0.0.3 为空壳包）与顺序分歧；未改任何代码、未装依赖、未发版
 - 2026-11-07 03:47:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按拍板落码并交付待验收：src/design/tokens.css:5-60 改 page + --mptk-* 全条目（对齐 dsh-plugin-core 通用层）、README.md:6 同步 var(--mptk-*) 与 styles/tokens 口径；CI 链 install/build/test/guard/pack 全 exit=0、dist 20 产物、源与两份 tokens.css 一致、koc-codelint 2 文件 L0~L5 全过；未提交/未 bump/未 tag；To Do/Next/Process/Conclusion 已同步
+- 2026-11-07 04:00:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户验收通过并指令结案：To Do 5 划掉、Next 改为结案后由 utils 新任务承接、Conclusion 补 93d2d83 提交推送与未发版口径；代码自复验后未再改动；准备 close
