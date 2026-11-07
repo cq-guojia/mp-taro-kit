@@ -1,5 +1,7 @@
 # pnpm 12 的专用设置放在 pnpm-workspace.yaml（.npmrc 的 auto-install-peers 已不生效）
-# peerDependencies 由宿主项目提供，库本身不安装
+# 运行时 peerDependencies（React / Taro）仍由宿主项目提供，库不打包它们；
+# devDependencies 里只放编译期类型包（@types/react / @tarojs/components），供 TS 与 JSX 类型检查，
+# 不进发布产物（package.json 的 files 只含 dist + README.md）。
 autoInstallPeers: false
 
 # @parcel/watcher 是 sass 的可选依赖，只服务 --watch；本库构建只用 sass.compile()，不需要它的原生构建脚本。

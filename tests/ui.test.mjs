@@ -123,7 +123,7 @@ test('resetUIForTests 清空栈、通知、loading 与挂载标记', () => {
   assert.equal(ui.uiState().loading.getSnapshot().active, false)
 })
 
-test('六子域出口与样式实体齐全，A 方案产物只指向 peer 不打包平台包', () => {
+test('六子域出口与样式实体齐全，产物只指向 peer 不打包平台包', () => {
   for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout']) {
     assert.equal(exists(`../dist/ui/${domain}/index.js`), true)
     assert.equal(exists(`../dist/ui/${domain}/style/index.css`), true)
@@ -133,6 +133,12 @@ test('六子域出口与样式实体齐全，A 方案产物只指向 peer 不打
   assert.match(host, /@tarojs\/components/)
   const main = read('../dist/ui/index.js')
   assert.doesNotMatch(main, /react\/jsx-runtime|@tarojs\/components/)
+})
+
+test('B 方案：组件 .d.ts 返回宿主可解析的 JSX.Element，不再退化为 unknown', () => {
+  const decl = read('../dist/ui/infra/OverlayHost.d.ts')
+  assert.match(decl, /JSX\.Element/)
+  assert.doesNotMatch(decl, /\): unknown/)
 })
 
 test('样式只写 var(--mptk-*)，不硬编码颜色值', () => {
