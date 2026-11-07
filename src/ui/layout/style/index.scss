@@ -1,0 +1,51 @@
+.mptk-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 900;
+}
+
+.mptk-mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--mptk-fg);
+  opacity: 0.4;
+  z-index: 910;
+}
+
+.mptk-popup {
+  position: relative;
+  z-index: 920;
+}
+
+.mptk-popup__panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  background-color: var(--mptk-surface-1);
+  border-top-left-radius: var(--mptk-radius-lg);
+  border-top-right-radius: var(--mptk-radius-lg);
+  border-bottom-left-radius: var(--mptk-radius-lg);
+  border-bottom-right-radius: var(--mptk-radius-lg);
+  padding-top: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
+}
+
+.mptk-popup__panel--top {
+  top: 0;
+}
+
+.mptk-popup__panel--bottom {
+  bottom: 0;
+}
+
+.mptk-popup__panel--center {
+  top: 50%;
+}

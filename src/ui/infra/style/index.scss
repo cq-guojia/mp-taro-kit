@@ -1,0 +1,84 @@
+// 只用长写属性：Skyline 的简写属性里 var() 不生效，inset 也需展开。
+.mptk-overlay-host {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.mptk-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mptk-loading__text {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+}
+
+.mptk-toast {
+  background-color: var(--mptk-surface-2);
+  border-radius: var(--mptk-radius-md);
+  padding-top: var(--mptk-space-2);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-2);
+  padding-left: var(--mptk-space-4);
+}
+
+.mptk-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mptk-dialog__panel {
+  background-color: var(--mptk-surface-1);
+  border-radius: var(--mptk-radius-lg);
+  padding-top: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-3);
+  padding-left: var(--mptk-space-4);
+}
+
+.mptk-dialog__title {
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-xl);
+  line-height: var(--mptk-line-xl);
+}
+
+.mptk-dialog__body {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+}
+
+.mptk-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mptk-dialog__action {
+  color: var(--mptk-business);
+  font-size: var(--mptk-font-lg);
+  line-height: var(--mptk-line-lg);
+}
+
+.mptk-dialog__action--cancel {
+  color: var(--mptk-fg-3);
+}
+
+.mptk-safe-area {
+  width: 100%;
+}
+
+.mptk-safe-area--top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.mptk-safe-area--bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
