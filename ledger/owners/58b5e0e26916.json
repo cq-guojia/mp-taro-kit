@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261107-0305-6f80-定稿-design-层-token-契约": {"category": "设计", "created": "2026-11-07 03:05:44", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 03:06:41", "status": "doing", "tags": ["设计", "token", "样式契约", "能力清单"], "title": "定稿 design 层 token 契约", "updated": "2026-11-07 03:08:00", "worklog": "worklog/202611/07-0305-6f80-定稿-design-层-token-契约.md"}
+    "20261107-0305-6f80-定稿-design-层-token-契约": {"category": "设计", "created": "2026-11-07 03:05:44", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-07 03:06:41", "status": "doing", "tags": ["设计", "token", "样式契约", "能力清单"], "title": "定稿 design 层 token 契约", "updated": "2026-11-07 03:47:57", "worklog": "worklog/202611/07-0305-6f80-定稿-design-层-token-契约.md"}
   },
   "version": "20261022000000"
 }

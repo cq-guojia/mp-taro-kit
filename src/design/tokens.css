@@ -1,10 +1,60 @@
-/* mp-taro-kit 对外样式变量入口。
-   token 清单与取值待能力清单定稿后补齐；此处只保留覆盖已定五类样式值的最小占位，
-   保证 ./styles/tokens 出口有实体、宿主可 import。 */
-:root {
-  --mp-color-primary: #1677ff;
-  --mp-radius-md: 8px;
-  --mp-space-md: 12px;
-  --mp-font-size-md: 14px;
-  --mp-duration-base: 200ms;
+/* mp-taro-kit 对外样式变量唯一真源。宿主 import 'mp-taro-kit/styles/tokens' 后覆盖同名变量即可整体换肤；
+   组件侧只写 var(--mptk-*)，不自带兜底值、不在别处复制数值。命名按 dsh-plugin-core 通用层对齐。
+   边框色沿用其 4% / 10% / 12% 档，写成 rgba 字面量以避开小程序端 8 位 hex 的兼容问题。
+   待实机验证：page 挂载与 px 单位在 Skyline / WebView 双端的实际表现，须宿主 demo 确认。 */
+page {
+  /* 文字 */
+  --mptk-fg: #1f2328;
+  --mptk-fg-2: #5c6370;
+  --mptk-fg-3: #767d87;
+  --mptk-fg-4: #9aa1ab;
+
+  /* 面 */
+  --mptk-surface-1: #fff;
+  --mptk-surface-2: #fff;
+  --mptk-surface-3: #fff;
+  --mptk-surface-base: #fff;
+
+  /* 描边 */
+  --mptk-border-faint: rgba(0, 0, 0, .04);
+  --mptk-border: rgba(0, 0, 0, .10);
+  --mptk-border-strong: rgba(0, 0, 0, .12);
+
+  /* 语义色 */
+  --mptk-business: #3b5bdb;
+  --mptk-success: #22c55e;
+  --mptk-warning: #f59e0b;
+  --mptk-danger: #ec1313;
+
+  /* 圆角 */
+  --mptk-radius-xs: 4px;
+  --mptk-radius-sm: 8px;
+  --mptk-radius-md: 12px;
+  --mptk-radius-lg: 16px;
+  --mptk-radius-xl: 20px;
+  --mptk-radius-pill: 999px;
+
+  /* 间距（4px 等差） */
+  --mptk-space-1: 4px;
+  --mptk-space-2: 8px;
+  --mptk-space-3: 12px;
+  --mptk-space-4: 16px;
+
+  /* 字号 / 行高成对 */
+  --mptk-font-xs: 11px;
+  --mptk-font-sm: 12px;
+  --mptk-font-md: 13px;
+  --mptk-font-lg: 14px;
+  --mptk-font-xl: 16px;
+  --mptk-line-xs: 14px;
+  --mptk-line-sm: 18px;
+  --mptk-line-md: 20px;
+  --mptk-line-lg: 22px;
+  --mptk-line-xl: 24px;
+
+  /* 动画 */
+  --mptk-dur: .2s;
+  --mptk-dur-fast: .12s;
+  --mptk-dur-run: 500ms;
+  --mptk-ease: cubic-bezier(.4, 0, .2, 1);
 }

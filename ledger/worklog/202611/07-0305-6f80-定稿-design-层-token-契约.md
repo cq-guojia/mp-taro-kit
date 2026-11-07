@@ -1,7 +1,7 @@
 # 20261107-0305-6f80-定稿-design-层-token-契约: 定稿 design 层 token 契约
 
 - **Tags**: 设计, token, 样式契约, 能力清单
-- **Status**: doing · 2026-11-07 03:08:00 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-07 03:47:57 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-07 03:05:44 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -24,28 +24,34 @@
 
 **边界与约束**：包管理器一律 pnpm（`AGENTS.md`）；抽象策略是「参考不搬运」，`dsh-plugin-core` 优先看抽象经验、两个 KOC 项目只看「有哪些功能」，严禁搬实现；骨架屏已纳入能力清单但拍板「暂定手搓、实现延后」，不属本任务；`./ui/*` 与 `./ui/*/style` 两个悬空出口按用户拍板 A 保留、到 ui 层补实体；落 `.tsx` 前须先定 `@types/react` / Taro 类型怎么进 devDependencies（装依赖前先问用户）——本层是纯 CSS，不触发该前置。
 
+**定稿口径（2026-11-07 用户拍板，覆盖上文所有草案描述）**：用户否掉 `--mp-`（原话「容易冲突，太短了」），拍板 `--mptk-`；并要求「参考 `dsh-plugin-core` 的命名，通用用品差不多保持一致」「不是你要告诉我 DH 合不合理好吗？它合理就按照这个对齐呀」⇒ 判断其通用层命名合理后直接对齐，不再逐项请用户拍板。最终契约见 Conclusion。Background 第 3 条与 Process 早期记录里的 `--mp-*` 均为当时草案口径，**不是最终值**。
+
 ## To Do
 
-1. **定 design 层能力清单与抽象契约**（本任务的设计部分，先出草案让用户拍板）：`--mp-*` 命名规则与前缀承诺、五类 token 的完整条目、每个 token 的兜底值语义、`./styles/tokens` 出口契约、对外兼容性口径（改名须给迁移步骤 / 回滚路径 / 回归宿主清单）。还要回答「design 层除 token 真源外是否收纳主题 / 换肤分层」。
-2. **把 `src/design/tokens.css` 从占位定稿**：颜色 / 圆角 / 间距 / 字号 / 动画时长五类的具体取值需用户拍板后落盘；`tokens.css` 是唯一真源，不在别处复制数值。
-3. **等用户给的东西**：五类取值、是否增删类别、是否需要主题 / 换肤分层、`--mp-*` 命名是否按草案。拍板前不改代码。
-4. **落码后按 CI 顺序复验**：`pnpm install --frozen-lockfile` → `pnpm run build` → `pnpm test` → `pnpm run guard` → `pnpm pack --dry-run` 全 exit=0；`koc-codelint` L0~L5 全过；核 `dist/styles/tokens.css` 内容与 `./styles/tokens` 出口目标一致、`dist/` 产物数不变（20 个）。
-5. **不属本任务但须记的验证欠账**：`--mp-*` CSS 变量在 Skyline / WebView 双端的可用性要宿主 demo 实机验证；只过 build / test / 类型检查不算验证（验证状态严格区分「双端实机验证过 / 已源码级核实 / 未验证假设」）。
+1. ~~**定 design 层能力清单与抽象契约**~~ 已定稿（见 Conclusion）。
+2. ~~**把 `src/design/tokens.css` 从占位定稿**~~ 已落码（`src/design/tokens.css:5-60`，`page` + `--mptk-*` 全条目）。
+3. ~~**等用户给的东西**~~ 用户已拍板前缀与「按 DSH 对齐」原则；其余（数值、单位、挂载选择器、兜底语义、design 层范围）由助手按该原则直接判定，不再挂起。
+4. ~~**落码后按 CI 顺序复验**~~ 已全过，实测输出见 Process。
+5. **待用户验收**：验收看 `src/design/tokens.css` 的前缀 / `page` 挂载 / 条目，`README.md:6` 的口径，以及 Process 的复验结果；验收通过才进入下一层 `utils`。
+6. **不属本任务但须记的验证欠账**：`--mptk-*` CSS 变量在 Skyline / WebView 双端的可用性（`page` 挂载与 px 单位）要宿主 demo 实机验证；只过 build / test / 类型检查不算验证（验证状态严格区分「双端实机验证过 / 已源码级核实 / 未验证假设」）。
 
 ## Next
 
-只读核对三处现状后产出**草案**（放对话里、不落盘、不改文件）：`src/design/tokens.css` 当前占位内容、`scripts/build.mjs` 的 CSS 映射分支（`tokens.css` → `dist/styles/tokens.css`）、`scripts/check.mjs` 的必需出口清单；据此给出 design 层能力清单 + `--mp-*` 命名与兜底契约草案（含五类 token 条目），请用户拍板取值与范围。拍板后再落 `src/design/tokens.css`，然后按 To Do 4 的 CI 顺序复验。
+已交付待验收，任务留 `doing`。验收看三处：`src/design/tokens.css:5-60` 的 `--mptk-*` 前缀、`page` 挂载与八组通用条目是否合拍；`README.md:6` 的 `var(--mptk-*)` + `mp-taro-kit/styles/tokens` 口径；Process 末两条的 CI 复验与 `koc-codelint` 实测输出。用户验收后才按评审顺序进入下一层 `utils`（`design → utils → runtime → { core, ui } → 宿主 demo 双端验证`）。
 
 ## Process
 
 - 2026-11-07 建任务：首次 `progress new --title "定稿 design 层 token 契约" --tags "design 层,CSS 变量,token 契约,能力清单" --category "设计"` 被拒，报「标签 "design 层" 太长：含中文时最多 4 个字」；改用 `设计,token,样式契约,能力清单`（含中文标签 ≤4 字）后成功。任务号 `20261107-0305-6f80-定稿-design-层-token-契约`，落 `ledger/pool.json`，过程文档 `ledger/worklog/202611/07-0305-6f80-定稿-design-层-token-契约.md`。
 - 2026-11-07 认领：`progress claim --id 20261107-0305-6f80-定稿-design-层-token-契约` 成功，`open → doing`，归属 `ledger/owners/58b5e0e26916.json`；`list --mine --json` 复核 `mine: true`、`started 2026-11-07 11:06:41`。
 - 同步在 Hindsight 记忆侧登记 initiative 页 `kp-bbdf6dd23b60438fbf3eaaade4e37dc4`（记忆存储，非仓库文件）。
-- 本轮**未改任何代码 / 未装依赖 / 未 bump / 未打 tag / 未发版**。
+- 建任务当轮**未改任何代码 / 未装依赖 / 未 bump / 未打 tag / 未发版**。
+- 2026-11-07 前缀与命名调研（只读）：核 `/code/dsh-plugins/dsh-plugin-core/src/design/style-kit.ts:7`（`CSS_PREFIX='dshpc'`）、`:95`（`cssVar` 拼接）、`src/design/tokens.css:110`（禁止业务文件自造）；通用层 `radius-xs..xl`（:197-204）、`space-1..4`（:207-210）、`font/line-xs..xl` 成对（:219-228）、`dur/dur-fast/ease`（:260-265）、`fg` / `surface` / `border` / 语义色分层（:4-9、:13-15、:60-63、:69-73）。成熟库对照（2026-11-07 检索）：Vant Weapp 靠 Shadow DOM 用无前缀组件内变量（`vant-ui.github.io/vant-weapp/#/theme`）、Vant(Vue) `--van-*`、TDesign `--td-*`、Element Plus `--el-*`、Bootstrap `--bs-*`。结论：形状无出入；主流短前缀靠隔离或生态位兜底，本库样式进宿主全局且无 Shadow DOM ⇒ 须换长前缀。用户拍板 `--mptk-`，并要求助手直接判断 DSH 命名是否合理（不是给选项）⇒ 判定通用层合理、按它对齐。
+- 2026-11-07 落码（用户原话「你去吧，做吧，落马了」= 授权落码）：`src/design/tokens.css` 由 5 条占位改为 `page` + `--mptk-*` 全条目（文字 / 面 / 描边 / 语义色 / 圆角 / 间距 / 字号+行高 / 时长 八组）；`README.md:6` 同步前缀与「默认值集中在 `mp-taro-kit/styles/tokens`、组件不自带兜底值」口径。**未动** `package.json`、`scripts/build.mjs`、`scripts/check.mjs`、各 `index.ts`。实现取舍：边框色沿用 DSH 的 4% / 10% / 12% 档但写 `rgba()` 字面量而非 8 位 hex，避开小程序端 hex→rgba 兼容问题；不搬 DSH 的业务派生项（`--dshpc-sev-*` / `table-*` / `open-bg`）、宿主 alias 两层嵌套与 `createStyleKit` 运行时注入。
+- 2026-11-07 复验实测：`pnpm install --frozen-lockfile`（pnpm 12.3.4、lockfile 未变）→ `pnpm run build`（`[build] dist/ 产物 20 个`）→ `pnpm test` / `pnpm run guard`（`[check] 包清单自洽性通过，dist 产物 20 个`）→ `pnpm pack --dry-run`（tarball 含 `dist/design/tokens.css` 与 `dist/styles/tokens.css` 等 20 个 `dist` 产物）全 exit=0；`cmp` 核源 / `dist/design` / `dist/styles` 三份 CSS 一致；`koc-codelint` 检查 2 个改动文件，L0~L5 全过；`git status --short` 仅 `M README.md` 与 `M src/design/tokens.css`。**未提交 / 未 bump / 未打 tag / 未发版**。
 
 ## Conclusion
 
-新任务「定稿 design 层 token 契约」已建并认领到我名下，状态 `doing`，前因后果、能力清单待拍板项、验证欠账与顺序分歧均已写明。**留的坑**：token 五类取值与 design 层能力范围待用户拍板；`0.0.3` 是空壳骨架包，能力落码后须 bump `0.0.4`+ 才发得出去，且 demo 双端实机验证前不能宣称能力可用；上一任务已 close 的 worklog 里的顺序口径与评审顺序不一致，只在本任务如实记录、不回改。
+`design` 层 token 契约已定稿并落码：前缀 `--mptk-`（弃 `--mp-`），变量名 `--mptk-<类别>-<档位>`；唯一真源 `src/design/tokens.css`，组件只写 `var(--mptk-x)`、不自带兜底值，宿主 `import 'mp-taro-kit/styles/tokens'` 后覆盖同名变量换肤；通用层命名按 `dsh-plugin-core` 对齐（`fg` / `surface` / `border` / 语义色分层、`radius-*`、`space-1..4`、`font-*` + `line-*` 成对、`dur*`），数值取其通用标尺；挂载 `page`；design 层只做 token 真源，不收 `theme.ts` / `safe-area`，阴影与 `z-*` 留到 UI 层需要时再加。CI 顺序复验与 `koc-codelint` 全过，`dist/` 仍 20 个产物、`./styles/tokens` 目标与源码一致。**留的坑**：① `page` 挂载与 px 单位在 Skyline / WebView 双端的表现仍是未验证假设，须宿主 demo 实机验证，不能宣称能力可用；② `0.0.3` 仍是空壳骨架包，能力落码后须 bump `0.0.4`+ 才发得出去（本轮未提交 / 未 bump / 未 tag / 未发版）；③ Hindsight 记忆页与上一任务已 close 的 worklog 里仍是 `--mp-*` 旧口径，属历史记录不回改；④ 上一任务已 close 的 worklog 顺序口径与评审顺序不一致，同样只记录不回改。任务留 `doing` 待用户验收。
 
 ## Execution Log
 
@@ -54,3 +60,4 @@
 - 2026-11-07 03:05:44 · new · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · created
 - 2026-11-07 03:06:41 · claim · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · claimed → doing
 - 2026-11-07 03:08:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 建任务并认领：new --tags 设计,token,样式契约,能力清单 --category 设计（首次标签超 4 字被拒）；claim 后 doing/mine=true；前五节写明前因后果（上一任务 0.0.3 结案、评审顺序 design 先、--mp-* 隐形契约、0.0.3 为空壳包）与顺序分歧；未改任何代码、未装依赖、未发版
+- 2026-11-07 03:47:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按拍板落码并交付待验收：src/design/tokens.css:5-60 改 page + --mptk-* 全条目（对齐 dsh-plugin-core 通用层）、README.md:6 同步 var(--mptk-*) 与 styles/tokens 口径；CI 链 install/build/test/guard/pack 全 exit=0、dist 20 产物、源与两份 tokens.css 一致、koc-codelint 2 文件 L0~L5 全过；未提交/未 bump/未 tag；To Do/Next/Process/Conclusion 已同步
