@@ -17,7 +17,12 @@ export function OverlayHost({ className }: OverlayHostProps) {
   const notices = useNotices()
   const loading = useLoadingState()
 
+  // 渲染期就置位：宿主的页面生命周期（如 onLoad）可能早于 useEffect，
+  // 那时组件其实已挂载，只是 effect 未跑，不该被判成「未挂载」而抛错。
+  markOverlayHostMounted()
+
   useEffect(() => {
+    // 幂等重置，兼容 StrictMode 的 mount → unmount → mount。
     markOverlayHostMounted()
     return () => markOverlayHostUnmounted()
   }, [])

@@ -2,10 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import ts from 'typescript'
 import * as ui from '../dist/ui/index.js'
 
 const require = createRequire(import.meta.url)
 const cjs = require('../dist/ui/index.cjs')
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 function read(relative) {
   return readFileSync(new URL(relative, import.meta.url), 'utf8')
@@ -139,6 +143,27 @@ test('B 方案：组件 .d.ts 返回宿主可解析的 JSX.Element，不再退�
   const decl = read('../dist/ui/infra/OverlayHost.d.ts')
   assert.match(decl, /JSX\.Element/)
   assert.doesNotMatch(decl, /\): unknown/)
+})
+
+test('B 方案：宿主真类型环境下组件 .d.ts 可直接作为 JSX 组件使用', () => {
+  const config = ts.readConfigFile(resolve(root, 'tsconfig.json'), ts.sys.readFile)
+  const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root)
+  const probe = resolve(root, 'src/__probe.tsx')
+  const source = `import { OverlayHost } from ${JSON.stringify(resolve(root, 'dist/ui/infra/OverlayHost'))};\nexport const element = <OverlayHost />;\n`
+  const options = { ...parsed.options, noEmit: true }
+  const host = ts.createCompilerHost(options)
+  const original = host.getSourceFile.bind(host)
+  host.getSourceFile = (file, languageVersion, onError, shouldCreateNewSourceFile) =>
+    file === probe
+      ? ts.createSourceFile(file, source, languageVersion, true, ts.ScriptKind.TSX)
+      : original(file, languageVersion, onError, shouldCreateNewSourceFile)
+  host.fileExists = (file) => file === probe || ts.sys.fileExists(file)
+  host.readFile = (file) => (file === probe ? source : ts.sys.readFile(file))
+  const diagnostics = ts.getPreEmitDiagnostics(ts.createProgram([probe], options, host))
+  assert.deepEqual(
+    diagnostics.map((item) => ts.flattenDiagnosticMessageText(item.messageText, ' ')),
+    [],
+  )
 })
 
 test('样式只写 var(--mptk-*)，不硬编码颜色值', () => {
