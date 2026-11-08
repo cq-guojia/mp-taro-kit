@@ -13,8 +13,8 @@
     "@tarojs/shared": "^4.3.2",
     "@tarojs/taro": "^4.3.2",
     "mp-taro-kit": "workspace:*",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.13",
@@ -24,7 +24,7 @@
     "@tarojs/plugin-framework-react": "^4.3.2",
     "@tarojs/plugin-platform-weapp": "^4.3.2",
     "@tarojs/vite-runner": "^4.3.2",
-    "@types/react": "^19.3.0",
+    "@types/react": "^18.0.0",
     "@vitejs/plugin-react": "^4.7.0",
     "babel-preset-taro": "^4.3.2",
     "postcss": "^8.5.32",

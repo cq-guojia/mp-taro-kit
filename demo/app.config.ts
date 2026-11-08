@@ -11,6 +11,14 @@ const appConfig = {
     navigationBarTextStyle: 'black',
   },
   renderer: 'skyline',
+  componentFramework: 'glass-easel',
+  lazyCodeLoading: 'requiredComponents',
+  rendererOptions: {
+    skyline: {
+      defaultDisplayBlock: true,
+      defaultContentBox: true,
+    },
+  },
 }
 
 export default appConfig
