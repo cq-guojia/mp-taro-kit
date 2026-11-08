@@ -10,6 +10,10 @@ export default function IndexPage() {
       <DemoNav title="mp-taro-kit" />
       <View className="demo-page">
         <View className="demo-page__head">
+          <View className="demo-title-row">
+            <Text className="mptk-icons-base mptk-i-zujian demo-icon-lead" />
+            <Text className="demo-page__title">mp-taro-kit</Text>
+          </View>
           <Text className="demo-page__summary">按能力域分组的组件效果与使用方法</Text>
         </View>
         {catalog.map((group) => (

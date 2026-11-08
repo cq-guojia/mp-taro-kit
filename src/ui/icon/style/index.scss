@@ -1,0 +1,53 @@
+/* 本文件由 scripts/icons.mjs 生成，请勿手改。
+   源：https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.css
+   更新：平台改图标 → 生成 → 复制新在线链接 → 改 scripts/icons.mjs 的 SOURCE → pnpm run icons */
+
+@font-face {
+  font-family: "mptk-icons-base"; /* Project id 5251349 */
+  /* Color fonts */
+  src: 
+       url('https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.woff2?t=1794140073595') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.woff?t=1794140073595') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.ttf?t=1794140073595') format('truetype');
+}
+
+.mptk-icons-base {
+  font-family: "mptk-icons-base" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mptk-i-zujian:before {
+  content: "\e87e";
+}
+
+.mptk-i-move-right:before {
+  content: "\e615";
+}
+
+.mptk-i-shaixuan:before {
+  content: "\e680";
+}
+
+.mptk-i-xiugai:before {
+  content: "\e719";
+}
+
+.mptk-i-shanchu:before {
+  content: "\e7f4";
+}
+
+.mptk-i-move-left:before {
+  content: "\e874";
+}
+
+.mptk-i-move-down:before {
+  content: "\e875";
+}
+
+.mptk-i-move-up:before {
+  content: "\e876";
+}
+

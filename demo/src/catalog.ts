@@ -61,6 +61,22 @@ export const catalog: CatalogGroup[] = [
         ],
       },
       {
+        id: 'icon',
+        title: '图标',
+        path: 'pages/icon/index',
+        summary: '字体图标：按名取类名，单色可随 color 改色',
+        examples: [
+          {
+            id: 'icon-grid',
+            title: '图标清单',
+            hint: '清单由 mp-taro-kit/ui/icon 的 iconNames 驱动',
+            usage: '<Text className={iconClass("zujian")} />',
+            imports: ['mp-taro-kit/ui/icon', 'mp-taro-kit/ui/icon/style'],
+            renderNotes: '',
+          },
+        ],
+      },
+      {
         id: 'actions',
         title: '动作',
         path: 'pages/actions/index',

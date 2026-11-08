@@ -8,14 +8,14 @@
 
 ## 2. 目录树
 
-小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 8 个展示页。
+小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 9 个展示页。
 
 以下是约定的目录结构，每个节点后的备注说明该路径的职责与对应的库侧能力域；骨架屏只在 `catalog.ts` 预留 id，树中不生成节点。
 
 ```text
 demo/
 ├── package.json                      # 演示站清单：mp-taro-kit 用 workspace:*，并装宿主 peer 与 Taro Vite 编译链
-├── app.config.ts                     # 页面路由真源：pages 共 9 项，由 src/app.config.ts 转发给 Taro
+├── app.config.ts                     # 页面路由真源：pages 共 10 项，由 src/app.config.ts 转发给 Taro
 ├── project.config.json               # 微信开发者工具工程配置：renderer 在 Skyline 与 WebView 之间切换
 ├── tsconfig.json                     # 演示站 TS 配置：jsx 用 react-jsx、target 用 es2020
 ├── babel.config.js                   # Taro React + Vite 的 babel 预设，编译期使用
@@ -34,6 +34,7 @@ demo/
         ├── index/index.tsx           # 目录页：只读 catalog 渲染分组与跳转，不放示例
         ├── infra/index.tsx           # src/ui/infra/：OverlayHost、SafeArea、use-store
         ├── actions/index.tsx         # src/ui/actions/：Button
+        ├── icon/index.tsx            # src/ui/icon/：图标清单，铺出全部 glyph 与类名
         ├── feedback/index.tsx        # src/ui/feedback/：Dialog、Loading、Toast
         ├── display/index.tsx         # src/ui/display/：Badge、Divider
         ├── navigation/index.tsx      # src/ui/navigation/：Drawer、Dropdown
@@ -50,10 +51,10 @@ demo/
 - `pnpm-workspace.yaml` 的 `publicHoistPattern` 必须提升 `@tarojs/plugin-platform-weapp`：主库 `dist` 位于工作区根，Taro 把其中的 `@tarojs/components` 重写成该插件的裸包名，不提升则跨目录解析失败。
 - 库侧路径 → 展示页 → 目录数据的 `id` / `path` 三层必须一一对应；新增能力域先在本树定位，再改 `demo/src/catalog.ts` 与 `demo/app.config.ts` 的 `pages`。
 - 控件的使用方法与效果展示归演示站，`docs/` 不复制正文；演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
-- 六个 `ui` 子域各有 `style/index.scss`，样式由各页装配时引入，不单独成页。
+- 七个 `ui` 子域各有 `style/index.scss`，样式由各页装配时引入，不单独成页；`icon` 域没有组件，样式即字体声明与类名。
 - 骨架屏尚未实现、归属 `feedback` / `display` 未定：目录数据预留 `skeleton` id，不生成页面。
 - Skyline 是主路径、WebView 必须可用；页面不为双端分叉，每页只用两端共有子集，差异由目录数据的 `renderNotes` 逐页记录。
-- `design` / `runtime` / `utils` / `core` 四域必须有展示位置，演示站不得只覆盖 `ui` 六子域。
+- `design` / `runtime` / `utils` / `core` 四域必须有展示位置，演示站不得只覆盖 `ui` 子域。
 
 ## 4. 真源分层
 
@@ -68,3 +69,4 @@ demo/
 - 2026-11-08 00:24:28：填实页面结构、不可破约束与真源分层
 - 2026-11-08 00:38:10：页面结构表与真源分层表改为带逐节点备注的目录树
 - 2026-11-08 01:32:55：按 docwriter 1.1.0 重整：补记 9 页目录树同步、Taro sourceRoot 与平台插件提升两条约束
+- 2026-11-08 20:23:41：加图标展示页：目录树、页数与 ui 子域数量同步

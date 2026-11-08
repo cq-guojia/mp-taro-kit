@@ -12,8 +12,9 @@
 | `mp-taro-kit/utils` | `dist/utils/index.d.ts` | `dist/utils/index.js` | `dist/utils/index.cjs` | 纯函数与 i18n 注册口 |
 | `mp-taro-kit/core` | `dist/core/index.d.ts` | `dist/core/index.js` | `dist/core/index.cjs` | `configure` 与注入式平台操作 |
 | `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件 |
-| `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 六个子域按需引入 |
+| `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 七个子域按需引入 |
 | `mp-taro-kit/ui/*/style` | 无 | 无 | 无 | 直接指向 `dist/ui/*/style/index.css` 的字符串出口 |
+| `mp-taro-kit/ui/icon` | `dist/ui/icon/index.d.ts` | `dist/ui/icon/index.js` | `dist/ui/icon/index.cjs` | 图标清单与拼类名辅助，无组件 |
 | `mp-taro-kit/styles/tokens` | 无 | 无 | 无 | 直接指向 `dist/styles/tokens.css` 的字符串出口 |
 | `mp-taro-kit/package.json` | 无 | 无 | 无 | 指向包清单自身 |
 
@@ -58,3 +59,4 @@
 
 - 2026-11-07 22:38:05：新建
 - 2026-11-07 22:40:05：填实出口清单、运行时约定与版本下限
+- 2026-11-08 20:23:41：补 ui/icon 出口，子域数量改为七个

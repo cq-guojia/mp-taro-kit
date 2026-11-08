@@ -18,7 +18,7 @@
 | `src/utils` | 零依赖纯函数：日期、字符串、数值、路径、i18n 注册表 | 无 | 其他能力域、DOM、宿主模块 |
 | `src/runtime` | Promise 判定、跨副本单例、覆盖层栈、通知队列、loading 句柄 | 无（与 `utils`、`design` 同层） | `core`、`ui`、宿主模块 |
 | `src/core` | 路由、请求、存储、小程序能力的注入式封装 | `utils`、`runtime` | `ui`、宿主 router / store / constants、`@tarojs/taro` 类型 |
-| `src/ui` | 控件与命令式 API；下分 `infra`、`actions`、`feedback`、`display`、`navigation`、`layout` 六个子域 | `runtime`、`design` 的 CSS 变量契约 | `core`、宿主业务模块 |
+| `src/ui` | 控件与命令式 API；下分 `infra`、`actions`、`feedback`、`display`、`navigation`、`layout`、`icon` 七个子域 | `runtime`、`design` 的 CSS 变量契约 | `core`、宿主业务模块 |
 | `demo/` | 仓库内的 Taro 小程序宿主目录，使用方法与效果展示的真源 | 本库全部能力域 | 无 |
 
 依赖方向固定为 `utils / runtime / design → { core, ui } → 宿主`，禁止反向；`core` 与 `ui` 平级互不 import，两者靠 `runtime` 的单例与 `<OverlayHost />` 连接。`src/index.ts` 只做具名 re-export，组件一律走 `./ui/*` 子路径按需引入，主出口不静态 import React 或 Taro。
@@ -82,3 +82,4 @@
 
 - 2026-11-07 22:38:05：新建
 - 2026-11-07 22:40:05：填实能力域依赖、关键链路与不可破约束
+- 2026-11-08 20:23:41：ui 子域加入 icon

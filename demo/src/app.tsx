@@ -11,6 +11,7 @@ import { OverlayHost } from 'mp-taro-kit/ui/infra'
 
 import 'mp-taro-kit/styles/tokens'
 import 'mp-taro-kit/ui/infra/style'
+import 'mp-taro-kit/ui/icon/style'
 import './app.scss'
 
 function urlOf(options: NavigateOptions): string {

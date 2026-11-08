@@ -9,6 +9,7 @@
   - [架构总览](architecture/overview.md) — 五个能力域的分层、依赖方向、关键链路与不可破约束
 - api/
   - [对外契约](api/exports.md) — exports 子路径形态、挂载与注入约定、peer 版本下限
+  - [图标字体](api/icons.md) — 平台项目与命名规则、类名契约、多色行为与更新流程
 - development/
   - [本地开发与验证](development/build-and-test.md) — 构建与自检顺序、工程约定，以及实机验证不在这套自检内的边界
 - dependencies/
