@@ -130,6 +130,14 @@ export const catalog: CatalogGroup[] = [
             imports: ['mp-taro-kit/ui/feedback', 'mp-taro-kit/ui/feedback/style'],
             renderNotes: '',
           },
+          {
+            id: 'loader',
+            title: '加载图标',
+            hint: 'Loader：ring 旋转 / blocks 三块脉动，三档尺寸',
+            usage: '<Loader variant="blocks" size="md" />',
+            imports: ['mp-taro-kit/ui/feedback', 'mp-taro-kit/ui/feedback/style'],
+            renderNotes: '',
+          },
         ],
       },
       {

@@ -211,6 +211,10 @@ page {
   line-height: 1;
 }
 
+.demo-loader-spaced {
+  margin-right: var(--mptk-space-3);
+}
+
 .demo-icon-grid {
   display: flex;
   flex-direction: row;

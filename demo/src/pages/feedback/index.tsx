@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import { Dialog, Loading, Toast } from 'mp-taro-kit/ui/feedback'
+import { Dialog, Loader, Loading, Toast } from 'mp-taro-kit/ui/feedback'
 
 import 'mp-taro-kit/ui/feedback/style'
 import { DemoPage } from '../../components/DemoBlock'
@@ -32,6 +32,22 @@ export default function FeedbackPage() {
             <View className="demo-trigger" onClick={() => setLoadingVisible(!loadingVisible)}>
               <Text>切换 visible</Text>
             </View>
+          </View>
+        </View>
+      )
+    }
+    if (id === 'loader') {
+      return (
+        <View>
+          <View className="demo-row">
+            <Loader variant="ring" size="sm" className="demo-loader-spaced" />
+            <Loader variant="ring" size="md" className="demo-loader-spaced" />
+            <Loader variant="ring" size="lg" className="demo-loader-spaced" />
+          </View>
+          <View className="demo-row">
+            <Loader variant="blocks" size="sm" className="demo-loader-spaced" />
+            <Loader variant="blocks" size="md" className="demo-loader-spaced" />
+            <Loader variant="blocks" size="lg" className="demo-loader-spaced" />
           </View>
         </View>
       )

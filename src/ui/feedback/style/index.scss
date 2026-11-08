@@ -1,3 +1,7 @@
+/* Loading 的转圈图标来自图标域，这里把字体声明与图标类一并带出来，
+   调用方只引 feedback 的 style 也能转，不必记得额外引一次 icon/style。 */
+@use '../../icon/style/index';
+
 .mptk-fb-toast {
   background-color: var(--mptk-surface-2);
   border-radius: var(--mptk-radius-md);
@@ -14,6 +18,50 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.mptk-fb-loading__spin {
+  margin-right: var(--mptk-space-2);
+}
+
+/* ── Loader：加载动画图标，只画图标本身（背景与定位归调用方）── */
+.mptk-fb-loader {
+  align-items: center;
+  color: var(--mptk-business);
+  display: inline-flex;
+  line-height: 1;
+}
+
+/* ring：图标字形整体旋转。必须 inline-block，行内元素不吃 transform。 */
+.mptk-fb-loader--ring {
+  animation: mptk-fb-loader-spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+/* blocks：三个方块依次脉动，延迟由组件按序号注入。 */
+.mptk-fb-loader__block {
+  animation: mptk-fb-loader-blink 1.2s ease-in-out infinite;
+  background-color: currentColor;
+  border-radius: 2px;
+}
+
+@keyframes mptk-fb-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes mptk-fb-loader-blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .mptk-fb-loading__text {
