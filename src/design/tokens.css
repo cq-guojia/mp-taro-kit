@@ -46,6 +46,8 @@ page {
   --mptk-font-md: 13px;
   --mptk-font-lg: 14px;
   --mptk-font-xl: 16px;
+  /* 导航栏标题，对齐 WeUI .weui-navbar__item 的 17px */
+  --mptk-font-nav: 17px;
   --mptk-line-xs: 14px;
   --mptk-line-sm: 18px;
   --mptk-line-md: 20px;

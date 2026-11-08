@@ -2,7 +2,7 @@
 // 入口配置的真源在根目录 app.config.ts，由 src/app.config.ts 转发给编译器。
 export default {
   projectName: 'mp-taro-kit-demo',
-  designWidth: 750,
+  designWidth: 375,
   deviceRatio: {
     640: 2.34 / 2,
     750: 1,

@@ -40,3 +40,40 @@
   padding-bottom: var(--mptk-space-2);
   padding-left: var(--mptk-space-3);
 }
+
+.mptk-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--mptk-surface-1);
+}
+
+.mptk-navbar__content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mptk-navbar__title {
+  font-size: var(--mptk-font-nav);
+  font-weight: 500;
+  color: var(--mptk-fg);
+}
+
+.mptk-navbar__back {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding-left: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+}
+
+.mptk-navbar__back-icon {
+  font-size: 24px;
+  line-height: 1;
+  color: var(--mptk-fg);
+}
