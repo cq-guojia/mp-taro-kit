@@ -7,7 +7,6 @@ import { DemoPage } from '../../components/DemoBlock'
 
 export default function FeedbackPage() {
   const [toastVisible, setToastVisible] = useState(true)
-  const [loadingVisible, setLoadingVisible] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogResult, setDialogResult] = useState('')
 
@@ -27,11 +26,11 @@ export default function FeedbackPage() {
     if (id === 'loading') {
       return (
         <View>
-          <Loading visible={loadingVisible} text="正在加载" />
           <View className="demo-row">
-            <View className="demo-trigger" onClick={() => setLoadingVisible(!loadingVisible)}>
-              <Text>切换 visible</Text>
-            </View>
+            <Loading text="正在加载" />
+          </View>
+          <View className="demo-row">
+            <Loading text="" />
           </View>
         </View>
       )
@@ -40,14 +39,18 @@ export default function FeedbackPage() {
       return (
         <View>
           <View className="demo-row">
+            <Loader variant="ring" size="xs" className="demo-loader-spaced" />
             <Loader variant="ring" size="sm" className="demo-loader-spaced" />
             <Loader variant="ring" size="md" className="demo-loader-spaced" />
             <Loader variant="ring" size="lg" className="demo-loader-spaced" />
+            <Loader variant="ring" size="xl" className="demo-loader-spaced" />
           </View>
           <View className="demo-row">
+            <Loader variant="blocks" size="xs" className="demo-loader-spaced" />
             <Loader variant="blocks" size="sm" className="demo-loader-spaced" />
             <Loader variant="blocks" size="md" className="demo-loader-spaced" />
             <Loader variant="blocks" size="lg" className="demo-loader-spaced" />
+            <Loader variant="blocks" size="xl" className="demo-loader-spaced" />
           </View>
         </View>
       )

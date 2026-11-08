@@ -1,7 +1,7 @@
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { catalogPages, type CatalogExample } from '../catalog'
-import { DemoNav } from './DemoNav'
+import { DemoShell } from './DemoShell'
 
 function pageOf(id: string) {
   const page = catalogPages.find((item) => item.id === id)
@@ -50,18 +50,15 @@ export function DemoPage({
 }) {
   const page = pageOf(pageId)
   return (
-    <>
-      <DemoNav title={page.title} />
-      <View className="demo-page">
-        <View className="demo-page__head">
-          <Text className="demo-page__summary">{page.summary}</Text>
-        </View>
-        {page.examples.map((example) => (
-          <DemoBlock key={example.id} example={example}>
-            {render(example.id)}
-          </DemoBlock>
-        ))}
+    <DemoShell title={page.title}>
+      <View className="demo-page__head">
+        <Text className="demo-page__summary">{page.summary}</Text>
       </View>
-    </>
+      {page.examples.map((example) => (
+        <DemoBlock key={example.id} example={example}>
+          {render(example.id)}
+        </DemoBlock>
+      ))}
+    </DemoShell>
   )
 }

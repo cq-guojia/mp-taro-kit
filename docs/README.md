@@ -14,3 +14,4 @@
   - [本地开发与验证](development/build-and-test.md) — 构建与自检顺序、工程约定，以及实机验证不在这套自检内的边界
 - dependencies/
   - [编译期工具链](dependencies/compiler-toolchain.md) — TypeScript / Sass / pnpm 的已核实行为、版本真源与已知限制
+  - [Skyline 渲染引擎](dependencies/skyline-rendering.md) — 页面滚动约束，以及字体图标在 skyline 下的两个实测坑

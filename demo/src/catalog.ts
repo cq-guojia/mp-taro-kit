@@ -133,8 +133,8 @@ export const catalog: CatalogGroup[] = [
           {
             id: 'loader',
             title: '加载图标',
-            hint: 'Loader：ring 旋转 / blocks 三块脉动，三档尺寸',
-            usage: '<Loader variant="blocks" size="md" />',
+            hint: 'Loader：ring 旋转 / blocks 三块脉动，五档尺寸 xs~xl',
+            usage: '<Loader variant="blocks" size="xl" />',
             imports: ['mp-taro-kit/ui/feedback', 'mp-taro-kit/ui/feedback/style'],
             renderNotes: '',
           },

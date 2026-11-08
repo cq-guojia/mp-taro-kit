@@ -21,31 +21,45 @@
 }
 
 .mptk-fb-loading__spin {
+  color: var(--mptk-business);
   margin-right: var(--mptk-space-2);
 }
 
-/* ── Loader：加载动画图标，只画图标本身（背景与定位归调用方）── */
+/* ── Loader：加载动画图标，只画图标本身（背景与定位归调用方）──
+   形态 × 尺寸两轴正交：形态管几何与动画；尺寸档只改边长，几何按 24 网格等比缩放 ——
+   一套几何吃五档，视觉重量一致，不用逐档换算。
+   几何基准与动画参数照搬 dsh-plugin-core 的 Loader（块 7.2×6.0、圆角 1.5、间隔 0.6）。
+   边长（盒子宽高与 ring 的字号 / 行高）由组件按档位内联给，样式表只管结构与动画。 */
+
+/* 只做盒子与居中，不碰 color：颜色一律继承调用方（follow currentColor 的语义）。 */
 .mptk-fb-loader {
-  align-items: center;
-  color: var(--mptk-business);
-  display: inline-flex;
-  line-height: 1;
-}
-
-/* ring：图标字形整体旋转。必须 inline-block，行内元素不吃 transform。 */
-.mptk-fb-loader--ring {
-  animation: mptk-fb-loader-spin 0.8s linear infinite;
   display: inline-block;
+  flex: none;
+  line-height: 1;
+  text-align: center;
 }
 
-/* blocks：三个方块依次脉动，延迟由组件按序号注入。 */
+/* 形态一 ring：外层盒子整体旋转，0.8s 一圈。字形是盒子里的裸 inline text，
+   旋转绝不能挂在 <Text> 上 —— Skyline 下 text 被改成 inline-block 动画盒后 ::before 不渲染。 */
+.mptk-fb-loader--ring {
+  animation: mptk-fb-loader-rotate 0.8s linear infinite;
+}
+
+/* 形态二 blocks：容器负责把三块居中，块本身只画自己。 */
+.mptk-fb-loader--blocks {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* 三块圆角短条依次脉动（透明度 + 缩放），延迟由组件按序号注入。 */
 .mptk-fb-loader__block {
   animation: mptk-fb-loader-blink 1.2s ease-in-out infinite;
   background-color: currentColor;
-  border-radius: 2px;
+  transform-origin: center;
 }
 
-@keyframes mptk-fb-loader-spin {
+@keyframes mptk-fb-loader-rotate {
   to {
     transform: rotate(360deg);
   }

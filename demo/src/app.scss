@@ -8,6 +8,21 @@ page {
   line-height: var(--mptk-line-md);
 }
 
+/* Skyline 不支持页面全局滚动，滚动交给 scroll-view：
+   外壳撑满视口，导航栏占自身高度，正文区吃掉剩余高度并成为唯一滚动容器。 */
+.demo-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.demo-shell__body {
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  height: 0;
+}
+
 .demo-page {
   padding-top: var(--mptk-space-4);
   padding-right: var(--mptk-space-4);

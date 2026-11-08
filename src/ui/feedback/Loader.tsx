@@ -1,49 +1,74 @@
-import { View, Text } from '@tarojs/components'
+import { Text, View } from '@tarojs/components'
 import { iconClass } from '../icon/index.js'
 
-/** 形态：`ring` 图标字形整体旋转 / `blocks` 三个方块依次脉动。 */
+/** 形态：`ring` 开口弧旋转 / `blocks` 三块脉动。 */
 export type LoaderVariant = 'ring' | 'blocks'
 
-/** 尺寸档：只改大小，颜色跟随 `currentColor`。 */
-export type LoaderSize = 'sm' | 'md' | 'lg'
+/** 尺寸档：五档，几何按 24 网格等比缩放。 */
+export type LoaderSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 export interface LoaderProps {
+  /** 形态，默认 `ring`。 */
   variant?: LoaderVariant
+  /** 尺寸档，默认 `md`。 */
   size?: LoaderSize
+  /** 追加 class（只允许补布局，不许覆盖外观）。 */
   className?: string
 }
 
-/** 边长（px）：ring 用作字号，blocks 用作单个方块边长的一半。 */
-const SIZE_PX: Record<LoaderSize, number> = { sm: 16, md: 24, lg: 32 }
-/** blocks 相邻方块的间距（px）。 */
-const BLOCK_GAP = 4
+/** 五档边长（px）：12 / 16 / 24 / 32 / 48。 */
+const SIZE_PX: Record<LoaderSize, number> = { xs: 12, sm: 16, md: 24, lg: 32, xl: 48 }
+
+/**
+ * blocks 的几何照搬 24 网格：块 7.2×6.0、圆角 1.5、间隔 0.6，三块总宽 22.8、上下居中。
+ * 正方形在 24 档看着像「方点」，所以是横向短条而不是方块。
+ */
+const BLOCK_W_RATIO = 7.2 / 24
+const BLOCK_H_RATIO = 6 / 24
+const BLOCK_RADIUS_RATIO = 1.5 / 24
+const BLOCK_GAP_RATIO = 0.6 / 24
 const BLOCK_COUNT = 3
-/** blocks 每个方块错开的动画延迟（秒）。 */
+/** 三块依次错开 0.15s，1.2s 周期内推到最亮。 */
 const BLOCK_DELAY = 0.15
+
+/** 像素值：去掉浮点噪音，最多两位小数。 */
+function toPx(value: number): string {
+  return `${String(Number(value.toFixed(2)))}px`
+}
 
 /**
  * 加载动画图标：只画图标本身，不带背景、内距与定位 —— 要底色或浮层由调用方套容器。
  *
- * - `ring`：用图标域的 `loading` 字形整体旋转，一个字形零素材；
- * - `blocks`：三个方块用 CSS 缩放 + 透明度错峰，纯样式实现，同样零素材。
+ * 两轴正交（不是 N×M 份样式）：
+ * - `variant`：`ring` 开口弧整体旋转（默认）/ `blocks` 三块脉动；
+ * - `size`：`xs` 12 / `sm` 16 / `md` 24（默认）/ `lg` 32 / `xl` 48。
+ *
+ * 颜色跟随 `currentColor`，不给 color 轴；要换色在调用点给 `style={{ color }}`。
+ * ring 用图标域的 `loading` 字形（矢量弧 + 整体旋转）：小程序没有 SVG，
+ * 字体路径是这里唯一能保证小尺寸下不拉毛的矢量弧。
  */
 export function Loader({ variant = 'ring', size = 'md', className }: LoaderProps) {
-  const px = SIZE_PX[size]
-  const names = ['mptk-fb-loader', `mptk-fb-loader--${variant}`, className].filter(Boolean)
+  const names = ['mptk-fb-loader', `mptk-fb-loader--${variant}`]
+  if (className !== undefined && className !== '') names.push(className)
+  const side = SIZE_PX[size]
 
   if (variant === 'blocks') {
-    const side = px / 2
+    const width = toPx(side * BLOCK_W_RATIO)
+    const height = toPx(side * BLOCK_H_RATIO)
+    const radius = toPx(side * BLOCK_RADIUS_RATIO)
+    const gap = toPx(side * BLOCK_GAP_RATIO)
     return (
-      <View className={names.join(' ')}>
+      <View className={names.join(' ')} style={{ height: toPx(side), width: toPx(side) }}>
         {Array.from({ length: BLOCK_COUNT }, (_, index) => (
           <View
             key={index}
             className="mptk-fb-loader__block"
             style={{
-              animationDelay: `${String(index * BLOCK_DELAY)}s`,
-              height: `${String(side)}px`,
-              marginRight: index === BLOCK_COUNT - 1 ? '0' : `${String(BLOCK_GAP)}px`,
-              width: `${String(side)}px`,
+              animationDelay: `${String(Number((index * BLOCK_DELAY).toFixed(2)))}s`,
+              borderRadius: radius,
+              height,
+              marginRight: index === BLOCK_COUNT - 1 ? '0' : gap,
+              width,
             }}
           />
         ))}
@@ -51,10 +76,11 @@ export function Loader({ variant = 'ring', size = 'md', className }: LoaderProps
     )
   }
 
+  /* 旋转挂在外层 View，字形自己保持裸 inline text：Skyline 下 <Text> 一旦被改成
+     inline-block 的动画盒，::before 的字形就不渲染（logo 那种裸 inline 写法一切正常）。 */
   return (
-    <Text
-      className={[iconClass('loading'), ...names].join(' ')}
-      style={{ fontSize: `${String(px)}px` }}
-    />
+    <View className={names.join(' ')} style={{ height: toPx(side), width: toPx(side) }}>
+      <Text className={iconClass('loading')} style={{ fontSize: toPx(side), lineHeight: toPx(side) }} />
+    </View>
   )
 }
