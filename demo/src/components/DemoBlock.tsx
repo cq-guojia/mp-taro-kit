@@ -50,16 +50,18 @@ export function DemoPage({
 }) {
   const page = pageOf(pageId)
   return (
-    <View className="demo-page">
+    <>
       <DemoNav title={page.title} />
-      <View className="demo-page__head">
-        <Text className="demo-page__summary">{page.summary}</Text>
+      <View className="demo-page">
+        <View className="demo-page__head">
+          <Text className="demo-page__summary">{page.summary}</Text>
+        </View>
+        {page.examples.map((example) => (
+          <DemoBlock key={example.id} example={example}>
+            {render(example.id)}
+          </DemoBlock>
+        ))}
       </View>
-      {page.examples.map((example) => (
-        <DemoBlock key={example.id} example={example}>
-          {render(example.id)}
-        </DemoBlock>
-      ))}
-    </View>
+    </>
   )
 }
