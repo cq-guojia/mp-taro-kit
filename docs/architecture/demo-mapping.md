@@ -14,34 +14,35 @@
 
 ```text
 demo/
-├── package.json                      # 演示站清单：mp-taro-kit 用 workspace:*，并装宿主 peer 与 Taro Vite 编译链
-├── app.config.ts                     # 页面路由真源：pages 共 10 项，由 src/app.config.ts 转发给 Taro
-├── project.config.json               # 微信开发者工具工程配置：renderer 在 Skyline 与 WebView 之间切换
-├── tsconfig.json                     # 演示站 TS 配置：jsx 用 react-jsx、target 用 es2020
-├── babel.config.js                   # Taro React + Vite 的 babel 预设，编译期使用
+├── package.json                      — 演示站清单：mp-taro-kit 用 workspace:*，并装宿主 peer 与 Taro Vite 编译链
+├── app.config.ts                     — 页面路由真源：pages 共 10 项，由 src/app.config.ts 转发给 Taro
+├── project.config.json               — 微信开发者工具工程配置：renderer 在 Skyline 与 WebView 之间切换
+├── tsconfig.json                     — 演示站 TS 配置：jsx 用 react-jsx、target 用 es2020
+├── babel.config.js                   — Taro React + Vite 的 babel 预设，编译期使用
 ├── config/
-│   └── index.js                      # Taro 4 工程配置：sourceRoot 固定 src、framework react、compiler vite
+│   └── index.js                      — Taro 4 工程配置：sourceRoot 固定 src、framework react、compiler vite
 ├── types/
-│   └── global.d.ts                   # 样式与图片模块声明，供 TS 解析 app.scss
+│   └── global.d.ts                   — 样式与图片模块声明，供 TS 解析 app.scss
 └── src/
-    ├── app.config.ts                 # Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
-    ├── app.tsx                       # 宿主入口：configure(faces)、挂一次 <OverlayHost />、引 styles/tokens
-    ├── catalog.ts                    # 单一事实源：分组 → 页 → 示例；每项含 id / path / usage / imports / renderNotes
-    ├── app.scss                      # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
+    ├── app.config.ts                 — Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
+    ├── app.tsx                       — 宿主入口：configure(faces)、挂一次 <OverlayHost />、引 styles/tokens
+    ├── catalog.ts                    — 单一事实源：分组 → 页 → 示例；每项含 id / path / usage / imports / renderNotes
+    ├── app.scss                      — 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
     ├── components/
-    │   ├── DemoBlock.tsx             # 单个示例的外壳：标题 + 一句话 + 效果 + usage；另导出 DemoPage 页壳
-    │   └── DemoNav.tsx               # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
+    │   ├── DemoBlock.tsx             — 单个示例外壳；另导出 DemoPage 页壳，按 catalog 铺块并把正文交给 DemoShell
+    │   ├── DemoNav.tsx               — 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
+    │   └── DemoShell.tsx             — 页面外壳：固定视口高度的 View + scroll-view；导航栏在滚动区外
     └── pages/
-        ├── index/index.tsx           # 目录页：只读 catalog 渲染分组与跳转，不放示例
-        ├── infra/index.tsx           # src/ui/infra/：OverlayHost、SafeArea、use-store
-        ├── actions/index.tsx         # src/ui/actions/：Button
-        ├── icon/index.tsx            # src/ui/icon/：图标清单，铺出全部 glyph 与类名
-        ├── feedback/index.tsx        # src/ui/feedback/：Dialog、Loading、Toast
-        ├── display/index.tsx         # src/ui/display/：Badge、Divider
-        ├── navigation/index.tsx      # src/ui/navigation/：Drawer、Dropdown
-        ├── layout/index.tsx          # src/ui/layout/：Mask、Overlay、Popup
-        ├── foundation/index.tsx      # design + runtime + utils + core 四域合并：换肤、单例、工具、configure 注入
-        └── commands/index.tsx        # ui/commands.ts + state.ts + infra/OverlayHost：命令式 API
+        ├── index/index.tsx           — 目录页：只读 catalog 渲染分组与跳转，不放示例
+        ├── infra/index.tsx           — src/ui/infra/：OverlayHost、SafeArea、use-store
+        ├── actions/index.tsx         — src/ui/actions/：Button
+        ├── icon/index.tsx            — src/ui/icon/：图标清单，铺出全部 glyph 与类名
+        ├── feedback/index.tsx        — src/ui/feedback/：Dialog、Loader、Loading、Toast
+        ├── display/index.tsx         — src/ui/display/：Badge、Divider
+        ├── navigation/index.tsx      — src/ui/navigation/：Drawer、Dropdown
+        ├── layout/index.tsx          — src/ui/layout/：Mask、Overlay、Popup
+        ├── foundation/index.tsx      — design + runtime + utils + core 四域合并：换肤、单例、工具、configure 注入
+        └── commands/index.tsx        — ui/commands.ts + state.ts + infra/OverlayHost：命令式 API
 ```
 
 每个 `ui` 子域展示页在装配时同时引入该子域的 `mp-taro-kit/ui/*/style`；样式是 import，不占树上的文件节点。
@@ -51,6 +52,7 @@ demo/
 - Taro 4 按 `sourceRoot: 'src'` 定位入口，`src/app.tsx` 与 `src/app.config.ts` 必须在该目录下；根目录 `app.config.ts` 是 pages 真源，由 `src/app.config.ts` 转发。编译器用 esbuild bundle 求值配置，因此 `pages` 可由 `catalog.ts` 动态派生。
 - `pnpm-workspace.yaml` 的 `publicHoistPattern` 必须提升 `@tarojs/plugin-platform-weapp`：主库 `dist` 位于工作区根，Taro 把其中的 `@tarojs/components` 重写成该插件的裸包名，不提升则跨目录解析失败。
 - 库侧路径 → 展示页 → 目录数据的 `id` / `path` 三层必须一一对应；新增能力域先在本树定位，再改 `demo/src/catalog.ts` 与 `demo/app.config.ts` 的 `pages`。
+- 每个页面必须走 `DemoShell`：外壳 `height: 100vh` + `scroll-view type="custom"`，页面 json 配 `disableScroll: true`。Skyline 不支持页面全局滚动，绕开外壳写普通容器会让超屏内容滚不到；平台依据见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md)。
 - 控件的使用方法与效果展示归演示站，`docs/` 不复制正文；演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
 - 七个 `ui` 子域各有 `style/index.scss`，样式由各页装配时引入，不单独成页；`icon` 域没有组件，样式即字体声明与类名。
 - 骨架屏尚未实现、归属 `feedback` / `display` 未定：目录数据预留 `skeleton` id，不生成页面。
@@ -73,3 +75,5 @@ demo/
 - 2026-11-08 20:23:41：加图标展示页：目录树、页数与 ui 子域数量同步
 - 2026-11-08 20:44:50：目录树补 DemoNav：标题 logo 与返回/回首页
 - 2026-11-08 20:55:46：返回键改为页面显式声明入口页：home 页不出返回键与房子
+- 2026-11-08 22:53:30：目录树补 DemoShell、示例页补 Loader，约束补页面外壳必须走 scroll-view
+- 2026-11-08 22:57:27：目录树备注分隔符由 # 统一为 —，对齐 skill 的「树 + 每行 — 备注」

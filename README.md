@@ -6,4 +6,6 @@
 - 对外样式值走 CSS 变量（`var(--mptk-*)`），默认值集中在 `mp-taro-kit/styles/tokens`；宿主覆盖同名变量即可整体换肤
 - 按需 import，靠 tree-shaking 控体积
 
-> 能力源码已落码，尚未发版；使用文档待宿主 demo 双端验证通过后补齐。
+> 能力源码与文档已落码，发版由 `v*` tag 触发 CI 现场构建 `dist/` 并发布；`dist/` 不入库。
+>
+> 文档索引见 [`docs/README.md`](docs/README.md)；控件的使用方法与效果展示在 [`demo/`](demo/) 演示站。

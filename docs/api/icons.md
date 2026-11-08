@@ -68,15 +68,6 @@ import { iconClass } from 'mp-taro-kit/ui/icon'
 - 平台项目里勾选的图标列表——增删以它为准；
 - `mp-taro-kit/ui/icon` 的 `iconNames`（生成物快照）与演示站「图标」页（按它自动铺出，重跑生成后自动跟随增删）。
 
-## 更新流程
-
-1. 平台增删图标 → 点生成 → 复制新的在线链接；
-2. 替换 `scripts/icons.mjs` 里的 `SOURCE`；
-3. 跑 `pnpm run icons`，它同时重写 `src/ui/icon/style/index.scss` 与 `src/ui/icon/names.ts`；
-4. 提交这两个生成物。
-
-调用方代码不需要改。两个文件都由脚本维护，手改会在下次生成时被覆盖。
-
 ## 字体加载与稳定性
 
 `@font-face` 直接指向 `https://at.alicdn.com/...`，字体不进小程序包，也不进 npm 包。平台对在线链接的原话是「仅供平台体验和调试使用，平台不承诺服务的稳定性，企业客户需下载字体包自行发布使用」。
@@ -96,8 +87,10 @@ import { iconClass } from 'mp-taro-kit/ui/icon'
 
 - 出口清单：[对外契约](exports.md)
 - 演示站页与能力域对应：[演示站页与能力域映射](../architecture/demo-mapping.md)
+- 增删图标的操作步骤：[更新图标字体](../guides/icon-update.md)
 
 ## 更新日志
 
 - 2026-11-08 20:23:41：新建：平台归属与命名规则、出口、用法、多色行为、图标清单与更新流程
 - 2026-11-08 20:30:55：图标清单改为不写死：清单以平台为准，仅承诺拼类名规则
+- 2026-11-08 22:53:30：更新流程按槽位拆到 guides/icon-update，本篇只留契约与指向
