@@ -61,6 +61,12 @@
   color: var(--mptk-fg);
 }
 
+.mptk-navbar__icon {
+  display: flex;
+  align-items: center;
+  margin-right: var(--mptk-space-1);
+}
+
 .mptk-navbar__back {
   position: absolute;
   top: 0;

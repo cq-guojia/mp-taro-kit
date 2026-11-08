@@ -201,15 +201,14 @@ page {
 }
 
 /* 字体图标样式来自 mp-taro-kit/ui/icon/style（app.tsx 引入），此处只放演示站自己的排版。 */
-.demo-title-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+.demo-nav__logo {
+  font-size: 20px;
+  line-height: 1;
 }
 
-.demo-icon-lead {
+.demo-nav__back {
   font-size: 20px;
-  margin-right: var(--mptk-space-2);
+  line-height: 1;
 }
 
 .demo-icon-grid {

@@ -29,7 +29,8 @@ demo/
     ├── catalog.ts                    # 单一事实源：分组 → 页 → 示例；每项含 id / path / usage / imports / renderNotes
     ├── app.scss                      # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
     ├── components/
-    │   └── DemoBlock.tsx             # 单个示例的外壳：标题 + 一句话 + 效果 + usage；另导出 DemoPage 页壳
+    │   ├── DemoBlock.tsx             # 单个示例的外壳：标题 + 一句话 + 效果 + usage；另导出 DemoPage 页壳
+    │   └── DemoNav.tsx               # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
     └── pages/
         ├── index/index.tsx           # 目录页：只读 catalog 渲染分组与跳转，不放示例
         ├── infra/index.tsx           # src/ui/infra/：OverlayHost、SafeArea、use-store
@@ -70,3 +71,5 @@ demo/
 - 2026-11-08 00:38:10：页面结构表与真源分层表改为带逐节点备注的目录树
 - 2026-11-08 01:32:55：按 docwriter 1.1.0 重整：补记 9 页目录树同步、Taro sourceRoot 与平台插件提升两条约束
 - 2026-11-08 20:23:41：加图标展示页：目录树、页数与 ui 子域数量同步
+- 2026-11-08 20:44:50：目录树补 DemoNav：标题 logo 与返回/回首页
+- 2026-11-08 20:55:46：返回键改为页面显式声明入口页：home 页不出返回键与房子

@@ -7,7 +7,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // iconfont 项目 5251349 的在线链接；平台上改了图标后这个地址的 hash 会变，需同步替换。
-const SOURCE = 'https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.css'
+const SOURCE = 'https://at.alicdn.com/t/c/font_5251349_d8h0vmduuam.css'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const styleTarget = path.join(root, 'src', 'ui', 'icon', 'style', 'index.scss')

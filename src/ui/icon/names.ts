@@ -1,5 +1,5 @@
 // 本文件由 scripts/icons.mjs 生成，请勿手改。
-// 源：https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.css
+// 源：https://at.alicdn.com/t/c/font_5251349_d8h0vmduuam.css
 export const iconBaseClass = 'mptk-icons-base'
 export const iconPrefix = 'mptk-i-'
 
@@ -8,7 +8,8 @@ export const iconPrefix = 'mptk-i-'
  * 随平台增删变化，每次 pnpm run icons 重写；不作为对外契约，调用处直接用图标名即可。
  */
 export const iconMap: Readonly<Record<string, string>> = {
-  "zujian": 'mptk-icons-base mptk-i-zujian',
+  "home": 'mptk-icons-base mptk-i-home',
+  "logo": 'mptk-icons-base mptk-i-logo',
   "move-right": 'mptk-icons-base mptk-i-move-right',
   "shaixuan": 'mptk-icons-base mptk-i-shaixuan',
   "xiugai": 'mptk-icons-base mptk-i-xiugai',
@@ -19,4 +20,4 @@ export const iconMap: Readonly<Record<string, string>> = {
 }
 
 /** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。 */
-export const iconNames: readonly string[] = ['zujian', 'move-right', 'shaixuan', 'xiugai', 'shanchu', 'move-left', 'move-down', 'move-up']
+export const iconNames: readonly string[] = ['home', 'logo', 'move-right', 'shaixuan', 'xiugai', 'shanchu', 'move-left', 'move-down', 'move-up']

@@ -1,14 +1,14 @@
 /* 本文件由 scripts/icons.mjs 生成，请勿手改。
-   源：https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.css
+   源：https://at.alicdn.com/t/c/font_5251349_d8h0vmduuam.css
    更新：平台改图标 → 生成 → 复制新在线链接 → 改 scripts/icons.mjs 的 SOURCE → pnpm run icons */
 
 @font-face {
   font-family: "mptk-icons-base"; /* Project id 5251349 */
   /* Color fonts */
   src: 
-       url('https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.woff2?t=1794140073595') format('woff2'),
-       url('https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.woff?t=1794140073595') format('woff'),
-       url('https://at.alicdn.com/t/c/font_5251349_0xqdmdxw1ydr.ttf?t=1794140073595') format('truetype');
+       url('https://at.alicdn.com/t/c/font_5251349_d8h0vmduuam.woff2?t=1794141689869') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5251349_d8h0vmduuam.woff?t=1794141689869') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5251349_d8h0vmduuam.ttf?t=1794141689869') format('truetype');
 }
 
 .mptk-icons-base {
@@ -19,7 +19,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.mptk-i-zujian:before {
+.mptk-i-home:before {
+  content: "\e61c";
+}
+
+.mptk-i-logo:before {
   content: "\e87e";
 }
 
