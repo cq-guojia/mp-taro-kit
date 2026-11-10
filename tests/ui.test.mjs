@@ -19,6 +19,16 @@ function exists(relative) {
   return existsSync(new URL(relative, import.meta.url))
 }
 
+test('图标基础类不写死 font-size，生成物与发布产物都遵守', () => {
+  for (const relative of ['../src/ui/icon/style/index.scss', '../dist/ui/icon/style/index.css']) {
+    const rule = read(relative).match(/\.mptk-icons-base\s*\{([^}]*)\}/)
+    assert.ok(rule, `${relative} 找不到图标基础类规则`)
+    assert.match(rule[1], /font-family/, `${relative} 基础类必须保留 font-family`)
+    assert.doesNotMatch(rule[1], /font-size/, `${relative} 基础类不应写死 font-size`)
+  }
+  assert.match(read('../scripts/icons.mjs'), /stripBaseFontSize/, '生成器必须剥离平台产物的基础类字号')
+})
+
 /** 模拟 <OverlayHost /> 的关闭动作：出栈并调 payload.resolve。 */
 function closeTop(confirmed) {
   const entries = ui.uiState().overlays.getSnapshot()

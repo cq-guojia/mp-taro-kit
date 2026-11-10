@@ -6,6 +6,24 @@ page {
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
+
+  /* 演示站字号档位：字号与行高成对，图标与文字共用同一套档位，不再给图标单列尺寸组。
+     主库 tokens.css 是对外契约，这里只做宿主覆盖。 */
+  --mptk-font-xxxs: 8px;
+  --mptk-font-xxs: 10px;
+  --mptk-font-xs: 12px;
+  --mptk-font-sm: 14px;
+  --mptk-font-md: 16px;
+  --mptk-font-lg: 18px;
+  --mptk-font-xl: 20px;
+  --mptk-font-nav: 18px;
+  --mptk-line-xxxs: 12px;
+  --mptk-line-xxs: 14px;
+  --mptk-line-xs: 18px;
+  --mptk-line-sm: 22px;
+  --mptk-line-md: 26px;
+  --mptk-line-lg: 28px;
+  --mptk-line-xl: 30px;
 }
 
 /* Skyline 不支持页面全局滚动，滚动交给 scroll-view：
@@ -57,7 +75,73 @@ page {
   margin-bottom: var(--mptk-space-2);
 }
 
+/* 首页品牌区：无外框，图标、一句话与三个构建标签整体居中。 */
+.demo-hero {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--mptk-space-4);
+  padding-top: var(--mptk-space-2);
+  padding-right: 0;
+  padding-bottom: var(--mptk-space-2);
+  padding-left: 0;
+}
+
+.demo-hero__logo {
+  color: var(--mptk-business);
+  /* shortcut: 96px 是展示级手写值，偶数且对齐档位步长；以后要统一再提为 --mptk-font-display。 */
+  font-size: 96px;
+  line-height: 1;
+}
+
+.demo-hero__desc {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+  margin-top: var(--mptk-space-2);
+  text-align: center;
+}
+
+.demo-hero__meta {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--mptk-space-3);
+}
+
+.demo-badge {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--mptk-border);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--mptk-border);
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: var(--mptk-border);
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: var(--mptk-border);
+  border-radius: var(--mptk-radius-pill);
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-xxs);
+  line-height: var(--mptk-line-xxs);
+  margin-right: var(--mptk-space-1);
+  margin-bottom: var(--mptk-space-2);
+  margin-left: var(--mptk-space-1);
+  padding-top: var(--mptk-space-1);
+  padding-right: var(--mptk-space-2);
+  padding-bottom: var(--mptk-space-1);
+  padding-left: var(--mptk-space-2);
+}
+
+.demo-badge--env {
+  color: var(--mptk-business);
+}
+
 .demo-entry {
+  align-items: center;
   background-color: var(--mptk-surface-1);
   border-top-width: 1px;
   border-top-style: solid;
@@ -65,12 +149,28 @@ page {
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-bottom-color: var(--mptk-border);
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: var(--mptk-border);
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: var(--mptk-border);
   border-radius: var(--mptk-radius-md);
+  display: flex;
+  flex-direction: row;
   margin-bottom: var(--mptk-space-2);
   padding-top: var(--mptk-space-3);
   padding-right: var(--mptk-space-3);
   padding-bottom: var(--mptk-space-3);
   padding-left: var(--mptk-space-3);
+}
+
+.demo-entry__main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
 }
 
 .demo-entry__title {
@@ -87,7 +187,8 @@ page {
 
 .demo-entry__arrow {
   color: var(--mptk-fg-4);
-  font-size: var(--mptk-font-xl);
+  font-size: var(--mptk-font-lg);
+  margin-left: var(--mptk-space-2);
 }
 
 .demo-block {
@@ -215,14 +316,14 @@ page {
   padding-left: var(--mptk-space-4);
 }
 
-/* 字体图标样式来自 mp-taro-kit/ui/icon/style（app.tsx 引入），此处只放演示站自己的排版。 */
+/* 字体图标样式来自 mp-taro-kit/ui/icon/style（app.tsx 引入），字号一律走文字档位。 */
 .demo-nav__logo {
-  font-size: 20px;
+  font-size: var(--mptk-font-nav);
   line-height: 1;
 }
 
 .demo-nav__back {
-  font-size: 20px;
+  font-size: var(--mptk-font-nav);
   line-height: 1;
 }
 
@@ -246,7 +347,7 @@ page {
 
 .demo-icon-cell__glyph {
   color: var(--mptk-fg);
-  font-size: 24px;
+  font-size: var(--mptk-font-lg);
   line-height: 1;
   margin-bottom: var(--mptk-space-1);
 }

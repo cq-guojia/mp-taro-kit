@@ -25,10 +25,27 @@ if (!text.includes('@font-face')) {
   process.exit(1)
 }
 
-const body = text.replace(/url\('\/\//g, "url('https://").replace(/url\("\/\//g, 'url("https://')
+// 平台产物给基础类写死 font-size: 16px，会盖住宿主设置的图标尺寸。
+// 图标是字体，应继承所在文字的字号；需要放大时由宿主/组件用 --mptk-font-* 档位显式决定。
+function stripBaseFontSize(css) {
+  return css.replace(/(\.[\w-]+\s*\{)([^}]*)(\})/g, (rule, open, declarations, close) => {
+    if (!declarations.includes('font-family')) return rule
+    return open + declarations.replace(/\s*font-size:\s*[^;]+;/g, '') + close
+  })
+}
+
+const body = stripBaseFontSize(
+  text.replace(/url\('\/\//g, "url('https://").replace(/url\("\/\//g, 'url("https://'),
+)
+if (/\.[\w-]+\s*\{[^}]*font-family[^}]*font-size/.test(body)) {
+  console.error('[icons] 基础类仍带 font-size，拒绝写出：它会覆盖宿主的图标字号')
+  process.exit(1)
+}
+
 const header = [
   '/* 本文件由 scripts/icons.mjs 生成，请勿手改。',
   `   源：${SOURCE}`,
+  '   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。',
   '   更新：平台改图标 → 生成 → 复制新在线链接 → 改 scripts/icons.mjs 的 SOURCE → pnpm run icons */',
   '',
   '',

@@ -1,5 +1,6 @@
 /* 本文件由 scripts/icons.mjs 生成，请勿手改。
    源：https://at.alicdn.com/t/c/font_5251349_mscz5eq640k.css
+   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。
    更新：平台改图标 → 生成 → 复制新在线链接 → 改 scripts/icons.mjs 的 SOURCE → pnpm run icons */
 
 @font-face {
@@ -13,7 +14,6 @@
 
 .mptk-icons-base {
   font-family: "mptk-icons-base" !important;
-  font-size: 16px;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
