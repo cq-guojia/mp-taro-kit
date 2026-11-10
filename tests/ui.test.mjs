@@ -183,3 +183,37 @@ test('样式只写 var(--mptk-*)，不硬编码颜色值', () => {
     assert.doesNotMatch(css, /--mp-/)
   }
 })
+
+test('演示站菜单：ready 必指真实展示页，planned 不绑跳转，条目 id 唯一', () => {
+  const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', outputText)(mod.exports, mod)
+  const { menu, catalogPages, appPages } = mod.exports
+
+  assert.ok(Array.isArray(menu) && menu.length === 8, '菜单必须是固定八组')
+  const pageIds = new Set(catalogPages.map((page) => page.id))
+  const ids = new Set()
+  let ready = 0
+  let planned = 0
+  for (const group of menu) {
+    assert.ok(group.entries.length > 0, `分组 ${group.id} 不能为空`)
+    for (const entry of group.entries) {
+      assert.equal(ids.has(entry.id), false, `条目 id 重复：${entry.id}`)
+      ids.add(entry.id)
+      if (entry.status === 'ready') {
+        ready += 1
+        assert.ok(entry.pageId, `ready 条目必须带 pageId：${entry.id}`)
+        assert.equal(pageIds.has(entry.pageId), true, `ready 条目指向不存在的页：${entry.id}`)
+      } else {
+        assert.equal(entry.status, 'planned', `未知状态：${entry.id}`)
+        assert.equal(entry.pageId, undefined, `planned 条目不应绑跳转：${entry.id}`)
+        planned += 1
+      }
+    }
+  }
+  assert.ok(ready > 0 && planned > 0, '菜单必须同时包含 ready 与 planned')
+  assert.equal(appPages.length, catalogPages.length + 1, '路由必须是索引页 + 全部展示页')
+})

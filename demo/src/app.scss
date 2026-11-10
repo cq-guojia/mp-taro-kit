@@ -159,10 +159,18 @@ page {
   display: flex;
   flex-direction: row;
   margin-bottom: var(--mptk-space-2);
-  padding-top: var(--mptk-space-3);
+  padding-top: var(--mptk-space-2);
   padding-right: var(--mptk-space-3);
-  padding-bottom: var(--mptk-space-3);
+  padding-bottom: var(--mptk-space-2);
   padding-left: var(--mptk-space-3);
+}
+
+/* 未实现的菜单项：位置保留、文字置灰、无箭头、不绑跳转。 */
+.demo-entry--planned {
+  border-top-color: var(--mptk-border-faint);
+  border-bottom-color: var(--mptk-border-faint);
+  border-left-color: var(--mptk-border-faint);
+  border-right-color: var(--mptk-border-faint);
 }
 
 .demo-entry__main {
@@ -175,19 +183,17 @@ page {
 
 .demo-entry__title {
   color: var(--mptk-fg);
-  font-size: var(--mptk-font-lg);
-  line-height: var(--mptk-line-lg);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
 }
 
-.demo-entry__summary {
-  color: var(--mptk-fg-2);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
+.demo-entry__title--planned {
+  color: var(--mptk-fg-4);
 }
 
 .demo-entry__arrow {
   color: var(--mptk-fg-4);
-  font-size: var(--mptk-font-lg);
+  font-size: var(--mptk-font-md);
   margin-left: var(--mptk-space-2);
 }
 
