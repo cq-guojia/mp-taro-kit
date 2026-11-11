@@ -83,7 +83,7 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 
 落点是全局 `page`，不是逐页配置：页面底色、页面内容与 App 层的 `<OverlayHost />` 在同一棵变量树里，暗色一起生效。不想要明暗就引 `theme-light`，不需要覆盖任何变量；要定制配色再在自己样式里覆盖 `--mptk-*`（后引入者胜）。
 
-`prefers-color-scheme` 在 Skyline 下的支持尚未实机验证；引擎不支持时 `theme-auto` 会表现为固定明，此时改用 `theme-dark` 即可。多色图标的颜色固化在字体调色板里，不跟随明暗，见[图标字体](icons.md)。
+已在演示站编译产物里核实：明色值与暗色值各一份、`@media (prefers-color-scheme: dark)` 一个、基础图标包的 `@font-face` 也在，说明三选一主题与图标包都真实进了小程序包。但产物里有值不等于渲染生效：`prefers-color-scheme` 在 Skyline 下的实时重算尚未实机验证；引擎不支持时 `theme-auto` 表现为固定明，此时改用 `theme-dark`。多色图标的颜色固化在字体调色板里，不跟随明暗，见[图标字体](icons.md)。
 
 #### 整屏背景图
 
@@ -124,3 +124,4 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 - 2026-11-11 17:58:24：明暗改成一个 import 三选一：固定明 / 固定暗 / 跟随系统，宿主不再需要覆盖变量
 - 2026-11-11 19:58:18：真源收敛到 design/_tokens.scss 的 mixin，固定暗零覆盖
 - 2026-11-11 20:06:19：修正固定暗描述：只写基线与暗色值，零覆盖
+- 2026-11-11 21:26:52：补演示站编译产物核实结论：三选一主题与基础图标包均真实进包，Skyline 实时重算仍待实机验证
