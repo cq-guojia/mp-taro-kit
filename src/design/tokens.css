@@ -1,8 +1,17 @@
-/* mp-taro-kit 对外样式变量唯一真源。宿主 import 'mp-taro-kit/styles/tokens' 后覆盖同名变量即可整体换肤；
-   组件侧只写 var(--mptk-*)，不自带兜底值、不在别处复制数值。命名按 dsh-plugin-core 通用层对齐。
+/* mp-taro-kit 对外样式唯一真源：页面基线 + 样式变量，二者都只在这里。
+   宿主在 app 入口 import 'mp-taro-kit/styles/tokens' 一次即全站页面生效（必需：组件侧只写 var(--mptk-*)、
+   不自带兜底值，不引则组件样式取值全空）。覆盖同名变量即可整体换肤；
+   页面基线如不需要（例如自定义高度的贴底页），在宿主样式里覆盖同名属性即可。命名按 dsh-plugin-core 通用层对齐。
    边框色沿用其 4% / 10% / 12% 档，写成 rgba 字面量以避开小程序端 8 位 hex 的兼容问题。
    待实机验证：page 挂载与 px 单位在 Skyline / WebView 双端的实际表现，须宿主 demo 确认。 */
 page {
+  /* 页面基线：满屏、底色兜底、底部安全区；页面内容无需再写这三项。
+     border-box 让 100% 含 padding，否则总高会超出视口、页面能多滚出安全区那一段。 */
+  box-sizing: border-box;
+  height: 100%;
+  background-color: var(--mptk-surface-base);
+  padding-bottom: env(safe-area-inset-bottom);
+
   /* 文字 */
   --mptk-fg: #1f2328;
   --mptk-fg-2: #5c6370;

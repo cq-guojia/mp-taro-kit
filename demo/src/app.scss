@@ -27,11 +27,13 @@ page {
 }
 
 /* Skyline 不支持页面全局滚动，滚动交给 scroll-view：
-   外壳撑满视口，导航栏占自身高度，正文区吃掉剩余高度并成为唯一滚动容器。 */
+   外壳撑满页面内容盒，导航栏占自身高度，正文区吃掉剩余高度并成为唯一滚动容器。
+   高度用 100% 而非 100vh：库的页面基线（styles/tokens）把底部安全区做成了 page 的 padding-bottom，
+   100% 跟着内容盒走会自动让出安全区；写 100vh 会顶破安全区、底部被裁。 */
 .demo-shell {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
 }
 
 .demo-shell__body {
