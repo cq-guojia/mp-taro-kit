@@ -1,24 +1,25 @@
 # 图标字体
 
-图标不画在本库里：矢量与字形由 iconfont 平台托管，本库只承诺「字体在线加载 + 类名」这一层，**字体文件不进包**。宿主引入一次样式，页面里按名字写类名即可。
+图标不画在本库里：矢量与字形由 iconfont 平台托管，本库只承诺「字体在线加载 + 类名」这一层，**字体文件不进包**。基础包必引，扩展包按需引；引了哪个包，才把哪个包的样式打进产物。
 
 ## 平台归属与命名
 
-一个 iconfont 项目 = 一种字体 = 一套类名。当前只有一个 Base 项目：
+一个 iconfont 项目 = 一个图标包 = 一种字体 = 一套类名。`scripts/icons.mjs` 的 `SOURCES` 是包清单，当前只有基础包一项：
 
 | 项 | 值 |
 |---|---|
+| 包 id | `base` |
 | 平台项目 id | `5251349` |
 | Font Family | `mptk-icons-base` |
 | 图标类前缀 | `mptk-i-` |
 | 类名形态 | `.mptk-i-<name>`，基础类 `.mptk-icons-base` |
 
-以后按分类加库时，沿用同一套规则，避免多字体在同一页面互相顶掉：
+以后按分类加扩展包时，沿用同一套规则，避免多字体在同一页面互相顶掉：
 
-| 库 | Font Family | 前缀 | 例 |
+| 包 | Font Family | 前缀 | 例 |
 |---|---|---|---|
-| Base | `mptk-icons-base` | `mptk-i-` | `.mptk-i-shanchu` |
-| 分类库 | `mptk-icons-<域>` | `mptk-i-<域>-` | `.mptk-i-folder-open` |
+| 基础包 | `mptk-icons-base` | `mptk-i-` | `.mptk-i-shanchu` |
+| 扩展包 | `mptk-icons-<域>` | `mptk-i-<域>-` | `.mptk-i-social-wechat` |
 
 `font-family` 与类名都由平台设置决定，改设置即等于改对外类名，属于破坏性变更。
 
@@ -26,19 +27,23 @@
 
 | 子路径 | 提供什么 |
 |---|---|
-| `mp-taro-kit/ui/icon` | `iconNames`、`iconClass`、`iconBaseClass`、`iconPrefix`、`IconName` 类型 |
-| `mp-taro-kit/ui/icon/style` | `@font-face` 声明与全部图标类，**宿主必须引入一次** |
+| `mp-taro-kit/ui/icon/base` | 基础包的 `iconNames`、`iconClass`、`iconBaseClass`、`iconPrefix`、`iconMap` |
+| `mp-taro-kit/ui/icon/base/style` | 基础包 `@font-face` 与全部图标类，**宿主在 app 入口引一次，必需** |
+| `mp-taro-kit/ui/icon/<id>` / `.../<id>/style` | 扩展包各自的清单、拼类名与样式，用哪个引哪个 |
+| `mp-taro-kit/ui/icon` / `.../icon/style` | 旧出口，只转发到基础包，保留兼容；新代码不要再用 |
+
+组件不静态依赖任何扩展包：组件需要扩展图标时由调用方用 `ReactNode` 注入，并在演示站该组件的 `imports` 里把「组件 + 对应图标包」列全。引了组件没引图标包只会图标位置空白，不会把没用的字体样式打进包。
 
 ## 用法
 
 ```tsx
-import 'mp-taro-kit/ui/icon/style'
-import { iconClass } from 'mp-taro-kit/ui/icon'
+import 'mp-taro-kit/ui/icon/base/style'
+import { iconClass } from 'mp-taro-kit/ui/icon/base'
 
 <Text className={iconClass('shanchu')} />
 ```
 
-`iconClass(name)` 等价于手写 `mptk-icons-base mptk-i-shanchu`，两种写法产出同一个 className，选一种统一即可。
+`iconClass(name)` 等价于手写 `mptk-icons-base mptk-i-shanchu`，两种写法产出同一个 className，选一种统一即可。每个包有自己的 `iconClass`，不跨包 import。
 
 ## 契约
 
@@ -54,10 +59,12 @@ import { iconClass } from 'mp-taro-kit/ui/icon'
 
 ## 颜色与尺寸
 
-| 图标类型 | `color` | 说明 |
-|---|---|---|
-| 单色 | 生效 | 可用 `var(--mptk-fg)` 等变量，暗色主题自动跟随 |
-| 多色 | **无效** | 颜色固化在字体的 COLR/CPAL 调色板里，改不了 |
+| 图标类型 | `color` | 明暗 | 说明 |
+|---|---|---|---|
+| 单色 | 生效 | 跟随 | 用 `var(--mptk-fg)` 等变量时，随宿主所选的 `styles/theme-*` 模式切换 |
+| 多色 | **无效** | 不跟随 | 颜色固化在字体的 COLR/CPAL 调色板里，改不了，暗色下不协调 |
+
+多色字形要在暗色下协调，只能由平台另出暗色字形或改用单色图标；本库不做运行时换色。
 
 **基础类 `.mptk-icons-base` 不设 `font-size`**：图标是字体，继承所在文字的字号，因此与相邻文字天然同尺寸。平台产物自带 `font-size: 16px`，生成脚本 `scripts/icons.mjs` 在写入时会剥掉它，重跑 `pnpm run icons` 不会把固定值带回来；`pnpm test` 有断言守住这条契约，生成脚本发现剥不掉会直接拒绝写出。
 
@@ -68,7 +75,7 @@ import { iconClass } from 'mp-taro-kit/ui/icon'
 这里**不列具体图标名**：名单在平台上随时增删，写进文档就会立刻过期。要看当前有哪些图标，两个地方是真源：
 
 - 平台项目里勾选的图标列表——增删以它为准；
-- `mp-taro-kit/ui/icon` 的 `iconNames`（生成物快照）与演示站「图标」页（按它自动铺出，重跑生成后自动跟随增删）。
+- 对应包的 `iconNames`（生成物快照）与演示站「图标」页（按它自动铺出，重跑生成后自动跟随增删）。
 
 ## 字体加载与稳定性
 
@@ -85,6 +92,8 @@ import { iconClass } from 'mp-taro-kit/ui/icon'
 | 多色字形可用 | Skyline 渲染器下彩虹字形按调色板出七色 |
 | 多色不吃 `color` | 字体内部为 COLR v0 分层字形，颜色在 CPAL 表 |
 
+明暗变量层已落，但 `prefers-color-scheme` 在 Skyline 下未实机验证；双端验过前不宣称自动跟随可用。
+
 ## 相关
 
 - 出口清单：[对外契约](exports.md)
@@ -97,3 +106,5 @@ import { iconClass } from 'mp-taro-kit/ui/icon'
 - 2026-11-08 20:30:55：图标清单改为不写死：清单以平台为准，仅承诺拼类名规则
 - 2026-11-08 22:53:30：更新流程按槽位拆到 guides/icon-update，本篇只留契约与指向
 - 2026-11-10 12:26:50：补图标尺寸契约：基础类不设 font-size，图标继承所在文字字号
+- 2026-11-11：改为分包：基础包必引、扩展包按需，生成器按 `SOURCES` 多源产出，根出口降级兼容；补明暗跟随与多色不跟随
+- 2026-11-11 17:58:24：图标明暗跟随改为依赖所选 theme 出口

@@ -10,7 +10,7 @@ TypeScript 与 Sass 负责把 `src/` 编成 `dist/`；`@types/react` 与 `@taroj
 ## 已核实行为
 
 - `scripts/build.mjs` 两轮调用 `ts.createProgram().emit()`：第一轮 `ESNext` 加 `declaration` 产出 ESM `.js` 与 `.d.ts`，第二轮 `CommonJS` 产出 `.cjs` 并把相对 `require` 目标从 `.js` 重写为 `.cjs`。可用 `pnpm run build` 后比对 `dist/index.js` 与 `dist/index.cjs` 复核。
-- Sass `compile()` 把每个 `.scss` 编成同名 `.css`，`src/design/tokens.css` 另复制为 `dist/styles/tokens.css`。可用 `pnpm run build` 后检查 `dist/ui/*/style/index.css` 复核。
+- Sass `compile()` 把每个 `.scss` 编成同名 `.css`；`_` 开头的 partial 与 `design/theme-*.scss` 不走通用映射，后者单独编译到 `dist/styles/theme-*.css`（明暗三选一），固定明那份复制为 `dist/styles/tokens.css`。可用 `pnpm run build` 后检查 `dist/ui/*/style/index.css` 复核。
 - `pnpm-workspace.yaml` 的 `autoInstallPeers: false` 使宿主 peer 不进锁文件与 `node_modules`；`allowBuilds` 关掉 `@parcel/watcher` 的原生构建脚本。可用 `pnpm install --frozen-lockfile` 与 `pnpm pack --dry-run` 复核发布包内无 `node_modules` 文件。
 - 组件 `.d.ts` 返回 `import("react").JSX.Element`；`tests/ui.test.mjs` 用 TypeScript compiler API 在真类型环境写 `<OverlayHost />` 并要求零诊断。可用 `pnpm test` 复核。
 
@@ -33,3 +33,4 @@ TypeScript 与 Sass 负责把 `src/` 编成 `dist/`；`@types/react` 与 `@taroj
 - 2026-11-08 15:12:53：React 19 运行时崩溃结论落盘，类型与 demo 依赖口径统一改为 React 18
 - 2026-11-08 18:05:01：确认宿主 designWidth 必须为 375，修正 demo 全站尺寸减半
 - 2026-11-08 22:53:30：正文去掉实测日期，改由更新日志承载
+- 2026-11-11 19:58:19：补 Sass partial 与主题入口的编译规则

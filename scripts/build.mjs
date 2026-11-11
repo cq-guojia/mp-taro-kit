@@ -98,17 +98,24 @@ for (const file of files.filter((entry) => entry.endsWith('.css'))) {
   await cp(file, target)
 }
 for (const file of files.filter((entry) => entry.endsWith('.scss'))) {
+  const name = path.basename(file)
+  // partial 只被 @use，design/theme-*.scss 单独编译到 styles/，都不走通用映射。
+  if (name.startsWith('_') || name.startsWith('theme-')) continue
   const result = sass.compile(file, { style: 'expanded', loadPaths: [srcDir] })
   const target = path.join(distDir, path.relative(srcDir, file).replace(/\.scss$/, '.css'))
   write(target, result.css)
 }
 
-const tokens = path.join(srcDir, 'design', 'tokens.css')
-if (existsSync(tokens)) {
-  const target = path.join(distDir, 'styles', 'tokens.css')
-  await mkdir(path.dirname(target), { recursive: true })
-  await cp(tokens, target)
+// 明暗三选一：唯一真源是 design/_tokens.scss 里的 base / light / dark 三个 mixin，
+// 三个入口编译成独立 CSS，固定暗不铺明色值，跟随系统只在媒体查询里换值。
+const stylesDir = path.join(distDir, 'styles')
+await mkdir(stylesDir, { recursive: true })
+for (const mode of ['light', 'dark', 'auto']) {
+  const source = path.join(srcDir, 'design', `theme-${mode}.scss`)
+  const result = sass.compile(source, { style: 'expanded', loadPaths: [srcDir] })
+  writeFileSync(path.join(stylesDir, `theme-${mode}.css`), result.css)
 }
+await cp(path.join(stylesDir, 'theme-light.css'), path.join(stylesDir, 'tokens.css'))
 
 let artifacts = 0
 async function collect(dir) {

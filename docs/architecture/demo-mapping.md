@@ -25,7 +25,7 @@ demo/                                               # 仓库内的 Taro 小程�
 │   └── global.d.ts                                 # 样式与图片模块声明，供 TS 解析 app.scss
 └── src/                                            # 演示站源码根：入口、目录数据、样式与页面
     ├── app.config.ts                               # Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
-    ├── app.tsx                                     # 宿主入口：configure(faces)、挂一次 <OverlayHost />、引 styles/tokens
+    ├── app.tsx                                     # 宿主入口：configure(faces)、挂一次 <OverlayHost />、引 styles/theme-auto
     ├── catalog.ts                                  # 单一事实源：9 个展示页 + 8 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
     ├── app.scss                                    # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
     ├── components/                                 # 演示站共用组件：页面外壳、示例块与统一头部
@@ -82,3 +82,4 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-08 22:57:27：目录树备注分隔符由 # 统一为 —，对齐 skill 的「树 + 每行 — 备注」
 - 2026-11-10 16:14:41：菜单改为 Vant 六类 + 基础能力 + 命令式 API 的固定八组，条目分 ready / planned；补多对一映射与占位约束，navigation 页补 NavBar
 - 2026-11-10 16:29:25：按 1.2.0 树格式重排：说明改用 # 并对齐第 53 列，补文件夹行说明，正文相对路径改为可从仓库根解析
+- 2026-11-11 19:58:19：演示站入口改为 theme-auto

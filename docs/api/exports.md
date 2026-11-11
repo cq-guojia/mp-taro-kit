@@ -12,13 +12,20 @@
 | `mp-taro-kit/utils` | `dist/utils/index.d.ts` | `dist/utils/index.js` | `dist/utils/index.cjs` | 纯函数与 i18n 注册口 |
 | `mp-taro-kit/core` | `dist/core/index.d.ts` | `dist/core/index.js` | `dist/core/index.cjs` | `configure` 与注入式平台操作 |
 | `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件 |
-| `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 七个子域按需引入 |
-| `mp-taro-kit/ui/*/style` | 无 | 无 | 无 | 直接指向 `dist/ui/*/style/index.css` 的字符串出口 |
-| `mp-taro-kit/ui/icon` | `dist/ui/icon/index.d.ts` | `dist/ui/icon/index.js` | `dist/ui/icon/index.cjs` | 图标清单与拼类名辅助，无组件 |
-| `mp-taro-kit/styles/tokens` | 无 | 无 | 无 | 页面基线与样式变量的唯一真源，直接指向 `dist/styles/tokens.css`；宿主 app 入口引一次，必需 |
+| `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 子域出口；`*` 可穿透多段，组件级与图标包级细路径同走这条 |
+| `mp-taro-kit/ui/*/style` | 无 | 无 | 无 | 字符串出口，`*` 可穿透多段，指向对应单元的 `style/index.css` |
+| `mp-taro-kit/ui/icon/base` / `.../base/style` | 有 / 无 | 有 / 无 | 有 / 无 | 基础图标包的清单与样式，**宿主 app 入口引一次，必需** |
+| `mp-taro-kit/ui/icon/<id>` / `.../<id>/style` | 有 / 无 | 有 / 无 | 有 / 无 | 扩展图标包，用哪个引哪个 |
+| `mp-taro-kit/ui/icon` / `.../icon/style` | 有 / 无 | 有 / 无 | 有 / 无 | 旧出口，只转发到基础包，保留兼容 |
+| `mp-taro-kit/styles/theme-light` | 无 | 无 | 无 | **固定明**：只有明色值；宿主定制配色覆盖的都是明色，没有暗色变体 |
+| `mp-taro-kit/styles/theme-dark` | 无 | 无 | 无 | **固定暗**：只写基线与暗色值，不铺明色、不做覆盖，不随系统变化 |
+| `mp-taro-kit/styles/theme-auto` | 无 | 无 | 无 | **跟随系统**：暗色值包在 `prefers-color-scheme: dark` 媒体查询里 |
+| `mp-taro-kit/styles/tokens` | 无 | 无 | 无 | 旧出口，等价于固定明；新代码从上面三选一 |
 | `mp-taro-kit/package.json` | 无 | 无 | 无 | 指向包清单自身 |
 
-组件样式不随 JS 自动生效：宿主需显式引入对应子域的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。
+**引用单元是组件或图标包，不是子域**：小程序包体积受限，消费端用哪个就引哪个的 JS 与 `style` 出口。子域聚合出口仍在，但只作兼容过渡；`scripts/check.mjs` 会逐个对照 `src/ui` 下的 `index.ts` 与 `style/index.scss`，确保通配展开后的产物真实存在，避免解析成功却文件缺失的坏包。
+
+组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
 
 ## 运行时约定
 
@@ -39,7 +46,7 @@
 
 ### 样式基线（必需）
 
-本库的通用样式**只有一处落点**：`mp-taro-kit/styles/tokens`（源码 `src/design/tokens.css`）。`ui/*/style` 只放控件自身样式，不放页面级规则；页面基线也不为它另开出口。
+本库的通用样式**只有一处落点**：`src/design/_tokens.scss` 里的 `base` / `light` / `dark` 三个 mixin（页面基线、明色值、暗色值各写一次）。`dist/styles/theme-*.css` 与 `dist/styles/tokens.css` 都是它的编译产物，勿手改。`ui/*/style` 只放控件自身样式，不放页面级规则；页面基线也不为它另开出口。
 
 它同时承载三样东西：
 
@@ -50,15 +57,33 @@
 | `page { padding-bottom: env(safe-area-inset-bottom) }` | 底部安全区，纯 CSS，无需挂 `<SafeArea>` |
 | `--mptk-*` 变量 | 组件样式取值来源，默认值唯一真源 |
 
-宿主在 app 入口引一次即全站所有页面生效，页面不需要逐个引：
+宿主在 app 入口**从三个明暗模式里引一个**即全站所有页面生效，页面不需要逐个引：
 
 ```js
-import 'mp-taro-kit/styles/tokens'
+import 'mp-taro-kit/styles/theme-light' // 固定明
+// import 'mp-taro-kit/styles/theme-dark'  // 固定暗
+// import 'mp-taro-kit/styles/theme-auto'  // 跟随系统
 ```
 
-**必须引，不是可选**：组件样式只写 `var(--mptk-*)`、不自带兜底值，不引则配色、字号、间距、圆角全部取不到值（属性回退继承 / 初始值），页面结构还在但完全没样式。
+**必须引一个，不是可选**：组件样式只写 `var(--mptk-*)`、不自带兜底值，不引则配色、字号、间距、圆角全部取不到值（属性回退继承 / 初始值），页面结构还在但完全没样式。三个文件都自带页面基线与明色值，差别只在暗色值怎么处理；切换模式只改这一行 import，不需要覆盖任何变量。
 
 不需要这条基线的页面（自定义高度、贴底的全屏页），在宿主样式里覆盖同名属性即可，不要改本库文件。变量名、前缀与兜底值构成对外契约，改名需同步迁移步骤。
+
+#### 明暗开关
+
+明暗是**一个 import 的三选一**，不是让宿主去覆盖一堆变量：
+
+| 模式 | 引哪个 | 行为 |
+|---|---|---|
+| 固定明 | `mp-taro-kit/styles/theme-light` | 只有明色值；宿主定制的配色全是明色，不存在暗色变体 |
+| 固定暗 | `mp-taro-kit/styles/theme-dark` | 只写基线与暗色值，不铺明色、不做覆盖，与手机系统设置无关 |
+| 跟随系统 | `mp-taro-kit/styles/theme-auto` | 同一份暗色值包在 `@media (prefers-color-scheme: dark)` 里，系统切暗时生效 |
+
+三个文件都由 `src/design/_tokens.scss` 的 mixin 编译而来：`theme-dark` 只写基线与暗色值，不铺明色、不做覆盖；`theme-auto` 是基线 + 明色默认值 + 媒体查询里的暗色值。每套值只写一次，组件仍只写 `var(--mptk-*)`，一行不改，不需要 JS、`faces` 注入或根容器标记。
+
+落点是全局 `page`，不是逐页配置：页面底色、页面内容与 App 层的 `<OverlayHost />` 在同一棵变量树里，暗色一起生效。不想要明暗就引 `theme-light`，不需要覆盖任何变量；要定制配色再在自己样式里覆盖 `--mptk-*`（后引入者胜）。
+
+`prefers-color-scheme` 在 Skyline 下的支持尚未实机验证；引擎不支持时 `theme-auto` 会表现为固定明，此时改用 `theme-dark` 即可。多色图标的颜色固化在字体调色板里，不跟随明暗，见[图标字体](icons.md)。
 
 #### 整屏背景图
 
@@ -95,3 +120,7 @@ import 'mp-taro-kit/styles/tokens'
 - 2026-11-08 20:23:41：补 ui/icon 出口，子域数量改为七个
 - 2026-11-11 16:02:03：新增样式基线一节：通用样式唯一落点 styles/tokens、必需引用与覆盖方式
 - 2026-11-11 16:07:04：补整屏背景图写法：background-origin、fixed 定位 Image 与底色兜底
+- 2026-11-11 17:44:05：补组件级与图标包级细路径、通配展开校验、CJS 口径与明暗契约
+- 2026-11-11 17:58:24：明暗改成一个 import 三选一：固定明 / 固定暗 / 跟随系统，宿主不再需要覆盖变量
+- 2026-11-11 19:58:18：真源收敛到 design/_tokens.scss 的 mixin，固定暗零覆盖
+- 2026-11-11 20:06:19：修正固定暗描述：只写基线与暗色值，零覆盖

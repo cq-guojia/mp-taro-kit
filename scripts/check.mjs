@@ -48,6 +48,36 @@ for (const [key, value] of Object.entries(exportsMap)) {
   }
 }
 
+// exports 用通配（`./ui/*`、`./ui/*/style`），坏路径在清单自洽性里看不出来：
+// 解析能成功、文件却不存在，照样能发版。逐个对照 src/ui 下的出口单元，
+// 保证每个 index.ts / style/index.scss 在 dist 里都有对应产物。
+const srcUiDir = path.join(root, 'src', 'ui')
+const distUiDir = path.join(root, 'dist', 'ui')
+async function collectFiles(dir, out = []) {
+  if (!existsSync(dir)) return out
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) await collectFiles(full, out)
+    else out.push(full)
+  }
+  return out
+}
+for (const file of await collectFiles(srcUiDir)) {
+  const rel = path.relative(srcUiDir, file)
+  if (rel === 'index.ts' || rel.endsWith(`${path.sep}index.ts`)) {
+    const dir = path.dirname(path.join(distUiDir, rel))
+    for (const name of ['index.js', 'index.cjs', 'index.d.ts']) {
+      if (!existsSync(path.join(dir, name))) {
+        errors.push(`通配出口 ${rel} 在 dist 里缺 ${name}`)
+      }
+    }
+  }
+  if (rel.endsWith(`style${path.sep}index.scss`)) {
+    const target = path.join(distUiDir, rel.replace(/\.scss$/, '.css'))
+    if (!existsSync(target)) errors.push(`通配样式出口 ${rel} 在 dist 里缺 index.css`)
+  }
+}
+
 const distDir = path.join(root, 'dist')
 let artifacts = 0
 async function collect(dir) {

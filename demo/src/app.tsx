@@ -9,9 +9,9 @@ import type {
 } from 'mp-taro-kit/core'
 import { OverlayHost } from 'mp-taro-kit/ui/infra'
 
-import 'mp-taro-kit/styles/tokens'
+import 'mp-taro-kit/styles/theme-auto'
 import 'mp-taro-kit/ui/infra/style'
-import 'mp-taro-kit/ui/icon/style'
+import 'mp-taro-kit/ui/icon/base/style'
 import './app.scss'
 
 function urlOf(options: NavigateOptions): string {

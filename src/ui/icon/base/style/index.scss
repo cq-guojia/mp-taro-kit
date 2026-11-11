@@ -1,0 +1,66 @@
+/* 本文件由 scripts/icons.mjs 生成，请勿手改。
+   包：base
+   源：https://at.alicdn.com/t/c/font_5251349_mscz5eq640k.css
+   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。
+   更新：平台改图标 → 改 scripts/icons.mjs 的 SOURCES → pnpm run icons */
+
+@font-face {
+  font-family: "mptk-icons-base"; /* Project id 5251349 */
+  /* Color fonts */
+  src: 
+       url('https://at.alicdn.com/t/c/font_5251349_mscz5eq640k.woff2?t=1794145157658') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5251349_mscz5eq640k.woff?t=1794145157658') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5251349_mscz5eq640k.ttf?t=1794145157658') format('truetype');
+}
+
+.mptk-icons-base {
+  font-family: "mptk-icons-base" !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mptk-i-loading:before {
+  content: "\e623";
+}
+
+.mptk-i-loading-bar:before {
+  content: "\e696";
+}
+
+.mptk-i-home:before {
+  content: "\e61c";
+}
+
+.mptk-i-logo:before {
+  content: "\e87e";
+}
+
+.mptk-i-move-right:before {
+  content: "\e615";
+}
+
+.mptk-i-shaixuan:before {
+  content: "\e680";
+}
+
+.mptk-i-xiugai:before {
+  content: "\e719";
+}
+
+.mptk-i-shanchu:before {
+  content: "\e7f4";
+}
+
+.mptk-i-move-left:before {
+  content: "\e874";
+}
+
+.mptk-i-move-down:before {
+  content: "\e875";
+}
+
+.mptk-i-move-up:before {
+  content: "\e876";
+}
+

@@ -246,9 +246,9 @@ export const pages: CatalogPage[] = [
       {
         id: 'tokens',
         title: '样式变量换肤',
-        hint: 'styles/tokens：覆盖 --mptk-*',
+        hint: 'styles/theme-* 三选一：固定明 / 固定暗 / 跟随系统',
         usage: '',
-        imports: ['mp-taro-kit/styles/tokens', 'mp-taro-kit/design'],
+        imports: ['mp-taro-kit/styles/theme-auto', 'mp-taro-kit/design'],
         renderNotes: '',
       },
       {

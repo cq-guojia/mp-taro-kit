@@ -1,0 +1,7 @@
+// 固定暗：基线与暗色值一次写全，不铺明色值、不做覆盖。
+@use 'tokens' as t;
+
+page {
+  @include t.base;
+  @include t.dark;
+}

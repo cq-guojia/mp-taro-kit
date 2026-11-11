@@ -29,7 +29,7 @@
 
 1. `pnpm run build` 清空并重建 `dist/`。
 2. 第一轮 TypeScript emit 产出 ESM `.js` 与 `.d.ts`；第二轮产出 CJS，并把相对 `require('*.js')` 重写为 `.cjs`。
-3. 复制源码 `.css`、把每个 `.scss` 编译成同名 `.css`，`tokens.css` 另复制一份到 `dist/styles/tokens.css`。
+3. 复制源码 `.css`、把每个 `.scss` 编译成同名 `.css`；`src/design/_tokens.scss` 的 mixin 编译出 `dist/styles/theme-{light,dark,auto}.css`，固定明那份再复制为 `dist/styles/tokens.css` 作兼容出口。
 4. `pnpm test` 跑包清单自检与四组 Node 断言；`pnpm run guard` 校验 `dist/` 非空且根入口三件套齐全，否则拒绝发版；`pnpm pack --dry-run` 预览包内容。
 5. 推送 `v*` tag 触发 CI，按安装、构建、测试、guard、预览、发布顺序执行 `pnpm publish`。
 6. 任一轮 TypeScript 报错即中止构建；`dist/` 不入库，只在 CI 现场生成并随包分发。
@@ -60,7 +60,7 @@
 
 - 禁止把 `react`、`@tarojs/taro`、`@tarojs/components` 打进产物：它们是 `peerDependencies`，由宿主提供，否则同页会出现两份运行时实例。
 - `devDependencies` 里的类型包必须只服务编译期；`files` 只能是 `dist` 与 README，否则发布包会混入开发依赖。
-- 组件样式必须只写 `var(--mptk-*)` 且不自带兜底值；默认值唯一真源在 `src/design/tokens.css`，改前缀会让所有已接入宿主的换肤同时失效。
+- 组件样式必须只写 `var(--mptk-*)` 且不自带兜底值；默认值唯一真源在 `src/design/_tokens.scss` 的 `base` / `light` / `dark` 三个 mixin，改前缀会让所有已接入宿主的换肤同时失效。
 - 禁止组件 import 宿主的 router / store / constants；内容一律走 `children`、props 与回调注入。
 - `core` 与 `ui` 必须平级互不 import，依赖方向不得反向。
 - 样式必须用长写属性、不得依赖 Skyline 独占手势 API：Skyline 是主路径，WebView 必须可用，简写属性内的 `var()` 不生效。
@@ -83,3 +83,5 @@
 - 2026-11-07 22:38:05：新建
 - 2026-11-07 22:40:05：填实能力域依赖、关键链路与不可破约束
 - 2026-11-08 20:23:41：ui 子域加入 icon
+- 2026-11-11 19:58:19：构建与真源说明同步到 _tokens.scss
+- 2026-11-11 20:06:19：补全真源源码路径

@@ -52,6 +52,9 @@
     },
     "./ui/*/style": "./dist/ui/*/style/index.css",
     "./styles/tokens": "./dist/styles/tokens.css",
+    "./styles/theme-light": "./dist/styles/theme-light.css",
+    "./styles/theme-dark": "./dist/styles/theme-dark.css",
+    "./styles/theme-auto": "./dist/styles/theme-auto.css",
     "./package.json": "./package.json"
   },
   "scripts": {

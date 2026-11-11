@@ -1,6 +1,6 @@
-/* Loading 的转圈图标来自图标域，这里把字体声明与图标类一并带出来，
-   调用方只引 feedback 的 style 也能转，不必记得额外引一次 icon/style。 */
-@use '../../icon/style/index';
+/* Loading 的转圈字形来自基础图标包，字体声明由宿主在 app 入口引
+   'mp-taro-kit/ui/icon/base/style' 提供（基础包必引）。这里不再内联一份，
+   否则每个引 feedback 的页面都会复制一遍字体样式。 */
 
 .mptk-fb-toast {
   background-color: var(--mptk-surface-2);

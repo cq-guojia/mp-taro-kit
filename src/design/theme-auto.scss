@@ -1,0 +1,13 @@
+// 跟随系统：明色是默认值，系统切暗时由媒体查询换成暗色值；两套值各来自 mixin 一次。
+@use 'tokens' as t;
+
+page {
+  @include t.base;
+  @include t.light;
+}
+
+@media (prefers-color-scheme: dark) {
+  page {
+    @include t.dark;
+  }
+}

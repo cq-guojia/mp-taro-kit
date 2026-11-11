@@ -1,0 +1,7 @@
+// 固定明：只有基线与明色值，不存在暗色变体。
+@use 'tokens' as t;
+
+page {
+  @include t.base;
+  @include t.light;
+}

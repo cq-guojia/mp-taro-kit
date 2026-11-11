@@ -20,13 +20,58 @@ function exists(relative) {
 }
 
 test('图标基础类不写死 font-size，生成物与发布产物都遵守', () => {
-  for (const relative of ['../src/ui/icon/style/index.scss', '../dist/ui/icon/style/index.css']) {
+  for (const relative of [
+    '../src/ui/icon/base/style/index.scss',
+    '../dist/ui/icon/base/style/index.css',
+    '../dist/ui/icon/style/index.css',
+  ]) {
     const rule = read(relative).match(/\.mptk-icons-base\s*\{([^}]*)\}/)
     assert.ok(rule, `${relative} 找不到图标基础类规则`)
     assert.match(rule[1], /font-family/, `${relative} 基础类必须保留 font-family`)
     assert.doesNotMatch(rule[1], /font-size/, `${relative} 基础类不应写死 font-size`)
   }
   assert.match(read('../scripts/icons.mjs'), /stripBaseFontSize/, '生成器必须剥离平台产物的基础类字号')
+})
+
+test('图标分包：base 包有独立三件套，旧出口只做转发', () => {
+  for (const relative of [
+    '../src/ui/icon/base/index.ts',
+    '../src/ui/icon/base/names.ts',
+    '../src/ui/icon/base/style/index.scss',
+  ]) {
+    assert.ok(exists(relative), `${relative} 缺失`)
+  }
+  assert.match(read('../scripts/icons.mjs'), /const SOURCES = \[/, '生成器必须按包列表生成')
+  assert.match(read('../src/ui/icon/index.ts'), /base\/index\.js/, '旧 JS 出口须转发到 base')
+  assert.match(read('../src/ui/icon/style/index.scss'), /@use '\.\.\/base\/style\/index'/, '旧样式出口须转发到 base')
+  assert.doesNotMatch(read('../src/ui/feedback/style/index.scss'), /@use.*icon/, 'feedback 不得内联图标样式')
+})
+
+test('明暗三选一：三个主题出口产物齐全且行为分明', () => {
+  const light = read('../dist/styles/theme-light.css')
+  const dark = read('../dist/styles/theme-dark.css')
+  const auto = read('../dist/styles/theme-auto.css')
+  for (const [mode, css] of [['theme-light', light], ['theme-dark', dark], ['theme-auto', auto]]) {
+    assert.match(css, /page\s*\{/, `${mode} 必须自带页面基线`)
+    assert.match(css, /--mptk-radius-md:\s*12px/, `${mode} 必须含共享基线`)
+  }
+  assert.doesNotMatch(light, /prefers-color-scheme|--mptk-fg:\s*#e6e8eb/, '固定明不得含暗色值')
+  assert.doesNotMatch(
+    dark,
+    /--mptk-surface-base:\s*#fff|@media \(prefers-color-scheme: dark\)/,
+    '固定暗不得铺明色值，也不得跟系统走',
+  )
+  assert.match(dark, /--mptk-fg:\s*#e6e8eb/, '固定暗必须含暗色值')
+  assert.match(auto, /--mptk-surface-base:\s*#fff/, '跟随系统默认明')
+  assert.match(auto, /@media \(prefers-color-scheme: dark\)/, '跟随系统必须包媒体查询')
+  assert.match(auto, /--mptk-fg:\s*#e6e8eb/, '跟随系统必须含暗色值')
+  for (const stale of ['../src/design/tokens.css', '../src/design/dark-values.css']) {
+    assert.ok(!exists(stale), `${stale} 不应存在：值只能在 _tokens.scss 里写一次`)
+  }
+  const pkg = JSON.parse(read('../package.json'))
+  for (const name of ['theme-light', 'theme-dark', 'theme-auto']) {
+    assert.ok(pkg.exports[`./styles/${name}`], `exports 缺少 ./styles/${name}`)
+  }
 })
 
 /** 模拟 <OverlayHost /> 的关闭动作：出栈并调 payload.resolve。 */
