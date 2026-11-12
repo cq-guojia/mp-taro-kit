@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, useEffect, type ReactNode } from 'react'
 import Taro from '@tarojs/taro'
 import { configure } from 'mp-taro-kit/core'
 import type {
@@ -12,6 +12,8 @@ import { OverlayHost } from 'mp-taro-kit/ui/infra'
 import 'mp-taro-kit/styles/theme-auto'
 import 'mp-taro-kit/ui/infra/style'
 import 'mp-taro-kit/ui/icon/base/style'
+// 演示站自有的图标：只引样式，类名在用到的地方直接写，不做包出口。
+import './icons/demo-color/style/index.scss'
 import './app.scss'
 
 function urlOf(options: NavigateOptions): string {
@@ -62,8 +64,31 @@ const faces: PlatformFaces = {
 
 configure(faces)
 
+// 窗口背景色：Android 的底部系统手势条区域只认这个，不跟随页面 CSS 背景。
+const WINDOW_BACKGROUND = {
+  light: '#ffffff',
+  dark: '#15181c',
+} as const
+
+function applyWindowBackground(theme: 'light' | 'dark') {
+  const backgroundColor = WINDOW_BACKGROUND[theme]
+  void Taro.setBackgroundColor({
+    backgroundColor,
+    backgroundColorTop: backgroundColor,
+    backgroundColorBottom: backgroundColor,
+  })
+}
+
 // 命令式 API 的渲染位置全局只挂一次；页面内容由 Taro 注入 children。
 export default function App({ children }: { children?: ReactNode }) {
+  useEffect(() => {
+    const theme = Taro.getSystemInfoSync().theme === 'dark' ? 'dark' : 'light'
+    applyWindowBackground(theme)
+    const onChange = (res: { theme: 'light' | 'dark' }) => applyWindowBackground(res.theme)
+    Taro.onThemeChange(onChange)
+    return () => Taro.offThemeChange(onChange)
+  }, [])
+
   return (
     <Fragment>
       {children}

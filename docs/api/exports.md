@@ -25,7 +25,11 @@
 
 **引用单元是组件或图标包，不是子域**：小程序包体积受限，消费端用哪个就引哪个的 JS 与 `style` 出口。子域聚合出口仍在，但只作兼容过渡；`scripts/check.mjs` 会逐个对照 `src/ui` 下的 `index.ts` 与 `style/index.scss`，确保通配展开后的产物真实存在，避免解析成功却文件缺失的坏包。
 
+第一个按此落地的组件单元是 `mp-taro-kit/ui/display/cell`（`Cell` + `CellGroup`）与 `mp-taro-kit/ui/display/cell/style`；`mp-taro-kit/ui/display` 只转发它们，不再作为推荐引用口。
+
 组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
+
+`styles/theme-*` 的字号档位固定为 12 / 14 / 15 / 17 / 22（另 `font-nav` 17），与《微信小程序设计指南》5.1 的常用字号一一对应；行高与字号成对。宿主不应整体覆盖档位，演示站自身也不覆盖。
 
 ## 运行时约定
 
@@ -36,6 +40,16 @@
 ### 挂载点
 
 宿主在页面基座挂一次 `<OverlayHost />`。`showToast` / `showLoading` / `alert` / `confirm` 同步检查挂载状态；未挂载每次抛带修复指引的 Error。`hideToast` / `hideLoading` / `clearToasts` 不检查。`confirm` 以 Promise 解析出布尔值，`alert` 解析即关闭。
+
+### Cell / CellGroup 的组内行为
+
+props 表、九种用法与代码示例见 [Cell 单元格](cell.md)。`.d.ts` 只表达 props 类型，以下几条由运行时保证：
+
+- `CellGroup` 默认通栏（`flush`），`inset` 为圆角内收卡片；卡片形态不画上下外框，`border` 只作用于通栏。
+- 组内最后一格的下分隔线由 `CellGroup` 按位置关掉，不用结构伪类；独立使用的 `Cell` 由自身 `border` 决定。
+- 点击态由 `onClick` 派生（不暴露 `clickable`），`isLink` 只渲染箭头，`disabled` 短路回调与按压反馈。
+- `value` 优先于 `children`，`rightIcon` 优先于 `isLink` 箭头；内容位均为 `ReactNode`。
+- 本库不接路由：Vant 的 `url` / `link-type` 不做，跳转由宿主经 `onClick` 注入。
 
 ### 错误口径
 
@@ -54,8 +68,9 @@
 |---|---|
 | `page { height: 100% }` | 页面满屏底框，接入方页面不必再写高度 |
 | `page { background-color: var(--mptk-surface-base) }` | 页面底色兜底：内容或图片铺不满时不露白；改这个变量即换整页底色 |
-| `page { padding-bottom: env(safe-area-inset-bottom) }` | 底部安全区，纯 CSS，无需挂 `<SafeArea>` |
 | `--mptk-*` 变量 | 组件样式取值来源，默认值唯一真源 |
+
+底部安全区**不在 `page` 上让位**：Skyline 下 `page` 的 padding 区域不绘制背景，会让底部露出一条窗口白底。改由页面根容器自己 `padding-bottom: env(safe-area-inset-bottom)` 并铺 `--mptk-surface-base`（或挂 `<SafeArea bottom />`），安全区背景才会跟随主题。Android 的系统手势条区域只认窗口背景色，宿主在 app 入口用 `Taro.setBackgroundColor` 跟随 `Taro.onThemeChange` 一起设置。
 
 宿主在 app 入口**从三个明暗模式里引一个**即全站所有页面生效，页面不需要逐个引：
 
@@ -87,13 +102,13 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 
 #### 整屏背景图
 
-`padding-bottom` 只挤压内容、不裁剪背景，所以「图铺到屏底」和「内容避开 home indicator」可以同时成立。按图的放法选：
+底部安全区由页面根容器 `padding-bottom` 让出，背景图铺在 `page` 或根容器上都能盖住安全区；按图的放法选：
 
 | 放法 | 写法 | 说明 |
 |---|---|---|
-| `page` 背景图（推荐） | `background-image` + `background-size: cover` + **`background-origin: border-box`** | `cover` 的尺寸按 `background-origin` 算，默认 `padding-box` 会让底部安全区露出底色；改 `border-box` 才铺到屏底 |
-| `<Image>` 子节点 | `position: fixed` + 四条边 0 | fixed 相对视口，不吃 `page` 的 padding，图铺满屏、内容仍在安全区内 |
-| 图贴底且不要安全区 | 覆盖 `page { padding-bottom: 0 }` | 图铺到底，但内容也贴着 home indicator，慎用 |
+| `page` 背景图（推荐） | `background-image` + `background-size: cover` | `page` 没有安全区 padding，图直接铺到屏底；内容避让仍由根容器负责 |
+| `<Image>` 子节点 | `position: fixed` + 四条边 0 | fixed 相对视口，图铺满屏，内容仍在安全区内 |
+| 图贴底且不要安全区 | 根容器不写 `padding-bottom` | 内容会贴着 home indicator，慎用 |
 
 图比屏短时，把 `--mptk-surface-base` 覆盖成图的主色，露出来的就是同色而非白边——这是底色走 token 而非写死白的原因。
 
@@ -125,3 +140,7 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 - 2026-11-11 19:58:18：真源收敛到 design/_tokens.scss 的 mixin，固定暗零覆盖
 - 2026-11-11 20:06:19：修正固定暗描述：只写基线与暗色值，零覆盖
 - 2026-11-11 21:26:52：补演示站编译产物核实结论：三选一主题与基础图标包均真实进包，Skyline 实时重算仍待实机验证
+- 2026-11-11 22:16:11：补首个组件级细路径实例与 Cell 组内运行时约定
+- 2026-11-11 22:30:25：组内行为指向 Cell 用法文档
+- 2026-11-11 22:50:04：字号档位统一为 12/14/15/17/22，禁止宿主与演示站整体覆盖
+- 2026-11-11 23:01:08：底部安全区改由页面根容器让位，附窗口背景设置

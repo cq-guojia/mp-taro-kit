@@ -23,7 +23,7 @@ TypeScript 与 Sass 负责把 `src/` 编成 `dist/`；`@types/react` 与 `@taroj
 - `@parcel/watcher` 是 Sass 的可选依赖，只服务 `--watch`；本库构建只用 `sass.compile()`，不需要它的原生构建产物。
 - `--mptk-*` 的 `page` 挂载与 px 单位在 Skyline / WebView 双端的表现无实机证据，属未验证假设，须在 `demo/` 宿主里确认。
 - 上游 Taro 类型包对 React 版本的 peer 限制可能比本库 `peerDependencies` 更窄，接入高版本 React 的宿主需自行核对类型层。
-- 宿主 `designWidth` 必须是 375：本库 tokens 与组件样式按逻辑像素（pt）书写，`designWidth: 750` 会让 pxtransform 按 1px→1rpx 输出，真机字号与间距全部减半（`--mptk-font-md: 13px` 只剩 6.5pt）。配 375 后 1px→2rpx，`13px` 才是 13pt，与 WeUI 的 12~17px 同口径。
+- 宿主 `designWidth` 必须是 375：本库 tokens 与组件样式按逻辑像素（pt）书写，`designWidth: 750` 会让 pxtransform 按 1px→1rpx 输出，真机字号与间距全部减半（`--mptk-font-md: 15px` 只剩 7.5pt）。配 375 后 1px→2rpx，`15px` 才是 15pt，与 WeUI 的 12~17px 同口径。
 
 ## 更新日志
 
@@ -34,3 +34,4 @@ TypeScript 与 Sass 负责把 `src/` 编成 `dist/`；`@types/react` 与 `@taroj
 - 2026-11-08 18:05:01：确认宿主 designWidth 必须为 375，修正 demo 全站尺寸减半
 - 2026-11-08 22:53:30：正文去掉实测日期，改由更新日志承载
 - 2026-11-11 19:58:19：补 Sass partial 与主题入口的编译规则
+- 2026-11-11 22:50:04：同步 font-md 档位为 15px

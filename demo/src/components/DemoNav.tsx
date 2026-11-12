@@ -40,7 +40,9 @@ export function DemoNav({
   return (
     <NavBar
       title={title}
-      titleIcon={logo ? <Text className={`${iconClass('logo')} demo-nav__logo`} /> : undefined}
+      titleIcon={
+        logo ? <Text className="mptk-icons-demo-color mptk-i-demo-color-logo demo-nav__logo" /> : undefined
+      }
       statusBarHeight={windowInfo.statusBarHeight ?? 0}
       menuButton={{ top: menuButton.top, height: menuButton.height }}
       showBack={!home}

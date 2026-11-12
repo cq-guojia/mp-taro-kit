@@ -6,34 +6,20 @@ page {
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
-
-  /* 演示站字号档位：字号与行高成对，图标与文字共用同一套档位，不再给图标单列尺寸组。
-     主库 tokens.css 是对外契约，这里只做宿主覆盖。 */
-  --mptk-font-xxxs: 8px;
-  --mptk-font-xxs: 10px;
-  --mptk-font-xs: 12px;
-  --mptk-font-sm: 14px;
-  --mptk-font-md: 16px;
-  --mptk-font-lg: 18px;
-  --mptk-font-xl: 20px;
-  --mptk-font-nav: 18px;
-  --mptk-line-xxxs: 12px;
-  --mptk-line-xxs: 14px;
-  --mptk-line-xs: 18px;
-  --mptk-line-sm: 22px;
-  --mptk-line-md: 26px;
-  --mptk-line-lg: 28px;
-  --mptk-line-xl: 30px;
 }
 
 /* Skyline 不支持页面全局滚动，滚动交给 scroll-view：
    外壳撑满页面内容盒，导航栏占自身高度，正文区吃掉剩余高度并成为唯一滚动容器。
    高度用 100% 而非 100vh：库的页面基线（styles/tokens）把底部安全区做成了 page 的 padding-bottom，
    100% 跟着内容盒走会自动让出安全区；写 100vh 会顶破安全区、底部被裁。 */
+/* 底部安全区由外壳自己让位并铺背景：page 的 padding 区在 Skyline 下不画背景，会露白。 */
 .demo-shell {
+  background-color: var(--mptk-surface-base);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .demo-shell__body {
@@ -43,15 +29,18 @@ page {
   height: 0;
 }
 
+/* 页面不再统一加左右内边距：普通示例块自己留 16，裸展示的组件才能真正通到底。 */
 .demo-page {
   padding-top: var(--mptk-space-4);
-  padding-right: var(--mptk-space-4);
+  padding-right: 0;
   padding-bottom: var(--mptk-space-4);
-  padding-left: var(--mptk-space-4);
+  padding-left: 0;
 }
 
 .demo-page__head {
   margin-bottom: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
 }
 
 .demo-page__title {
@@ -64,17 +53,6 @@ page {
   color: var(--mptk-fg-2);
   font-size: var(--mptk-font-sm);
   line-height: var(--mptk-line-sm);
-}
-
-.demo-group {
-  margin-bottom: var(--mptk-space-4);
-}
-
-.demo-group__title {
-  color: var(--mptk-fg-3);
-  font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
-  margin-bottom: var(--mptk-space-2);
 }
 
 /* 首页品牌区：无外框，图标、一句话与三个构建标签整体居中。 */
@@ -127,8 +105,8 @@ page {
   border-right-color: var(--mptk-border);
   border-radius: var(--mptk-radius-pill);
   color: var(--mptk-fg-2);
-  font-size: var(--mptk-font-xxs);
-  line-height: var(--mptk-line-xxs);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
   margin-right: var(--mptk-space-1);
   margin-bottom: var(--mptk-space-2);
   margin-left: var(--mptk-space-1);
@@ -142,78 +120,45 @@ page {
   color: var(--mptk-business);
 }
 
-.demo-entry {
-  align-items: center;
-  background-color: var(--mptk-surface-1);
-  border-top-width: 1px;
-  border-top-style: solid;
-  border-top-color: var(--mptk-border);
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-color: var(--mptk-border);
-  border-left-width: 1px;
-  border-left-style: solid;
-  border-left-color: var(--mptk-border);
-  border-right-width: 1px;
-  border-right-style: solid;
-  border-right-color: var(--mptk-border);
-  border-radius: var(--mptk-radius-md);
-  display: flex;
-  flex-direction: row;
-  margin-bottom: var(--mptk-space-2);
-  padding-top: var(--mptk-space-2);
-  padding-right: var(--mptk-space-3);
-  padding-bottom: var(--mptk-space-2);
-  padding-left: var(--mptk-space-3);
-}
-
-/* 未实现的菜单项：位置保留、文字置灰、无箭头、不绑跳转。 */
-.demo-entry--planned {
-  border-top-color: var(--mptk-border-faint);
-  border-bottom-color: var(--mptk-border-faint);
-  border-left-color: var(--mptk-border-faint);
-  border-right-color: var(--mptk-border-faint);
-}
-
-.demo-entry__main {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0;
-}
-
-.demo-entry__title {
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-md);
-  line-height: var(--mptk-line-md);
-}
-
-.demo-entry__title--planned {
-  color: var(--mptk-fg-4);
-}
-
-.demo-entry__arrow {
-  color: var(--mptk-fg-4);
-  font-size: var(--mptk-font-md);
-  margin-left: var(--mptk-space-2);
-}
-
 .demo-block {
   background-color: var(--mptk-surface-1);
   border-top-width: 1px;
   border-top-style: solid;
   border-top-color: var(--mptk-border-faint);
   border-radius: var(--mptk-radius-md);
+  margin-right: var(--mptk-space-4);
   margin-bottom: var(--mptk-space-3);
+  margin-left: var(--mptk-space-4);
   padding-top: var(--mptk-space-3);
   padding-right: var(--mptk-space-3);
   padding-bottom: var(--mptk-space-3);
   padding-left: var(--mptk-space-3);
 }
 
+/* 裸展示页里非通栏内容（徽标、说明文字）自己补左右 16，与 Cell 内容对齐。 */
+.demo-inset {
+  padding-right: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
+}
+
+/* 裸展示：不套演示卡片、不加左右内边距，整行直接铺到屏幕两侧。 */
+.demo-block--bare {
+  background-color: transparent;
+  border-top-width: 0;
+  border-radius: 0;
+  margin-right: 0;
+  margin-left: 0;
+  padding-right: 0;
+  padding-left: 0;
+}
+
 .demo-block__head {
   margin-bottom: var(--mptk-space-2);
+}
+
+.demo-block__head--bare {
+  padding-right: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
 }
 
 .demo-block__title {
@@ -230,31 +175,6 @@ page {
 
 .demo-block__body {
   margin-bottom: var(--mptk-space-2);
-}
-
-.demo-block__usage {
-  background-color: var(--mptk-surface-2);
-  border-radius: var(--mptk-radius-sm);
-  color: var(--mptk-fg-2);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
-  margin-bottom: var(--mptk-space-2);
-  padding-top: var(--mptk-space-2);
-  padding-right: var(--mptk-space-2);
-  padding-bottom: var(--mptk-space-2);
-  padding-left: var(--mptk-space-2);
-}
-
-.demo-block__imports {
-  color: var(--mptk-fg-4);
-  font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
-}
-
-.demo-block__import {
-  color: var(--mptk-business);
-  font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
 }
 
 .demo-row {
@@ -365,4 +285,42 @@ page {
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
   text-align: center;
+}
+
+/* 一次性验证：Skyline 下 :before 的 content 能否吃 CSS 变量。
+   验完连同 catalog.ts 的 icon-probe 与 pages/icon 的 ProbeRow 一起删，不进组件库产物。 */
+.demo-probe__row {
+  align-items: center;
+  display: flex;
+  gap: var(--mptk-space-3);
+  margin-bottom: var(--mptk-space-2);
+}
+
+.demo-probe__key {
+  color: var(--mptk-fg-3);
+  flex-shrink: 0;
+  font-size: var(--mptk-font-xs);
+  width: 140px;
+}
+
+.demo-probe__glyph {
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-xl);
+  line-height: 1;
+}
+
+.demo-probe-a:before {
+  content: "\e61c";
+}
+
+.demo-probe-b:before {
+  content: var(--mptk-i-probe, "\e61c");
+}
+
+.demo-probe-c {
+  --mptk-i-probe: "\e87e";
+}
+
+.demo-probe-c:before {
+  content: var(--mptk-i-probe, "\e61c");
 }

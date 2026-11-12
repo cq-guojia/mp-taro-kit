@@ -1,6 +1,6 @@
 // 本文件由 scripts/icons.mjs 生成，请勿手改。
 // 包：base
-// 源：https://at.alicdn.com/t/c/font_5251349_mscz5eq640k.css
+// 源：https://at.alicdn.com/t/c/font_5251349_5n3d5h8pvsn.css
 export const iconBaseClass = 'mptk-icons-base'
 export const iconPrefix = 'mptk-i-'
 
@@ -10,9 +10,7 @@ export const iconPrefix = 'mptk-i-'
  */
 export const iconMap: Readonly<Record<string, string>> = {
   "loading": 'mptk-icons-base mptk-i-loading',
-  "loading-bar": 'mptk-icons-base mptk-i-loading-bar',
   "home": 'mptk-icons-base mptk-i-home',
-  "logo": 'mptk-icons-base mptk-i-logo',
   "move-right": 'mptk-icons-base mptk-i-move-right',
   "shaixuan": 'mptk-icons-base mptk-i-shaixuan',
   "xiugai": 'mptk-icons-base mptk-i-xiugai',
@@ -23,4 +21,10 @@ export const iconMap: Readonly<Record<string, string>> = {
 }
 
 /** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。 */
-export const iconNames: readonly string[] = ['loading', 'loading-bar', 'home', 'logo', 'move-right', 'shaixuan', 'xiugai', 'shanchu', 'move-left', 'move-down', 'move-up']
+export const iconNames: readonly string[] = ['loading', 'home', 'move-right', 'shaixuan', 'xiugai', 'shanchu', 'move-left', 'move-down', 'move-up']
+
+/**
+ * 本包字形是否带颜色（COLR/CPAL）：true 时 color 与明暗主题都改不动它。
+ * 由平台项目类型决定、整包一致，调用方据此决定要不要费劲上色，不要逐图标猜。
+ */
+export const iconColored = false

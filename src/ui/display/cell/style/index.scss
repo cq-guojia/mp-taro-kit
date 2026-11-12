@@ -1,0 +1,192 @@
+/* Cell / CellGroup 组件级样式：一套 DOM + 修饰符类切通栏 / 卡片。
+   分隔线与外框都是独立 1px 元素，长写 background-color，不赌结构伪类。 */
+
+.mptk-cell-group {
+  position: relative;
+}
+
+/* 通栏：显式归零外边距，宿主给 Group 设过 margin 也不会被卡片形态带跑。 */
+.mptk-cell-group--flush {
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+}
+
+.mptk-cell-group--inset {
+  margin-top: var(--mptk-space-3);
+  margin-right: var(--mptk-space-4);
+  margin-bottom: var(--mptk-space-3);
+  margin-left: var(--mptk-space-4);
+}
+
+.mptk-cell-group__title {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  padding-top: var(--mptk-space-3);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-1);
+  padding-left: var(--mptk-space-4);
+}
+
+.mptk-cell-group__body {
+  position: relative;
+  background-color: var(--mptk-surface-1);
+}
+
+/* 卡片形态自带一圈极浅描边：宿主页面底色与卡片同色时也能看出边界。 */
+.mptk-cell-group__body--inset {
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--mptk-border-faint);
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: var(--mptk-border-faint);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--mptk-border-faint);
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: var(--mptk-border-faint);
+  border-top-left-radius: var(--mptk-radius-md);
+  border-top-right-radius: var(--mptk-radius-md);
+  border-bottom-left-radius: var(--mptk-radius-md);
+  border-bottom-right-radius: var(--mptk-radius-md);
+  overflow: hidden;
+}
+
+.mptk-cell-group__border {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--mptk-border);
+}
+
+.mptk-cell-group__border--top {
+  top: 0;
+}
+
+.mptk-cell-group__border--bottom {
+  bottom: 0;
+}
+
+.mptk-cell {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  background-color: var(--mptk-surface-1);
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+  padding-top: var(--mptk-space-3);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-3);
+  padding-left: var(--mptk-space-4);
+}
+
+.mptk-cell--center {
+  align-items: center;
+}
+
+.mptk-cell--large {
+  padding-top: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-4);
+}
+
+.mptk-cell--disabled {
+  color: var(--mptk-fg-4);
+}
+
+/* hoverClass 只在按压瞬间附加：点击态由 onClick 派生，不是公开 prop。 */
+.mptk-cell--clickable {
+  background-color: var(--mptk-surface-2);
+}
+
+.mptk-cell__icon {
+  align-items: center;
+  display: flex;
+  font-size: var(--mptk-font-lg);
+  line-height: var(--mptk-line-lg);
+  margin-right: var(--mptk-space-2);
+}
+
+.mptk-cell__main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+}
+
+.mptk-cell__title {
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+}
+
+.mptk-cell__label {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  margin-top: var(--mptk-space-1);
+}
+
+.mptk-cell__value {
+  color: var(--mptk-fg-2);
+  flex-shrink: 1;
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  margin-left: var(--mptk-space-2);
+  text-align: right;
+}
+
+.mptk-cell__extra,
+.mptk-cell__right-icon {
+  align-items: center;
+  align-self: center;
+  display: flex;
+  margin-left: var(--mptk-space-2);
+}
+
+/* 箭头用两条边框画出，不依赖图标包，方向靠 transform 旋转；
+   右边界与左边界都只吃 Cell 自己的 padding，左右留白对称。
+   尺寸是视觉值，不吃 --mptk-space 档位：8px 方框旋转 45° 后外接 11.3px，相对 --mptk-font-md 正文明显偏大。 */
+.mptk-cell__arrow {
+  align-self: center;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--mptk-fg-4);
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: var(--mptk-fg-4);
+  flex-shrink: 0;
+  height: 6px;
+  margin-left: var(--mptk-space-3);
+  transform: rotate(45deg);
+  width: 6px;
+}
+
+.mptk-cell__arrow--left {
+  transform: rotate(-135deg);
+}
+
+.mptk-cell__arrow--up {
+  transform: rotate(-45deg);
+}
+
+.mptk-cell__arrow--down {
+  transform: rotate(135deg);
+}
+
+/* 通到底：左右都不缩进，避免一侧留白多；卡片形态由 Group 圆角裁切。 */
+.mptk-cell__divider {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-color: var(--mptk-border);
+}

@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 import * as ui from '../dist/ui/index.js'
+import * as cellState from '../dist/ui/display/cell/state.js'
 
 const require = createRequire(import.meta.url)
 const cjs = require('../dist/ui/index.cjs')
@@ -261,4 +262,154 @@ test('演示站菜单：ready 必指真实展示页，planned 不绑跳转，条
   }
   assert.ok(ready > 0 && planned > 0, '菜单必须同时包含 ready 与 planned')
   assert.equal(appPages.length, catalogPages.length + 1, '路由必须是索引页 + 全部展示页')
+})
+
+test('cell 组件级出口与样式出口齐全，子域 barrel 仍导出', () => {
+  for (const name of ['index.js', 'index.cjs', 'index.d.ts']) {
+    assert.ok(exists(`../dist/ui/display/cell/${name}`), `cell 组件级出口缺 ${name}`)
+  }
+  assert.ok(exists('../dist/ui/display/cell/style/index.css'), 'cell 组件级样式出口缺失')
+  const barrel = read('../dist/ui/display/index.js')
+  assert.match(barrel, /Cell/)
+  assert.match(barrel, /CellGroup/)
+  const css = read('../dist/ui/display/cell/style/index.css')
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/)
+  assert.doesNotMatch(css, /--mp-/)
+  assert.doesNotMatch(css, /:last-child/, '分隔线不能依赖结构伪类')
+  for (const name of [
+    'mptk-cell-group--inset',
+    'mptk-cell-group--flush',
+    'mptk-cell--center',
+    'mptk-cell--clickable',
+    'mptk-cell__divider',
+    'mptk-cell__arrow--down',
+  ]) {
+    assert.ok(css.includes(`.${name}`), `样式缺 .${name}`)
+  }
+  assert.match(css, /background-color:\s*var\(--mptk-border\)/)
+  const cellSource = read('../dist/ui/display/cell/Cell.js')
+  assert.match(cellSource, /state\.clickable/, '点击态必须真的接到 View 的 onClick')
+  assert.match(cellSource, /state\.divider/, '分隔线元素必须由状态机条件渲染')
+  const groupSource = read('../dist/ui/display/cell/CellGroup.js')
+  assert.match(groupSource, /cellDividerVisible\(/, 'CellGroup 必须调用按位置关线逻辑')
+  assert.match(groupSource, /cloneElement\(/, 'CellGroup 必须把结果注入子格')
+})
+
+test('cell 三轴状态：点击态由 onClick 派生、isLink 纯视觉、disabled 短路', () => {
+  assert.equal(cellState.resolveCellState({}).clickable, false)
+  assert.equal(cellState.resolveCellState({ isLink: true }).clickable, false, 'isLink 只管箭头')
+  const active = cellState.resolveCellState({ onClick: () => {} })
+  assert.equal(active.clickable, true)
+  assert.equal(active.hoverClassName, 'mptk-cell--clickable')
+  const disabled = cellState.resolveCellState({ onClick: () => {}, disabled: true })
+  assert.equal(disabled.clickable, false)
+  assert.equal(disabled.hoverClassName, 'none')
+  assert.match(disabled.className, /mptk-cell--disabled/)
+  assert.equal(cellState.resolveCellState({}).arrowClassName, 'mptk-cell__arrow mptk-cell__arrow--right')
+  assert.equal(
+    cellState.resolveCellState({ arrowDirection: 'down' }).arrowClassName,
+    'mptk-cell__arrow mptk-cell__arrow--down',
+  )
+  assert.match(cellState.resolveCellState({}).className, /mptk-cell--divider/, '有分隔线时根类带修饰符供宿主定制')
+  const noBorder = cellState.resolveCellState({ border: false })
+  assert.equal(noBorder.divider, false)
+  assert.doesNotMatch(noBorder.className, /mptk-cell--divider/)
+  const shaped = cellState.resolveCellState({ center: true, size: 'large' })
+  assert.match(shaped.className, /mptk-cell--center/)
+  assert.match(shaped.className, /mptk-cell--large/)
+})
+
+test('cell 分组形态：inset 不画外框，最后一格由位置关掉分隔线', () => {
+  const inset = cellState.resolveCellGroupState({ inset: true })
+  assert.match(inset.className, /mptk-cell-group--inset/)
+  assert.match(inset.bodyClassName, /mptk-cell-group__body--inset/)
+  assert.equal(inset.outerBorder, false)
+  const flush = cellState.resolveCellGroupState({})
+  assert.match(flush.className, /mptk-cell-group--flush/)
+  assert.equal(flush.outerBorder, true)
+  assert.equal(cellState.resolveCellGroupState({ border: false }).outerBorder, false)
+  assert.equal(cellState.cellDividerVisible(true, 0, 2), true)
+  assert.equal(cellState.cellDividerVisible(true, 2, 2), false)
+  assert.equal(cellState.cellDividerVisible(false, 0, 2), false)
+})
+
+test('cell 契约在宿主真类型环境下可作为 JSX 组件使用', () => {
+  const config = ts.readConfigFile(resolve(root, 'tsconfig.json'), ts.sys.readFile)
+  const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root)
+  const probe = resolve(root, 'src/__probe-cell.tsx')
+  const entry = JSON.stringify(resolve(root, 'dist/ui/display/cell/index'))
+  const source = `import { Cell, CellGroup } from ${entry};
+import type { CellProps, CellGroupProps, CellSize, CellArrowDirection } from ${entry};
+const size: CellSize = 'large';
+const direction: CellArrowDirection = 'down';
+const cellProps: CellProps = { title: '单元格' };
+const groupProps: CellGroupProps = { inset: true };
+export const element = (
+  <CellGroup {...groupProps} title="分组" border={false}>
+    <Cell {...cellProps} label="描述" value="内容" icon="图标" rightIcon="右图标" extra="额外" center border size={size} isLink arrowDirection={direction} disabled onClick={() => {}} className="x">自定义值</Cell>
+    <CellGroup title="第二组"><Cell title="独立" /></CellGroup>
+  </CellGroup>
+);
+`
+  const options = { ...parsed.options, noEmit: true }
+  const host = ts.createCompilerHost(options)
+  const original = host.getSourceFile.bind(host)
+  host.getSourceFile = (file, languageVersion, onError, shouldCreateNewSourceFile) =>
+    file === probe
+      ? ts.createSourceFile(file, source, languageVersion, true, ts.ScriptKind.TSX)
+      : original(file, languageVersion, onError, shouldCreateNewSourceFile)
+  host.fileExists = (file) => file === probe || ts.sys.fileExists(file)
+  host.readFile = (file) => (file === probe ? source : ts.sys.readFile(file))
+  const diagnostics = ts.getPreEmitDiagnostics(ts.createProgram([probe], options, host))
+  assert.deepEqual(
+    diagnostics.map((item) => ts.flattenDiagnosticMessageText(item.messageText, ' ')),
+    [],
+  )
+})
+
+test('cell 菜单翻 ready，展示页覆盖 Vant Weapp 全部形态', () => {
+  const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', outputText)(mod.exports, mod)
+  const { menu, catalogPages } = mod.exports
+  const cell = menu.flatMap((group) => group.entries).find((entry) => entry.id === 'cell')
+  assert.equal(cell.status, 'ready')
+  assert.equal(cell.pageId, 'display')
+  const display = catalogPages.find((page) => page.id === 'display')
+  const expected = [
+    'cell-basic',
+    'cell-inset',
+    'cell-size',
+    'cell-icon',
+    'cell-link',
+    'cell-navigate',
+    'cell-group-title',
+    'cell-slot',
+    'cell-center',
+    'cell-state',
+  ]
+  const page = read('../demo/src/pages/display/index.tsx')
+  for (const id of expected) {
+    assert.ok(display.examples.some((example) => example.id === id), `catalog 缺示例 ${id}`)
+    assert.ok(page.includes(`id === '${id}'`), `展示页缺 ${id} 的渲染分支`)
+  }
+  const home = read('../demo/src/pages/index/index.tsx')
+  assert.match(home, /CellGroup/, '首页必须用 CellGroup')
+  assert.match(home, /mp-taro-kit\/ui\/display\/cell\/style/, '首页必须引组件级样式')
+})
+
+test('演示站只演示形态：不渲染代码，通栏示例页裸展示', () => {
+  const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', outputText)(mod.exports, mod)
+  const display = mod.exports.catalogPages.find((page) => page.id === 'display')
+  assert.equal(display.bare, true, '展示页必须裸展示，通栏才不会被演示卡片包住')
+  const block = read('../demo/src/components/DemoBlock.tsx')
+  assert.doesNotMatch(block, /example\.usage|example\.imports/, '演示站不得再渲染代码')
 })

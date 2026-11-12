@@ -8,8 +8,24 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+// 一个 iconfont 项目 = 一个包 = 一种字体。彩色/单色是项目级属性，不能混在一个项目里：
+// 勾了「彩色」的项目里，连单色线稿也会被包成 COLR 字形，color 从此失效。
+// 命名：单色不标后缀、多色加 -color；demo 自有图标生成到 demo/src/icons，不进组件库。
 const SOURCES = [
-  { id: 'base', source: 'https://at.alicdn.com/t/c/font_5251349_mscz5eq640k.css' },
+  { id: 'base', source: 'https://at.alicdn.com/t/c/font_5251349_5n3d5h8pvsn.css' },
+  { id: 'base-color', source: 'https://at.alicdn.com/t/c/font_5252363_pclbus5fo1.css' },
+  {
+    id: 'demo',
+    source: 'https://at.alicdn.com/t/c/font_5252365_nutafgslh8.css',
+    dest: 'demo/src/icons',
+    styleOnly: true,
+  },
+  {
+    id: 'demo-color',
+    source: 'https://at.alicdn.com/t/c/font_5252364_9p54ba62mzm.css',
+    dest: 'demo/src/icons',
+    styleOnly: true,
+  },
 ]
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -23,7 +39,7 @@ function stripBaseFontSize(css) {
   })
 }
 
-async function buildPack({ id, source }) {
+async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }) {
   const response = await fetch(source)
   if (!response.ok) {
     throw new Error(`[icons] ${id} 拉取失败：${response.status} ${source}`)
@@ -33,6 +49,10 @@ async function buildPack({ id, source }) {
   if (!text.includes('@font-face')) {
     throw new Error(`[icons] ${id} 返回内容里没有 @font-face，链接可能已失效：${source}`)
   }
+
+  // 彩色/单色由平台项目决定，产物里由 iconfont 自己写 /* Color fonts */ 标记。
+  // 判据只读这份 CSS，不解析字体二进制：拿到的判定粒度是整包，与「一个项目一种字体」一致。
+  const colored = text.includes('/* Color fonts */')
 
   const body = stripBaseFontSize(
     text.replace(/url\('\/\//g, "url('https://").replace(/url\("\/\//g, 'url("https://'),
@@ -45,16 +65,23 @@ async function buildPack({ id, source }) {
     '/* 本文件由 scripts/icons.mjs 生成，请勿手改。',
     `   包：${id}`,
     `   源：${source}`,
+    `   颜色：${colored ? '彩色字形（COLR/CPAL），color 无效，明暗不跟随' : '单色字形，吃 color，明暗跟随主题'}`,
     '   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。',
     '   更新：平台改图标 → 改 scripts/icons.mjs 的 SOURCES → pnpm run icons */',
     '',
     '',
   ].join('\n')
 
-  const dir = path.join(root, 'src', 'ui', 'icon', id)
+  const dir = path.join(root, dest, id)
   const styleTarget = path.join(dir, 'style', 'index.scss')
   mkdirSync(path.dirname(styleTarget), { recursive: true })
   writeFileSync(styleTarget, header + body)
+
+  // demo 自有图标只服务演示站，不承担对外契约，只要样式；类名在 demo 里直接写。
+  if (styleOnly) {
+    console.log(`[icons] ${id} 已生成 ${path.relative(root, styleTarget)}（仅样式）`)
+    return
+  }
 
   // 基础类 = 带 font-family 的那条规则；图标类 = 每个 :before 规则。
   const baseMatch = text.match(/\.([\w-]+)\s*\{[^}]*font-family/)
@@ -72,7 +99,10 @@ async function buildPack({ id, source }) {
     while (!name.startsWith(prefix)) prefix = prefix.slice(0, -1)
   }
   prefix = prefix.slice(0, prefix.lastIndexOf('-') + 1)
-  const iconNames = classNames.map((name) => name.slice(prefix.length))
+  // 空项目靠一个下划线图标占位，它不是真图标，不进清单；样式里的类由平台原文照留。
+  const iconNames = classNames
+    .map((name) => name.slice(prefix.length))
+    .filter((name) => !name.startsWith('_'))
 
   const namesHeader = [
     '// 本文件由 scripts/icons.mjs 生成，请勿手改。',
@@ -100,6 +130,12 @@ async function buildPack({ id, source }) {
       .map((name) => `'${name}'`)
       .join(', ')}]`,
     '',
+    '/**',
+    ' * 本包字形是否带颜色（COLR/CPAL）：true 时 color 与明暗主题都改不动它。',
+    ' * 由平台项目类型决定、整包一致，调用方据此决定要不要费劲上色，不要逐图标猜。',
+    ' */',
+    `export const iconColored = ${colored}`,
+    '',
   ].join('\n')
   writeFileSync(path.join(dir, 'names.ts'), namesHeader + namesBody)
 
@@ -115,7 +151,7 @@ async function buildPack({ id, source }) {
     `// 包：${id}；需要别的包的图标时引那个包自己的出口，不要跨包 import。`,
     "import { iconBaseClass, iconMap, iconPrefix } from './names.js'",
     '',
-    "export { iconBaseClass, iconPrefix, iconMap, iconNames } from './names.js'",
+    "export { iconBaseClass, iconPrefix, iconMap, iconNames, iconColored } from './names.js'",
     '',
     '/** 取本包图标对应的 className。图标名不做字面量联合，平台增删图标不算类型破坏。 */',
     'export function iconClass(name: string): string {',

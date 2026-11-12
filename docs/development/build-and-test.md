@@ -32,9 +32,9 @@ pnpm --filter mp-taro-kit-demo build:weapp
 | `tests/utils.test.mjs` | 日期、字符串、数值、路径、i18n 回落 |
 | `tests/runtime.test.mjs` | thenable 判定、跨副本单例、覆盖层栈、通知队列、loading 句柄 |
 | `tests/core.test.mjs` | 注入校验、请求、路由、存储、小程序能力兜底 |
-| `tests/ui.test.mjs` | 挂载契约、命令式 API、ESM / CJS 双端、组件 `.d.ts` 真类型零诊断、样式不硬编码颜色 |
+| `tests/ui.test.mjs` | 挂载契约、命令式 API、ESM / CJS 双端、组件 `.d.ts` 真类型零诊断、样式不硬编码颜色、组件级出口与 Cell 状态机、演示站菜单与示例渲染分支、演示站不渲染代码 |
 
-四组共 35 组断言，全部读取 `dist/` 产物，无外部服务依赖。
+四组共 45 组断言，读取 `dist/` 产物与 `demo/` 源码，无外部服务依赖。
 
 本仓库自检不覆盖 Skyline 与 WebView 的实机渲染：样式变量的 `page` 挂载、px 单位、简写属性内的 `var()`、跨副本是否出现两份模块实例，都必须在 `demo/` 宿主小程序里单独验证。只通过构建、类型检查与 Node 断言，不等于双端验证通过。
 
@@ -52,3 +52,5 @@ pnpm --filter mp-taro-kit-demo build:weapp
 - 2026-11-07 22:38:05：新建
 - 2026-11-07 22:40:05：填实构建命令、自检覆盖与工程约定
 - 2026-11-08 01:32:55：构建顺序补演示站 build:weapp 及其依赖 dist 的说明
+- 2026-11-11 22:16:11：自检覆盖补 Cell 断言，总数改为 44
+- 2026-11-11 22:30:25：断言总数 45，补演示站不渲染代码

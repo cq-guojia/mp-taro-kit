@@ -12,6 +12,8 @@ export type CatalogPage = {
   title: string
   path: string
   summary: string
+  /** 整页示例不套演示卡片，直接铺在页面底色上（通栏类组件用）。 */
+  bare?: boolean
   examples: CatalogExample[]
 }
 
@@ -81,6 +83,14 @@ export const pages: CatalogPage[] = [
         hint: '清单由 mp-taro-kit/ui/icon 的 iconNames 驱动',
         usage: '<Text className={iconClass("zujian")} />',
         imports: ['mp-taro-kit/ui/icon', 'mp-taro-kit/ui/icon/style'],
+        renderNotes: '',
+      },
+      {
+        id: 'icon-probe',
+        title: '换字形能力验证',
+        hint: 'A 写死码位、B 变量取兜底、C 变量被覆盖；正常应依次是 home / home / logo',
+        usage: 'content: var(--mptk-i-probe, "\\e61c")',
+        imports: ['mp-taro-kit/ui/icon/style'],
         renderNotes: '',
       },
     ],
@@ -154,7 +164,88 @@ export const pages: CatalogPage[] = [
     title: '展示',
     path: 'pages/display/index',
     summary: '展示类声明式组件',
+    bare: true,
     examples: [
+      {
+        id: 'cell-basic',
+        title: '基础用法（通栏）',
+        hint: 'CellGroup 默认左右通到底；组内最后一格自动不画分隔线',
+        usage: '<CellGroup><Cell title="单元格" value="内容" /><Cell title="单元格" value="内容" label="描述信息" /></CellGroup>',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '通栏由 mptk-cell-group--flush 派生，外框是独立 1px 元素；Skyline / WebView 双端实机未验证',
+      },
+      {
+        id: 'cell-inset',
+        title: '卡片风格',
+        hint: 'CellGroup inset：圆角内收，微信「我的」那种一块块',
+        usage: '<CellGroup inset><Cell title="单元格" value="内容" /><Cell title="单元格" value="内容" label="描述信息" /></CellGroup>',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '圆角落在 Group 的 body 上，卡片形态不画上下外框；双端实机未验证',
+      },
+      {
+        id: 'cell-size',
+        title: '单元格大小',
+        hint: 'size="large" 加大上下留白；默认 normal',
+        usage: '<Cell title="单元格" value="内容" size="large" label="描述信息" />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '',
+      },
+      {
+        id: 'cell-icon',
+        title: '展示图标',
+        hint: 'icon 是内容位（ReactNode），图标类名由宿主给',
+        usage: '<Cell title="单元格" icon={<Text className={iconClass("home")} />} />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style', 'mp-taro-kit/ui/icon'],
+        renderNotes: '图标字体样式由宿主在 app 入口引基础包提供，Cell 样式不含字体声明',
+      },
+      {
+        id: 'cell-link',
+        title: '展示箭头',
+        hint: 'isLink 纯视觉；arrowDirection 支持 right / left / up / down',
+        usage: '<Cell title="单元格" isLink arrowDirection="down" />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '箭头由两条边框 + transform: rotate 画出，不依赖图标包；Skyline 下 rotate 待实机验证',
+      },
+      {
+        id: 'cell-navigate',
+        title: '点击跳转',
+        hint: '替代 Vant 的 url / link-type：路由能力经 onClick 由宿主注入',
+        usage: '<Cell title="单元格" isLink onClick={() => Taro.navigateTo({ url: "/pages/actions/index" })} />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '本库不 import Taro；跳转、返回等行为全部由宿主回调决定',
+      },
+      {
+        id: 'cell-group-title',
+        title: '分组标题',
+        hint: 'CellGroup title 可给任意内容，多个分组叠放',
+        usage: '<CellGroup title="分组 1"><Cell title="单元格" value="内容" /></CellGroup>',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '',
+      },
+      {
+        id: 'cell-slot',
+        title: '使用插槽',
+        hint: 'title / value(children) / icon / rightIcon / extra 全是 ReactNode',
+        usage: '<Cell value="内容" title={<View>…<Badge count="标签" /></View>} isLink />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style', 'mp-taro-kit/ui/display'],
+        renderNotes: 'value 给定时优先于 children；rightIcon 给定时不再渲染 isLink 箭头',
+      },
+      {
+        id: 'cell-center',
+        title: '垂直居中',
+        hint: 'center 让左右内容整体垂直居中，适合有 label 的长单元格',
+        usage: '<Cell center title="单元格" value="内容" label="描述信息" />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '',
+      },
+      {
+        id: 'cell-state',
+        title: '点击态与禁用',
+        hint: 'onClick 派生按压反馈（不暴露 clickable）；disabled 短路回调',
+        usage: '<Cell title="单元格" isLink onClick={handleClick} /><Cell title="禁用" disabled onClick={handleClick} />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '按压反馈用 Taro View 的 hoverClass，两端都有；双端实机未验证',
+      },
       {
         id: 'badge',
         title: '徽标',
@@ -328,7 +419,7 @@ export const menu: MenuGroup[] = [
     title: '基础组件',
     entries: [
       { id: 'button', label: 'Button 按钮', status: 'ready', pageId: 'actions' },
-      { id: 'cell', label: 'Cell 单元格', status: 'planned' },
+      { id: 'cell', label: 'Cell 单元格', status: 'ready', pageId: 'display' },
       { id: 'config-provider', label: 'ConfigProvider 全局配置', status: 'ready', pageId: 'foundation' },
       { id: 'icon', label: 'Icon 图标', status: 'ready', pageId: 'icon' },
       { id: 'image', label: 'Image 图片', status: 'planned' },

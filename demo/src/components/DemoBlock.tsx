@@ -9,33 +9,23 @@ function pageOf(id: string) {
   return page
 }
 
-/** 单个示例的外壳：标题、一句话、效果、usage 与 import 全部取自 catalog。 */
+/** 单个示例外壳：只留标题与一句话，效果直接铺出来；代码示例见 docs/api/cell.md。 */
 export function DemoBlock({
   example,
+  bare = false,
   children,
 }: {
   example: CatalogExample
+  bare?: boolean
   children?: ReactNode
 }) {
   return (
-    <View className="demo-block">
-      <View className="demo-block__head">
+    <View className={bare ? 'demo-block demo-block--bare' : 'demo-block'}>
+      <View className={bare ? 'demo-block__head demo-block__head--bare' : 'demo-block__head'}>
         <Text className="demo-block__title">{example.title}</Text>
         <Text className="demo-block__hint">{example.hint}</Text>
       </View>
       <View className="demo-block__body">{children}</View>
-      {example.usage === '' ? null : (
-        <View className="demo-block__usage">
-          <Text>{example.usage}</Text>
-        </View>
-      )}
-      <View className="demo-block__imports">
-        {example.imports.map((path) => (
-          <Text key={path} className="demo-block__import">
-            {path}
-          </Text>
-        ))}
-      </View>
     </View>
   )
 }
@@ -55,7 +45,7 @@ export function DemoPage({
         <Text className="demo-page__summary">{page.summary}</Text>
       </View>
       {page.examples.map((example) => (
-        <DemoBlock key={example.id} example={example}>
+        <DemoBlock key={example.id} example={example} bare={page.bare === true}>
           {render(example.id)}
         </DemoBlock>
       ))}

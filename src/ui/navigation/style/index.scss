@@ -57,6 +57,7 @@
 
 .mptk-navbar__title {
   font-size: var(--mptk-font-nav);
+  line-height: var(--mptk-line-nav);
   font-weight: 500;
   color: var(--mptk-fg);
 }
@@ -78,8 +79,9 @@
   padding-right: var(--mptk-space-4);
 }
 
+/* 返回图标取正文档：22 的档位是给大标题的，图标用会明显过大。 */
 .mptk-navbar__back-icon {
-  font-size: var(--mptk-font-xl);
+  font-size: var(--mptk-font-lg);
   line-height: 1;
   color: var(--mptk-fg);
 }

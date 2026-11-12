@@ -6,7 +6,9 @@
   box-sizing: border-box;
   height: 100%;
   background-color: var(--mptk-surface-base);
-  padding-bottom: env(safe-area-inset-bottom);
+
+  /* 底部安全区不在这里让位：Skyline 下 page 的 padding 区域不绘制背景，会露出窗口白底。
+     改由页面根容器自己 `padding-bottom: env(safe-area-inset-bottom)` 并铺背景。 */
 
   --mptk-radius-xs: 4px;
   --mptk-radius-sm: 8px;
@@ -20,17 +22,21 @@
   --mptk-space-3: 12px;
   --mptk-space-4: 16px;
 
-  --mptk-font-xs: 11px;
-  --mptk-font-sm: 12px;
-  --mptk-font-md: 13px;
-  --mptk-font-lg: 14px;
-  --mptk-font-xl: 16px;
+  /* 字号档位与《微信小程序设计指南》5.1 的常用字号一一对应：22 / 17 / 15 / 14 / 12。
+     组件按语义取档：xl 大标题、lg 正文与列表标题、md 次要正文、sm 辅助、xs 说明。
+     宿主不要再整体覆盖档位；需要强调时用组件已有的语义位，不新增字号。 */
+  --mptk-font-xs: 12px;
+  --mptk-font-sm: 14px;
+  --mptk-font-md: 15px;
+  --mptk-font-lg: 17px;
+  --mptk-font-xl: 22px;
   --mptk-font-nav: 17px;
-  --mptk-line-xs: 14px;
-  --mptk-line-sm: 18px;
-  --mptk-line-md: 20px;
-  --mptk-line-lg: 22px;
-  --mptk-line-xl: 24px;
+  --mptk-line-xs: 17px;
+  --mptk-line-sm: 20px;
+  --mptk-line-md: 22px;
+  --mptk-line-lg: 24px;
+  --mptk-line-xl: 30px;
+  --mptk-line-nav: 24px;
 
   --mptk-dur: .2s;
   --mptk-dur-fast: .12s;

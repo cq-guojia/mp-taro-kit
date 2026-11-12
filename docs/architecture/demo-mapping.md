@@ -33,19 +33,19 @@ demo/                                               # 仓库内的 Taro 小程�
     │   ├── DemoNav.tsx                             # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
     │   └── DemoShell.tsx                           # 页面外壳：固定视口高度的 View + scroll-view；导航栏在滚动区外
     └── pages/                                      # 演示站页面：1 个索引页 + 9 个展示页
-        ├── index/index.tsx                         # 目录页：只读 menu 渲染固定分组；ready 可点跳展示页，planned 置灰不可点
+        ├── index/index.tsx                         # 目录页：用 CellGroup 铺 menu 固定分组；ready 可点跳展示页，planned 置灰不可点
         ├── infra/index.tsx                         # src/ui/infra/：OverlayHost、SafeArea、use-store
         ├── actions/index.tsx                       # src/ui/actions/：Button
         ├── icon/index.tsx                          # src/ui/icon/：图标清单，铺出全部 glyph 与类名
         ├── feedback/index.tsx                      # src/ui/feedback/：Dialog、Loader、Loading、Toast
-        ├── display/index.tsx                       # src/ui/display/：Badge、Divider
+        ├── display/index.tsx                       # src/ui/display/：Badge、Divider、Cell、CellGroup（Cell 走组件级细路径）
         ├── navigation/index.tsx                    # src/ui/navigation/：NavBar、Drawer、Dropdown
         ├── layout/index.tsx                        # src/ui/layout/：Mask、Overlay、Popup
         ├── foundation/index.tsx                    # design + runtime + utils + core 四域合并：换肤、单例、工具、configure 注入
         └── commands/index.tsx                      # ui/commands.ts + state.ts + infra/OverlayHost：命令式 API
 ```
 
-每个 `ui` 子域展示页在装配时同时引入该子域的 `mp-taro-kit/ui/*/style`；样式是 import，不占树上的文件节点。
+每个 `ui` 子域展示页引入用到的组件样式：历史组件走子域 `mp-taro-kit/ui/*/style`，新组件走组件级 `mp-taro-kit/ui/*/<组件>/style`；样式是 import，不占树上的文件节点。
 
 ## 3. 不可破的约束
 
@@ -56,7 +56,7 @@ demo/                                               # 仓库内的 Taro 小程�
 - 菜单分组固定为 Vant Weapp 六类（基础 / 表单 / 反馈 / 展示 / 导航 / 业务）加「基础能力」「命令式 API」两组，顺序固定；新增组件只把 `planned` 改为 `ready`，不插队、不重排。`planned` 只是占位，不是待办清单。
 - 分组判据按「使用者找组件时的场景」，不按 `src/ui/` 的目录：`Toast` 排基础组件、`Dialog` 排反馈组件、`Popup` 排基础而 `Overlay` 排反馈，但库侧路径仍是 `ui/feedback` / `ui/layout`，目录不反向约束 exports。
 - 每个页面必须走 `DemoShell`：外壳 `height: 100vh` + `scroll-view type="custom"`，页面 json 配 `disableScroll: true`。Skyline 不支持页面全局滚动，绕开外壳写普通容器会让超屏内容滚不到；平台依据见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md)。
-- 控件的使用方法与效果展示归演示站，`docs/` 不复制正文；演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
+- 控件的效果展示归演示站；props、组内行为与用法代码归 `docs/api/<组件>.md`（如 [Cell 单元格](../api/cell.md)），演示站不展示代码。演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
 - 七个 ui 子域各有自己的 style 出口，样式由各页装配时引入，不单独成页；icon 域没有组件，样式即字体声明与类名。
 - 骨架屏尚未实现、归属 `feedback` / `display` 未定：目录数据预留 `skeleton` id，不生成页面。
 - Skyline 是主路径、WebView 必须可用；页面不为双端分叉，每页只用两端共有子集，差异由目录数据的 `renderNotes` 逐页记录。
@@ -83,3 +83,5 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-10 16:14:41：菜单改为 Vant 六类 + 基础能力 + 命令式 API 的固定八组，条目分 ready / planned；补多对一映射与占位约束，navigation 页补 NavBar
 - 2026-11-10 16:29:25：按 1.2.0 树格式重排：说明改用 # 并对齐第 53 列，补文件夹行说明，正文相对路径改为可从仓库根解析
 - 2026-11-11 19:58:19：演示站入口改为 theme-auto
+- 2026-11-11 22:16:11：补 Cell 组件级细路径与首页 CellGroup 装配
+- 2026-11-11 22:30:25：演示站不再展示代码，用法与代码示例归 docs/api/cell.md
