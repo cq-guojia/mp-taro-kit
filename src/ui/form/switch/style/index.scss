@@ -1,0 +1,159 @@
+/* Switch：根框高度吃控件高度轴，轨道是内部视觉尺寸并垂直居中。
+   三档只换 --mptk-switch-track-* 与根高，不引入第二套尺寸体系。
+   颜色一律取控件主色轴，不蹭会被宿主定制的业务色变量。 */
+.mptk-switch {
+  --mptk-switch-track-w: 52px;
+  --mptk-switch-track-h: 30px;
+  align-items: center;
+  display: inline-flex;
+  height: var(--mptk-control-h-lg);
+}
+
+.mptk-switch--sm {
+  --mptk-switch-track-w: 36px;
+  --mptk-switch-track-h: 20px;
+  height: var(--mptk-control-h-sm);
+}
+
+.mptk-switch--md {
+  --mptk-switch-track-w: 44px;
+  --mptk-switch-track-h: 26px;
+  height: var(--mptk-control-h-md);
+}
+
+.mptk-switch--lg {
+  --mptk-switch-track-w: 52px;
+  --mptk-switch-track-h: 30px;
+  height: var(--mptk-control-h-lg);
+}
+
+.mptk-switch--blue { --mptk-control-active: var(--mptk-control-blue); }
+.mptk-switch--green { --mptk-control-active: var(--mptk-control-green); }
+.mptk-switch--orange { --mptk-control-active: var(--mptk-control-orange); }
+.mptk-switch--red { --mptk-control-active: var(--mptk-control-red); }
+
+.mptk-switch--locked {
+  opacity: .5;
+}
+
+.mptk-switch__track {
+  position: relative;
+}
+
+.mptk-switch--round .mptk-switch__track {
+  width: var(--mptk-switch-track-w);
+  height: var(--mptk-switch-track-h);
+  border-radius: var(--mptk-radius-pill);
+  background-color: var(--mptk-control-track);
+  transition: background-color var(--mptk-dur) var(--mptk-ease);
+}
+
+.mptk-switch--round.mptk-switch--on .mptk-switch__track {
+  background-color: var(--mptk-control-active);
+}
+
+.mptk-switch--round .mptk-switch__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(var(--mptk-switch-track-h) - 4px);
+  height: calc(var(--mptk-switch-track-h) - 4px);
+  border-radius: var(--mptk-radius-pill);
+  background-color: var(--mptk-control-thumb);
+  transition: transform var(--mptk-dur) var(--mptk-ease);
+}
+
+.mptk-switch--round.mptk-switch--on .mptk-switch__thumb {
+  transform: translateX(calc(var(--mptk-switch-track-w) - var(--mptk-switch-track-h)));
+}
+
+.mptk-switch--block .mptk-switch__track {
+  display: inline-flex;
+  height: var(--mptk-switch-track-h);
+  border-radius: var(--mptk-radius-md);
+  background-color: var(--mptk-control-track);
+  transition: background-color var(--mptk-dur) var(--mptk-ease);
+}
+
+.mptk-switch--block.mptk-switch--on .mptk-switch__track {
+  background-color: var(--mptk-control-active);
+}
+
+/* 左右各留 3px：滑块宽 50% - 4px，位移 100% + 2px，两端都不贴边。 */
+.mptk-switch--block .mptk-switch__thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 4px);
+  border-radius: var(--mptk-radius-sm);
+  background-color: var(--mptk-control-thumb);
+  transition: transform var(--mptk-dur) var(--mptk-ease);
+}
+
+.mptk-switch--block.mptk-switch--on .mptk-switch__thumb {
+  transform: translateX(calc(100% + 2px));
+}
+
+.mptk-switch__sides {
+  position: relative;
+  z-index: 1;
+  display: flex;
+}
+
+.mptk-switch__side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  padding-right: var(--mptk-space-2);
+  padding-left: var(--mptk-space-2);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
+.mptk-switch__side--off {
+  color: var(--mptk-fg);
+}
+
+.mptk-switch__side--on {
+  color: var(--mptk-fg-3);
+}
+
+.mptk-switch--on .mptk-switch__side--off {
+  color: var(--mptk-control-on);
+}
+
+.mptk-switch--on .mptk-switch__side--on {
+  color: var(--mptk-fg);
+}
+
+.mptk-switch__thumb {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+/* 转圈自带，不 import feedback/Loader，避免只用一个开关却把图标字体包拖进产物。 */
+.mptk-switch__spinner {
+  width: 12px;
+  height: 12px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+  border-top-style: solid;
+  border-right-style: solid;
+  border-bottom-style: solid;
+  border-left-style: solid;
+  border-top-color: var(--mptk-control-active);
+  border-right-color: var(--mptk-fg-4);
+  border-bottom-color: var(--mptk-fg-4);
+  border-left-color: var(--mptk-fg-4);
+  border-radius: var(--mptk-radius-pill);
+  animation: mptk-switch-spin .8s linear infinite;
+}
+
+@keyframes mptk-switch-spin {
+  to { transform: rotate(360deg); }
+}

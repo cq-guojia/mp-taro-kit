@@ -183,8 +183,8 @@ test('resetUIForTests 清空栈、通知、loading 与挂载标记', () => {
   assert.equal(ui.uiState().loading.getSnapshot().active, false)
 })
 
-test('六子域出口与样式实体齐全，产物只指向 peer 不打包平台包', () => {
-  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout']) {
+test('七个子域出口与样式实体齐全，产物只指向 peer 不打包平台包', () => {
+  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout', 'form']) {
     assert.equal(exists(`../dist/ui/${domain}/index.js`), true)
     assert.equal(exists(`../dist/ui/${domain}/style/index.css`), true)
   }
@@ -223,7 +223,7 @@ test('B 方案：宿主真类型环境下组件 .d.ts 可直接作为 JSX 组件
 })
 
 test('样式只写 var(--mptk-*)，不硬编码颜色值', () => {
-  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout']) {
+  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout', 'form']) {
     const css = read(`../dist/ui/${domain}/style/index.css`)
     assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/)
     assert.doesNotMatch(css, /--mp-/)

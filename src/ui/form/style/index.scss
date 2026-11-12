@@ -1,0 +1,3 @@
+/* form 子域样式兼容出口：推荐按组件级细路径单独引，用哪个打哪个。 */
+@use '../switch/style/index' as switch;
+@use '../segmented/style/index' as segmented;

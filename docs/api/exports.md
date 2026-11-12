@@ -28,9 +28,15 @@
 
 第一个按此落地的组件单元是 `mp-taro-kit/ui/display/cell`（`Cell` + `CellGroup`）与 `mp-taro-kit/ui/display/cell/style`；`mp-taro-kit/ui/display` 只转发它们，不再作为推荐引用口。
 
+`Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts` 与 `change-state.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
+
 组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
 
 `styles/theme-*` 的字号档位固定为 12 / 14 / 15 / 17 / 22（另 `font-nav` 17），与《微信小程序设计指南》5.1 的常用字号一一对应；行高与字号成对。宿主不应整体覆盖档位，演示站自身也不覆盖。
+
+控件高度档位固定为 32 / 40 / 48（`--mptk-control-h-sm` / `-md` / `-lg`，默认 48），与 WeUI 的按钮高度三档一致；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。真源同为 `src/design/_tokens.scss` 的 `base` mixin，`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于该值。
+
+控件选中态主色默认蓝（`--mptk-control-active` 指向 `--mptk-control-blue`），内置蓝 / 绿 / 橙 / 红四色；滑轨、滑块、选中文字各有独立颜色键。这组变量写在 `light` / `dark` mixin，与 `--mptk-business` 等语义色解耦：宿主定制业务色不会改变控件默认外观，明色下滑轨与滑块也不会双双为白。组件的 `color` 可传内置色名（走类名切变量）或任意 CSS 色值（走显式内联上色，不依赖 WXML 行内自定义属性）；`tests/controls.test.mjs` 核对四份主题产物都带全这组键，并断言组件不引用业务色。
 
 ## 运行时约定
 
@@ -51,6 +57,15 @@ props 表、九种用法与代码示例见 [Cell 单元格](cell.md)。`.d.ts` �
 - 点击态由 `onClick` 派生（不暴露 `clickable`），`isLink` 只渲染箭头，`disabled` 短路回调与按压反馈。
 - `value` 优先于 `children`，`rightIcon` 优先于 `isLink` 箭头；内容位均为 `ReactNode`。
 - 本库不接路由：Vant 的 `url` / `link-type` 不做，跳转由宿主经 `onClick` 注入。
+
+### Switch / Segmented 的异步切换
+
+props 表与用法见 [Switch 开关](switch.md)、[Segmented 分段选择](segmented.md)。`.d.ts` 只表达 props 类型，以下几条由运行时保证：
+
+- 两者共用 `src/ui/form/change-state.ts` 的状态机：回调返回 thenable 时界面先拨到新值并转圈、锁点击；成功保持，失败回弹并调用 `onFailed`，显式 `false` 与 rejected Promise 都算失败。
+- 宿主给回的 `checked` / `value` 始终是唯一真值；等待期间的临时显示值在成功、失败或宿主改值时按状态机收敛。失败后若宿主已提前改值，须在 `onFailed` 里自行回滚。
+- 禁用态包含整控件、段级 `disabled`、外部 `loading` 与等待中四种，任一成立都短路回调。
+- 转圈用组件自带 CSS 绘制，不依赖 `ui/feedback/Loader` 与图标字体包；等待失败的错误输出到控制台，不向页面抛出。
 
 ### 错误口径
 
@@ -219,3 +234,5 @@ setThemeMode('auto', {
 - 2026-11-11 23:01:08：底部安全区改由页面根容器让位，附窗口背景设置
 - 2026-11-12 11:39:42：新增运行时热切换主题出口与接入契约，编译期三选一并存
 - 2026-11-12 12:32:02：页面底色改为出口策略并接入官方 DarkMode 窗口主题配置
+- 2026-11-12 14:53:57：补两个组件级细路径、控件高度三档与异步切换运行时约定
+- 2026-11-12 15:43:19：补控件主色轴与业务色解耦、内置四色及自定义色值口径

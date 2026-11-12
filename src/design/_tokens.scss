@@ -24,6 +24,13 @@
   --mptk-space-3: 12px;
   --mptk-space-4: 16px;
 
+  /* 控件高度三档，对齐 WeUI 2.6.x 的 --weui-BTN-HEIGHT-SMALL/MEDIUM/HEIGHT（32 / 40 / 48）。
+     承载文字的控件用 size="sm|md|lg" 选，调用点不自定义高度；真不够用才覆盖同名变量。
+     总高必须逐像素等于这一档，不许由 padding 与内容撑出来。 */
+  --mptk-control-h-sm: 32px;
+  --mptk-control-h-md: 40px;
+  --mptk-control-h-lg: 48px;
+
   /* 字号档位与《微信小程序设计指南》5.1 的常用字号一一对应：22 / 17 / 15 / 14 / 12。
      组件按语义取档：xl 大标题、lg 正文与列表标题、md 次要正文、sm 辅助、xs 说明。
      宿主不要再整体覆盖档位；需要强调时用组件已有的语义位，不新增字号。 */
@@ -71,6 +78,17 @@
   --mptk-success: #22c55e;
   --mptk-warning: #f59e0b;
   --mptk-danger: #ec1313;
+
+  /* 控件主色轴与业务色解耦：宿主改 --mptk-business 不该把开关染成自己的品牌色。
+     默认蓝；内置色名由组件加类名切换，自定义色值由组件显式内联覆盖。 */
+  --mptk-control-blue: #3b5bdb;
+  --mptk-control-green: #22c55e;
+  --mptk-control-orange: #f59e0b;
+  --mptk-control-red: #ec1313;
+  --mptk-control-active: var(--mptk-control-blue);
+  --mptk-control-track: #e9ecf1;
+  --mptk-control-thumb: #fff;
+  --mptk-control-on: #fff;
 }
 
 @mixin dark {
@@ -92,4 +110,13 @@
   --mptk-success: #34d399;
   --mptk-warning: #fbbf24;
   --mptk-danger: #ff5c5c;
+
+  --mptk-control-blue: #6b8afd;
+  --mptk-control-green: #34d399;
+  --mptk-control-orange: #fbbf24;
+  --mptk-control-red: #ff5c5c;
+  --mptk-control-active: var(--mptk-control-blue);
+  --mptk-control-track: #2d333b;
+  --mptk-control-thumb: #3b434d;
+  --mptk-control-on: #fff;
 }

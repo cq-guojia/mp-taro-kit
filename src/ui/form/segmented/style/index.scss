@@ -1,0 +1,135 @@
+/* Segmented：容器高度吃控件高度轴，段等分、滑动块按段数用百分比定位。
+   不读 DOM 尺寸，位置由组件算好写进内联 style，双端都不依赖 measurements。
+   滑轨与滑块取不同颜色键，明色下不能双双为白。 */
+.mptk-seg {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: var(--mptk-control-h-lg);
+  border-radius: var(--mptk-radius-md);
+  background-color: var(--mptk-control-track);
+  overflow: hidden;
+}
+
+.mptk-seg--sm { height: var(--mptk-control-h-sm); }
+.mptk-seg--md { height: var(--mptk-control-h-md); }
+.mptk-seg--lg { height: var(--mptk-control-h-lg); }
+
+.mptk-seg--blue { --mptk-control-active: var(--mptk-control-blue); }
+.mptk-seg--green { --mptk-control-active: var(--mptk-control-green); }
+.mptk-seg--orange { --mptk-control-active: var(--mptk-control-orange); }
+.mptk-seg--red { --mptk-control-active: var(--mptk-control-red); }
+
+.mptk-seg--line {
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.mptk-seg--locked {
+  opacity: .5;
+}
+
+.mptk-seg__thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  border-radius: var(--mptk-radius-sm);
+  background-color: var(--mptk-control-active);
+  transition: left var(--mptk-dur) var(--mptk-ease);
+}
+
+.mptk-seg__item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+}
+
+.mptk-seg--thumb .mptk-seg__item--on {
+  color: var(--mptk-control-on);
+}
+
+.mptk-seg--line .mptk-seg__item--on {
+  color: var(--mptk-control-active);
+}
+
+.mptk-seg__item--disabled {
+  color: var(--mptk-fg-4);
+}
+
+.mptk-seg--thumb .mptk-seg__item--on .mptk-seg__count,
+.mptk-seg--thumb .mptk-seg__item--on .mptk-seg__desc {
+  color: var(--mptk-control-on);
+}
+
+.mptk-seg__icon {
+  display: flex;
+  align-items: center;
+  margin-right: var(--mptk-space-1);
+}
+
+.mptk-seg__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mptk-seg__label {
+  display: flex;
+  align-items: center;
+}
+
+.mptk-seg__count {
+  margin-left: var(--mptk-space-1);
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+}
+
+.mptk-seg__desc {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
+.mptk-seg__line {
+  position: absolute;
+  right: 20%;
+  bottom: 0;
+  left: 20%;
+  height: 2px;
+  background-color: var(--mptk-control-active);
+}
+
+/* 转圈自带，不 import feedback/Loader，避免只用一个选择块却把图标字体包拖进产物。 */
+.mptk-seg__spinner {
+  width: 12px;
+  height: 12px;
+  margin-left: var(--mptk-space-1);
+  border-top-width: 2px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+  border-top-style: solid;
+  border-right-style: solid;
+  border-bottom-style: solid;
+  border-left-style: solid;
+  border-top-color: var(--mptk-control-active);
+  border-right-color: var(--mptk-fg-4);
+  border-bottom-color: var(--mptk-fg-4);
+  border-left-color: var(--mptk-fg-4);
+  border-radius: var(--mptk-radius-pill);
+  animation: mptk-seg-spin .8s linear infinite;
+}
+
+@keyframes mptk-seg-spin {
+  to { transform: rotate(360deg); }
+}
