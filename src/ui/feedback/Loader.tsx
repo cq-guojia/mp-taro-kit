@@ -5,7 +5,7 @@ import { Spinner } from './spinner/index.js'
 /** 形态：`ring` 圆环旋转 / `blocks` 三块脉动。 */
 export type LoaderVariant = 'ring' | 'blocks'
 
-/** 尺寸档：五档，几何按 24 网格等比缩放。 */
+/** 尺寸档：与字号档一一对应，圈径取字号的 1.6 倍，接在文字前面重心才对得上。 */
 export type LoaderSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 export interface LoaderProps {
@@ -19,8 +19,11 @@ export interface LoaderProps {
   className?: string
 }
 
-/** 五档边长（px）：12 / 16 / 24 / 32 / 48。 */
-const SIZE_PX: Record<LoaderSize, number> = { xs: 12, sm: 16, md: 24, lg: 32, xl: 48 }
+/**
+ * 五档边长（px）：字号 12 / 14 / 15 / 17 / 22 乘以 1.6 → 20 / 22 / 24 / 28 / 36。
+ * 比例取自 TDesign：它默认 20px 的圈配 12px 的文案，圈径约是字号的 1.67 倍。
+ */
+const SIZE_PX: Record<LoaderSize, number> = { xs: 20, sm: 22, md: 24, lg: 28, xl: 36 }
 
 /**
  * blocks 的几何照搬 24 网格：块 7.2×6.0、圆角 1.5、间隔 0.6，三块总宽 22.8、上下居中。

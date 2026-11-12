@@ -30,7 +30,7 @@
 
 `Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts` 与 `change-state.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
 
-自绘转圈是另一个组件级单元：`mp-taro-kit/ui/feedback/spinner` + `/style` 导出 `Spinner`，`variant` 两档 —— `circular`（默认，TDesign `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩）与 `chase`（SpinKit `sk-chase` 的六点追逐）。全库所有等待态（`Loader` 的 `ring`、`Loading`、`Switch`、`Segmented`）共用这一份绘制，不用图标字体，也不给单边边框上色（Skyline 下单边边框上色会让 `border-radius` 失效，见[Skyline 渲染引擎](../dependencies/skyline-rendering.md)）。颜色只取 `--mptk-spinner-active`，`light` / `dark` 各给一套；`Loader` / `Spinner` / `Loading` 都接受 `color`，不给时三种形态统一用这支主色（`blocks` 不再继承页面文字色），给了就内联覆盖容器 `color`、通过 `currentColor` 生效。圆环粗细对齐 TDesign 实测：原版 `mask: radial-gradient(transparent calc(50% - 1rpx), #fff 50%)` 的径向渐变默认 `farthest-corner`，环带约占直径 17%，这里用同一比例的环形 SVG 遮罩复刻。
+自绘转圈是另一个组件级单元：`mp-taro-kit/ui/feedback/spinner` + `/style` 导出 `Spinner`，`variant` 两档 —— `circular`（默认，TDesign `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩）与 `chase`（SpinKit `sk-chase` 的六点追逐）。全库所有等待态（`Loader` 的 `ring`、`Loading`、`Switch`、`Segmented`）共用这一份绘制，不用图标字体，也不给单边边框上色（Skyline 下单边边框上色会让 `border-radius` 失效，见[Skyline 渲染引擎](../dependencies/skyline-rendering.md)）。颜色只取 `--mptk-spinner-active`，`light` / `dark` 各给一套；`Loader` / `Spinner` / `Loading` 都接受 `color`，不给时三种形态统一用这支主色（`blocks` 不再继承页面文字色），给了就内联覆盖容器 `color`、通过 `currentColor` 生效。圆环粗细对齐 TDesign 实测：原版 `mask: radial-gradient(transparent calc(50% - 1rpx), #fff 50%)` 的径向渐变默认 `farthest-corner`，环带约占直径 17%，这里用同一比例的环形 SVG 遮罩复刻。尺寸档跟字号一一对应，取字号的 1.6 倍（20 / 22 / 24 / 28 / 36），「圈 + 文字」并排时重心才对得上；比例同样来自 TDesign（它默认 20px 圈配 12px 文案）。
 
 组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
 
@@ -245,3 +245,4 @@ setThemeMode('auto', {
 - 2026-11-12 18:22:33：转圈改为自绘 8 点圆点环，绕开 Skyline 单边边框让圆角失效
 - 2026-11-12 20:42:05：转圈改为 TDesign circular 圆环与 SpinKit 六点追逐两形态，默认圆环
 - 2026-11-12 20:49:51：环宽对齐 TDesign 实测比例（约 17% 直径），Loader/Loading 补 color，三形态统一默认主色
+- 2026-11-12 20:56:53：加载圈五档改为跟字号一一对应，取字号的 1.6 倍（20/22/24/28/36）

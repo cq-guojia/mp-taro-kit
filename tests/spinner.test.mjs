@@ -145,6 +145,21 @@ test('两种形态共用一个默认主色，且都能被 color 覆盖', () => {
   assert.match(read('src/ui/feedback/Loading.tsx'), /color=\{color\}/, 'Loading 要透传 color')
 })
 
+test('尺寸档跟着字号走：圈径约是字号的 1.6 倍', () => {
+  const body = /const SIZE_PX[^=]*=\s*\{([^}]+)\}/.exec(read('src/ui/feedback/Loader.tsx'))?.[1]
+  assert.ok(body, '缺 SIZE_PX')
+  const fonts = { xs: 12, sm: 14, md: 15, lg: 17, xl: 22 }
+  const pairs = [...body.matchAll(/([a-z]+):\s*(\d+)/g)]
+  assert.equal(pairs.length, 5, '五档要齐')
+  for (const [, key, value] of pairs) {
+    const ratio = Number(value) / fonts[key]
+    assert.ok(
+      ratio >= 1.5 && ratio <= 1.75,
+      `${key} 档 ${value}px 对字号 ${String(fonts[key])}px 的比例是 ${ratio.toFixed(2)}，应落在 1.5~1.75`,
+    )
+  }
+})
+
 test('明暗两套给全转圈主色，取值不相同', () => {
   const pick = (mode) => {
     const css = read(`dist/styles/${mode}.css`)
