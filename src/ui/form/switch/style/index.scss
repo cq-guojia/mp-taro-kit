@@ -1,5 +1,6 @@
 /* Switch：外观照微信原生 switch（Taro UI 的 AtSwitch 本体就是它）。
-   三档只换 --mptk-switch-track-* 与根高，比例统一按官方的 52:32；
+   圆形形态三档只换 --mptk-switch-track-* 与根高，比例统一按官方的 52:32；
+   方形形态不复用这个比例，格子边长由「1em 内容 + 四边同值内边距」推导（见 --block 段）。
    默认选中态用官方绿，滑块带投影 —— 明色关态的白滑块靠投影才有边界，否则看着是空的。
    颜色一律取控件主色轴，不蹭会被宿主定制的业务色变量。 */
 @use '../../../feedback/spinner/style/index' as spinner;
@@ -107,11 +108,44 @@
   transform: translateX(calc(var(--mptk-switch-track-w) - var(--mptk-switch-track-h)));
 }
 
+/* 方形形态的格子几何：一律由「内容盒 + 四边同值内边距」推导，不复用圆形开关的 52:32 比例。
+   圆形轨道的宽高是照着微信原生开关定的固定比例，跟内容无关；方形格子一旦也吃那个定高，
+   高度里就没给左右内边距留对应余量 —— 单图标会变成「宽 28 × 高 20」的横条（踩过）。
+   这里拆成三个量，各自只负责一件事：
+     --mptk-switch-cell-box     内容盒边长（弹性基准），格子边长 = 它 + 2 × 内边距；
+     --mptk-switch-cell-content 字符 / 图标自己的字号，默认等于内容盒，可单独调小；
+     --mptk-switch-cell-inset   滑块在格子里的留边，四边同值。
+   字符不参与格子尺寸计算，所以字号与格子可以分开调：sm 档把图标缩一号，格子仍是正方形。
+   禁用 calc 乘法：小程序 WebView 内核对 calc 的 * 支持不一致，一律写成两次相加。 */
+.mptk-switch--block {
+  --mptk-switch-cell-pad: var(--mptk-space-3);
+  --mptk-switch-cell-box: var(--mptk-font-md);
+  --mptk-switch-cell-content: var(--mptk-switch-cell-box);
+  --mptk-switch-cell-inset: var(--mptk-space-1);
+  --mptk-switch-cell: calc(
+    var(--mptk-switch-cell-box) + var(--mptk-switch-cell-pad) + var(--mptk-switch-cell-pad)
+  );
+}
+
+.mptk-switch--block.mptk-switch--md {
+  --mptk-switch-cell-pad: var(--mptk-space-2);
+  --mptk-switch-cell-box: var(--mptk-font-sm);
+}
+
+/* 最小号的内边距只有 4px，图标若和内容盒同尺寸会把 12px 的滑块整块盖住（真机看着就是「图标太大」）。
+   内容字号比内容盒小一号（2px）：图标缩到 10px，格子仍按 12 + 8 = 20px 推导，正方形不变。
+   写差值而不是绝对值，宿主改字号 token 时一起跟着走。 */
+.mptk-switch--block.mptk-switch--sm {
+  --mptk-switch-cell-pad: var(--mptk-space-1);
+  --mptk-switch-cell-box: var(--mptk-font-xs);
+  --mptk-switch-cell-content: calc(var(--mptk-switch-cell-box) - 2px);
+}
+
 /* 方形轨道取最小档 xs（4px）：8px 在 32px 高的块上已经有药丸感，看着不够方。
    滑块内角同样取 xs —— 圆角档位最小就是 4px，再小要另加档位。 */
 .mptk-switch--block .mptk-switch__track {
   display: inline-flex;
-  height: var(--mptk-switch-track-h);
+  min-height: var(--mptk-switch-cell);
   border-radius: var(--mptk-radius-xs);
   background-color: var(--mptk-control-track);
 }
@@ -120,13 +154,15 @@
   background-color: var(--mptk-control-active);
 }
 
-/* 左右各留 3px：滑块宽 50% - 4px，位移 100% + 2px，两端都不贴边。 */
+/* 每条边都让出同一个留边：宽 50% - 2 × 留边，让滑块在所属半区里左右留边相等；
+   位移 100% + 2 × 留边，把右半区的左间隙也补成同一个值。按「一边减得多、一边减得少」写，
+   压在滑块上的文字看着就偏（58% 位移那版踩过）。留边取 token，格子变大时一起变大。 */
 .mptk-switch--block .mptk-switch__thumb {
   position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  width: calc(50% - 4px);
+  top: var(--mptk-switch-cell-inset);
+  bottom: var(--mptk-switch-cell-inset);
+  left: var(--mptk-switch-cell-inset);
+  width: calc(50% - var(--mptk-switch-cell-inset) - var(--mptk-switch-cell-inset));
   border-radius: var(--mptk-radius-xs);
   background-color: var(--mptk-control-thumb);
   box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
@@ -134,7 +170,7 @@
 }
 
 .mptk-switch--block.mptk-switch--on .mptk-switch__thumb {
-  transform: translateX(calc(100% + 2px));
+  transform: translateX(calc(100% + var(--mptk-switch-cell-inset) + var(--mptk-switch-cell-inset)));
 }
 
 .mptk-switch__sides {
@@ -143,34 +179,46 @@
   display: flex;
 }
 
-/* 每侧最小宽等于轨道高：一个字时是正方形，字多了自然撑宽，不会出现宽高失衡的长条。
-   左右内边距吃 --mptk-space-2（8px）：按 space-1 时两个字只有 8px 的余量，贴得几乎连成一团。 */
+/* 四边写同一个内边距 —— 上下与左右必须相等，这是「正方形」唯一的来源；
+   min-width 兜住数字 / 半角符号这类窄于内容盒的内容，line-height:1 让内容盒正好等于字符字号。
+   格子本身由 --mptk-switch-cell 定死，内容字号可以比它小一号（见 sm 档）：内容在格子里居中，
+   四边余量 =（格子 − 内容）/ 2，横向纵向同一个值，所以缩字号不会把格子缩扁。
+   字多了只往横向长、高度不变。内边距与字号按档取 token，不写死尺寸。 */
 .mptk-switch__side {
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: var(--mptk-switch-track-h);
-  padding-right: var(--mptk-space-2);
-  padding-left: var(--mptk-space-2);
-  font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
+  min-width: var(--mptk-switch-cell);
+  padding: var(--mptk-switch-cell-pad);
+  font-size: var(--mptk-switch-cell-content);
+  line-height: 1;
 }
 
+/* 文字在哪一层就用哪一层的对比色，不跟页面主题的前景色走：
+   滑块恒白，压在上面的那一侧恒用深色 --mptk-control-thumb-fg；
+   轨道那一侧看底色 —— track 灰上用前景色，主色上用 --mptk-control-on。
+   状态覆盖靠选择器层级（开态带根节点的两个类，3 类稳压 2 类），
+   不靠声明顺序 —— 否则和 keepColor 规则同特异性时谁写在后面谁赢。 */
 .mptk-switch__side--off {
-  color: var(--mptk-fg);
+  color: var(--mptk-control-thumb-fg);
 }
 
 .mptk-switch__side--on {
-  color: var(--mptk-fg-3);
+  color: var(--mptk-fg);
 }
 
-.mptk-switch--on .mptk-switch__side--off {
+/* keepColor 关态：底色也是主色，未选中的右侧同样在主色上 */
+.mptk-switch--keep-color .mptk-switch__side--on {
   color: var(--mptk-control-on);
 }
 
-.mptk-switch--on .mptk-switch__side--on {
-  color: var(--mptk-fg);
+.mptk-switch.mptk-switch--on .mptk-switch__side--off {
+  color: var(--mptk-control-on);
+}
+
+.mptk-switch.mptk-switch--on .mptk-switch__side--on {
+  color: var(--mptk-control-thumb-fg);
 }
 
 .mptk-switch__thumb {
@@ -183,7 +231,7 @@
 /* 圆形形态放在滑块里的开 / 关图标：字号按轨道高比例走，三档不用各写一份。
    方形形态的图标在 __side 里，吃那边的小字号与状态色。 */
 .mptk-switch__icon {
-  color: var(--mptk-fg-2);
+  color: var(--mptk-control-thumb-fg);
   font-size: calc(var(--mptk-switch-track-h) * .44);
   line-height: 1;
 }
@@ -195,3 +243,14 @@
 
 /* 转圈几何统一由自绘 Spinner 提供（见文件顶部 @use），这里不再画第二份。
    .mptk-switch__spinner 只留作调用点定位用的类名 hook。 */
+
+/* 不变色：底色恒为主色、内衬始终收起，只有滑块位置表示状态。
+   给图标 / 文字型开关用，整块颜色不跟着状态跳。
+   带根节点的两个类（3 类特异性），稳压各形态的 2 类基础规则与开态规则，与声明顺序无关。 */
+.mptk-switch.mptk-switch--keep-color .mptk-switch__track {
+  background-color: var(--mptk-control-active);
+}
+
+.mptk-switch.mptk-switch--keep-color .mptk-switch__veil {
+  transform: scale(0);
+}

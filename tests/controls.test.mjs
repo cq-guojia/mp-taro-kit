@@ -78,37 +78,122 @@ test('控件主色与业务色解耦：默认蓝、色板齐全；明色滑轨�
   }
 })
 
-test('两端不贴边：Segmented 滑动块左右各留 3px，Switch 方形滑块两端对称', () => {
+test('两端不贴边：Segmented 滑动块左右各留 3px，Switch 方形滑块四边同一个留边', () => {
   const segJs = read('../dist/ui/form/segmented/Segmented.js')
   assert.match(segJs, /calc\(.*- 6px\)/, '滑动块宽度要减掉左右边距')
   assert.match(segJs, /calc\(.*\+ 3px\)/, '滑动块起点要让出左边距')
   const switchCss = read('../dist/ui/form/switch/style/index.css')
   const block = /\.mptk-switch--block \.mptk-switch__thumb\s*\{([^}]*)\}/.exec(switchCss)
   assert.ok(block, '缺方形滑块规则')
-  assert.match(block[1], /left:\s*3px/)
-  assert.match(block[1], /width:\s*calc\(50% - 4px\)/)
+  for (const edge of ['top', 'bottom', 'left']) {
+    assert.match(
+      block[1],
+      new RegExp(`${edge}:\\s*var\\(--mptk-switch-cell-inset\\)`),
+      `${edge} 必须与其余边取同一个留边`,
+    )
+  }
+  assert.match(
+    block[1],
+    /width:\s*calc\(50% - var\(--mptk-switch-cell-inset\) - var\(--mptk-switch-cell-inset\)\)/,
+    '宽度要减掉左右两个留边，两端才对称',
+  )
   const onRule = /\.mptk-switch--block\.mptk-switch--on \.mptk-switch__thumb\s*\{([^}]*)\}/.exec(switchCss)
   assert.ok(onRule, '缺方形滑块开启态规则')
-  assert.match(onRule[1], /translateX\(calc\(100% \+ 2px\)\)/)
+  assert.match(
+    onRule[1],
+    /translateX\(calc\(100% \+ var\(--mptk-switch-cell-inset\) \+ var\(--mptk-switch-cell-inset\)\)\)/,
+    '位移要补回右半区的留边，且与左边同一个值',
+  )
 })
 
-test('方形开关每侧最小宽等于轨道高，一个字时是正方形', () => {
+test('方形开关每侧是正方形：四边同一个内边距，边长 = 1em + 2 × 内边距', () => {
   const css = read('../dist/ui/form/switch/style/index.css')
   const side = /\.mptk-switch__side\s*\{([^}]*)\}/.exec(css)
   assert.ok(side, '缺 side 规则')
   assert.match(side[1], /box-sizing:\s*border-box/, '最小宽要含内边距，否则撑不到正方形')
-  assert.match(side[1], /min-width:\s*var\(--mptk-switch-track-h\)/, '最小宽必须跟随轨道高')
+  assert.match(side[1], /padding:\s*var\(--mptk-switch-cell-pad\)/, '上下左右必须是同一个内边距')
+  assert.doesNotMatch(side[1], /padding-(top|bottom|left|right)/, '不许拆成四边分别写，拆了必有一边掉队')
+  assert.match(side[1], /min-width:\s*var\(--mptk-switch-cell\)/, '窄内容（数字 / 半角符号）要用格子边长兜成正方形')
+  assert.match(side[1], /font-size:\s*var\(--mptk-switch-cell-content\)/, '字符字号必须独立于格子，sm 档才能只缩图标')
+  assert.match(side[1], /line-height:\s*1/, '内容盒要压成字符字号，否则单个字是竖长方形')
   assert.doesNotMatch(side[1], /min-width:\s*\d+px/, '不许再写死固定宽')
+
+  const block = /\.mptk-switch--block\s*\{([^}]*)\}/.exec(css)
+  assert.ok(block, '缺方形态变量块')
+  const cell = /--mptk-switch-cell:\s*([^;]+);/.exec(block[1])
+  assert.ok(cell, '缺格子边长变量')
+  assert.match(cell[1], /var\(--mptk-switch-cell-box\)/, '边长基准必须是内容盒 token，不是使用处的字号')
+  assert.equal(
+    (cell[1].match(/var\(--mptk-switch-cell-pad\)/g) ?? []).length,
+    2,
+    '边长要把左右两个内边距都加上',
+  )
+  assert.doesNotMatch(cell[1], /\d+px/, '边长不许出现固定像素')
+  assert.doesNotMatch(cell[1], /\*/, '小程序 WebView 不保证支持 calc 乘法，只许相加')
+  const track = /\.mptk-switch--block \.mptk-switch__track\s*\{([^}]*)\}/.exec(css)
+  assert.ok(track, '缺方形轨道规则')
+  assert.match(track[1], /min-height:\s*var\(--mptk-switch-cell\)/, '轨道高度要跟着格子走，内容变大不会被裁')
+  assert.doesNotMatch(track[1], /--mptk-switch-track-h/, '方形态不许再吃圆形开关的 52:32 定高')
 })
 
-test('方形开关每侧左右内边距够两个字用，不挤成一团', () => {
+test('方形态三档只换内边距与字号两个 token，格子按档递增且不超档位根高', () => {
   const css = read('../dist/ui/form/switch/style/index.css')
-  const side = /\.mptk-switch__side\s*\{([^}]*)\}/.exec(css)
-  assert.ok(side, '缺 side 规则')
-  for (const dir of ['padding-right', 'padding-left']) {
-    assert.match(side[1], new RegExp(`${dir}:\\s*var\\(--mptk-space-2\\)`), `${dir} 必须吃 space-2`)
+  const pick = (selector) => {
+    const hit = new RegExp(`${selector.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(hit, `缺 ${selector}`)
+    return hit[1]
   }
-  assert.doesNotMatch(side[1], /var\(--mptk-space-1\)/, 'space-1 只有 4px，两个字会贴在一起')
+  const tiers = [
+    ['sm', '.mptk-switch--block.mptk-switch--sm', 'space-1', 'font-xs', 32],
+    ['md', '.mptk-switch--block.mptk-switch--md', 'space-2', 'font-sm', 40],
+    ['lg', '.mptk-switch--block', 'space-3', 'font-md', 48],
+  ]
+  const tokens = read('../dist/styles/theme-light.css')
+  const px = (name) => {
+    const hit = new RegExp(`--mptk-${name}:\\s*(\\d+)px`).exec(tokens)
+    assert.ok(hit, `缺 token --mptk-${name}`)
+    return Number(hit[1])
+  }
+  const cells = []
+  for (const [tier, selector, pad, font, root] of tiers) {
+    const rule = pick(selector)
+    assert.match(rule, new RegExp(`--mptk-switch-cell-pad:\\s*var\\(--mptk-${pad}\\)`), `${tier} 档内边距没吃 ${pad}`)
+    assert.match(rule, new RegExp(`--mptk-switch-cell-box:\\s*var\\(--mptk-${font}\\)`), `${tier} 档内容盒没吃 ${font}`)
+    const cell = px(font) + px(pad) * 2
+    assert.ok(cell < root, `${tier} 档格子 ${String(cell)}px 超出根高 ${String(root)}px`)
+    cells.push(cell)
+  }
+  assert.deepEqual(cells, [...cells].sort((a, b) => a - b), '格子必须随档递增')
+  assert.equal(new Set(cells).size, cells.length, '三档格子不许一样大，否则档位没区分')
+})
+
+test('最小号图标比内容盒小一号，格子不跟着缩', () => {
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const sm = /\.mptk-switch--block\.mptk-switch--sm\s*\{([^}]*)\}/.exec(css)
+  assert.ok(sm, '缺 sm 档覆盖')
+  assert.match(sm[1], /--mptk-switch-cell-box:\s*var\(--mptk-font-xs\)/, 'sm 内容盒取 font-xs')
+  assert.match(
+    sm[1],
+    /--mptk-switch-cell-content:\s*calc\(var\(--mptk-switch-cell-box\) - 2px\)/,
+    'sm 字符字号要比内容盒小一号，且写成差值（宿主改 token 时跟着走）',
+  )
+  const tokens = read('../dist/styles/theme-light.css')
+  const px = (name) => Number(new RegExp(`--mptk-${name}:\\s*(\\d+)px`).exec(tokens)[1])
+  const box = px('font-xs')
+  const pad = px('space-1')
+  const content = box - 2
+  assert.ok(content < box, '缩号后字符必须真的更小')
+  assert.ok(box + pad * 2 > content + pad * 2, '格子由内容盒撑住：缩字号只缩内容，格子高度不变')
+  const md = /\.mptk-switch--block\.mptk-switch--md\s*\{([^}]*)\}/.exec(css)
+  assert.ok(md, '缺 md 档规则')
+  assert.doesNotMatch(md[1], /--mptk-switch-cell-content:/, 'md 档不许单独缩字符，字符字号默认跟随内容盒')
+  const lg = /\.mptk-switch--block\s*\{([^}]*)\}/.exec(css)
+  assert.ok(lg, '缺 lg 档规则')
+  assert.match(
+    lg[1],
+    /--mptk-switch-cell-content:\s*var\(--mptk-switch-cell-box\)/,
+    '默认档字符字号必须等于内容盒，别处不许再发明字号',
+  )
 })
 
 test('方形开关圆角落到最小档，轨道、遮罩、滑块三处一致', () => {
@@ -133,6 +218,59 @@ test('圆形开关的图标进滑块，等待态优先显示转圈', () => {
   const icon = /\.mptk-switch__icon\s*\{([^}]*)\}/.exec(css)
   assert.ok(icon, '缺滑块内图标样式')
   assert.match(icon[1], /font-size:\s*calc\(var\(--mptk-switch-track-h\)/, '图标字号按轨道高比例走')
+})
+
+test('压在白滑块上的内容恒取深色，轨道侧按底色取对比色', () => {
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const rule = (selector) => {
+    const hit = new RegExp(`\n${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(hit, `缺规则 ${selector}`)
+    return hit[1]
+  }
+  assert.match(rule('.mptk-switch__side--off'), /color:\s*var\(--mptk-control-thumb-fg\)/, '关态左半压在滑块上，取深色')
+  assert.match(rule('.mptk-switch.mptk-switch--on .mptk-switch__side--on'), /color:\s*var\(--mptk-control-thumb-fg\)/, '开态右半压在滑块上，取深色')
+  assert.match(rule('.mptk-switch__side--on'), /color:\s*var\(--mptk-fg\)/, '关态右半在 track 灰上，取前景色')
+  assert.match(rule('.mptk-switch.mptk-switch--on .mptk-switch__side--off'), /color:\s*var\(--mptk-control-on\)/, '开态左半在主色上，取反白')
+  assert.match(rule('.mptk-switch--keep-color .mptk-switch__side--on'), /color:\s*var\(--mptk-control-on\)/, '不变色关态右半也在主色上')
+  assert.match(rule('.mptk-switch__icon'), /color:\s*var\(--mptk-control-thumb-fg\)/, '滑块内图标取深色')
+  assert.doesNotMatch(css, /var\(--mptk-fg-3\)/, '滑块 / 轨道上的内容不许再用 fg-3 这种低对比前景')
+  assert.doesNotMatch(
+    css,
+    /\n\.mptk-switch--on \.mptk-switch__side--on\s*\{/,
+    '开态必须用 3 类选择器：2 类会和 keepColor 同特异性，靠顺序决定谁赢（曾经把白滑块上的图标刷成白色）',
+  )
+})
+
+test('滑块明暗同取白，滑块上的内容明暗同取深色', () => {
+  for (const mode of ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']) {
+    const css = read(`../dist/styles/${mode}.css`)
+    assert.match(css, /--mptk-control-thumb:\s*#fff/, `${mode} 的滑块必须是白`)
+    assert.match(css, /--mptk-control-thumb-fg:\s*#1f2328/, `${mode} 缺滑块前景深色`)
+  }
+})
+
+test('不变色模式：底色恒为主色、内衬不收缩，只有滑块移动', () => {
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const track = /\.mptk-switch\.mptk-switch--keep-color \.mptk-switch__track\s*\{([^}]*)\}/.exec(css)
+  assert.ok(track, '缺 keep-color 轨道规则')
+  assert.match(track[1], /background-color:\s*var\(--mptk-control-active\)/, '不变色时底色恒为主色')
+  const veil = /\.mptk-switch\.mptk-switch--keep-color \.mptk-switch__veil\s*\{([^}]*)\}/.exec(css)
+  assert.ok(veil, '缺 keep-color 内衬规则')
+  assert.match(veil[1], /transform:\s*scale\(0\)/, '不变色时内衬始终收起')
+  assert.match(
+    css,
+    /\.mptk-switch\.mptk-switch--keep-color \.mptk-switch__track/,
+    'keep-color 轨道规则必须用 3 类特异性，不许靠声明顺序压过基础规则',
+  )
+  assert.match(
+    css,
+    /\.mptk-switch\.mptk-switch--keep-color \.mptk-switch__veil/,
+    'keep-color 内衬规则必须用 3 类特异性',
+  )
+  const js = read('../dist/ui/form/switch/Switch.js')
+  assert.match(js, /mptk-switch--keep-color/, '组件必须挂 keep-color 类名')
+  assert.match(js, /on \|\| keepColor/, '不变色模式下自定义色值要一直挂着')
+  assert.match(read('../dist/ui/form/switch/Switch.d.ts'), /keepColor/, 'd.ts 缺 keepColor')
 })
 
 test('异步示例不许先改值再返回 Promise，否则就是"点过去再 loading"', () => {

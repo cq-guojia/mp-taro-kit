@@ -158,6 +158,8 @@
   --mptk-control-track: #{$gray-3};
   --mptk-control-thumb: #fff;
   --mptk-control-on: #fff;
+  /* 滑块恒白，压在滑块上的文字 / 图标只能取深色，不能跟页面前景色走（暗色下前景是浅色）。 */
+  --mptk-control-thumb-fg: #1f2328;
 
   /* 自绘转圈：圆环与追逐点共用一支主色，明暗各给一套。
      不跟随 currentColor，也不蹭宿主会定制的业务色。 */
@@ -252,8 +254,12 @@
   --mptk-control-red: #{$red};
   --mptk-control-active: var(--mptk-control-blue);
   --mptk-control-track: #{$gray-4};
-  --mptk-control-thumb: #{$gray-5};
+  /* 滑块是"白按钮"，明暗同值：暗色下取 gray-5 会与深色轨道糊成一片，
+     滑块上的图标 / 文字也失去对比。 */
+  --mptk-control-thumb: #fff;
   --mptk-control-on: #fff;
+  /* 滑块恒白，明暗同值：暗色下若跟 --mptk-fg 走浅色，白底上就看不见了。 */
+  --mptk-control-thumb-fg: #1f2328;
 
   --mptk-spinner-active: #{$blue};
 }

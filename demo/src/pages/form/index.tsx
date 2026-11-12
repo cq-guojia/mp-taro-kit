@@ -106,6 +106,25 @@ export default function SwitchPage() {
               onChange={(next) => { setDayNight(next) }}
             />
           </View>
+          <View className="demo-row">
+            <Switch
+              className="demo-item"
+              checked={dayNight}
+              shape="block"
+              keepColor
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={dayNight}
+              keepColor
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
+            />
+          </View>
         </View>
       )
     }

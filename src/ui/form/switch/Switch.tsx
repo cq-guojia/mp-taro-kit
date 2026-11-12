@@ -30,6 +30,11 @@ export interface SwitchProps {
   loading?: boolean
   /** 转圈节点；不给就用全库共用的自绘 Spinner，不连图标包。 */
   loadingContent?: ReactNode
+  /**
+   * 不变色：轨道底色恒为 `color` 指定的主色，只有滑块位置区分状态。
+   * 给图标 / 文字型开关用，避免整块变色跟图标抢注意力。默认 false（关灰、开主色）。
+   */
+  keepColor?: boolean
   className?: string
 }
 
@@ -45,6 +50,7 @@ export function Switch({
   disabled = false,
   loading = false,
   loadingContent,
+  keepColor = false,
   className,
 }: SwitchProps) {
   const { display, busy, change } = useAsyncChange(checked, onChange, disabled, loading, onFailed)
@@ -59,10 +65,12 @@ export function Switch({
     colorClass,
     locked ? 'mptk-switch--locked' : '',
     busy ? 'mptk-switch--busy' : '',
+    keepColor ? 'mptk-switch--keep-color' : '',
     className,
   ]
-  /* 轨道底色是状态色本身的真源，自定义色值只在选中态内联：关态必须留给 track 灰。 */
-  const trackStyle = on && inlineColor !== undefined ? { backgroundColor: inlineColor } : undefined
+  /* 轨道底色是状态色本身的真源，自定义色值只在选中态内联：关态必须留给 track 灰。
+     不变色模式下底色恒为主色，所以自定义色值也一直挂着。 */
+  const trackStyle = (on || keepColor) && inlineColor !== undefined ? { backgroundColor: inlineColor } : undefined
   /* 圆形形态没有两侧，开 / 关内容放进滑块里；等待态优先显示转圈。 */
   const thumbContent = shape === 'round' ? (on ? onContent : offContent) : undefined
   const hasThumbContent = thumbContent !== undefined && thumbContent !== null && thumbContent !== false
