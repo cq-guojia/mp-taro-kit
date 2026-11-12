@@ -26,7 +26,7 @@ export interface SegmentedProps<T extends string = string> {
   items: readonly SegmentedItem<T>[]
   /** 宿主给的真值；组件完全受控。 */
   value: T
-  /** 返回 Promise 时进入「先拨过去再转圈」，失败回弹并回调 onFailed。 */
+  /** 返回 Promise 时立刻转圈、位置不动，成功后由宿主把新值传回来；失败只回调 onFailed，不回弹。 */
   onChange?: (next: T) => unknown
   onFailed?: () => void
   size?: SegmentedSize

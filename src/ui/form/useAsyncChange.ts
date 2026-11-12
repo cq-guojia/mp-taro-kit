@@ -1,20 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { isSuccess, isThenable } from '../../runtime/thenable.js'
-import { displayValue, settleChange, type ChangeState } from './change-state.js'
 
 export interface AsyncChange<T> {
-  /** 界面当前该显示的值。 */
+  /** 界面上该显示的值，始终等于宿主给的真值。 */
   display: T
   /** 是否正在等待（转圈 + 锁点击）。 */
   busy: boolean
-  /** 点一下：同步回调直接交给宿主；异步回调则先拨过去并转圈。 */
+  /** 点一下：同步回调直接交给宿主；异步回调立刻转圈，翻不翻由宿主决定。 */
   change: (next: T) => void
 }
 
 /**
- * 只服务「点一下先拨过去再转圈」的控件：
- * 回调返回 thenable 时，界面立刻显示新值并锁住点击，成功保持，失败回弹并通知宿主。
- * 同步回调不产生临时值，完全由宿主给回来的 value 决定显示。
+ * 只服务「点了先转圈、成功再翻过去」的控件（对齐 Ant Design Mobile）：
+ * 回调返回 thenable 时立刻锁点击并转圈，界面位置**保持不动**；
+ * 成功后由宿主把新值传回来，失败则什么都不用回滚 —— 从来没拨过去过。
  */
 export function useAsyncChange<T>(
   value: T,
@@ -23,12 +22,8 @@ export function useAsyncChange<T>(
   loading: boolean,
   onFailed?: () => void,
 ): AsyncChange<T> {
-  const [state, setState] = useState<ChangeState<T>>({ pending: null, busy: false })
+  const [busy, setBusy] = useState(false)
   const inFlight = useRef(false)
-
-  useEffect(() => {
-    setState((current) => settleChange(current, 'value-changed'))
-  }, [value])
 
   const change = (next: T): void => {
     if (disabled || loading || inFlight.current) return
@@ -36,27 +31,23 @@ export function useAsyncChange<T>(
     if (!isThenable(out)) return
 
     inFlight.current = true
-    setState({ pending: next, busy: true })
-    const fail = (): void => {
+    setBusy(true)
+    const done = (): void => {
       inFlight.current = false
-      setState((current) => settleChange(current, 'fail'))
-      onFailed?.()
+      setBusy(false)
     }
     void Promise.resolve(out).then(
       (result) => {
-        if (!isSuccess(result)) {
-          fail()
-          return
-        }
-        inFlight.current = false
-        setState((current) => settleChange(current, 'ok'))
+        done()
+        if (!isSuccess(result)) onFailed?.()
       },
       (error: unknown) => {
-        fail()
-        console.error('[mp-taro-kit/ui/form] 切换失败，已回弹：', error)
+        done()
+        onFailed?.()
+        console.error('[mp-taro-kit/ui/form] 切换失败，位置未变动：', error)
       },
     )
   }
 
-  return { display: displayValue(value, state), busy: state.busy || loading, change }
+  return { display: value, busy: busy || loading, change }
 }

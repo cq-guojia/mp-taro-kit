@@ -16,8 +16,8 @@ docs/                                               # 项目文档库入口
 │   ├── cell.md                                     # Cell / CellGroup 的 props、组内行为与九种用法代码
 │   ├── exports.md                                  # exports 子路径形态、挂载与注入约定、peer 版本下限
 │   ├── icons.md                                    # 平台项目与命名规则、类名契约、多色行为与字体加载稳定性
-│   ├── segmented.md                                # Segmented 的 items 契约、两种指示器与异步回弹
-│   └── switch.md                                   # Switch 的两种形状、三档尺寸与异步回弹
+│   ├── segmented.md                                # Segmented 的 items 契约、两种指示器与异步切换
+│   └── switch.md                                   # Switch 的两种形状、三档尺寸与异步切换
 ├── development/                                    # 本地开发、构建与验证约定
 │   └── build-and-test.md                           # 构建与自检顺序、工程约定，以及实机验证不在这套自检内的边界
 └── dependencies/                                   # 外部依赖的已核实行为与已知坑

@@ -1,7 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
-import { settleChange, displayValue } from '../dist/ui/form/change-state.js'
 import { resolveControlColor, CONTROL_COLORS } from '../dist/ui/form/control-color.js'
 
 function read(relative) {
@@ -133,26 +132,16 @@ test('两个组件各自独立：出口、样式齐全，互不引用也不内�
   assert.match(barrel, /mptk-seg/, 'form 子域样式兼容出口要含 Segmented')
 })
 
-test('异步切换状态机：先拨过去、成功保持、失败回弹、宿主改值以宿主为准', () => {
-  const waiting = { pending: 'doing', busy: true }
-  assert.equal(displayValue('all', { pending: null, busy: false }), 'all')
-  assert.equal(displayValue('all', waiting), 'doing', '等待期间界面必须显示刚拨过去的值')
-
-  const ok = settleChange(waiting, 'ok')
-  assert.deepEqual(ok, { pending: 'doing', busy: false }, '成功要停圈并保持新位置')
-  assert.equal(displayValue('all', ok), 'doing')
-
-  const fail = settleChange(waiting, 'fail')
-  assert.deepEqual(fail, { pending: null, busy: false }, '失败要清掉临时值')
-  assert.equal(displayValue('all', fail), 'all', '失败后界面必须回到宿主真值')
-
-  const hostChanged = settleChange(waiting, 'value-changed')
-  assert.equal(hostChanged.pending, null, '宿主改值时临时值作废')
-  assert.equal(hostChanged.busy, true, '等待还没结束，转圈继续')
-  assert.equal(displayValue('todo', hostChanged), 'todo', '以后台给回来的值为准')
-
-  assert.equal(settleChange({ pending: null, busy: false }, 'value-changed').pending, null)
-  assert.equal(settleChange(waiting, 'ok').pending, 'doing')
+test('异步切换：点了先转圈、位置不动，成功后由宿主把新值传回来', () => {
+  const hook = read('../dist/ui/form/useAsyncChange.js')
+  assert.match(hook, /setBusy\(true\)/, '发起时立刻进等待态')
+  assert.doesNotMatch(hook, /pending/, '不再预拨到新值')
+  for (const file of ['../dist/ui/form/switch/Switch.js', '../dist/ui/form/segmented/Segmented.js']) {
+    const js = read(file)
+    assert.doesNotMatch(js, /pending|displayValue|settleChange/, `${file} 还在用临时的显示值`)
+    assert.match(js, /busy/, `${file} 没接等待态`)
+  }
+  assert.equal(exists('../dist/ui/form/change-state.js'), false, 'change-state 状态机应已删除')
 })
 
 test('组件契约类型在宿主真类型环境下可作为 JSX 使用', () => {

@@ -13,13 +13,13 @@ export type SwitchShape = 'round' | 'block'
 export interface SwitchProps {
   /** 宿主给的真值；组件完全受控。 */
   checked: boolean
-  /** 返回 Promise 时进入「先拨过去再转圈」，失败回弹并回调 onFailed。 */
+  /** 返回 Promise 时立刻转圈、位置不动，成功后由宿主把新值传回来；失败只回调 onFailed，不回弹。 */
   onChange?: (next: boolean) => unknown
   /** 异步失败时通知宿主回滚自己的值。 */
   onFailed?: () => void
   size?: SwitchSize
   shape?: SwitchShape
-  /** 选中态主色：内置色名或任意 CSS 色值，默认蓝。 */
+  /** 选中态主色：内置色名或任意 CSS 色值，默认绿（微信原生开关的绿）。 */
   color?: ControlColor
   /** 关侧内容，仅 shape="block" 渲染。 */
   offContent?: ReactNode
@@ -67,7 +67,7 @@ export function Switch({
     <View className={names.filter(Boolean).join(' ')} onClick={() => change(!on)}>
       <View className="mptk-switch__track" style={trackStyle}>
         <View className="mptk-switch__thumb">
-          {busy ? (loadingContent ?? <Spinner size={12} color={inlineColor} className="mptk-switch__spinner" />) : null}
+          {busy ? (loadingContent ?? <Spinner size={16} color={inlineColor} className="mptk-switch__spinner" />) : null}
         </View>
         {shape === 'block' ? (
           <View className="mptk-switch__sides">

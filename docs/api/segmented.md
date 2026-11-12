@@ -14,7 +14,7 @@
 | `items` | `readonly SegmentedItem<T>[]` | 是 | `value` 唯一 | 段清单；空数组时只渲染空容器 |
 | `value` | `T extends string` | 是 | 应命中某个 `item.value` | 宿主真值；等待期间的临时显示值不会写回它 |
 | `onChange` | `(next: T) => unknown` | 否 | 返回 thenable 时进入等待态 | 点某段调用，`next` 是该段的 `value` |
-| `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主回滚自己的值 |
+| `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主；组件不做回弹，位置从未变过 |
 | `size` | `'sm' \| 'md' \| 'lg'` | 否 | 默认 `lg` | 取 `--mptk-control-h-*`，三档为 32 / 40 / 48 |
 | `indicator` | `'thumb' \| 'line'` | 否 | 默认 `thumb` | 滑动块或频道切换式下划线 |
 | `color` | `ControlColor` | 否 | 默认蓝 | 内置色名 `blue` / `green` / `orange` / `red`，或任意 CSS 色值 |
@@ -81,13 +81,13 @@ function FilterBar() {
 
 | 情形 | 行为 |
 |---|---|
-| `onChange` 返回 rejected Promise | 界面回弹到宿主 `value`，控制台输出错误，调用 `onFailed`，不向页面抛出 |
-| `onChange` resolve 显式 `false` | 按失败回弹、调用 `onFailed`，不记控制台错误 |
-| 等待成功 | 停圈并保持已选中的位置，直到宿主把新 `value` 传回来 |
+| 点击后 `onChange` 返回 thenable | 立刻锁点击并转圈，选中位置**不动**，等 Promise 结束 |
+| 等待成功 | 停圈；由宿主把新 `value` 传回来，这时才滑过去 |
+| `onChange` 返回 rejected Promise | 停圈、控制台输出错误、调用 `onFailed`；位置没动过，不需要回滚 |
+| `onChange` resolve 显式 `false` | 同上，只是不记控制台错误 |
 | `disabled` / 段级 `disabled` / `loading` / 等待中 | 该段点击短路，不调用 `onChange` |
-| 宿主在等待期间改 `value` | 临时显示值作废，以后台值为准，转圈继续到等待结束 |
 
-失败回弹要求宿主配合：若在 `onChange` 里提前改了 `value`，必须在 `onFailed` 里回滚。异步状态机、转圈绘制、色板与错误口径与 [Switch 开关](switch.md) 完全共用：两处等待态都渲染同一个自绘 `Spinner`（默认 `circular` 圆环，不给单边边框上色），不依赖图标字体包；自定义色值通过 `currentColor` 生效；引其中一个组件不会把另一个打进产物。
+异步口径与 [Switch 开关](switch.md) 完全共用：**点了先转圈、成功再切换**，不做乐观更新，所以不存在「先滑过去再弹回来」。`onChange` 里不要在 Promise 结束前改 `value`，把 `setValue(next)` 放进 `.then()`；失败时只调 `onFailed` 通知宿主。两处等待态都渲染同一个自绘 `Spinner`（默认 `circular` 圆环，不给单边边框上色），不依赖图标字体包；自定义色值通过 `currentColor` 生效；引其中一个组件不会把另一个打进产物。
 
 ### 相关
 
@@ -106,3 +106,4 @@ function FilterBar() {
 - 2026-11-12 17:24:24：转圈改为自绘双色缺角环，去掉图标字体依赖
 - 2026-11-12 18:22:33：转圈改为自绘 8 点圆点环，绕开 Skyline 单边边框让圆角失效
 - 2026-11-12 20:42:05：转圈改为 TDesign circular 圆环与 SpinKit 六点追逐两形态，默认圆环
+- 2026-11-12 21:14:07：异步改为点了先转圈、成功再切换，去掉乐观更新与回弹

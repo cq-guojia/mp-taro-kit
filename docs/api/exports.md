@@ -28,7 +28,7 @@
 
 第一个按此落地的组件单元是 `mp-taro-kit/ui/display/cell`（`Cell` + `CellGroup`）与 `mp-taro-kit/ui/display/cell/style`；`mp-taro-kit/ui/display` 只转发它们，不再作为推荐引用口。
 
-`Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts` 与 `change-state.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
+`Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
 
 自绘转圈是另一个组件级单元：`mp-taro-kit/ui/feedback/spinner` + `/style` 导出 `Spinner`，`variant` 两档 —— `circular`（默认，TDesign `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩）与 `chase`（SpinKit `sk-chase` 的六点追逐）。全库所有等待态（`Loader` 的 `ring`、`Loading`、`Switch`、`Segmented`）共用这一份绘制，不用图标字体，也不给单边边框上色（Skyline 下单边边框上色会让 `border-radius` 失效，见[Skyline 渲染引擎](../dependencies/skyline-rendering.md)）。颜色只取 `--mptk-spinner-active`，`light` / `dark` 各给一套；`Loader` / `Spinner` / `Loading` 都接受 `color`，不给时三种形态统一用这支主色（`blocks` 不再继承页面文字色），给了就内联覆盖容器 `color`、通过 `currentColor` 生效。圆环粗细对齐 TDesign 实测：原版 `mask: radial-gradient(transparent calc(50% - 1rpx), #fff 50%)` 的径向渐变默认 `farthest-corner`，环带约占直径 17%，这里用同一比例的环形 SVG 遮罩复刻。尺寸档跟字号一一对应，取字号的 1.6 倍（20 / 22 / 24 / 28 / 36），「圈 + 文字」并排时重心才对得上；比例同样来自 TDesign（它默认 20px 圈配 12px 文案）。
 
@@ -38,7 +38,7 @@
 
 控件高度档位固定为 32 / 40 / 48（`--mptk-control-h-sm` / `-md` / `-lg`，默认 48），与 WeUI 的按钮高度三档一致；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。真源同为 `src/design/_tokens.scss` 的 `base` mixin，`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于该值。
 
-控件选中态主色默认蓝（`--mptk-control-active` 指向 `--mptk-control-blue`），内置蓝 / 绿 / 橙 / 红四色；滑轨、滑块、选中文字各有独立颜色键。这组变量写在 `light` / `dark` mixin，与 `--mptk-business` 等语义色解耦：宿主定制业务色不会改变控件默认外观，明色下滑轨与滑块也不会双双为白。组件的 `color` 可传内置色名（走类名切变量）或任意 CSS 色值（走显式内联上色，不依赖 WXML 行内自定义属性）；`tests/controls.test.mjs` 核对四份主题产物都带全这组键，并断言组件不引用业务色。
+控件主色轴默认指向 `--mptk-control-blue`，内置蓝 / 绿 / 橙 / 红四色；`Switch` 在组件样式里把默认值覆盖成绿（对齐微信原生开关），`Segmented` 仍用蓝；滑轨、滑块、选中文字各有独立颜色键。这组变量写在 `light` / `dark` mixin，与 `--mptk-business` 等语义色解耦：宿主定制业务色不会改变控件默认外观，明色下滑轨与滑块也不会双双为白。组件的 `color` 可传内置色名（走类名切变量）或任意 CSS 色值（走显式内联上色，不依赖 WXML 行内自定义属性）；`tests/controls.test.mjs` 核对四份主题产物都带全这组键，并断言组件不引用业务色。
 
 `styles/theme-*` 另带一套基础色板：8 级中性灰阶（`--mptk-gray-1` 至 `-8`，编号表示层级，明暗方向相反）与 8 支色相（蓝 / 绿 / 橙 / 红 / 紫 / 青 / 粉 / 蓝绿），每支有 `-hover` / `-active` / `-soft` 三档派生。`light` 与 `dark` 的颜色键同名同数，新增颜色必须同时给两档；宿主可覆盖同名变量整体换色，组件不感知主题。分档依据与不可破约束见[设计基础](../architecture/design-foundation.md)。
 
@@ -66,8 +66,8 @@ props 表、九种用法与代码示例见 [Cell 单元格](cell.md)。`.d.ts` �
 
 props 表与用法见 [Switch 开关](switch.md)、[Segmented 分段选择](segmented.md)。`.d.ts` 只表达 props 类型，以下几条由运行时保证：
 
-- 两者共用 `src/ui/form/change-state.ts` 的状态机：回调返回 thenable 时界面先拨到新值并转圈、锁点击；成功保持，失败回弹并调用 `onFailed`，显式 `false` 与 rejected Promise 都算失败。
-- 宿主给回的 `checked` / `value` 始终是唯一真值；等待期间的临时显示值在成功、失败或宿主改值时按状态机收敛。失败后若宿主已提前改值，须在 `onFailed` 里自行回滚。
+- 两者共用 `src/ui/form/useAsyncChange.ts`：回调返回 thenable 时**立刻锁点击并转圈，界面位置不动**，成功后由宿主把新值传回来才切换；显式 `false` 与 rejected Promise 都算失败，失败只调 `onFailed`，不做回弹（对齐 Ant Design Mobile）。
+- 宿主给回的 `checked` / `value` 始终是唯一真值，组件从不自己改它；因此没有临时显示值，原 `change-state.ts` 已删除。
 - 禁用态包含整控件、段级 `disabled`、外部 `loading` 与等待中四种，任一成立都短路回调。
 - 转圈统一由组件级单元 `ui/feedback/spinner` 自绘，不依赖图标字体包；Switch 与 Segmented 只引 `Spinner` 本身，不引 feedback 子域 barrel。等待失败的错误输出到控制台，不向页面抛出。
 
@@ -246,3 +246,5 @@ setThemeMode('auto', {
 - 2026-11-12 20:42:05：转圈改为 TDesign circular 圆环与 SpinKit 六点追逐两形态，默认圆环
 - 2026-11-12 20:49:51：环宽对齐 TDesign 实测比例（约 17% 直径），Loader/Loading 补 color，三形态统一默认主色
 - 2026-11-12 20:56:53：加载圈五档改为跟字号一一对应，取字号的 1.6 倍（20/22/24/28/36）
+- 2026-11-12 21:14:07：异步切换统一走 useAsyncChange，删掉 change-state 临时显示值
+- 2026-11-12 21:14:30：默认色按组件区分，去掉已删除的 change-state 引用
