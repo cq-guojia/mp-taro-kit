@@ -1,4 +1,4 @@
-import { Fragment, useEffect, type ReactNode } from 'react'
+import { Fragment, type ReactNode } from 'react'
 import Taro from '@tarojs/taro'
 import { configure } from 'mp-taro-kit/core'
 import type {
@@ -7,9 +7,10 @@ import type {
   PlatformRequestOptions,
   PlatformResponse,
 } from 'mp-taro-kit/core'
+import { setThemeMode } from 'mp-taro-kit/runtime'
 import { OverlayHost } from 'mp-taro-kit/ui/infra'
 
-import 'mp-taro-kit/styles/theme-auto'
+import 'mp-taro-kit/styles/theme-runtime'
 import 'mp-taro-kit/ui/infra/style'
 import 'mp-taro-kit/ui/icon/base/style'
 // 演示站自有的图标：只引样式，类名在用到的地方直接写，不做包出口。
@@ -70,8 +71,8 @@ const WINDOW_BACKGROUND = {
   dark: '#15181c',
 } as const
 
-function applyWindowBackground(theme: 'light' | 'dark') {
-  const backgroundColor = WINDOW_BACKGROUND[theme]
+function applyWindowBackground(dark: boolean) {
+  const backgroundColor = dark ? WINDOW_BACKGROUND.dark : WINDOW_BACKGROUND.light
   void Taro.setBackgroundColor({
     backgroundColor,
     backgroundColorTop: backgroundColor,
@@ -79,16 +80,20 @@ function applyWindowBackground(theme: 'light' | 'dark') {
   })
 }
 
-// 命令式 API 的渲染位置全局只挂一次；页面内容由 Taro 注入 children。
-export default function App({ children }: { children?: ReactNode }) {
-  useEffect(() => {
-    const theme = Taro.getSystemInfoSync().theme === 'dark' ? 'dark' : 'light'
-    applyWindowBackground(theme)
-    const onChange = (res: { theme: 'light' | 'dark' }) => applyWindowBackground(res.theme)
+// 主题在 app 入口配置一次：平台能力全部由宿主注入，库侧 runtime 保持零平台依赖。
+// auto 跟随系统主题；开关里调 setThemeMode('light' | 'dark' | 'auto') 即可热切换。
+setThemeMode('auto', {
+  systemDark: () => Taro.getSystemInfoSync().theme === 'dark',
+  onSystemDarkChange: (notify) => {
+    const onChange = (res: { theme: 'light' | 'dark' }) => notify(res.theme === 'dark')
     Taro.onThemeChange(onChange)
     return () => Taro.offThemeChange(onChange)
-  }, [])
+  },
+  onDarkChange: applyWindowBackground,
+})
 
+// 命令式 API 的渲染位置全局只挂一次；页面内容由 Taro 注入 children。
+export default function App({ children }: { children?: ReactNode }) {
   return (
     <Fragment>
       {children}

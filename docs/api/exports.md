@@ -20,7 +20,8 @@
 | `mp-taro-kit/styles/theme-light` | 无 | 无 | 无 | **固定明**：只有明色值；宿主定制配色覆盖的都是明色，没有暗色变体 |
 | `mp-taro-kit/styles/theme-dark` | 无 | 无 | 无 | **固定暗**：只写基线与暗色值，不铺明色、不做覆盖，不随系统变化 |
 | `mp-taro-kit/styles/theme-auto` | 无 | 无 | 无 | **跟随系统**：暗色值包在 `prefers-color-scheme: dark` 媒体查询里 |
-| `mp-taro-kit/styles/tokens` | 无 | 无 | 无 | 旧出口，等价于固定明；新代码从上面三选一 |
+| `mp-taro-kit/styles/theme-runtime` | 无 | 无 | 无 | **运行时热切换**：明色为默认，`.mptk-dark` 只覆盖颜色键，由 `setThemeMode` 随时切 |
+| `mp-taro-kit/styles/tokens` | 无 | 无 | 无 | 旧出口，等价于固定明；新代码从上面几项里选一 |
 | `mp-taro-kit/package.json` | 无 | 无 | 无 | 指向包清单自身 |
 
 **引用单元是组件或图标包，不是子域**：小程序包体积受限，消费端用哪个就引哪个的 JS 与 `style` 出口。子域聚合出口仍在，但只作兼容过渡；`scripts/check.mjs` 会逐个对照 `src/ui` 下的 `index.ts` 与 `style/index.scss`，确保通配展开后的产物真实存在，避免解析成功却文件缺失的坏包。
@@ -72,33 +73,73 @@ props 表、九种用法与代码示例见 [Cell 单元格](cell.md)。`.d.ts` �
 
 底部安全区**不在 `page` 上让位**：Skyline 下 `page` 的 padding 区域不绘制背景，会让底部露出一条窗口白底。改由页面根容器自己 `padding-bottom: env(safe-area-inset-bottom)` 并铺 `--mptk-surface-base`（或挂 `<SafeArea bottom />`），安全区背景才会跟随主题。Android 的系统手势条区域只认窗口背景色，宿主在 app 入口用 `Taro.setBackgroundColor` 跟随 `Taro.onThemeChange` 一起设置。
 
-宿主在 app 入口**从三个明暗模式里引一个**即全站所有页面生效，页面不需要逐个引：
+宿主在 app 入口**从下面几种模式里引一个**即全站所有页面生效，页面不需要逐个引：
 
 ```js
 import 'mp-taro-kit/styles/theme-light' // 固定明
-// import 'mp-taro-kit/styles/theme-dark'  // 固定暗
-// import 'mp-taro-kit/styles/theme-auto'  // 跟随系统
+// import 'mp-taro-kit/styles/theme-dark'     // 固定暗
+// import 'mp-taro-kit/styles/theme-auto'     // 跟随系统（纯 CSS）
+// import 'mp-taro-kit/styles/theme-runtime'  // 运行时热切换（需一次配置，见下）
 ```
 
-**必须引一个，不是可选**：组件样式只写 `var(--mptk-*)`、不自带兜底值，不引则配色、字号、间距、圆角全部取不到值（属性回退继承 / 初始值），页面结构还在但完全没样式。三个文件都自带页面基线与明色值，差别只在暗色值怎么处理；切换模式只改这一行 import，不需要覆盖任何变量。
+**必须引一个，不是可选**：组件样式只写 `var(--mptk-*)`、不自带兜底值，不引则配色、字号、间距、圆角全部取不到值（属性回退继承 / 初始值），页面结构还在但完全没样式。每份都自带页面基线与明色值，差别只在暗色值怎么处理；编译期三选一切换模式只改这一行 import，不需要覆盖任何变量。
 
 不需要这条基线的页面（自定义高度、贴底的全屏页），在宿主样式里覆盖同名属性即可，不要改本库文件。变量名、前缀与兜底值构成对外契约，改名需同步迁移步骤。
 
-#### 明暗开关
+#### 明暗开关：编译期三选一 与 运行时热切换并存
 
-明暗是**一个 import 的三选一**，不是让宿主去覆盖一堆变量：
+明暗有两条互不影响的路，按项目是否要在运行期切换来选：
 
-| 模式 | 引哪个 | 行为 |
-|---|---|---|
-| 固定明 | `mp-taro-kit/styles/theme-light` | 只有明色值；宿主定制的配色全是明色，不存在暗色变体 |
-| 固定暗 | `mp-taro-kit/styles/theme-dark` | 只写基线与暗色值，不铺明色、不做覆盖，与手机系统设置无关 |
-| 跟随系统 | `mp-taro-kit/styles/theme-auto` | 同一份暗色值包在 `@media (prefers-color-scheme: dark)` 里，系统切暗时生效 |
+| 路径 | 引哪个 | 行为 | 要不要 JS |
+|---|---|---|---|
+| 固定明 | `mp-taro-kit/styles/theme-light` | 只有明色值，宿主定制配色全是明色 | 不要 |
+| 固定暗 | `mp-taro-kit/styles/theme-dark` | 只写基线与暗色值，不铺明色、不做覆盖，与系统设置无关 | 不要 |
+| 跟随系统 | `mp-taro-kit/styles/theme-auto` | 暗色值包在 `@media (prefers-color-scheme: dark)` 里 | 不要 |
+| 运行时热切换 | `mp-taro-kit/styles/theme-runtime` | 明色为默认，`.mptk-dark` 只覆盖颜色键，由 `setThemeMode` 随时切 | 要，见下 |
 
-三个文件都由 `src/design/_tokens.scss` 的 mixin 编译而来：`theme-dark` 只写基线与暗色值，不铺明色、不做覆盖；`theme-auto` 是基线 + 明色默认值 + 媒体查询里的暗色值。每套值只写一次，组件仍只写 `var(--mptk-*)`，一行不改，不需要 JS、`faces` 注入或根容器标记。
+前三条是**编译期三选一**，一行 import 定死，不需要 JS、`faces` 注入或根容器标记。第四条是并存的另一种模式，**不改动前三条**：已接入宿主的一行 import 一个字不用改；`dist/styles/tokens.css` 仍是固定明的兼容副本。四份都由 `src/design/_tokens.scss` 的 mixin 编译，颜色值只写一次，组件仍只写 `var(--mptk-*)`。
 
-落点是全局 `page`，不是逐页配置：页面底色、页面内容与 App 层的 `<OverlayHost />` 在同一棵变量树里，暗色一起生效。不想要明暗就引 `theme-light`，不需要覆盖任何变量；要定制配色再在自己样式里覆盖 `--mptk-*`（后引入者胜）。
+编译期三选一的落点是全局 `page`，页面内容与 App 层的 `<OverlayHost />` 在同一棵变量树里，暗色一起生效；不想要明暗就引 `theme-light`，要定制配色再在自己样式里覆盖 `--mptk-*`（后引入者胜）。
 
-已在演示站编译产物里核实：明色值与暗色值各一份、`@media (prefers-color-scheme: dark)` 一个、基础图标包的 `@font-face` 也在，说明三选一主题与图标包都真实进了小程序包。但产物里有值不等于渲染生效：`prefers-color-scheme` 在 Skyline 下的实时重算尚未实机验证；引擎不支持时 `theme-auto` 表现为固定明，此时改用 `theme-dark`。多色图标的颜色固化在字体调色板里，不跟随明暗，见[图标字体](icons.md)。
+##### 运行时热切换的接入
+
+消费端只在 app 入口配置一次：平台能力全部由宿主注入，库侧 `runtime` 保持零平台依赖。
+
+```tsx
+import 'mp-taro-kit/styles/theme-runtime'
+import { setThemeMode } from 'mp-taro-kit/runtime'
+
+setThemeMode('auto', {
+  systemDark: () => Taro.getSystemInfoSync().theme === 'dark',
+  onSystemDarkChange: (notify) => {
+    const onChange = ({ theme }) => notify(theme === 'dark')
+    Taro.onThemeChange(onChange)
+    return () => Taro.offThemeChange(onChange)
+  },
+  onDarkChange: (dark) => {
+    const backgroundColor = dark ? '#15181c' : '#ffffff'
+    void Taro.setBackgroundColor({
+      backgroundColor,
+      backgroundColorTop: backgroundColor,
+      backgroundColorBottom: backgroundColor,
+    })
+  },
+})
+```
+
+窗口色的两档取值要与 `--mptk-surface-base` 的明暗值保持一致。开关里再调同一个 API 即全站热切换，不用刷新、不用通知任何页面：`setThemeMode('dark')`，取值 `'light' | 'dark' | 'auto'`。`app.json` 需开 `darkmode: true`，否则 `getSystemInfoSync().theme` / `onThemeChange` 拿不到有效值。
+
+页面**不用写主题代码**，但根容器要用库的 `<PageShell />` 替换原来的根 `<View />`（层级不增加，`PageShell` 不设 `height`，高度链仍由宿主自己的外壳类控制）：`<PageShell className="order-page">{children}</PageShell>`。`<OverlayHost />` 与页面内容是兄弟节点，它自己读同一份主题状态挂标记，Toast / Dialog / Loading 一起换色。
+
+`.mptk-dark` 只覆盖 `dark` mixin 的颜色键，其余基线变量继续从 `page` 继承。`page` 自身不能被后代 class 反向改色，可见区域由 `PageShell` 铺 `--mptk-surface-base` 兜住；回弹区与 Android 手势条由 `onDarkChange` 里的 `setBackgroundColor` 同步。主题状态走 `runtime` 层的跨副本单例，不新建 React Context；状态是否持久化（storage / store）由消费端决定，库不接管。
+
+##### 边界与验证状态
+
+已在演示站编译产物里核实：明色值与暗色值各一份、基础图标包的 `@font-face` 也在。但产物里有值不等于渲染生效：
+
+- `theme-auto` 的 `prefers-color-scheme` 在 Skyline 下实时重算**未实机验证**；引擎不支持时表现为固定明，可改用 `theme-runtime`。运行时模式不依赖媒体查询。
+- `.mptk-dark` 挂在后代节点后 CSS 变量继承是否生效、暗色字形切换、`darkmode` 下的原生窗口静态配色，均待 Skyline 与 WebView 双端实机验证。
+- 多色图标的颜色固化在字体调色板里，不跟随明暗，需要变体字形，见[图标字体](icons.md)。
 
 #### 整屏背景图
 
@@ -144,3 +185,4 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 - 2026-11-11 22:30:25：组内行为指向 Cell 用法文档
 - 2026-11-11 22:50:04：字号档位统一为 12/14/15/17/22，禁止宿主与演示站整体覆盖
 - 2026-11-11 23:01:08：底部安全区改由页面根容器让位，附窗口背景设置
+- 2026-11-12 11:39:42：新增运行时热切换主题出口与接入契约，编译期三选一并存

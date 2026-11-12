@@ -1,4 +1,12 @@
 // 只用长写属性：Skyline 的简写属性里 var() 不生效，inset 也需展开。
+
+/* PageShell 只铺底色与文字色：page 自身不能被后代 class 反向改色，
+   可见区域由页面根容器兜住；高度链仍归宿主外壳，不额外引入满屏包裹层。 */
+.mptk-page-shell {
+  background-color: var(--mptk-surface-base);
+  color: var(--mptk-fg);
+}
+
 .mptk-overlay-host {
   position: fixed;
   top: 0;

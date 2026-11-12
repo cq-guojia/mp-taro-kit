@@ -1,12 +1,14 @@
-// 按「图标包」从 iconfont 在线链接生成 src/ui/icon/<id>/ 下三个产物：
-//   style/index.scss  字体声明与全部图标类，原样取自平台产物（只把 // 补成 https）
-//   names.ts          基础类、前缀与图标名清单
+// 按「图标包」从 iconfont 在线链接生成包目录：
+//   style/index.scss  字体声明与全部图标类（含 -dark 变体类），原样取自平台产物（只把 // 补成 https）
+//   names.ts          基础类、前缀、图标名清单、彩色标记、变体清单
 //   index.ts          该包自己的 iconClass；不跨包 import，避免打包器把别的包清单拉进来
+// 变体不另出文件：`logo` 与 `logo-dark` 是同一个文件里的两个类，用哪个由调用处按位置决定。
 // 一个包一条 SOURCE：base 是基础包（必引），扩展包按需加项后跑 pnpm run icons。
 // 类名、字形编码、字体地址一律不做二次推导，避免与平台漂移。
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseIcons } from './lib/icons-parse.mjs'
 
 // 一个 iconfont 项目 = 一个包 = 一种字体。彩色/单色是项目级属性，不能混在一个项目里：
 // 勾了「彩色」的项目里，连单色线稿也会被包成 COLR 字形，color 从此失效。
@@ -39,6 +41,22 @@ function stripBaseFontSize(css) {
   })
 }
 
+function headerOf(id, source, colored, paired) {
+  return [
+    '/* 本文件由 scripts/icons.mjs 生成，请勿手改。',
+    `   包：${id}`,
+    `   源：${source}`,
+    `   颜色：${colored ? '彩色字形（COLR/CPAL），color 无效，明暗不跟随' : '单色字形，吃 color，明暗跟随主题'}`,
+    ...(paired.length > 0
+      ? [`   变体：${paired.join(' ')} 另有 -dark 字形，选哪个类名由调用处按位置决定，本文件不做覆盖`]
+      : []),
+    '   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。',
+    '   更新：平台改图标 → 改 scripts/icons.mjs 的 SOURCES → pnpm run icons */',
+    '',
+    '',
+  ].join('\n')
+}
+
 async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }) {
   const response = await fetch(source)
   if (!response.ok) {
@@ -50,9 +68,7 @@ async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }
     throw new Error(`[icons] ${id} 返回内容里没有 @font-face，链接可能已失效：${source}`)
   }
 
-  // 彩色/单色由平台项目决定，产物里由 iconfont 自己写 /* Color fonts */ 标记。
-  // 判据只读这份 CSS，不解析字体二进制：拿到的判定粒度是整包，与「一个项目一种字体」一致。
-  const colored = text.includes('/* Color fonts */')
+  const { baseClass, prefix, icons, variants, paired, colored } = parseIcons(text)
 
   const body = stripBaseFontSize(
     text.replace(/url\('\/\//g, "url('https://").replace(/url\("\/\//g, 'url("https://'),
@@ -61,21 +77,11 @@ async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }
     throw new Error(`[icons] ${id} 基础类仍带 font-size，拒绝写出：它会覆盖宿主的图标字号`)
   }
 
-  const header = [
-    '/* 本文件由 scripts/icons.mjs 生成，请勿手改。',
-    `   包：${id}`,
-    `   源：${source}`,
-    `   颜色：${colored ? '彩色字形（COLR/CPAL），color 无效，明暗不跟随' : '单色字形，吃 color，明暗跟随主题'}`,
-    '   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。',
-    '   更新：平台改图标 → 改 scripts/icons.mjs 的 SOURCES → pnpm run icons */',
-    '',
-    '',
-  ].join('\n')
-
   const dir = path.join(root, dest, id)
-  const styleTarget = path.join(dir, 'style', 'index.scss')
-  mkdirSync(path.dirname(styleTarget), { recursive: true })
-  writeFileSync(styleTarget, header + body)
+  const styleDir = path.join(dir, 'style')
+  const styleTarget = path.join(styleDir, 'index.scss')
+  mkdirSync(styleDir, { recursive: true })
+  writeFileSync(styleTarget, headerOf(id, source, colored, paired) + body)
 
   // demo 自有图标只服务演示站，不承担对外契约，只要样式；类名在 demo 里直接写。
   if (styleOnly) {
@@ -83,38 +89,19 @@ async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }
     return
   }
 
-  // 基础类 = 带 font-family 的那条规则；图标类 = 每个 :before 规则。
-  const baseMatch = text.match(/\.([\w-]+)\s*\{[^}]*font-family/)
-  if (baseMatch === null) {
-    throw new Error(`[icons] ${id} 找不到带 font-family 的基础类，平台产物结构可能变了`)
-  }
-  const classNames = [...text.matchAll(/\.([\w-]+):before/g)].map((match) => match[1])
-  if (classNames.length === 0) {
-    throw new Error(`[icons] ${id} 一个图标类都没解析到，平台产物结构可能变了`)
-  }
-
-  // 前缀取「所有类名的公共前缀且以短横结尾」，据此把类名还原成图标名。
-  let prefix = classNames[0]
-  for (const name of classNames) {
-    while (!name.startsWith(prefix)) prefix = prefix.slice(0, -1)
-  }
-  prefix = prefix.slice(0, prefix.lastIndexOf('-') + 1)
-  // 空项目靠一个下划线图标占位，它不是真图标，不进清单；样式里的类由平台原文照留。
-  const iconNames = classNames
-    .map((name) => name.slice(prefix.length))
-    .filter((name) => !name.startsWith('_'))
-
+  const iconNames = icons.map((icon) => icon.name)
   const namesHeader = [
     '// 本文件由 scripts/icons.mjs 生成，请勿手改。',
     `// 包：${id}`,
     `// 源：${source}`,
     '',
   ].join('\n')
-  const mapLines = iconNames.map(
-    (name) => `  ${JSON.stringify(name)}: '${baseMatch[1]} ${prefix}${name}',`,
+  // 变体也进 map：iconClass('<name>-dark') 必须拿到确定的类名，不依赖 fallback 拼串。
+  const mapLines = [...icons, ...variants].map(
+    (icon) => `  ${JSON.stringify(icon.name)}: '${baseClass} ${prefix}${icon.name}',`,
   )
   const namesBody = [
-    `export const iconBaseClass = '${baseMatch[1]}'`,
+    `export const iconBaseClass = '${baseClass}'`,
     `export const iconPrefix = '${prefix}'`,
     '',
     '/**',
@@ -125,16 +112,17 @@ async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }
     ...mapLines,
     '}',
     '',
-    '/** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。 */',
-    `export const iconNames: readonly string[] = [${iconNames
-      .map((name) => `'${name}'`)
-      .join(', ')}]`,
+    '/** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。变体（-dark）不在其中。 */',
+    `export const iconNames: readonly string[] = [${iconNames.map((name) => `'${name}'`).join(', ')}]`,
     '',
     '/**',
     ' * 本包字形是否带颜色（COLR/CPAL）：true 时 color 与明暗主题都改不动它。',
     ' * 由平台项目类型决定、整包一致，调用方据此决定要不要费劲上色，不要逐图标猜。',
     ' */',
     `export const iconColored = ${colored}`,
+    '',
+    '/** 有暗色版的主轴图标名；用 iconClass(`<名>-dark`) 取对应类名，选哪个由调用处决定。 */',
+    `export const iconPaired: readonly string[] = [${paired.map((name) => `'${name}'`).join(', ')}]`,
     '',
   ].join('\n')
   writeFileSync(path.join(dir, 'names.ts'), namesHeader + namesBody)
@@ -151,7 +139,7 @@ async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }
     `// 包：${id}；需要别的包的图标时引那个包自己的出口，不要跨包 import。`,
     "import { iconBaseClass, iconMap, iconPrefix } from './names.js'",
     '',
-    "export { iconBaseClass, iconPrefix, iconMap, iconNames, iconColored } from './names.js'",
+    "export { iconBaseClass, iconPrefix, iconMap, iconNames, iconColored, iconPaired } from './names.js'",
     '',
     '/** 取本包图标对应的 className。图标名不做字面量联合，平台增删图标不算类型破坏。 */',
     'export function iconClass(name: string): string {',
@@ -161,7 +149,8 @@ async function buildPack({ id, source, dest = 'src/ui/icon', styleOnly = false }
   ].join('\n')
   writeFileSync(path.join(dir, 'index.ts'), indexBody)
 
-  console.log(`[icons] ${id} 已生成 ${path.relative(root, styleTarget)}（${classNames.length} 个图标）`)
+  const pairNote = paired.length > 0 ? `，${paired.length} 个有暗色字形` : ''
+  console.log(`[icons] ${id} 已生成 ${path.relative(root, styleTarget)}（${iconNames.length} 个图标${pairNote}）`)
 }
 
 for (const pack of SOURCES) {

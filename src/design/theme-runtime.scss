@@ -1,0 +1,14 @@
+// 运行时热切换主题：page 仍是唯一变量根与满屏底色，暗色值只由根容器标记覆盖颜色键。
+// 与 theme-light / theme-dark / theme-auto 并存：那三个是编译期三选一，这个是运行时可切。
+@use 'tokens' as t;
+
+page {
+  @include t.base;
+  @include t.light;
+}
+
+// 只覆盖 t.dark 里的颜色键，26 个基线变量继续从 page 继承，不重复写值。
+// 挂在页面根容器与 <OverlayHost /> 上，二者是兄弟节点，各自成树。
+.mptk-dark {
+  @include t.dark;
+}

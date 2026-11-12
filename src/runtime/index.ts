@@ -17,3 +17,14 @@ export {
   type LoadingState,
   type LoadingSlot,
 } from './loading-slot.js'
+export {
+  themeState,
+  setThemeMode,
+  setSystemDark,
+  getThemeSnapshot,
+  resetThemeForTests,
+  type ThemeMode,
+  type ThemeSnapshot,
+  type ThemeFaces,
+  type ThemeStore,
+} from './theme.js'

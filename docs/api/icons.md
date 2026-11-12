@@ -15,6 +15,8 @@
 
 命名规则：**单色不标后缀，多色加 `-color`**，域相同则前缀相同。以后加域照抄，例如 `social` / `social-color`、`mptk-icons-social` / `mptk-i-social-`。
 
+同一项目内需要深色版时，加一个 `<name>-dark` 图标（仍是同一个项目，不是新项目）。`iconNames` 只列主名，变体由 `iconPaired` 单独给出。
+
 彩色与单色必须分成两个项目，不能合：平台的「彩色」是项目级导出选项，勾了之后连单色线稿也会被包成 COLR 字形，包内所有图标的 `color` 一并失效。这是物理约束，不是命名偏好。
 
 demo 自有图标生成到 `demo/src/icons`，由 `SOURCES` 里的 `dest` 指定；组件库只装通用图标，品牌标不进库，否则整个 base 包会被迫做成彩色。
@@ -55,6 +57,7 @@ import { iconClass } from 'mp-taro-kit/ui/icon/base'
 | `iconPrefix` | `string` | 图标类前缀，随平台设置变化 |
 | `iconClass(name)` | `(name: string) => string` | 拼出可直接用的 className；名字不受类型约束 |
 | `iconColored` | `boolean` | 整包字形是否带颜色（COLR/CPAL）；`true` 时 `color` 无效 |
+| `iconPaired` | `readonly string[]` | 有 `-dark` 暗色字形的图标名；非空时该包才有 `style/dark` 与 `style/auto` |
 
 承诺稳定的只有「基础类 + 前缀 + 图标名拼成 className」这条规则。`iconNames` 与 `iconMap` 是生成物里的当前快照，**对外不承诺稳定**：平台随时会删掉不常用的图标，把它们写成字面量联合会让每次增删都变成类型破坏。
 
@@ -81,17 +84,51 @@ import { iconClass } from 'mp-taro-kit/ui/icon/base'
 
 ### 包内文件划分
 
-一个包目录下的样式文件数由该包性质决定，深浅变体是包**内**的图标后缀，不是独立的包（独立成包会让字体文件翻倍）：
+一个包**永远只有一个样式文件**：`style/index.scss`。变体是包内的另一个类名，不是另一个文件，也不是另一个包：
 
-| 包性质 | 样式文件 | 说明 |
+| 情况 | 文件 | 多出来的东西 |
 |---|---|---|
-| 单色 | `style/index.scss` 一个 | 吃 `currentColor`，明暗自动跟随，不需要第二套字形 |
-| 彩色、无深浅变体 | `style/index.scss` 一个 | 与现状相同 |
-| 彩色、有深浅变体 | `style/index.scss` + `style/dark.scss` + `style/auto.scss` | 变体以 `content` 覆盖实现，见下 |
+| 无变体 | `style/index.scss` | —— |
+| 有变体 | 还是那个 `style/index.scss` | 多一个 `.mptk-i-<名>-dark` 类 |
 
-变体机制：基础样式里对有变体的图标写 `content: var(--mptk-i-<name>, "<默认码位>")`，`dark.scss` 只定义 `--mptk-i-<name>: "<暗色码位>"`，`auto.scss` 把同一组定义包进 `prefers-color-scheme: dark`。变量有定义就换字形、没定义就回默认，覆盖关系由 CSS 层叠给出，不需要运行时查找，也不需要 JS 判断当前主题。
+### 变体：同文件两个类名，用哪个由调用处决定
 
-> 待验：Skyline 下 `content` 吃 CSS 变量、以及 `prefers-color-scheme` 是否生效，均未实机验证。演示站「图标 → 换字形能力验证」是为此留的对照组，验证前不要把变体机制写进对外承诺。
+```css
+/* 同一个文件里两条并存，来自平台项目里的两个图标 */
+.mptk-i-color-logo:before { content: "\e87e"; }
+.mptk-i-color-logo-dark:before { content: "\e900"; }
+```
+
+生成器自动判断：只有存在 `<name>-dark` 的图标才多出第二个类；没有变体的图标只有一个类，明暗共用同一个字形。`iconMap` 含变体名（`iconClass('logo-dark')` 能取到类名），`iconNames` 只列主轴图标，`iconPaired` 单独给出哪些有暗色版。
+
+调用处三种用法，同一个包、同一个文件，不需要换引入：
+
+| 需求 | 写法 |
+|---|---|
+| 跟随系统 | `iconClass(theme === 'dark' ? 'logo-dark' : 'logo')` |
+| 永远用亮色版 | `iconClass('logo')` |
+| 永远用暗色版（深色区块里） | `iconClass('logo-dark')` |
+
+**为什么不做自动覆盖**：CSS 覆盖是全页级的，一处生效处处生效，没法只让某一块深色区域里的 logo 反白。而「明亮界面里放一块深色区域」是很常见的布局，覆盖方案在这里直接失效，`prefers-color-scheme` 也给不出这种局部语义。所以「用哪个字形」必须留在调用处，由它按位置决定。
+
+单色包不涉及这套：`currentColor` 已经让图标跟随 `--mptk-fg`，明暗自动变，不需要第二个类。
+
+**运行时热切换下怎么选**：库不做全页级 CSS 覆盖（理由见上），用哪个字形仍由调用处决定。需要跟随当前主题时，用 `useThemeDark()` 读派生值再选类名：
+
+```tsx
+const dark = useThemeDark()
+<Text className={iconClass(dark ? 'logo-dark' : 'logo')} />
+```
+
+`useThemeDark()` 从 `mp-taro-kit/ui/infra` 导出，读的是 `runtime` 层同一份跨副本单例，不新建 React Context。没有 `-dark` 变体的图标仍用主名，明暗共用同一字形。彩色图标的颜色固化在 CPAL 表，不响应 `color`，只能靠变体字形切换。
+
+已验证 / 未验证：
+
+| 项 | 状态 | 依据 |
+|---|---|---|
+| 只有主名存在的 `-dark` 才拆成变体 | 已验证 | `tests/icons.test.mjs`：孤立 `logo-dark` 按普通图标处理 |
+| 变体进 `iconMap`、不进 `iconNames` | 已验证 | 同文件断言 |
+| 真实暗色字形切换 | **未验证** | 当前所有包都没有 `-dark` 图标，机制只有单测覆盖 |
 
 **基础类 `.mptk-icons-base` 不设 `font-size`**：图标是字体，继承所在文字的字号，因此与相邻文字天然同尺寸。平台产物自带 `font-size: 16px`，生成脚本 `scripts/icons.mjs` 在写入时会剥掉它，重跑 `pnpm run icons` 不会把固定值带回来；`pnpm test` 有断言守住这条契约，生成脚本发现剥不掉会直接拒绝写出。
 
@@ -138,3 +175,7 @@ import { iconClass } from 'mp-taro-kit/ui/icon/base'
 - 2026-11-11 23:31:07：补生成期彩色判定与包内文件划分：iconColored 契约、变体机制与待验项
 - 2026-11-12 08:43:52：按域分包落地：base 换单色项目、base-color 与 demo 两包入库，补占位图标过滤
 - 2026-11-12 08:51:05：demo 图标改为仅生成样式，类名直接写，不建包出口
+- 2026-11-12 08:53:18：变体机制落地：生成器识别 -dark 配对、补 iconPaired 与 dark/auto 出口、标注待验边界
+- 2026-11-12 08:58:12：变体覆盖改为纯 CSS 覆盖：只写有 -dark 的图标，page 前缀保证顺序无关，弃用 content var()
+- 2026-11-12 09:49:11：变体定稿：一个包一个样式文件，logo 与 logo-dark 两个类并存，用哪个由调用处决定
+- 2026-11-12 11:39:42：补运行时主题下用 useThemeDark 选变体字形的用法

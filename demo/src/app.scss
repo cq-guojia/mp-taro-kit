@@ -198,6 +198,11 @@ page {
   padding-left: var(--mptk-space-3);
 }
 
+.demo-trigger--active {
+  background-color: var(--mptk-fg);
+  color: var(--mptk-surface-1);
+}
+
 .demo-note {
   color: var(--mptk-fg-2);
   font-size: var(--mptk-font-sm);
@@ -287,40 +292,4 @@ page {
   text-align: center;
 }
 
-/* 一次性验证：Skyline 下 :before 的 content 能否吃 CSS 变量。
-   验完连同 catalog.ts 的 icon-probe 与 pages/icon 的 ProbeRow 一起删，不进组件库产物。 */
-.demo-probe__row {
-  align-items: center;
-  display: flex;
-  gap: var(--mptk-space-3);
-  margin-bottom: var(--mptk-space-2);
-}
 
-.demo-probe__key {
-  color: var(--mptk-fg-3);
-  flex-shrink: 0;
-  font-size: var(--mptk-font-xs);
-  width: 140px;
-}
-
-.demo-probe__glyph {
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-xl);
-  line-height: 1;
-}
-
-.demo-probe-a:before {
-  content: "\e61c";
-}
-
-.demo-probe-b:before {
-  content: var(--mptk-i-probe, "\e61c");
-}
-
-.demo-probe-c {
-  --mptk-i-probe: "\e87e";
-}
-
-.demo-probe-c:before {
-  content: var(--mptk-i-probe, "\e61c");
-}

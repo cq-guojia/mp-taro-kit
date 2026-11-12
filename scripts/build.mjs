@@ -106,14 +106,19 @@ for (const file of files.filter((entry) => entry.endsWith('.scss'))) {
   write(target, result.css)
 }
 
-// 明暗三选一：唯一真源是 design/_tokens.scss 里的 base / light / dark 三个 mixin，
-// 三个入口编译成独立 CSS，固定暗不铺明色值，跟随系统只在媒体查询里换值。
+// 主题出口：唯一真源是 design/_tokens.scss 里的 base / light / dark 三个 mixin。
+// 扫描 design/theme-*.scss，新增一个主题文件就自动多一份产物，不再维护模式清单。
+// 编译期三选一（light / dark / auto）与运行时热切换（runtime）都走这里。
 const stylesDir = path.join(distDir, 'styles')
 await mkdir(stylesDir, { recursive: true })
-for (const mode of ['light', 'dark', 'auto']) {
-  const source = path.join(srcDir, 'design', `theme-${mode}.scss`)
+const designDir = path.join(srcDir, 'design')
+const themeSources = files
+  .filter((file) => path.dirname(file) === designDir)
+  .filter((file) => path.basename(file).startsWith('theme-') && file.endsWith('.scss'))
+  .sort()
+for (const source of themeSources) {
   const result = sass.compile(source, { style: 'expanded', loadPaths: [srcDir] })
-  writeFileSync(path.join(stylesDir, `theme-${mode}.css`), result.css)
+  writeFileSync(path.join(stylesDir, path.basename(source).replace(/\.scss$/, '.css')), result.css)
 }
 await cp(path.join(stylesDir, 'theme-light.css'), path.join(stylesDir, 'tokens.css'))
 

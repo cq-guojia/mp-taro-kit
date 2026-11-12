@@ -1,4 +1,5 @@
 import { ScrollView, View } from '@tarojs/components'
+import { PageShell } from 'mp-taro-kit/ui/infra'
 import type { ReactNode } from 'react'
 import { DemoNav } from './DemoNav'
 
@@ -9,6 +10,9 @@ import { DemoNav } from './DemoNav'
  * 高度链路：page 基线（styles/tokens）只给满屏高度 → 外壳 height: 100% 吃满，自己用
  * padding-bottom 让出底部安全区并铺背景（Skyline 下 page 的 padding 区不画背景，会露白）→
  * 正文区 flex 吃满剩余高度。
+ *
+ * 根节点用库的 <PageShell /> 替换原来的根 <View />：它是主题根标记的落点，
+ * 层级不增加，也不设 height；高度链仍由 .demo-shell 控制。
  *
  * `type="custom"`：Skyline 的 scroll-view 默认是 list 模式（按直接子节点做列表按需渲染，
  * 单子节点还会性能退化），整页是「一个容器包标题 + 多个块」的复杂布局，属 custom 模式的场景。
@@ -25,11 +29,11 @@ export function DemoShell({
   children: ReactNode
 }) {
   return (
-    <View className="demo-shell">
+    <PageShell className="demo-shell">
       <DemoNav title={title} logo={logo} home={home} />
       <ScrollView scrollY type="custom" className="demo-shell__body">
         <View className="demo-page">{children}</View>
       </ScrollView>
-    </View>
+    </PageShell>
   )
 }

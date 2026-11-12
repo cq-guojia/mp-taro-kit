@@ -3,6 +3,7 @@ import { View, Text } from '@tarojs/components'
 import { uiState } from '../state.js'
 import { markOverlayHostMounted, markOverlayHostUnmounted } from '../commands.js'
 import { useLoadingState, useNotices, useOverlayEntries } from './use-store.js'
+import { useThemeDark } from './use-theme.js'
 
 export interface OverlayHostProps {
   className?: string
@@ -13,6 +14,7 @@ export interface OverlayHostProps {
  * 弹窗 / toast / loading 的具体内容由库渲染，业务内容仍从 children 或 options 传入。
  */
 export function OverlayHost({ className }: OverlayHostProps) {
+  const dark = useThemeDark()
   const overlays = useOverlayEntries()
   const notices = useNotices()
   const loading = useLoadingState()
@@ -34,7 +36,7 @@ export function OverlayHost({ className }: OverlayHostProps) {
   }
 
   return (
-    <View className={['mptk-overlay-host', className].filter(Boolean).join(' ')}>
+    <View className={['mptk-overlay-host', dark ? 'mptk-dark' : '', className].filter(Boolean).join(' ')}>
       {loading.active ? (
         <View className="mptk-loading">
           <Text className="mptk-loading__text">加载中</Text>

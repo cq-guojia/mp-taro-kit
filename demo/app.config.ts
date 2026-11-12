@@ -4,6 +4,8 @@ import { appPages } from './src/catalog'
 
 const appConfig = {
   pages: appPages,
+  // 开启系统主题：getSystemInfoSync().theme / onThemeChange 才有有效值。
+  darkmode: true,
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#ffffff',

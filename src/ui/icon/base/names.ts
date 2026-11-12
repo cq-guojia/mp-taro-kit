@@ -20,7 +20,7 @@ export const iconMap: Readonly<Record<string, string>> = {
   "move-up": 'mptk-icons-base mptk-i-move-up',
 }
 
-/** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。 */
+/** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。变体（-dark）不在其中。 */
 export const iconNames: readonly string[] = ['loading', 'home', 'move-right', 'shaixuan', 'xiugai', 'shanchu', 'move-left', 'move-down', 'move-up']
 
 /**
@@ -28,3 +28,6 @@ export const iconNames: readonly string[] = ['loading', 'home', 'move-right', 's
  * 由平台项目类型决定、整包一致，调用方据此决定要不要费劲上色，不要逐图标猜。
  */
 export const iconColored = false
+
+/** 有暗色版的主轴图标名；用 iconClass(`<名>-dark`) 取对应类名，选哪个由调用处决定。 */
+export const iconPaired: readonly string[] = []

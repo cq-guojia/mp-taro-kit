@@ -2,6 +2,7 @@ import Taro from '@tarojs/taro'
 import { Text } from '@tarojs/components'
 import { iconClass } from 'mp-taro-kit/ui/icon'
 import { NavBar } from 'mp-taro-kit/ui/navigation'
+import { DEMO_LOGO_CLASS } from '../icons/demo-color/class'
 
 // 图标字体样式由 app.tsx 全局引入一次，这里不再重复
 import 'mp-taro-kit/ui/navigation/style'
@@ -41,7 +42,7 @@ export function DemoNav({
     <NavBar
       title={title}
       titleIcon={
-        logo ? <Text className="mptk-icons-demo-color mptk-i-demo-color-logo demo-nav__logo" /> : undefined
+        logo ? <Text className={`${DEMO_LOGO_CLASS} demo-nav__logo`} /> : undefined
       }
       statusBarHeight={windowInfo.statusBarHeight ?? 0}
       menuButton={{ top: menuButton.top, height: menuButton.height }}

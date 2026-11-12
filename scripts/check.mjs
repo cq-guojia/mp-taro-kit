@@ -78,6 +78,19 @@ for (const file of await collectFiles(srcUiDir)) {
   }
 }
 
+// 主题出口自动校验：扫 src/design/theme-*.scss，逐条核对 exports 与 dist 产物。
+// 新增一个主题文件即自动纳入，漏配 export 或漏编译当场拦下，不维护模式清单。
+const themeSources = (await collectFiles(path.join(root, 'src', 'design')))
+  .filter((file) => path.basename(file).startsWith('theme-') && file.endsWith('.scss'))
+for (const source of themeSources) {
+  const name = path.basename(source).replace(/\.scss$/, '')
+  const key = `./styles/${name}`
+  if (!(key in exportsMap)) errors.push(`主题文件 ${path.basename(source)} 缺 exports ${key}`)
+  if (!existsSync(path.join(root, 'dist', 'styles', `${name}.css`))) {
+    errors.push(`主题出口 ${key} 在 dist/styles 里缺 ${name}.css`)
+  }
+}
+
 const distDir = path.join(root, 'dist')
 let artifacts = 0
 async function collect(dir) {

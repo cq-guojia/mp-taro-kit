@@ -54,7 +54,7 @@
 - 组内最后一格的 `border` 由 `CellGroup` 按位置注入为 `false`，不依赖结构伪类；独立使用的 `Cell` 由自身 `border` 决定。
 - 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，不暴露 `clickable` prop。
 - 分隔线与上下外框都是独立 1px 元素，左右通到底；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。
-- 样式必须显式引入 `mp-taro-kit/ui/display/cell/style`，颜色与尺寸只取 `var(--mptk-*)`；`--mptk-*` 的默认值来自 `mp-taro-kit/styles/theme-*` 三选一。
+- 样式必须显式引入 `mp-taro-kit/ui/display/cell/style`，颜色与尺寸只取 `var(--mptk-*)`；`--mptk-*` 的默认值来自 `mp-taro-kit/styles/theme-*`（编译期三选一，或运行时热切换出口）。
 
 ## 示例
 
@@ -151,3 +151,4 @@ export const State = () => (
 ## 更新日志
 
 - 2026-11-11 22:31:00：新建：Cell / CellGroup 的 props、组内行为与九种用法代码
+- 2026-11-12 11:39:42：默认值来源改为含运行时热切换的主题出口

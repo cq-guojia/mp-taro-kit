@@ -85,14 +85,6 @@ export const pages: CatalogPage[] = [
         imports: ['mp-taro-kit/ui/icon', 'mp-taro-kit/ui/icon/style'],
         renderNotes: '',
       },
-      {
-        id: 'icon-probe',
-        title: '换字形能力验证',
-        hint: 'A 写死码位、B 变量取兜底、C 变量被覆盖；正常应依次是 home / home / logo',
-        usage: 'content: var(--mptk-i-probe, "\\e61c")',
-        imports: ['mp-taro-kit/ui/icon/style'],
-        renderNotes: '',
-      },
     ],
   },
   {
