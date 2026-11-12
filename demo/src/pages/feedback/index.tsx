@@ -38,6 +38,7 @@ export default function FeedbackPage() {
     if (id === 'loader') {
       return (
         <View>
+          <Text className="demo-note">ring 是自绘双色缺角环：亮弧与轨道各一色，明暗两套由主题给，不用图标字体。切首页主题可对照。</Text>
           <View className="demo-row">
             <Loader variant="ring" size="xs" className="demo-loader-spaced" />
             <Loader variant="ring" size="sm" className="demo-loader-spaced" />

@@ -1,7 +1,7 @@
-import { Text, View } from '@tarojs/components'
-import { iconClass } from '../icon/index.js'
+import { View } from '@tarojs/components'
+import { Spinner } from './spinner/index.js'
 
-/** 形态：`ring` 开口弧旋转 / `blocks` 三块脉动。 */
+/** 形态：`ring` 双色缺角环旋转 / `blocks` 三块脉动。 */
 export type LoaderVariant = 'ring' | 'blocks'
 
 /** 尺寸档：五档，几何按 24 网格等比缩放。 */
@@ -43,9 +43,9 @@ function toPx(value: number): string {
  * - `variant`：`ring` 开口弧整体旋转（默认）/ `blocks` 三块脉动；
  * - `size`：`xs` 12 / `sm` 16 / `md` 24（默认）/ `lg` 32 / `xl` 48。
  *
- * 颜色跟随 `currentColor`，不给 color 轴；要换色在调用点给 `style={{ color }}`。
- * ring 用图标域的 `loading` 字形（矢量弧 + 整体旋转）：小程序没有 SVG，
- * 字体路径是这里唯一能保证小尺寸下不拉毛的矢量弧。
+ * ring 用自绘双色缺角环：顶部一弧取 --mptk-spinner-active，其余三边取
+ * --mptk-spinner-track，明暗两套由主题给；全程不碰图标字体。
+ * blocks 仍跟随 currentColor，要换色在调用点给 `style={{ color }}`。
  */
 export function Loader({ variant = 'ring', size = 'md', className }: LoaderProps) {
   const names = ['mptk-fb-loader', `mptk-fb-loader--${variant}`]
@@ -76,11 +76,10 @@ export function Loader({ variant = 'ring', size = 'md', className }: LoaderProps
     )
   }
 
-  /* 旋转挂在外层 View，字形自己保持裸 inline text：Skyline 下 <Text> 一旦被改成
-     inline-block 的动画盒，::before 的字形就不渲染（logo 那种裸 inline 写法一切正常）。 */
+  /* 转圈由 Spinner 自己旋转，外层只负责尺寸与居中，不再套字形节点。 */
   return (
     <View className={names.join(' ')} style={{ height: toPx(side), width: toPx(side) }}>
-      <Text className={iconClass('loading')} style={{ fontSize: toPx(side), lineHeight: toPx(side) }} />
+      <Spinner size={side} />
     </View>
   )
 }

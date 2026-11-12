@@ -30,6 +30,8 @@
 
 `Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts` 与 `change-state.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
 
+自绘转圈是另一个组件级单元：`mp-taro-kit/ui/feedback/spinner` + `/style` 导出 `Spinner`。全库所有等待态（`Loader` 的 `ring`、`Loading`、`Switch`、`Segmented`）共用这一份绘制，不用图标字体。`ring` 是双色缺角环：顶部一弧取 `--mptk-spinner-active`，其余三边取 `--mptk-spinner-track`，两个键在 `light` / `dark` 各给一套；`Spinner` 的 `color` 只改顶部弧，轨道色仍由主题给。
+
 组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
 
 `styles/theme-*` 的字号档位固定为 12 / 14 / 15 / 17 / 22（另 `font-nav` 17），与《微信小程序设计指南》5.1 的常用字号一一对应；行高与字号成对。宿主不应整体覆盖档位，演示站自身也不覆盖。
@@ -67,7 +69,7 @@ props 表与用法见 [Switch 开关](switch.md)、[Segmented 分段选择](segm
 - 两者共用 `src/ui/form/change-state.ts` 的状态机：回调返回 thenable 时界面先拨到新值并转圈、锁点击；成功保持，失败回弹并调用 `onFailed`，显式 `false` 与 rejected Promise 都算失败。
 - 宿主给回的 `checked` / `value` 始终是唯一真值；等待期间的临时显示值在成功、失败或宿主改值时按状态机收敛。失败后若宿主已提前改值，须在 `onFailed` 里自行回滚。
 - 禁用态包含整控件、段级 `disabled`、外部 `loading` 与等待中四种，任一成立都短路回调。
-- 转圈用组件自带 CSS 绘制，不依赖 `ui/feedback/Loader` 与图标字体包；等待失败的错误输出到控制台，不向页面抛出。
+- 转圈统一由组件级单元 `ui/feedback/spinner` 自绘，不依赖图标字体包；Switch 与 Segmented 只引 `Spinner` 本身，不引 feedback 子域 barrel。等待失败的错误输出到控制台，不向页面抛出。
 
 ### 错误口径
 
@@ -239,3 +241,4 @@ setThemeMode('auto', {
 - 2026-11-12 14:53:57：补两个组件级细路径、控件高度三档与异步切换运行时约定
 - 2026-11-12 15:43:19：补控件主色轴与业务色解耦、内置四色及自定义色值口径
 - 2026-11-12 16:39:14：补基础色板、明暗键同名同数与派生档口径
+- 2026-11-12 17:24:24：转圈改为自绘双色缺角环，去掉图标字体依赖

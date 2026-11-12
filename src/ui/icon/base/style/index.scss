@@ -1,15 +1,15 @@
 /* 本文件由 scripts/icons.mjs 生成，请勿手改。
    包：base
-   源：https://at.alicdn.com/t/c/font_5251349_5n3d5h8pvsn.css
+   源：https://at.alicdn.com/t/c/font_5251349_v0nv5yxvl9g.css
    颜色：单色字形，吃 color，明暗跟随主题
    尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。
    更新：平台改图标 → 改 scripts/icons.mjs 的 SOURCES → pnpm run icons */
 
 @font-face {
   font-family: "mptk-icons-base"; /* Project id 5251349 */
-  src: url('https://at.alicdn.com/t/c/font_5251349_5n3d5h8pvsn.woff2?t=1794444012557') format('woff2'),
-       url('https://at.alicdn.com/t/c/font_5251349_5n3d5h8pvsn.woff?t=1794444012557') format('woff'),
-       url('https://at.alicdn.com/t/c/font_5251349_5n3d5h8pvsn.ttf?t=1794444012557') format('truetype');
+  src: url('https://at.alicdn.com/t/c/font_5251349_v0nv5yxvl9g.woff2?t=1794476021313') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5251349_v0nv5yxvl9g.woff?t=1794476021313') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5251349_v0nv5yxvl9g.ttf?t=1794476021313') format('truetype');
 }
 
 .mptk-icons-base {
@@ -19,8 +19,84 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.mptk-i-loading:before {
+.mptk-i-shezhi1:before {
+  content: "\e8f4";
+}
+
+.mptk-i-jia:before {
+  content: "\e603";
+}
+
+.mptk-i-jian:before {
+  content: "\e605";
+}
+
+.mptk-i-shezhi:before {
+  content: "\e604";
+}
+
+.mptk-i-xihuan:before {
+  content: "\e612";
+}
+
+.mptk-i-xihuan-a:before {
+  content: "\e63b";
+}
+
+.mptk-i-saoma:before {
+  content: "\e670";
+}
+
+.mptk-i-tuichu:before {
+  content: "\e659";
+}
+
+.mptk-i-shoucanga:before {
+  content: "\e646";
+}
+
+.mptk-i-gou:before {
+  content: "\e618";
+}
+
+.mptk-i-shoucang:before {
+  content: "\e65a";
+}
+
+.mptk-i-huidingbu:before {
+  content: "\e644";
+}
+
+.mptk-i-shuju:before {
+  content: "\e61b";
+}
+
+.mptk-i-shijian1:before {
   content: "\e623";
+}
+
+.mptk-i-iconjia:before {
+  content: "\e601";
+}
+
+.mptk-i-sort-down:before {
+  content: "\e610";
+}
+
+.mptk-i-guanbi:before {
+  content: "\e620";
+}
+
+.mptk-i-sort-up:before {
+  content: "\e873";
+}
+
+.mptk-i-sort-right:before {
+  content: "\e877";
+}
+
+.mptk-i-sort-left:before {
+  content: "\e878";
 }
 
 .mptk-i-home:before {

@@ -2,6 +2,7 @@ import { View } from '@tarojs/components'
 import type { CSSProperties, ReactNode } from 'react'
 import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
+import { Spinner } from '../../feedback/spinner/index.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*。 */
 export type SegmentedSize = 'sm' | 'md' | 'lg'
@@ -35,7 +36,7 @@ export interface SegmentedProps<T extends string = string> {
   disabled?: boolean
   /** 外部驱动的等待态。 */
   loading?: boolean
-  /** 转圈节点；不给就用组件自带的纯 CSS 转圈，不连图标包。 */
+  /** 转圈节点；不给就用全库共用的自绘 Spinner，不连图标包。 */
   loadingContent?: ReactNode
   className?: string
 }
@@ -66,8 +67,6 @@ export function Segmented<T extends string = string>({
   }
   const lineStyle: CSSProperties | undefined =
     inlineColor === undefined ? undefined : { backgroundColor: inlineColor }
-  const spinnerStyle: CSSProperties | undefined =
-    inlineColor === undefined ? undefined : { borderTopColor: inlineColor }
   const names = [
     'mptk-seg',
     `mptk-seg--${size}`,
@@ -113,7 +112,7 @@ export function Segmented<T extends string = string>({
                 <View className="mptk-seg__desc">{item.description}</View>
               )}
             </View>
-            {busy && active ? (loadingContent ?? <View className="mptk-seg__spinner" style={spinnerStyle} />) : null}
+            {busy && active ? (loadingContent ?? <Spinner size={12} color={inlineColor} className="mptk-seg__spinner" />) : null}
             {indicator === 'line' && active ? <View className="mptk-seg__line" style={lineStyle} /> : null}
           </View>
         )

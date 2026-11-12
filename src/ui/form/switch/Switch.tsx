@@ -2,6 +2,7 @@ import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
+import { Spinner } from '../../feedback/spinner/index.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*。 */
 export type SwitchSize = 'sm' | 'md' | 'lg'
@@ -27,7 +28,7 @@ export interface SwitchProps {
   disabled?: boolean
   /** 外部驱动的等待态。 */
   loading?: boolean
-  /** 转圈节点；不给就用组件自带的纯 CSS 转圈，不连图标包。 */
+  /** 转圈节点；不给就用全库共用的自绘 Spinner，不连图标包。 */
   loadingContent?: ReactNode
   className?: string
 }
@@ -61,13 +62,12 @@ export function Switch({
     className,
   ]
   const trackStyle = on && inlineColor !== undefined ? { backgroundColor: inlineColor } : undefined
-  const spinnerStyle = inlineColor === undefined ? undefined : { borderTopColor: inlineColor }
 
   return (
     <View className={names.filter(Boolean).join(' ')} onClick={() => change(!on)}>
       <View className="mptk-switch__track" style={trackStyle}>
         <View className="mptk-switch__thumb">
-          {busy ? (loadingContent ?? <View className="mptk-switch__spinner" style={spinnerStyle} />) : null}
+          {busy ? (loadingContent ?? <Spinner size={12} color={inlineColor} className="mptk-switch__spinner" />) : null}
         </View>
         {shape === 'block' ? (
           <View className="mptk-switch__sides">

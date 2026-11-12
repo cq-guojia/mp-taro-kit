@@ -1,6 +1,8 @@
 /* Segmented：容器高度吃控件高度轴，段等分、滑动块按段数用百分比定位。
    不读 DOM 尺寸，位置由组件算好写进内联 style，双端都不依赖 measurements。
    滑轨与滑块取不同颜色键，明色下不能双双为白。 */
+@use '../../../feedback/spinner/style/index' as spinner;
+
 .mptk-seg {
   position: relative;
   display: flex;
@@ -109,27 +111,7 @@
   background-color: var(--mptk-control-active);
 }
 
-/* 转圈自带，不 import feedback/Loader，避免只用一个选择块却把图标字体包拖进产物。 */
+/* 转圈几何统一由自绘 Spinner 提供（见文件顶部 @use），这里只补与文字的间距。 */
 .mptk-seg__spinner {
-  width: 12px;
-  height: 12px;
   margin-left: var(--mptk-space-1);
-  border-top-width: 2px;
-  border-right-width: 2px;
-  border-bottom-width: 2px;
-  border-left-width: 2px;
-  border-top-style: solid;
-  border-right-style: solid;
-  border-bottom-style: solid;
-  border-left-style: solid;
-  border-top-color: var(--mptk-control-active);
-  border-right-color: var(--mptk-fg-4);
-  border-bottom-color: var(--mptk-fg-4);
-  border-left-color: var(--mptk-fg-4);
-  border-radius: var(--mptk-radius-pill);
-  animation: mptk-seg-spin .8s linear infinite;
-}
-
-@keyframes mptk-seg-spin {
-  to { transform: rotate(360deg); }
 }

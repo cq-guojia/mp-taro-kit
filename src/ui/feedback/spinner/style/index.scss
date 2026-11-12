@@ -1,0 +1,23 @@
+/* 自绘双色缺角环：三边走中性轨道色，顶部一弧走主色，旋转时像缺一角在跑。
+   颜色只取 --mptk-spinner-* 两个键，明暗两套由 styles/theme-* 给；
+   不跟随 currentColor，也不用图标字体，组件自己不硬编码任何色值。
+   线宽与边长由组件按档内联给，这里只给默认 24px 档。 */
+.mptk-spinner {
+  box-sizing: border-box;
+  display: inline-block;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--mptk-spinner-track);
+  border-top-color: var(--mptk-spinner-active);
+  border-radius: var(--mptk-radius-pill);
+  animation: mptk-spinner-rotate .8s linear infinite;
+}
+
+@keyframes mptk-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

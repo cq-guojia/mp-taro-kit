@@ -1,6 +1,6 @@
-/* Loading 的转圈字形来自基础图标包，字体声明由宿主在 app 入口引
-   'mp-taro-kit/ui/icon/base/style' 提供（基础包必引）。这里不再内联一份，
-   否则每个引 feedback 的页面都会复制一遍字体样式。 */
+/* feedback 的转圈全走自绘 Spinner：这里把那份几何带进来，宿主不用再单独引样式。
+   不再依赖基础图标包的 loading 字形，也不再受字体在线加载与 currentColor 影响。 */
+@use '../spinner/style/index' as spinner;
 
 .mptk-fb-toast {
   background-color: var(--mptk-surface-2);
@@ -21,17 +21,16 @@
 }
 
 .mptk-fb-loading__spin {
-  color: var(--mptk-business);
   margin-right: var(--mptk-space-2);
 }
 
 /* ── Loader：加载动画图标，只画图标本身（背景与定位归调用方）──
    形态 × 尺寸两轴正交：形态管几何与动画；尺寸档只改边长，几何按 24 网格等比缩放 ——
    一套几何吃五档，视觉重量一致，不用逐档换算。
-   几何基准与动画参数照搬 dsh-plugin-core 的 Loader（块 7.2×6.0、圆角 1.5、间隔 0.6）。
-   边长（盒子宽高与 ring 的字号 / 行高）由组件按档位内联给，样式表只管结构与动画。 */
+   blocks 的几何基准与动画参数照搬 dsh-plugin-core 的 Loader（块 7.2×6.0、圆角 1.5、间隔 0.6）。
+   ring 的几何与旋转由 Spinner 自带，这里只给盒子和居中。 */
 
-/* 只做盒子与居中，不碰 color：颜色一律继承调用方（follow currentColor 的语义）。 */
+/* 只做盒子与居中；ring 的颜色由主题变量给，blocks 才跟随 currentColor。 */
 .mptk-fb-loader {
   display: inline-block;
   flex: none;
@@ -39,10 +38,11 @@
   text-align: center;
 }
 
-/* 形态一 ring：外层盒子整体旋转，0.8s 一圈。字形是盒子里的裸 inline text，
-   旋转绝不能挂在 <Text> 上 —— Skyline 下 text 被改成 inline-block 动画盒后 ::before 不渲染。 */
+/* 形态一 ring：盒子只负责居中，旋转由 Spinner 自己转（0.8s 一圈）。 */
 .mptk-fb-loader--ring {
-  animation: mptk-fb-loader-rotate 0.8s linear infinite;
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
 }
 
 /* 形态二 blocks：容器负责把三块居中，块本身只画自己。 */
@@ -57,12 +57,6 @@
   animation: mptk-fb-loader-blink 1.2s ease-in-out infinite;
   background-color: currentColor;
   transform-origin: center;
-}
-
-@keyframes mptk-fb-loader-rotate {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 @keyframes mptk-fb-loader-blink {
