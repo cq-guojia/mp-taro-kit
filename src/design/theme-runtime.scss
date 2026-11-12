@@ -1,4 +1,6 @@
-// 运行时热切换主题：page 仍是唯一变量根与满屏底色，暗色值只由根容器标记覆盖颜色键。
+// 运行时热切换主题：page 只做变量根与满屏底框，不画页面底色。
+// 页面底色交给微信官方窗口主题配置（app.json 的 darkmode + themeLocation + window.backgroundColor 的 @变量），
+// 由框架在页面创建前解析，首帧就随主题正确；不依赖 React 挂载，也不靠后代节点遮盖。
 // 与 theme-light / theme-dark / theme-auto 并存：那三个是编译期三选一，这个是运行时可切。
 @use 'tokens' as t;
 
@@ -8,7 +10,8 @@ page {
 }
 
 // 只覆盖 t.dark 里的颜色键，26 个基线变量继续从 page 继承，不重复写值。
-// 挂在页面根容器与 <OverlayHost /> 上，二者是兄弟节点，各自成树。
+// 挂在页面根容器与 <OverlayHost /> 上，二者是兄弟节点，各自成树；
+// 根容器另按 Skyline 安全区要求铺 var(--mptk-surface-base)，那是内容区底色，不是首帧解法。
 .mptk-dark {
   @include t.dark;
 }

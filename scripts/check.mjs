@@ -91,6 +91,26 @@ for (const source of themeSources) {
   }
 }
 
+// 主题产物分层：编译期三选一由 WXSS 自己画页面底色；运行时出口交给微信官方窗口主题配置。
+// 防止把 background-color 重新塞回 page —— 那会让首帧白闪复发。
+for (const mode of ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']) {
+  const target = path.join(root, 'dist', 'styles', `${mode}.css`)
+  if (!existsSync(target)) continue // 产物缺失已由上一段报错
+  const css = readFileSync(target, 'utf8')
+  const pageRule = /page\s*\{([^}]*)\}/.exec(css)
+  if (!pageRule) {
+    errors.push(`${mode}.css 缺 page 规则`)
+    continue
+  }
+  const paints = /background-color/.test(pageRule[1])
+  if (mode === 'theme-runtime' && paints) {
+    errors.push('theme-runtime.css 的 page 不得声明 background-color：页面底色须交给官方窗口主题配置')
+  }
+  if (mode !== 'theme-runtime' && !paints) {
+    errors.push(`${mode}.css 的 page 必须自己声明页面底色`)
+  }
+}
+
 const distDir = path.join(root, 'dist')
 let artifacts = 0
 async function collect(dir) {

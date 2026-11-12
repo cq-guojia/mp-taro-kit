@@ -61,17 +61,19 @@ props 表、九种用法与代码示例见 [Cell 单元格](cell.md)。`.d.ts` �
 
 ### 样式基线（必需）
 
-本库的通用样式**只有一处落点**：`src/design/_tokens.scss` 里的 `base` / `light` / `dark` 三个 mixin（页面基线、明色值、暗色值各写一次）。`dist/styles/theme-*.css` 与 `dist/styles/tokens.css` 都是它的编译产物，勿手改。`ui/*/style` 只放控件自身样式，不放页面级规则；页面基线也不为它另开出口。
+本库的通用样式**只有一处落点**：`src/design/_tokens.scss` 里的 `base` / `surface` / `light` / `dark` 四个 mixin（页面基线、页面底色声明、明色值、暗色值各写一次）。`dist/styles/theme-*.css` 与 `dist/styles/tokens.css` 都是它的编译产物，勿手改。`ui/*/style` 只放控件自身样式，不放页面级规则；页面基线也不为它另开出口。
 
-它同时承载三样东西：
+`base` 只承载布局基线与非颜色变量，**不含任何主题相关声明**：
 
 | 内容 | 作用 |
 |---|---|
 | `page { height: 100% }` | 页面满屏底框，接入方页面不必再写高度 |
-| `page { background-color: var(--mptk-surface-base) }` | 页面底色兜底：内容或图片铺不满时不露白；改这个变量即换整页底色 |
 | `--mptk-*` 变量 | 组件样式取值来源，默认值唯一真源 |
+| `surface` mixin | `page { background-color: var(--mptk-surface-base) }`，是否由 WXSS 画页面底色的出口策略 |
 
-底部安全区**不在 `page` 上让位**：Skyline 下 `page` 的 padding 区域不绘制背景，会让底部露出一条窗口白底。改由页面根容器自己 `padding-bottom: env(safe-area-inset-bottom)` 并铺 `--mptk-surface-base`（或挂 `<SafeArea bottom />`），安全区背景才会跟随主题。Android 的系统手势条区域只认窗口背景色，宿主在 app 入口用 `Taro.setBackgroundColor` 跟随 `Taro.onThemeChange` 一起设置。
+**页面底色是出口策略，不是基线**：编译期三选一都 include `surface`，变量值与声明落在同一个 `page` 选择器上（或由媒体查询覆盖），底色自然跟着明暗走。运行时热切换出口**不** include `surface`——它的暗色值挂在后代 `.mptk-dark` 上，若把底色写死在 `page`，祖先就恒取明色值，后代无从覆盖，转场首帧露白。此时页面底色交给微信官方窗口主题配置（`app.json` 的 `darkmode` + `themeLocation` + `window.backgroundColor` 的 `@变量`），由框架在页面创建前解析。
+
+底部安全区**不在 `page` 上让位**：Skyline 下 `page` 的 padding 区域不绘制背景，会露出窗口底色。改由页面根容器自己 `padding-bottom: env(safe-area-inset-bottom)` 并铺 `--mptk-surface-base`（或挂 `<SafeArea bottom />`），安全区背景才会跟随主题；这是内容区底色，不是首帧解法。Android 的系统手势条区域只认窗口背景色，宿主在 app 入口用 `Taro.setBackgroundColor` 按当前 mode 同步。
 
 宿主在 app 入口**从下面几种模式里引一个**即全站所有页面生效，页面不需要逐个引：
 
@@ -108,6 +110,7 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 ```tsx
 import 'mp-taro-kit/styles/theme-runtime'
 import { setThemeMode } from 'mp-taro-kit/runtime'
+import themeConfig from './theme.json'
 
 setThemeMode('auto', {
   systemDark: () => Taro.getSystemInfoSync().theme === 'dark',
@@ -117,7 +120,7 @@ setThemeMode('auto', {
     return () => Taro.offThemeChange(onChange)
   },
   onDarkChange: (dark) => {
-    const backgroundColor = dark ? '#15181c' : '#ffffff'
+    const backgroundColor = dark ? themeConfig.dark.bgColor : themeConfig.light.bgColor
     void Taro.setBackgroundColor({
       backgroundColor,
       backgroundColorTop: backgroundColor,
@@ -127,18 +130,47 @@ setThemeMode('auto', {
 })
 ```
 
-窗口色的两档取值要与 `--mptk-surface-base` 的明暗值保持一致。开关里再调同一个 API 即全站热切换，不用刷新、不用通知任何页面：`setThemeMode('dark')`，取值 `'light' | 'dark' | 'auto'`。`app.json` 需开 `darkmode: true`，否则 `getSystemInfoSync().theme` / `onThemeChange` 拿不到有效值。
+`themeConfig` 与 `app.json` 的 `@bgColor` 同源，色值不写第二份。开关里再调同一个 API 即全站热切换，不用刷新、不用通知任何页面：`setThemeMode('dark')`，取值 `'light' | 'dark' | 'auto'`。
+
+**必须同时做官方窗口主题配置**，否则 `page` 没有底色、转场首帧露白。`app.json`：
+
+```json
+{
+  "darkmode": true,
+  "themeLocation": "theme.json",
+  "window": {
+    "backgroundColor": "@bgColor",
+    "backgroundColorTop": "@bgColor",
+    "backgroundColorBottom": "@bgColor",
+    "backgroundTextStyle": "@bgTxtStyle",
+    "navigationBarBackgroundColor": "@navBgColor",
+    "navigationBarTextStyle": "@navTxtStyle"
+  }
+}
+```
+
+`theme.json`（Taro 按 `sourceRoot` 解析，放在 `src` 根，编译后自动进产物根）：
+
+```json
+{
+  "light": { "bgColor": "#ffffff", "bgTxtStyle": "light", "navBgColor": "#ffffff", "navTxtStyle": "black" },
+  "dark":  { "bgColor": "#15181c", "bgTxtStyle": "dark",  "navBgColor": "#15181c", "navTxtStyle": "white" }
+}
+```
+
+`darkmode: true` 同时也是 `getSystemInfoSync().theme` / `onThemeChange` 有有效值的前提。`theme.json` 的 `bgColor` 两档必须与 `--mptk-surface-base` 的明暗值一致，发布守卫与回归测试会核对，不允许两处漂移。
 
 页面**不用写主题代码**，但根容器要用库的 `<PageShell />` 替换原来的根 `<View />`（层级不增加，`PageShell` 不设 `height`，高度链仍由宿主自己的外壳类控制）：`<PageShell className="order-page">{children}</PageShell>`。`<OverlayHost />` 与页面内容是兄弟节点，它自己读同一份主题状态挂标记，Toast / Dialog / Loading 一起换色。
 
-`.mptk-dark` 只覆盖 `dark` mixin 的颜色键，其余基线变量继续从 `page` 继承。`page` 自身不能被后代 class 反向改色，可见区域由 `PageShell` 铺 `--mptk-surface-base` 兜住；回弹区与 Android 手势条由 `onDarkChange` 里的 `setBackgroundColor` 同步。主题状态走 `runtime` 层的跨副本单例，不新建 React Context；状态是否持久化（storage / store）由消费端决定，库不接管。
+`.mptk-dark` 只覆盖 `dark` mixin 的颜色键，其余基线变量继续从 `page` 继承。`page` 自身不能被后代 class 反向改色，所以本出口**不在 `page` 上声明底色**：首帧底色由上述官方窗口主题配置在页面创建前决定；`PageShell` 铺 `--mptk-surface-base` 是 Skyline 安全区要求的内容区底色，不承担首帧；回弹区与 Android 手势条由 `onDarkChange` 里的 `setBackgroundColor` 同步。主题状态走 `runtime` 层的跨副本单例，不新建 React Context；状态是否持久化（storage / store）由消费端决定，库不接管。
 
 ##### 边界与验证状态
 
-已在演示站编译产物里核实：明色值与暗色值各一份、基础图标包的 `@font-face` 也在。但产物里有值不等于渲染生效：
+已在演示站编译产物里核实：`app.json` 的 `@变量` 与 `themeLocation` 落盘、`theme.json` 自动进产物根、运行时出口的 `page` 规则不含 `background-color`、三条编译期出口仍自带底色、明色与暗色值各一份。但产物里有值不等于渲染生效：
 
 - `theme-auto` 的 `prefers-color-scheme` 在 Skyline 下实时重算**未实机验证**；引擎不支持时表现为固定明，可改用 `theme-runtime`。运行时模式不依赖媒体查询。
-- `.mptk-dark` 挂在后代节点后 CSS 变量继承是否生效、暗色字形切换、`darkmode` 下的原生窗口静态配色，均待 Skyline 与 WebView 双端实机验证。
+- 官方窗口主题配置只跟随**系统**主题，微信没有「页面创建前覆盖系统主题」的开关。因此「跟随系统」模式首帧由 `theme.json` 定色；用户强制明 / 暗（覆盖系统）时，首帧色仍由系统给，只能由 `setBackgroundColor` 在 JS 执行后同步，这是平台边界。
+- `.mptk-dark` 挂在后代节点后 CSS 变量继承是否生效、暗色字形切换、转场首帧是否还有残留白闪，均待 Skyline 与 WebView 双端实机验证。
 - 多色图标的颜色固化在字体调色板里，不跟随明暗，需要变体字形，见[图标字体](icons.md)。
 
 #### 整屏背景图
@@ -186,3 +218,4 @@ setThemeMode('auto', {
 - 2026-11-11 22:50:04：字号档位统一为 12/14/15/17/22，禁止宿主与演示站整体覆盖
 - 2026-11-11 23:01:08：底部安全区改由页面根容器让位，附窗口背景设置
 - 2026-11-12 11:39:42：新增运行时热切换主题出口与接入契约，编译期三选一并存
+- 2026-11-12 12:32:02：页面底色改为出口策略并接入官方 DarkMode 窗口主题配置

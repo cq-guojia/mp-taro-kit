@@ -25,6 +25,7 @@ demo/                                               # 仓库内的 Taro 小程�
 │   └── global.d.ts                                 # 样式与图片模块声明，供 TS 解析 app.scss
 └── src/                                            # 演示站源码根：入口、目录数据、样式与页面
     ├── app.config.ts                               # Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
+    ├── theme.json                                  # 官方 DarkMode 变量配置：明暗两档窗口/导航底色，编译后自动进产物根
     ├── app.tsx                                     # 宿主入口：configure(faces)、setThemeMode、挂一次 <OverlayHost />、引 theme-runtime
     ├── catalog.ts                                  # 单一事实源：9 个展示页 + 8 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
     ├── app.scss                                    # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
@@ -86,3 +87,4 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-11 22:16:11：补 Cell 组件级细路径与首页 CellGroup 装配
 - 2026-11-11 22:30:25：演示站不再展示代码，用法与代码示例归 docs/api/cell.md
 - 2026-11-12 11:39:43：入口说明改为 theme-runtime 与 setThemeMode
+- 2026-11-12 12:32:02：补 theme.json 官方主题变量配置

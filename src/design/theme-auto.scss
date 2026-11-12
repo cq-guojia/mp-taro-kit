@@ -4,6 +4,7 @@
 page {
   @include t.base;
   @include t.light;
+  @include t.surface;
 }
 
 @media (prefers-color-scheme: dark) {

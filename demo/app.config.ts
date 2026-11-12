@@ -4,13 +4,18 @@ import { appPages } from './src/catalog'
 
 const appConfig = {
   pages: appPages,
-  // 开启系统主题：getSystemInfoSync().theme / onThemeChange 才有有效值。
+  // 官方 DarkMode：darkmode 让 getSystemInfoSync().theme / onThemeChange 有有效值；
+  // themeLocation 的 @变量由框架在页面创建前解析，窗口底色与导航栏首帧就随系统主题正确。
   darkmode: true,
+  themeLocation: 'theme.json',
   window: {
-    backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#ffffff',
+    backgroundColor: '@bgColor',
+    backgroundColorTop: '@bgColor',
+    backgroundColorBottom: '@bgColor',
+    backgroundTextStyle: '@bgTxtStyle',
+    navigationBarBackgroundColor: '@navBgColor',
     navigationBarTitleText: 'mp-taro-kit',
-    navigationBarTextStyle: 'black',
+    navigationBarTextStyle: '@navTxtStyle',
   },
   renderer: 'skyline',
   componentFramework: 'glass-easel',

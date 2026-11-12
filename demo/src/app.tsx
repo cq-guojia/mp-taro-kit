@@ -9,6 +9,7 @@ import type {
 } from 'mp-taro-kit/core'
 import { setThemeMode } from 'mp-taro-kit/runtime'
 import { OverlayHost } from 'mp-taro-kit/ui/infra'
+import themeConfig from './theme.json'
 
 import 'mp-taro-kit/styles/theme-runtime'
 import 'mp-taro-kit/ui/infra/style'
@@ -65,14 +66,10 @@ const faces: PlatformFaces = {
 
 configure(faces)
 
-// 窗口背景色：Android 的底部系统手势条区域只认这个，不跟随页面 CSS 背景。
-const WINDOW_BACKGROUND = {
-  light: '#ffffff',
-  dark: '#15181c',
-} as const
-
+// 窗口背景色：Android 底部手势条与转场露出的区域只认这个，不跟随页面 CSS 背景。
+// 值与 app.json 的 @bgColor 同源，都取自 theme.json，避免两处色值漂移。
 function applyWindowBackground(dark: boolean) {
-  const backgroundColor = dark ? WINDOW_BACKGROUND.dark : WINDOW_BACKGROUND.light
+  const backgroundColor = dark ? themeConfig.dark.bgColor : themeConfig.light.bgColor
   void Taro.setBackgroundColor({
     backgroundColor,
     backgroundColorTop: backgroundColor,

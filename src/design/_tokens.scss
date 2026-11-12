@@ -1,13 +1,15 @@
-// mp-taro-kit 样式唯一真源：页面基线、明色值、暗色值全部只在这里写一次。
-// 三个主题入口用这些 mixin 组合，编译期展开成 dist/styles/theme-*.css；产物一律勿手改。
+// mp-taro-kit 样式唯一真源：页面基线、页面底色、明色值、暗色值全部只在这里写一次。
+// 主题出口用这些 mixin 组合，编译期展开成 dist/styles/theme-*.css；产物一律勿手改。
 // 组件只写 var(--mptk-*)，换肤靠宿主覆盖同名变量，组件不感知主题。
 
+// base 只管布局基线与非颜色变量，不含任何主题相关声明。
+// 页面底色是「由 WXSS 画，还是交给微信窗口层」的出口策略，独立成 surface mixin：
+// 运行时热切换出口不能 include 它，否则 page 会把明色值写死在祖先上，后代 .mptk-dark 无从覆盖。
 @mixin base {
   box-sizing: border-box;
   height: 100%;
-  background-color: var(--mptk-surface-base);
 
-  /* 底部安全区不在这里让位：Skyline 下 page 的 padding 区域不绘制背景，会露出窗口白底。
+  /* 底部安全区不在这里让位：Skyline 下 page 的 padding 区域不绘制背景，会露出窗口底色。
      改由页面根容器自己 `padding-bottom: env(safe-area-inset-bottom)` 并铺背景。 */
 
   --mptk-radius-xs: 4px;
@@ -42,6 +44,12 @@
   --mptk-dur-fast: .12s;
   --mptk-dur-run: 500ms;
   --mptk-ease: cubic-bezier(.4, 0, .2, 1);
+}
+
+// 页面底色声明：只在编译期三选一出口里 include。
+// 这条声明与它引用的变量必须落在同一个 page 选择器上（或能被媒体查询覆盖），底色才跟着明暗走。
+@mixin surface {
+  background-color: var(--mptk-surface-base);
 }
 
 @mixin light {

@@ -2,7 +2,8 @@
    属性用长写，避开 Skyline 对「简写属性内 var()」尚未实机验证的行为。 */
 
 page {
-  background-color: var(--mptk-surface-base);
+  /* 页面底色不在 WXSS 里写死：由 app.json + theme.json 的窗口主题配置在页面创建前解析。
+     写在这里会恒取 page 上的明色变量，后代 .mptk-dark 覆盖不到，转场首帧露白。 */
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);

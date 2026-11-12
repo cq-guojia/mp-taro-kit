@@ -4,4 +4,5 @@
 page {
   @include t.base;
   @include t.dark;
+  @include t.surface;
 }

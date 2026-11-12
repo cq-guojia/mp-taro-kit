@@ -11,6 +11,15 @@ function exists(relative) {
   return existsSync(new URL(relative, import.meta.url))
 }
 
+/** 十六进制颜色按语义比较：#fff 与 #ffffff 是同一色，不算真源漂移。 */
+function hex(value) {
+  const raw = value.trim().toLowerCase()
+  if (/^#[0-9a-f]{3}$/.test(raw)) {
+    return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`
+  }
+  return raw
+}
+
 test('运行时主题出口：三选一原样保留，第四份只覆盖颜色键', () => {
   const css = read('../dist/styles/theme-runtime.css')
   assert.match(css, /page\s*\{/, 'page 仍是变量根')
@@ -32,6 +41,31 @@ test('运行时主题出口：三选一原样保留，第四份只覆盖颜色�
   assert.equal(pkg.exports['./styles/theme-runtime'], './dist/styles/theme-runtime.css')
   for (const name of ['theme-light', 'theme-dark', 'theme-auto']) {
     assert.ok(exists(`../dist/styles/${name}.css`), `${name} 必须仍在生产物里`)
+  }
+})
+
+test('页面底色真源分层：编译期出口由 WXSS 画，运行时出口交给官方窗口配置', () => {
+  for (const name of ['theme-light', 'theme-dark', 'theme-auto']) {
+    const page = read(`../dist/styles/${name}.css`).match(/page\s*\{([^}]*)\}/)
+    assert.ok(page, `${name} 缺 page 规则`)
+    assert.match(page[1], /background-color:\s*var\(--mptk-surface-base\)/, `${name} 必须自己画页面底色`)
+  }
+  const runtime = read('../dist/styles/theme-runtime.css').match(/page\s*\{([^}]*)\}/)
+  assert.ok(runtime, 'theme-runtime 缺 page 规则')
+  assert.doesNotMatch(runtime[1], /background-color/, '运行时出口不得把页面底色写死在 page 上')
+
+  const tokens = read('../src/design/_tokens.scss')
+  const lightBase = /@mixin light[\s\S]*?--mptk-surface-base:\s*(#[0-9a-fA-F]+)/.exec(tokens)?.[1]
+  const darkBase = /@mixin dark[\s\S]*?--mptk-surface-base:\s*(#[0-9a-fA-F]+)/.exec(tokens)?.[1]
+  assert.ok(lightBase && darkBase, '取不到令牌的明暗底色')
+  const theme = JSON.parse(read('../demo/src/theme.json'))
+  assert.equal(hex(theme.light.bgColor), hex(lightBase), 'theme.json 明色档必须与令牌一致')
+  assert.equal(hex(theme.dark.bgColor), hex(darkBase), 'theme.json 暗色档必须与令牌一致')
+
+  const config = read('../demo/app.config.ts')
+  assert.match(config, /themeLocation:\s*'theme\.json'/, '必须声明官方变量配置文件')
+  for (const field of ['backgroundColor', 'backgroundColorTop', 'backgroundColorBottom', 'navigationBarBackgroundColor']) {
+    assert.match(config, new RegExp(`${field}:\\s*'@`), `${field} 必须引用 theme.json 变量`)
   }
 })
 
