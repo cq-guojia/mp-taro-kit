@@ -14,7 +14,7 @@ import { parseIcons } from './lib/icons-parse.mjs'
 // 勾了「彩色」的项目里，连单色线稿也会被包成 COLR 字形，color 从此失效。
 // 命名：单色不标后缀、多色加 -color；demo 自有图标生成到 demo/src/icons，不进组件库。
 const SOURCES = [
-  { id: 'base', source: 'https://at.alicdn.com/t/c/font_5251349_v0nv5yxvl9g.css' },
+  { id: 'base', source: 'https://at.alicdn.com/t/c/font_5251349_8i1c456svk9.css' },
   { id: 'base-color', source: 'https://at.alicdn.com/t/c/font_5252363_pclbus5fo1.css' },
   {
     id: 'demo',

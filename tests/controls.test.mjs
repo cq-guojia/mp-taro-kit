@@ -92,6 +92,73 @@ test('两端不贴边：Segmented 滑动块左右各留 3px，Switch 方形滑�
   assert.match(onRule[1], /translateX\(calc\(100% \+ 2px\)\)/)
 })
 
+test('方形开关每侧最小宽等于轨道高，一个字时是正方形', () => {
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const side = /\.mptk-switch__side\s*\{([^}]*)\}/.exec(css)
+  assert.ok(side, '缺 side 规则')
+  assert.match(side[1], /box-sizing:\s*border-box/, '最小宽要含内边距，否则撑不到正方形')
+  assert.match(side[1], /min-width:\s*var\(--mptk-switch-track-h\)/, '最小宽必须跟随轨道高')
+  assert.doesNotMatch(side[1], /min-width:\s*\d+px/, '不许再写死固定宽')
+})
+
+test('方形开关每侧左右内边距够两个字用，不挤成一团', () => {
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const side = /\.mptk-switch__side\s*\{([^}]*)\}/.exec(css)
+  assert.ok(side, '缺 side 规则')
+  for (const dir of ['padding-right', 'padding-left']) {
+    assert.match(side[1], new RegExp(`${dir}:\\s*var\\(--mptk-space-2\\)`), `${dir} 必须吃 space-2`)
+  }
+  assert.doesNotMatch(side[1], /var\(--mptk-space-1\)/, 'space-1 只有 4px，两个字会贴在一起')
+})
+
+test('方形开关圆角落到最小档，轨道、遮罩、滑块三处一致', () => {
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const track = /\.mptk-switch--block \.mptk-switch__track\s*\{([^}]*)\}/.exec(css)
+  assert.ok(track, '缺方形轨道规则')
+  assert.match(track[1], /border-radius:\s*var\(--mptk-radius-xs\)/, '方形轨道取最小档 xs')
+  assert.doesNotMatch(track[1], /--mptk-radius-(sm|md|lg|xl)/, '方形轨道不许回到更大档')
+  const veil = /\.mptk-switch--block \.mptk-switch__veil\s*\{([^}]*)\}/.exec(css)
+  assert.ok(veil, '缺方形遮罩规则')
+  assert.match(veil[1], /border-radius:\s*var\(--mptk-radius-xs\)/, '遮罩圆角必须跟轨道一致')
+  const thumb = /\.mptk-switch--block \.mptk-switch__thumb\s*\{([^}]*)\}/.exec(css)
+  assert.ok(thumb, '缺方形滑块规则')
+  assert.match(thumb[1], /border-radius:\s*var\(--mptk-radius-xs\)/, '滑块内角同取 xs')
+})
+
+test('圆形开关的图标进滑块，等待态优先显示转圈', () => {
+  const js = read('../dist/ui/form/switch/Switch.js')
+  assert.match(js, /mptk-switch__icon/, '圆形形态要有滑块内图标容器')
+  assert.match(js, /shape === 'round'/, '图标只进圆形形态，方形走两侧')
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const icon = /\.mptk-switch__icon\s*\{([^}]*)\}/.exec(css)
+  assert.ok(icon, '缺滑块内图标样式')
+  assert.match(icon[1], /font-size:\s*calc\(var\(--mptk-switch-track-h\)/, '图标字号按轨道高比例走')
+})
+
+test('异步示例不许先改值再返回 Promise，否则就是"点过去再 loading"', () => {
+  for (const file of ['../demo/src/pages/form/index.tsx', '../demo/src/pages/segmented/index.tsx']) {
+    const page = read(file)
+    assert.doesNotMatch(page, /return wait\(/, `${file} 在 onChange 里先改值再返回 Promise`)
+    assert.match(page, /wait\((true|false)\)\.then\(/, `${file} 必须等成功后再由 then 改值`)
+  }
+})
+
+test('切换是关态遮罩往回收，不是两层底色互相渐隐', () => {
+  const css = read('../dist/ui/form/switch/style/index.css')
+  const track = /\.mptk-switch--round \.mptk-switch__track\s*\{([^}]*)\}/.exec(css)
+  assert.ok(track, '缺圆形轨道规则')
+  assert.match(track[1], /background-color:\s*var\(--mptk-control-active\)/, '底色恒为选中色')
+  assert.doesNotMatch(track[1], /transition:\s*background-color/, '底色不许自己做渐变')
+  assert.doesNotMatch(css, /\.mptk-switch--on \.mptk-switch__track\s*\{/, '轨道底色不参与状态切换')
+  const veil = /\.mptk-switch__veil\s*\{([^}]*)\}/.exec(css)
+  assert.ok(veil, '缺关态遮罩规则')
+  assert.match(veil[1], /background-color:\s*var\(--mptk-control-track\)/, '遮罩就是关态颜色')
+  assert.match(veil[1], /transform:\s*scale\(1\)/, '关态遮罩盖满')
+  assert.match(veil[1], /transition:\s*transform/, '遮罩的过渡只做缩放')
+  assert.match(css, /\.mptk-switch--on \.mptk-switch__veil\s*\{[^}]*transform:\s*scale\(0\)/, '选中时遮罩收缩到 0')
+  assert.match(read('../dist/ui/form/switch/Switch.js'), /mptk-switch__veil/, '组件必须渲染遮罩节点')
+})
+
 test('内置色走类名、自定义色值走显式内联，组件产物真的把色值写进去', () => {
   assert.deepEqual(resolveControlColor('mptk-switch'), { className: '', inlineColor: undefined })
   for (const name of CONTROL_COLORS) {

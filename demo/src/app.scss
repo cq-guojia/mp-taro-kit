@@ -178,11 +178,25 @@ page {
   margin-bottom: var(--mptk-space-2);
 }
 
+/* 演示内容之间必须留空隙，组件不许一个个贴在一起：
+   横排用 .demo-row、纵向多段用 .demo-stack，里面的组件一律加 .demo-item 自带右、下外边距。
+   不用 gap —— 老 WebView 内核不支持，Skyline 与 WebView 会出现两种结果。 */
 .demo-row {
   display: flex;
   flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.demo-item {
+  margin-right: var(--mptk-space-3);
+  margin-bottom: var(--mptk-space-3);
 }
 
 .demo-note {

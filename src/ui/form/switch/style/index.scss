@@ -44,15 +44,39 @@
   position: relative;
 }
 
+/* 关态遮罩：整块盖住轨道，选中时向中心收缩到 0 —— 视觉是"收回去"，不是底色渐变。
+   用真实节点而不是伪元素：Skyline 对 ::before 的支持未验证，节点两端行为一致。 */
+.mptk-switch__veil {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--mptk-control-track);
+  transform: scale(1);
+  transition: transform var(--mptk-dur) var(--mptk-ease);
+}
+
+.mptk-switch--round .mptk-switch__veil {
+  border-radius: var(--mptk-radius-pill);
+}
+
+.mptk-switch--block .mptk-switch__veil {
+  border-radius: var(--mptk-radius-xs);
+}
+
+.mptk-switch--on .mptk-switch__veil {
+  transform: scale(0);
+}
+
+/* 底色恒为选中色、不参与过渡：关态的未选中色由 __veil 整块盖住。
+   切换时 veil 向中心收缩露出底色，是"收回去"而不是两层颜色互相渐隐 ——
+   与 Ant Design Mobile 的 Switch 同一手法（那边是 ::before 从 scale(1) 到 scale(0)）。 */
 .mptk-switch--round .mptk-switch__track {
   width: var(--mptk-switch-track-w);
   height: var(--mptk-switch-track-h);
   border-radius: var(--mptk-radius-pill);
-  background-color: var(--mptk-control-track);
-  transition: background-color var(--mptk-dur) var(--mptk-ease);
-}
-
-.mptk-switch--round.mptk-switch--on .mptk-switch__track {
   background-color: var(--mptk-control-active);
 }
 
@@ -72,15 +96,12 @@
   transform: translateX(calc(var(--mptk-switch-track-w) - var(--mptk-switch-track-h)));
 }
 
+/* 方形轨道取最小档 xs（4px）：8px 在 32px 高的块上已经有药丸感，看着不够方。
+   滑块内角同样取 xs —— 圆角档位最小就是 4px，再小要另加档位。 */
 .mptk-switch--block .mptk-switch__track {
   display: inline-flex;
   height: var(--mptk-switch-track-h);
-  border-radius: var(--mptk-radius-md);
-  background-color: var(--mptk-control-track);
-  transition: background-color var(--mptk-dur) var(--mptk-ease);
-}
-
-.mptk-switch--block.mptk-switch--on .mptk-switch__track {
+  border-radius: var(--mptk-radius-xs);
   background-color: var(--mptk-control-active);
 }
 
@@ -91,7 +112,7 @@
   bottom: 3px;
   left: 3px;
   width: calc(50% - 4px);
-  border-radius: var(--mptk-radius-sm);
+  border-radius: var(--mptk-radius-xs);
   background-color: var(--mptk-control-thumb);
   box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
   transition: transform var(--mptk-dur) var(--mptk-ease);
@@ -103,15 +124,18 @@
 
 .mptk-switch__sides {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
 }
 
+/* 每侧最小宽等于轨道高：一个字时是正方形，字多了自然撑宽，不会出现宽高失衡的长条。
+   左右内边距吃 --mptk-space-2（8px）：按 space-1 时两个字只有 8px 的余量，贴得几乎连成一团。 */
 .mptk-switch__side {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
+  min-width: var(--mptk-switch-track-h);
   padding-right: var(--mptk-space-2);
   padding-left: var(--mptk-space-2);
   font-size: var(--mptk-font-xs);
@@ -138,6 +162,15 @@
   align-items: center;
   display: flex;
   justify-content: center;
+  z-index: 1;
+}
+
+/* 圆形形态放在滑块里的开 / 关图标：字号按轨道高比例走，三档不用各写一份。
+   方形形态的图标在 __side 里，吃那边的小字号与状态色。 */
+.mptk-switch__icon {
+  color: var(--mptk-fg-2);
+  font-size: calc(var(--mptk-switch-track-h) * .44);
+  line-height: 1;
 }
 
 /* 内置色名时转圈跟着开关主色走；自定义色值由组件内联覆盖。 */

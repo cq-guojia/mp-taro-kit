@@ -8,14 +8,14 @@
 
 ## 2. 目录树
 
-小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 12 个展示页；基础规范组下的设计基础与尺寸各成一页，不共用一个展示页，也不对应单个 `ui` 子域。
+小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 13 个展示页；基础规范组下的设计基础与尺寸各成一页，不共用一个展示页，也不对应单个 `ui` 子域。
 
 以下是约定的目录结构，每个节点后的备注说明该路径的职责与对应的库侧能力域；骨架屏只在 `catalog.ts` 预留 id，树中不生成节点。
 
 ```text
 demo/                                               # 仓库内的 Taro 小程序宿主
 ├── package.json                                    # 演示站清单：mp-taro-kit 用 workspace:*，并装宿主 peer 与 Taro Vite 编译链
-├── app.config.ts                                   # 页面路由真源：pages 共 13 项，由 src/app.config.ts 转发给 Taro
+├── app.config.ts                                   # 页面路由真源：pages 共 14 项，由 src/app.config.ts 转发给 Taro
 ├── project.config.json                             # 微信开发者工具工程配置：renderer 在 Skyline 与 WebView 之间切换
 ├── tsconfig.json                                   # 演示站 TS 配置：jsx 用 react-jsx、target 用 es2020
 ├── babel.config.js                                 # Taro React + Vite 的 babel 预设，编译期使用
@@ -27,19 +27,20 @@ demo/                                               # 仓库内的 Taro 小程�
     ├── app.config.ts                               # Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
     ├── theme.json                                  # 官方 DarkMode 变量配置：明暗两档窗口/导航底色，编译后自动进产物根
     ├── app.tsx                                     # 宿主入口：configure(faces)、setThemeMode、挂一次 <OverlayHost />、引 theme-runtime
-    ├── catalog.ts                                  # 单一事实源：12 个展示页 + 9 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
+    ├── catalog.ts                                  # 单一事实源：13 个展示页 + 9 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
     ├── app.scss                                    # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
     ├── components/                                 # 演示站共用组件：页面外壳、示例块与统一头部
     │   ├── DemoBlock.tsx                           # 单个示例外壳；另导出 DemoPage 页壳，按 catalog 铺块并把正文交给 DemoShell
     │   ├── DemoNav.tsx                             # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
     │   └── DemoShell.tsx                           # 页面外壳：固定视口高度的 View + scroll-view；导航栏在滚动区外
-    └── pages/                                      # 演示站页面：1 个索引页 + 12 个展示页
+    └── pages/                                      # 演示站页面：1 个索引页 + 13 个展示页
         ├── index/index.tsx                         # 目录页：用 CellGroup 铺 menu 固定分组；主题三态由 Segmented 渲染
         ├── design-foundation/index.tsx             # 设计基础：中性灰阶、色相与明暗两套，独立成页
         ├── sizing/index.tsx                        # 尺寸：控件高度三档与其余档位，独立成页
         ├── infra/index.tsx                         # src/ui/infra/：OverlayHost、SafeArea、use-store
         ├── actions/index.tsx                       # src/ui/actions/：Button
-        ├── form/index.tsx                          # src/ui/form/：Switch、Segmented，两者都走组件级细路径
+        ├── form/index.tsx                          # src/ui/form/：Switch，一页只放一个组件
+        ├── segmented/index.tsx                     # src/ui/form/：Segmented，与 Switch 各占一页
         ├── icon/index.tsx                          # src/ui/icon/：图标清单，铺出全部 glyph 与类名
         ├── feedback/index.tsx                      # src/ui/feedback/：Dialog、Loader、Loading、Toast
         ├── display/index.tsx                       # src/ui/display/：Badge、Divider、Cell、CellGroup（Cell 走组件级细路径）
@@ -49,13 +50,15 @@ demo/                                               # 仓库内的 Taro 小程�
         └── commands/index.tsx                      # ui/commands.ts + state.ts + infra/OverlayHost：命令式 API
 ```
 
-每个 `ui` 子域展示页引入用到的组件样式：历史组件走子域 `mp-taro-kit/ui/*/style`，新组件走组件级 `mp-taro-kit/ui/*/<组件>/style`；`form` 页的两个组件各引各的样式，样式是 import，不占树上的文件节点。
+每个 `ui` 子域展示页引入用到的组件样式：历史组件走子域 `mp-taro-kit/ui/*/style`，新组件走组件级 `mp-taro-kit/ui/*/<组件>/style`；`form` 与 `segmented` 两页各引各的组件级样式，样式是 import，不占树上的文件节点。
 
 ## 3. 不可破的约束
 
 - Taro 4 按 `sourceRoot: 'src'` 定位入口，`demo/src/app.tsx` 与 `demo/src/app.config.ts` 必须在该目录下；根目录 `demo/app.config.ts` 是 pages 真源，由 `demo/src/app.config.ts` 转发。编译器用 esbuild bundle 求值配置，因此 `pages` 可由 `demo/src/catalog.ts` 动态派生。
 - `pnpm-workspace.yaml` 的 `publicHoistPattern` 必须提升 `@tarojs/plugin-platform-weapp`：主库 `dist` 位于工作区根，Taro 把其中的 `@tarojs/components` 重写成该插件的裸包名，不提升则跨目录解析失败。
 - 展示页与库侧路径仍一一对应：一页承载一个子域（`foundation` / `commands` 各承载一组能力域），路由由 `pages` 派生；新增能力域先在本树定位，再改 `demo/src/catalog.ts` 与 `demo/app.config.ts` 的 `pages`。
+- 同一子域里已实现的多个组件各占一页，不混排：`form` 只放 Switch，`segmented` 只放 Segmented；菜单条目通过 `pageId` 各自指向自己的页。`tests/ui.test.mjs` 断言 `ready` 条目必须指向真实展示页。
+- 演示内容之间必须留空隙，组件不许一个个贴在一起：横排用 `.demo-row`、纵向多段用 `.demo-stack`，其中的组件一律带 `.demo-item`（自带右、下外边距，取值 `--mptk-space-3`）。不用 `gap` —— 老 WebView 内核不支持，Skyline 与 WebView 会呈现两种结果。
 - 菜单与展示页是多对一：`menu` 的 `ready` 条目必须带 `pageId` 且指向真实展示页，`planned` 条目不带 `pageId`、不绑跳转；`tests/ui.test.mjs` 断言这两条。
 - 菜单分组固定为九组：首组「基础规范」（Foundations）收纳颜色、尺寸等设计依据，中间六组对齐 Vant Weapp 六类（基础 / 表单 / 反馈 / 展示 / 导航 / 业务），末两组是「基础能力」「命令式 API」。顺序固定；已有占位只把 `planned` 改为 `ready`，新条目追加到该组末尾，不插入既有条目之间、不重排。`planned` 只是占位，不是待办清单。
 - 基础规范组按「使用者查规范」的场景归类，不按 `src/ui/` 目录归类；「设计基础」与「尺寸」各指向自己的展示页，一页只装一件事，不把两块内容并回同页。两页各有自己的示例块，路由由 `pages` 派生；`tests/foundations.test.mjs` 断言两页独立、内容不串页。取值依据见[设计基础](design-foundation.md)，演示站不复制正文。
@@ -95,3 +98,5 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-12 14:53:57：新增 form 展示页，页数与 ui 子域数同步，补组尾追加条目约束
 - 2026-11-12 16:39:13：新增基础规范组与展示页，菜单改固定九组
 - 2026-11-12 16:59:29：设计基础与尺寸拆成两个独立展示页，页数与菜单映射同步
+- 2026-11-12 21:40:06：Switch 与 Segmented 拆成两页（form 只放 Switch），页数、路由与目录树同步，补「一页只放一个组件」约束
+- 2026-11-12 21:48:05：补「演示内容之间必须留空隙」约束：横排 demo-row、纵向 demo-stack，组件带 demo-item，不用 gap

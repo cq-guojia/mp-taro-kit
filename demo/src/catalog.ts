@@ -161,9 +161,9 @@ export const pages: CatalogPage[] = [
   },
   {
     id: 'form',
-    title: '表单',
+    title: '开关',
     path: 'pages/form/index',
-    summary: '开关与分段选择：两种形状、两种指示器、三档尺寸与异步回弹',
+    summary: '开关：两种形状、三档尺寸、内置色板与异步等待',
     examples: [
       {
         id: 'switch-basic',
@@ -174,6 +174,14 @@ export const pages: CatalogPage[] = [
         renderNotes: '根框高度吃 --mptk-control-h-*，轨道比行高小并垂直居中；Skyline / WebView 双端实机未验证',
       },
       {
+        id: 'switch-icon',
+        title: '图标',
+        hint: 'offContent / onContent 放图标：方形一边一个，圆形塞进滑块里',
+        usage: '<Switch shape="block" offContent={<Text className={iconClass("qiansemoshi")} />} onContent={<Text className={iconClass("shensemoshi")} />} />',
+        imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style', 'mp-taro-kit/ui/icon/base', 'mp-taro-kit/ui/icon/base/style'],
+        renderNotes: '圆形形态的图标在滑块里，字号按轨道高比例走；图标颜色吃所在层的前景色，双端实机未验证',
+      },
+      {
         id: 'switch-state',
         title: '开关状态',
         hint: '禁用 / 外部转圈 / 先拨过去再转圈 / 失败回弹',
@@ -181,6 +189,22 @@ export const pages: CatalogPage[] = [
         imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
         renderNotes: '失败示例由宿主在 onFailed 里回滚自己的值；转圈是纯 CSS，不依赖图标包',
       },
+      {
+        id: 'switch-colors',
+        title: '颜色',
+        hint: '默认绿；内置蓝 / 绿 / 橙 / 红；也可直接传色值',
+        usage: '<Switch checked color="green" /> 或 <Switch checked color="#8b5cf6" />',
+        imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
+        renderNotes: '主色取自控件主色轴，不跟宿主业务色走；自定义色值用显式内联上色，双端实机未验证',
+      },
+    ],
+  },
+  {
+    id: 'segmented',
+    title: '分段选择',
+    path: 'pages/segmented/index',
+    summary: '分段选择：滑动块 / 下划线两种指示器，可带图标、计数、副文本与段级禁用',
+    examples: [
       {
         id: 'segmented-basic',
         title: '分段选择',
@@ -206,12 +230,12 @@ export const pages: CatalogPage[] = [
         renderNotes: '与 Switch 共用同一套异步切换状态机',
       },
       {
-        id: 'control-colors',
+        id: 'segmented-colors',
         title: '颜色',
-        hint: '默认蓝；内置蓝 / 绿 / 橙 / 红；也可直接传色值',
-        usage: '<Switch checked color="green" /> 或 <Switch checked color="#8b5cf6" />',
-        imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/segmented'],
-        renderNotes: '主色取自控件主色轴，不跟宿主业务色走；自定义色值用显式内联上色，双端实机未验证',
+        hint: '默认绿；内置蓝 / 绿 / 橙 / 红；也可直接传色值',
+        usage: '<Segmented items={items} value={value} color="green" /> 或 color="#8b5cf6"',
+        imports: ['mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style'],
+        renderNotes: '滑动块与下划线同一套主色轴；自定义色值走显式内联，双端实机未验证',
       },
     ],
   },
@@ -562,7 +586,7 @@ export const menu: MenuGroup[] = [
       { id: 'switch', label: 'Switch 开关', status: 'ready', pageId: 'form' },
       { id: 'time-picker', label: 'TimePicker 时间选择', status: 'planned' },
       { id: 'uploader', label: 'Uploader 文件上传', status: 'planned' },
-      { id: 'segmented', label: 'Segmented 分段选择', status: 'ready', pageId: 'form' },
+      { id: 'segmented', label: 'Segmented 分段选择', status: 'ready', pageId: 'segmented' },
     ],
   },
   {

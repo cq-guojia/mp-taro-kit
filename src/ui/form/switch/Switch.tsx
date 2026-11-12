@@ -21,9 +21,9 @@ export interface SwitchProps {
   shape?: SwitchShape
   /** 选中态主色：内置色名或任意 CSS 色值，默认绿（微信原生开关的绿）。 */
   color?: ControlColor
-  /** 关侧内容，仅 shape="block" 渲染。 */
+  /** 关侧内容：block 形态放在轨道左侧，round 形态放在滑块里。 */
   offContent?: ReactNode
-  /** 开侧内容，仅 shape="block" 渲染。 */
+  /** 开侧内容：block 形态放在轨道右侧，round 形态放在滑块里。 */
   onContent?: ReactNode
   disabled?: boolean
   /** 外部驱动的等待态。 */
@@ -61,13 +61,23 @@ export function Switch({
     busy ? 'mptk-switch--busy' : '',
     className,
   ]
-  const trackStyle = on && inlineColor !== undefined ? { backgroundColor: inlineColor } : undefined
+  /* 底色恒为选中色，自定义色值也一直挂着：关态的未选中色由 __veil 整块盖住，
+     切换时是 veil 往中心收缩露出底色，不是两层颜色互相渐隐。 */
+  const trackStyle = inlineColor === undefined ? undefined : { backgroundColor: inlineColor }
+  /* 圆形形态没有两侧，开 / 关内容放进滑块里；等待态优先显示转圈。 */
+  const thumbContent = shape === 'round' ? (on ? onContent : offContent) : undefined
+  const hasThumbContent = thumbContent !== undefined && thumbContent !== null && thumbContent !== false
 
   return (
     <View className={names.filter(Boolean).join(' ')} onClick={() => change(!on)}>
       <View className="mptk-switch__track" style={trackStyle}>
+        <View className="mptk-switch__veil" />
         <View className="mptk-switch__thumb">
-          {busy ? (loadingContent ?? <Spinner size={16} color={inlineColor} className="mptk-switch__spinner" />) : null}
+          {busy ? (
+            loadingContent ?? <Spinner size={16} color={inlineColor} className="mptk-switch__spinner" />
+          ) : hasThumbContent ? (
+            <View className="mptk-switch__icon">{thumbContent}</View>
+          ) : null}
         </View>
         {shape === 'block' ? (
           <View className="mptk-switch__sides">

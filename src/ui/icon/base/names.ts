@@ -1,6 +1,6 @@
 // 本文件由 scripts/icons.mjs 生成，请勿手改。
 // 包：base
-// 源：https://at.alicdn.com/t/c/font_5251349_v0nv5yxvl9g.css
+// 源：https://at.alicdn.com/t/c/font_5251349_8i1c456svk9.css
 export const iconBaseClass = 'mptk-icons-base'
 export const iconPrefix = 'mptk-i-'
 
@@ -9,6 +9,8 @@ export const iconPrefix = 'mptk-i-'
  * 随平台增删变化，每次 pnpm run icons 重写；不作为对外契约，调用处直接用图标名即可。
  */
 export const iconMap: Readonly<Record<string, string>> = {
+  "shensemoshi": 'mptk-icons-base mptk-i-shensemoshi',
+  "qiansemoshi": 'mptk-icons-base mptk-i-qiansemoshi',
   "shezhi1": 'mptk-icons-base mptk-i-shezhi1',
   "jia": 'mptk-icons-base mptk-i-jia',
   "jian": 'mptk-icons-base mptk-i-jian',
@@ -40,7 +42,7 @@ export const iconMap: Readonly<Record<string, string>> = {
 }
 
 /** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。变体（-dark）不在其中。 */
-export const iconNames: readonly string[] = ['shezhi1', 'jia', 'jian', 'shezhi', 'xihuan', 'xihuan-a', 'saoma', 'tuichu', 'shoucanga', 'gou', 'shoucang', 'huidingbu', 'shuju', 'shijian1', 'iconjia', 'sort-down', 'guanbi', 'sort-up', 'sort-right', 'sort-left', 'home', 'move-right', 'shaixuan', 'xiugai', 'shanchu', 'move-left', 'move-down', 'move-up']
+export const iconNames: readonly string[] = ['shensemoshi', 'qiansemoshi', 'shezhi1', 'jia', 'jian', 'shezhi', 'xihuan', 'xihuan-a', 'saoma', 'tuichu', 'shoucanga', 'gou', 'shoucang', 'huidingbu', 'shuju', 'shijian1', 'iconjia', 'sort-down', 'guanbi', 'sort-up', 'sort-right', 'sort-left', 'home', 'move-right', 'shaixuan', 'xiugai', 'shanchu', 'move-left', 'move-down', 'move-up']
 
 /**
  * 本包字形是否带颜色（COLR/CPAL）：true 时 color 与明暗主题都改不动它。

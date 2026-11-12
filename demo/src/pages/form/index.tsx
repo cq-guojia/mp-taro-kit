@@ -1,25 +1,15 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { Switch } from 'mp-taro-kit/ui/form/switch'
-import { Segmented } from 'mp-taro-kit/ui/form/segmented'
+import { iconClass } from 'mp-taro-kit/ui/icon/base'
 
 import 'mp-taro-kit/ui/form/switch/style'
-import 'mp-taro-kit/ui/form/segmented/style'
+import 'mp-taro-kit/ui/icon/base/style'
 import { DemoPage } from '../../components/DemoBlock'
 
-const FILTER_ITEMS = [
-  { value: 'mine', label: '我的待办', count: 3 },
-  { value: 'all', label: '全部', count: 7 },
-  { value: 'todo', label: '待认领', count: 4 },
-  { value: 'doing', label: '进行中', count: 2, disabled: true },
-]
-
-const CHANNEL_ITEMS = [
-  { value: 'all', label: '全部' },
-  { value: 'cd', label: '成都' },
-  { value: 'urumqi', label: '乌鲁木齐' },
-  { value: 'beijing', label: '北京' },
-]
+/** 浅色模式是太阳，深色模式是月亮，正好拿来当开 / 关两面的图标。 */
+const SUN = <Text className={iconClass('qiansemoshi')} />
+const MOON = <Text className={iconClass('shensemoshi')} />
 
 /** 模拟一次要等后台的切换：ok 决定这次是成还是败。 */
 function wait(ok: boolean) {
@@ -28,29 +18,92 @@ function wait(ok: boolean) {
   })
 }
 
-export default function FormPage() {
+export default function SwitchPage() {
   const [on, setOn] = useState(false)
   const [blockOn, setBlockOn] = useState(true)
-  const [filter, setFilter] = useState('mine')
-  const [channel, setChannel] = useState('all')
+  const [dayNight, setDayNight] = useState(false)
   const [failed, setFailed] = useState(false)
 
   const render = (id: string) => {
     if (id === 'switch-basic') {
       return (
-        <View>
+        <View className="demo-row">
+          <Switch className="demo-item" checked={on} size="sm" onChange={(next) => { setOn(next) }} />
+          <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
+          <Switch className="demo-item" checked={on} onChange={(next) => { setOn(next) }} />
+          <Switch
+            className="demo-item"
+            checked={blockOn}
+            shape="block"
+            offContent="关"
+            onContent="开"
+            onChange={(next) => { setBlockOn(next) }}
+          />
+          <Switch
+            className="demo-item"
+            checked={blockOn}
+            shape="block"
+            offContent="待办"
+            onContent="完成"
+            onChange={(next) => { setBlockOn(next) }}
+          />
+        </View>
+      )
+    }
+    if (id === 'switch-icon') {
+      return (
+        <View className="demo-stack">
           <View className="demo-row">
-            <Switch checked={on} size="sm" onChange={(next) => { setOn(next) }} />
-            <Switch checked={on} size="md" onChange={(next) => { setOn(next) }} />
-            <Switch checked={on} onChange={(next) => { setOn(next) }} />
+            <Switch
+              className="demo-item"
+              checked={dayNight}
+              shape="block"
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={dayNight}
+              shape="block"
+              size="md"
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={dayNight}
+              shape="block"
+              size="sm"
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
+            />
           </View>
           <View className="demo-row">
             <Switch
-              checked={blockOn}
-              shape="block"
-              offContent="关"
-              onContent="开"
-              onChange={(next) => { setBlockOn(next) }}
+              className="demo-item"
+              checked={dayNight}
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={dayNight}
+              size="md"
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={dayNight}
+              size="sm"
+              offContent={SUN}
+              onContent={MOON}
+              onChange={(next) => { setDayNight(next) }}
             />
           </View>
         </View>
@@ -58,103 +111,39 @@ export default function FormPage() {
     }
     if (id === 'switch-state') {
       return (
-        <View>
+        <View className="demo-stack">
           <View className="demo-row">
-            <Switch checked={false} disabled />
-            <Switch checked={false} loading />
+            <Switch className="demo-item" checked={false} disabled />
+            <Switch className="demo-item" checked={false} loading />
             <Switch
+              className="demo-item"
               checked={on}
               onChange={(next) => wait(true).then(() => setOn(next))}
             />
-          </View>
-          <View className="demo-row">
+            {/* 失败：点了先转圈、位置不动；宿主只在成功时改值，失败什么都不用回滚 */}
             <Switch
+              className="demo-item"
               checked={blockOn}
               shape="block"
               offContent="月亮"
               onContent="太阳"
-              onChange={(next) => {
-                setBlockOn(next)
-                return wait(false)
-              }}
-              onFailed={() => {
-                setBlockOn((current) => !current)
-                setFailed(true)
-              }}
+              onChange={(next) => wait(false).then(() => setBlockOn(next))}
+              onFailed={() => { setFailed(true) }}
             />
           </View>
-          {failed ? <Text className="demo-note">失败已回弹，宿主值也回滚了</Text> : null}
+          {failed ? <Text className="demo-note">失败：转圈停了，位置没动过，宿主值也没变</Text> : null}
         </View>
       )
     }
-    if (id === 'segmented-basic') {
+    if (id === 'switch-colors') {
       return (
-        <View>
-          <View className="demo-block__body">
-            <Segmented
-              items={FILTER_ITEMS}
-              value={filter}
-              size="sm"
-              onChange={(next) => { setFilter(next) }}
-            />
-          </View>
-          <View className="demo-block__body">
-            <Segmented items={FILTER_ITEMS} value={filter} onChange={(next) => { setFilter(next) }} />
-          </View>
-        </View>
-      )
-    }
-    if (id === 'segmented-line') {
-      return (
-        <View className="demo-block__body">
-          <Segmented
-            items={CHANNEL_ITEMS}
-            value={channel}
-            indicator="line"
-            onChange={(next) => { setChannel(next) }}
-          />
-        </View>
-      )
-    }
-    if (id === 'segmented-state') {
-      return (
-        <View className="demo-block__body">
-          <Segmented
-            items={CHANNEL_ITEMS}
-            value={channel}
-            disabled={false}
-            onChange={(next) => wait(true).then(() => setChannel(next))}
-          />
-        </View>
-      )
-    }
-    if (id === 'control-colors') {
-      return (
-        <View>
-          <View className="demo-row">
-            <Switch checked color="blue" />
-            <Switch checked color="green" />
-            <Switch checked color="orange" />
-            <Switch checked color="red" />
-            <Switch checked color="#8b5cf6" />
-          </View>
-          <View className="demo-block__body">
-            <Segmented
-              items={CHANNEL_ITEMS}
-              value={channel}
-              color="green"
-              onChange={(next) => { setChannel(next) }}
-            />
-          </View>
-          <View className="demo-block__body">
-            <Segmented
-              items={CHANNEL_ITEMS}
-              value={channel}
-              indicator="line"
-              color="#8b5cf6"
-              onChange={(next) => { setChannel(next) }}
-            />
-          </View>
+        <View className="demo-row">
+          <Switch className="demo-item" checked color="blue" />
+          <Switch className="demo-item" checked color="green" />
+          <Switch className="demo-item" checked color="orange" />
+          <Switch className="demo-item" checked color="red" />
+          <Switch className="demo-item" checked color="#8b5cf6" />
+          <Switch className="demo-item" checked shape="block" color="green" offContent="关" onContent="开" />
         </View>
       )
     }

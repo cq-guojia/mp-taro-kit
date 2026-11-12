@@ -428,3 +428,21 @@ test('演示站只演示形态：不渲染代码，通栏示例页裸展示', ()
   const block = read('../demo/src/components/DemoBlock.tsx')
   assert.doesNotMatch(block, /example\.usage|example\.imports/, '演示站不得再渲染代码')
 })
+
+test('演示站组件之间必须留空隙：每个组件都带 demo-item，且不用 gap', () => {
+  const scss = read('../demo/src/app.scss')
+  assert.match(scss, /\.demo-item\s*\{[^}]*margin-right:\s*var\(--mptk-space-3\)/, '缺 demo-item 右侧间距')
+  assert.match(scss, /\.demo-item\s*\{[^}]*margin-bottom:\s*var\(--mptk-space-3\)/, '缺 demo-item 下方间距')
+  assert.doesNotMatch(scss, /\bgap:/, '不用 gap：老 WebView 内核不支持，两端会不一致')
+
+  for (const [file, component] of [
+    ['../demo/src/pages/form/index.tsx', 'Switch'],
+    ['../demo/src/pages/segmented/index.tsx', 'Segmented'],
+  ]) {
+    const page = read(file)
+    const tags = page.match(new RegExp(`<${component}[\\s>]`, 'g')) ?? []
+    const items = page.match(new RegExp(`<${component}\\s+className="demo-item"`, 'g')) ?? []
+    assert.ok(tags.length > 0, `${file} 没有 ${component}`)
+    assert.equal(items.length, tags.length, `${file} 里每个 ${component} 都要带 demo-item`)
+  }
+})
