@@ -143,20 +143,35 @@ test('异步示例不许先改值再返回 Promise，否则就是"点过去再 l
   }
 })
 
-test('切换是关态遮罩往回收，不是两层底色互相渐隐', () => {
+test('切换是内衬往回收，轨道底色自己随状态变，不靠遮罩盖错的底色', () => {
   const css = read('../dist/ui/form/switch/style/index.css')
-  const track = /\.mptk-switch--round \.mptk-switch__track\s*\{([^}]*)\}/.exec(css)
-  assert.ok(track, '缺圆形轨道规则')
-  assert.match(track[1], /background-color:\s*var\(--mptk-control-active\)/, '底色恒为选中色')
-  assert.doesNotMatch(track[1], /transition:\s*background-color/, '底色不许自己做渐变')
-  assert.doesNotMatch(css, /\.mptk-switch--on \.mptk-switch__track\s*\{/, '轨道底色不参与状态切换')
+
+  for (const shape of ['round', 'block']) {
+    const off = new RegExp(`\\.mptk-switch--${shape} \\.mptk-switch__track\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(off, `缺 ${shape} 轨道规则`)
+    assert.match(off[1], /background-color:\s*var\(--mptk-control-track\)/, `${shape} 关态轨道必须是 track 灰`)
+    const on = new RegExp(`\\.mptk-switch--${shape}\\.mptk-switch--on \\.mptk-switch__track\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(on, `缺 ${shape} 轨道选中态规则`)
+    assert.match(on[1], /background-color:\s*var\(--mptk-control-active\)/, `${shape} 选中态轨道才是主色`)
+    assert.doesNotMatch(on[1], /transition/, '底色不做过场：切换瞬间被内衬盖着，露不出突变')
+  }
+
   const veil = /\.mptk-switch__veil\s*\{([^}]*)\}/.exec(css)
-  assert.ok(veil, '缺关态遮罩规则')
-  assert.match(veil[1], /background-color:\s*var\(--mptk-control-track\)/, '遮罩就是关态颜色')
-  assert.match(veil[1], /transform:\s*scale\(1\)/, '关态遮罩盖满')
-  assert.match(veil[1], /transition:\s*transform/, '遮罩的过渡只做缩放')
-  assert.match(css, /\.mptk-switch--on \.mptk-switch__veil\s*\{[^}]*transform:\s*scale\(0\)/, '选中时遮罩收缩到 0')
-  assert.match(read('../dist/ui/form/switch/Switch.js'), /mptk-switch__veil/, '组件必须渲染遮罩节点')
+  assert.ok(veil, '缺关态内衬规则')
+  assert.match(veil[1], /top:\s*2px/, '内衬要比轨道内缩 2px，圆角处露出的是轨道自己的颜色')
+  assert.match(veil[1], /left:\s*2px/)
+  assert.match(veil[1], /width:\s*calc\(100% - 4px\)/, '内衬必须写 width')
+  assert.match(veil[1], /height:\s*calc\(100% - 4px\)/, '内衬必须写 height')
+  assert.match(veil[1], /background-color:\s*var\(--mptk-surface-base\)/, '内衬取页面底色，不取轨道色')
+  assert.match(veil[1], /transform:\s*scale\(1\)/)
+  assert.match(veil[1], /transition-property:\s*transform/, '内衬的过渡只做缩放')
+  assert.doesNotMatch(
+    veil[1],
+    /(right|bottom):/,
+    '别用四条边定位：构建会把它们合并成 inset，Skyline 不认，内衬塌成 0×0 就没动画了',
+  )
+  assert.match(css, /\.mptk-switch--on \.mptk-switch__veil\s*\{[^}]*transform:\s*scale\(0\)/, '选中时内衬收缩到 0')
+  assert.match(read('../dist/ui/form/switch/Switch.js'), /mptk-switch__veil/, '组件必须渲染内衬节点')
 })
 
 test('内置色走类名、自定义色值走显式内联，组件产物真的把色值写进去', () => {

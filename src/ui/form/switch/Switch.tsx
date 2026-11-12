@@ -61,9 +61,8 @@ export function Switch({
     busy ? 'mptk-switch--busy' : '',
     className,
   ]
-  /* 底色恒为选中色，自定义色值也一直挂着：关态的未选中色由 __veil 整块盖住，
-     切换时是 veil 往中心收缩露出底色，不是两层颜色互相渐隐。 */
-  const trackStyle = inlineColor === undefined ? undefined : { backgroundColor: inlineColor }
+  /* 轨道底色是状态色本身的真源，自定义色值只在选中态内联：关态必须留给 track 灰。 */
+  const trackStyle = on && inlineColor !== undefined ? { backgroundColor: inlineColor } : undefined
   /* 圆形形态没有两侧，开 / 关内容放进滑块里；等待态优先显示转圈。 */
   const thumbContent = shape === 'round' ? (on ? onContent : offContent) : undefined
   const hasThumbContent = thumbContent !== undefined && thumbContent !== null && thumbContent !== false
