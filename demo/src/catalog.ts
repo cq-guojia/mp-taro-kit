@@ -248,7 +248,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'loader',
         title: '加载图标',
-        hint: 'Loader：自绘双色缺角环 / blocks 三块脉动，五档尺寸 xs~xl；切首页主题看明暗两套',
+        hint: 'Loader 的 ring 圆环（默认）与 blocks 三块脉动、Spinner 的 chase 六点追逐，五档尺寸 xs~xl；切首页主题看明暗两套',
         usage: '<Loader variant="blocks" size="xl" />',
         imports: ['mp-taro-kit/ui/feedback', 'mp-taro-kit/ui/feedback/style'],
         renderNotes: '',

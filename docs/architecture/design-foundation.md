@@ -37,7 +37,7 @@
 
 `--mptk-business` / `success` / `warning` / `danger` 是给宿主用的语义别名，`--mptk-control-*` 是控件内部用的主色轴，两者引用同一组色板值。分开的原因是宿主定制业务色不该把开关染成自己的品牌色；控件默认蓝，内置蓝绿橙红四色，也接受任意 CSS 色值，见 [Switch 开关](../api/switch.md) 与 [Segmented 分段选择](../api/segmented.md)。
 
-自绘转圈另占两个键：`--mptk-spinner-active` 是顶部那一弧，`--mptk-spinner-track` 是其余三边的轨道色，明暗各给一套。转圈不跟随 `currentColor`，也不复用业务色 —— 单色字形在暗色下会发灰、宿主改品牌色后会跟着跑，这两件事都不该发生在等待态上。`Spinner` 的 `color` 只改顶部弧，轨道色始终由主题给。
+自绘转圈只占一个键：`--mptk-spinner-active` 是圆环与追逐点的主色，明暗各给一套。`Spinner` 有两种形态，几何都取自成熟开源实现、只把颜色换成主题变量：默认 `circular` 是 TDesign 小程序 `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩挖空，`chase` 是 SpinKit `sk-chase` 的六点追逐。两者都不给单边边框上色：Skyline 下单边边框上色会让圆角整个失效，圆环会退化成旋转的方框。颜色统一走 `currentColor`：容器默认挂 `--mptk-spinner-active`，圆环、追逐点、`Loader` 的 blocks 三种形态同色；`Loader` / `Spinner` / `Loading` 的 `color` 内联覆盖它 —— 不复用业务色，也不跟宿主品牌色跑。圆环粗细照 TDesign 实测比例：其 `radial-gradient` 遮罩默认 `farthest-corner`，环带约占直径 17%。
 
 ### 3.4 明暗对应
 
@@ -76,3 +76,6 @@
 - 2026-11-12 16:39:13：新建：基础色板、明暗对应与尺寸档位的设计依据
 - 2026-11-12 16:59:29：效果展示改指向两个独立展示页
 - 2026-11-12 17:24:24：转圈改为自绘双色缺角环，去掉图标字体依赖
+- 2026-11-12 18:22:33：转圈改为自绘 8 点圆点环，绕开 Skyline 单边边框让圆角失效
+- 2026-11-12 20:42:06：转圈改为 TDesign circular 圆环与 SpinKit 六点追逐两形态，默认圆环
+- 2026-11-12 20:49:51：环宽对齐 TDesign 实测比例（约 17% 直径），Loader/Loading 补 color，三形态统一默认主色

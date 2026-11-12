@@ -5,16 +5,18 @@ export interface LoadingProps {
   visible?: boolean
   /** 右侧文案，传空串只留转圈图标 */
   text?: string
+  /** 转圈主色；不给就由主题给，与 Loader 共用同一个默认色。 */
+  color?: string
   className?: string
 }
 
 /** 声明式 Loading；全局唯一 loading 槽由 <OverlayHost /> 消费。转圈由 <Loader /> 提供。 */
-export function Loading({ visible = true, text = '加载中', className }: LoadingProps) {
+export function Loading({ visible = true, text = '加载中', color, className }: LoadingProps) {
   if (!visible) return null
   const names = ['mptk-fb-loading', className]
   return (
     <View className={names.filter(Boolean).join(' ')}>
-      <Loader variant="ring" size="md" className="mptk-fb-loading__spin" />
+      <Loader variant="ring" size="md" color={color} className="mptk-fb-loading__spin" />
       {text === '' ? null : <Text className="mptk-fb-loading__text">{text}</Text>}
     </View>
   )

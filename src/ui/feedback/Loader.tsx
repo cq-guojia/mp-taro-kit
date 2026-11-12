@@ -1,7 +1,8 @@
 import { View } from '@tarojs/components'
+import type { CSSProperties } from 'react'
 import { Spinner } from './spinner/index.js'
 
-/** 形态：`ring` 双色缺角环旋转 / `blocks` 三块脉动。 */
+/** 形态：`ring` 圆环旋转 / `blocks` 三块脉动。 */
 export type LoaderVariant = 'ring' | 'blocks'
 
 /** 尺寸档：五档，几何按 24 网格等比缩放。 */
@@ -12,6 +13,8 @@ export interface LoaderProps {
   variant?: LoaderVariant
   /** 尺寸档，默认 `md`。 */
   size?: LoaderSize
+  /** 主色；不给就由主题给（`--mptk-spinner-active`）。两种形态共用同一个默认色。 */
+  color?: string
   /** 追加 class（只允许补布局，不许覆盖外观）。 */
   className?: string
 }
@@ -40,14 +43,13 @@ function toPx(value: number): string {
  * 加载动画图标：只画图标本身，不带背景、内距与定位 —— 要底色或浮层由调用方套容器。
  *
  * 两轴正交（不是 N×M 份样式）：
- * - `variant`：`ring` 开口弧整体旋转（默认）/ `blocks` 三块脉动；
+ * - `variant`：`ring` 圆环绕圈旋转（默认）/ `blocks` 三块脉动；
  * - `size`：`xs` 12 / `sm` 16 / `md` 24（默认）/ `lg` 32 / `xl` 48。
  *
- * ring 用自绘双色缺角环：顶部一弧取 --mptk-spinner-active，其余三边取
- * --mptk-spinner-track，明暗两套由主题给；全程不碰图标字体。
- * blocks 仍跟随 currentColor，要换色在调用点给 `style={{ color }}`。
+ * 两种形态共用同一个默认主色 `--mptk-spinner-active`，调用方传 `color` 覆盖；
+ * ring 走 `Spinner`（TDesign circular 的圆锥渐变弧 + 环形遮罩），blocks 跟随 `currentColor`。
  */
-export function Loader({ variant = 'ring', size = 'md', className }: LoaderProps) {
+export function Loader({ variant = 'ring', size = 'md', color, className }: LoaderProps) {
   const names = ['mptk-fb-loader', `mptk-fb-loader--${variant}`]
   if (className !== undefined && className !== '') names.push(className)
   const side = SIZE_PX[size]
@@ -57,8 +59,10 @@ export function Loader({ variant = 'ring', size = 'md', className }: LoaderProps
     const height = toPx(side * BLOCK_H_RATIO)
     const radius = toPx(side * BLOCK_RADIUS_RATIO)
     const gap = toPx(side * BLOCK_GAP_RATIO)
+    const box: CSSProperties = { height: toPx(side), width: toPx(side) }
+    if (color !== undefined) box.color = color
     return (
-      <View className={names.join(' ')} style={{ height: toPx(side), width: toPx(side) }}>
+      <View className={names.join(' ')} style={box}>
         {Array.from({ length: BLOCK_COUNT }, (_, index) => (
           <View
             key={index}
@@ -79,7 +83,7 @@ export function Loader({ variant = 'ring', size = 'md', className }: LoaderProps
   /* 转圈由 Spinner 自己旋转，外层只负责尺寸与居中，不再套字形节点。 */
   return (
     <View className={names.join(' ')} style={{ height: toPx(side), width: toPx(side) }}>
-      <Spinner size={side} />
+      <Spinner size={side} color={color} />
     </View>
   )
 }

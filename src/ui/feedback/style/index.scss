@@ -30,8 +30,9 @@
    blocks 的几何基准与动画参数照搬 dsh-plugin-core 的 Loader（块 7.2×6.0、圆角 1.5、间隔 0.6）。
    ring 的几何与旋转由 Spinner 自带，这里只给盒子和居中。 */
 
-/* 只做盒子与居中；ring 的颜色由主题变量给，blocks 才跟随 currentColor。 */
+/* 只做盒子与居中；两种形态共用一个默认主色，调用方传 color 时内联覆盖。 */
 .mptk-fb-loader {
+  color: var(--mptk-spinner-active);
   display: inline-block;
   flex: none;
   line-height: 1;

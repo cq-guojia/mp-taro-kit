@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import { Dialog, Loader, Loading, Toast } from 'mp-taro-kit/ui/feedback'
+import { Dialog, Loader, Loading, Spinner, Toast } from 'mp-taro-kit/ui/feedback'
 
 import 'mp-taro-kit/ui/feedback/style'
 import { DemoPage } from '../../components/DemoBlock'
@@ -38,7 +38,10 @@ export default function FeedbackPage() {
     if (id === 'loader') {
       return (
         <View>
-          <Text className="demo-note">ring 是自绘双色缺角环：亮弧与轨道各一色，明暗两套由主题给，不用图标字体。切首页主题可对照。</Text>
+          <Text className="demo-note">
+            ring 抄 TDesign circular（圆锥渐变弧 + 环形遮罩），chase 抄 SpinKit sk-chase（六点追逐）；
+            三种形态共用一个默认色 --mptk-spinner-active，传 color 可单独改。切首页主题可对照。
+          </Text>
           <View className="demo-row">
             <Loader variant="ring" size="xs" className="demo-loader-spaced" />
             <Loader variant="ring" size="sm" className="demo-loader-spaced" />
@@ -47,11 +50,23 @@ export default function FeedbackPage() {
             <Loader variant="ring" size="xl" className="demo-loader-spaced" />
           </View>
           <View className="demo-row">
+            <Spinner variant="chase" size={12} className="demo-loader-spaced" />
+            <Spinner variant="chase" size={16} className="demo-loader-spaced" />
+            <Spinner variant="chase" size={24} className="demo-loader-spaced" />
+            <Spinner variant="chase" size={32} className="demo-loader-spaced" />
+            <Spinner variant="chase" size={48} className="demo-loader-spaced" />
+          </View>
+          <View className="demo-row">
             <Loader variant="blocks" size="xs" className="demo-loader-spaced" />
             <Loader variant="blocks" size="sm" className="demo-loader-spaced" />
             <Loader variant="blocks" size="md" className="demo-loader-spaced" />
             <Loader variant="blocks" size="lg" className="demo-loader-spaced" />
             <Loader variant="blocks" size="xl" className="demo-loader-spaced" />
+          </View>
+          <View className="demo-row">
+            <Loader variant="ring" size="md" color="#00a870" className="demo-loader-spaced" />
+            <Spinner variant="chase" size={24} color="#00a870" className="demo-loader-spaced" />
+            <Loader variant="blocks" size="md" color="#00a870" className="demo-loader-spaced" />
           </View>
         </View>
       )

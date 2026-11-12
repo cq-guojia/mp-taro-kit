@@ -159,10 +159,9 @@
   --mptk-control-thumb: #fff;
   --mptk-control-on: #fff;
 
-  /* 自绘转圈：顶部一弧是主色，其余三边是中性轨道色，明暗各给一套。
+  /* 自绘转圈：圆环与追逐点共用一支主色，明暗各给一套。
      不跟随 currentColor，也不蹭宿主会定制的业务色。 */
   --mptk-spinner-active: #{$blue};
-  --mptk-spinner-track: #{$gray-3};
 }
 
 @mixin dark {
@@ -257,5 +256,4 @@
   --mptk-control-on: #fff;
 
   --mptk-spinner-active: #{$blue};
-  --mptk-spinner-track: #{$gray-5};
 }
