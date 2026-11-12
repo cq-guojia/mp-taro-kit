@@ -35,10 +35,58 @@ export type MenuGroup = {
   entries: MenuEntry[]
 }
 
-// 展示页真源：一页对应一个库侧子域（或一组能力域），路由由 pages 派生。
-// usage 与 renderNotes 由演示站维护方填写；此处只搭结构。
+// 展示页真源：一页对应一个库侧子域（或一组能力域）；基础规范组下设计基础与尺寸各成一页。
+// 路由由 pages 派生；usage 与 renderNotes 由演示站维护方填写，此处只搭结构。
 // 预留 id：skeleton（骨架屏归属 feedback / display 未定，不生成页面）。
 export const pages: CatalogPage[] = [
+  {
+    id: 'design-foundation',
+    title: '设计基础',
+    path: 'pages/design-foundation/index',
+    summary: '颜色：8 级中性灰阶、8 支色相与明暗两套取值',
+    examples: [
+      {
+        id: 'neutral-grays',
+        title: '中性灰阶',
+        hint: '编号表示层级，1 是最底层、8 是最上层文字；明暗两套方向相反',
+        usage: '',
+        imports: ['mp-taro-kit/styles/theme-runtime'],
+        renderNotes: '色块只读 var(--mptk-gray-*)，不复制色值',
+      },
+      {
+        id: 'hues',
+        title: '色相与明暗',
+        hint: '8 支色相 × 4 档：本色 / 悬停 / 按下 / 浅底；切首页主题对照明暗两套',
+        usage: '',
+        imports: ['mp-taro-kit/styles/theme-runtime'],
+        renderNotes: '派生值落成具体色值，不依赖运行时混色',
+      },
+    ],
+  },
+  {
+    id: 'sizing',
+    title: '尺寸',
+    path: 'pages/sizing/index',
+    summary: '控件高度三档与字号、间距、圆角、动效的档位体系',
+    examples: [
+      {
+        id: 'control-height',
+        title: '控件高度',
+        hint: '32 / 40 / 48 三档，对齐 WeUI 按钮高度，默认 48',
+        usage: '',
+        imports: ['mp-taro-kit/styles/theme-runtime'],
+        renderNotes: '标尺吃 --mptk-control-h-*；Switch / Segmented 逐档吃同名 token，效果见表单页',
+      },
+      {
+        id: 'scale',
+        title: '其余档位',
+        hint: '字号 / 行高、间距、圆角、动效都在样式基线里，不随明暗变化',
+        usage: '',
+        imports: ['mp-taro-kit/styles/theme-runtime'],
+        renderNotes: '档位数值由文档与自检核对，本页不另立一套',
+      },
+    ],
+  },
   {
     id: 'infra',
     title: '基础设施',
@@ -458,10 +506,21 @@ export const pages: CatalogPage[] = [
   },
 ]
 
-// 菜单真源：前六组对齐 Vant Weapp 的公共分类，后两组收纳本库独有的非 UI 能力。
-// 顺序固定：新增组件只把 planned 翻成 ready，不插队、不重排。
-// planned 不是待办清单，只占住位置，避免以后加组件时整段重排。
+// 菜单真源：首组是基础规范（Foundations），中间六组对齐 Vant Weapp 的公共分类，
+// 后两组收纳本库独有的非 UI 能力。顺序固定：新增组件只把 planned 翻成 ready，不插队、不重排。
+// planned 不是待办清单，只占住位置，避免以后加内容时整段重排。
 export const menu: MenuGroup[] = [
+  {
+    id: 'foundations',
+    title: '基础规范',
+    entries: [
+      { id: 'design-foundation', label: '设计基础', status: 'ready', pageId: 'design-foundation' },
+      { id: 'sizing', label: '尺寸', status: 'ready', pageId: 'sizing' },
+      { id: 'icons-spec', label: '图标规范', status: 'planned' },
+      { id: 'elevation', label: '层级', status: 'planned' },
+      { id: 'motion', label: '动效', status: 'planned' },
+    ],
+  },
   {
     id: 'base',
     title: '基础组件',

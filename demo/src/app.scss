@@ -274,4 +274,127 @@ page {
   text-align: center;
 }
 
+/* 基础规范页：色块类名由色相名与档位名拼出，Sass 循环生成，取值仍全走 var(--mptk-*)。
+   新增色相时只需在 _tokens.scss 与本页展示清单各加一个名字，tests/foundations.test.mjs 核对两处不漂移。 */
+$demo-hues: blue, green, orange, red, purple, cyan, pink, teal;
+$demo-tiers: '', '-hover', '-active', '-soft';
+
+.demo-palette {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.demo-palette__row {
+  margin-top: var(--mptk-space-3);
+}
+
+.demo-palette__name {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+}
+
+.demo-palette__cell {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-right: var(--mptk-space-2);
+  margin-bottom: var(--mptk-space-2);
+  width: 60px;
+}
+
+.demo-palette__label {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  margin-top: var(--mptk-space-1);
+  text-align: center;
+}
+
+@each $hue in $demo-hues {
+  @each $tier in $demo-tiers {
+    .demo-swatch--#{$hue}#{$tier} {
+      background-color: var(--mptk-#{$hue}#{$tier});
+    }
+  }
+}
+
+@for $level from 1 through 8 {
+  .demo-swatch--gray-#{$level} {
+    background-color: var(--mptk-gray-#{$level});
+  }
+}
+
+.demo-rulers {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-top: var(--mptk-space-3);
+}
+
+.demo-ruler {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-right: var(--mptk-space-3);
+}
+
+.demo-ruler__bar {
+  background-color: var(--mptk-control-active);
+  border-radius: var(--mptk-radius-sm);
+  width: 96px;
+}
+
+.demo-ruler__bar--sm {
+  height: var(--mptk-control-h-sm);
+}
+
+.demo-ruler__bar--md {
+  height: var(--mptk-control-h-md);
+}
+
+.demo-ruler__bar--lg {
+  height: var(--mptk-control-h-lg);
+}
+
+.demo-ruler__label {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  margin-top: var(--mptk-space-1);
+}
+
+.demo-spec {
+  margin-top: var(--mptk-space-3);
+}
+
+.demo-spec__title {
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+}
+
+.demo-spec__items {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: var(--mptk-space-1);
+}
+
+.demo-spec__item {
+  background-color: var(--mptk-surface-2);
+  border-radius: var(--mptk-radius-sm);
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  margin-right: var(--mptk-space-2);
+  margin-bottom: var(--mptk-space-2);
+  padding-top: var(--mptk-space-1);
+  padding-right: var(--mptk-space-2);
+  padding-bottom: var(--mptk-space-1);
+  padding-left: var(--mptk-space-2);
+}
+
 

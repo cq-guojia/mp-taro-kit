@@ -60,63 +60,194 @@
 }
 
 @mixin light {
+  // 基础色板：8 支色相 + 8 级中性面。每个值只在这里写一次，语义色、
+  // 控件主色轴与表面色全部引用同一组值，不产生第二份手写真值。
+  $blue: #3b5bdb;
+  $green: #22c55e;
+  $orange: #f59e0b;
+  $red: #ec1313;
+  $purple: #9333ea;
+  $cyan: #0e7490;
+  $pink: #db2777;
+  $teal: #0f766e;
+
+  $gray-1: #f7f8fa;
+  $gray-2: #f2f3f5;
+  $gray-3: #e9ecf1;
+  $gray-4: #dcdee0;
+  $gray-5: #c8c9cc;
+  $gray-6: #969799;
+  $gray-7: #767d87;
+  $gray-8: #3b434d;
+
   --mptk-fg: #1f2328;
   --mptk-fg-2: #5c6370;
-  --mptk-fg-3: #767d87;
+  --mptk-fg-3: #{$gray-7};
   --mptk-fg-4: #9aa1ab;
 
+  /* 明色下三级面不再统统是纯白：卡片保持白，次级面走最浅灰，下沉面与滑轨同档。
+     页面底色仍是 #fff，与官方窗口主题配置的 bgColor 保持一致，不许两处漂移。 */
   --mptk-surface-1: #fff;
-  --mptk-surface-2: #fff;
-  --mptk-surface-3: #fff;
+  --mptk-surface-2: #{$gray-1};
+  --mptk-surface-3: #{$gray-3};
   --mptk-surface-base: #fff;
 
   --mptk-border-faint: rgba(0, 0, 0, .04);
   --mptk-border: rgba(0, 0, 0, .10);
   --mptk-border-strong: rgba(0, 0, 0, .12);
 
-  --mptk-business: #3b5bdb;
-  --mptk-success: #22c55e;
-  --mptk-warning: #f59e0b;
-  --mptk-danger: #ec1313;
+  /* 中性灰阶：编号表示层级，1 是最底层、8 是最上层文字；明暗两套方向相反。
+     组件取同一编号即可拿到当前主题下该层的色，不必按主题改类名。 */
+  --mptk-gray-1: #{$gray-1};
+  --mptk-gray-2: #{$gray-2};
+  --mptk-gray-3: #{$gray-3};
+  --mptk-gray-4: #{$gray-4};
+  --mptk-gray-5: #{$gray-5};
+  --mptk-gray-6: #{$gray-6};
+  --mptk-gray-7: #{$gray-7};
+  --mptk-gray-8: #{$gray-8};
 
-  /* 控件主色轴与业务色解耦：宿主改 --mptk-business 不该把开关染成自己的品牌色。
-     默认蓝；内置色名由组件加类名切换，自定义色值由组件显式内联覆盖。 */
-  --mptk-control-blue: #3b5bdb;
-  --mptk-control-green: #22c55e;
-  --mptk-control-orange: #f59e0b;
-  --mptk-control-red: #ec1313;
+  /* 色相色板：base 是实面色，hover / active 是按压两档，soft 是同色系浅底。
+     明色下按压往深走，暗色下往亮走；小程序 WXSS 不保证支持 color-mix，
+     派生值一律落成具体色值，不在运行时现算。 */
+  --mptk-blue: #{$blue};
+  --mptk-blue-hover: #324cc0;
+  --mptk-blue-active: #2a3fa3;
+  --mptk-blue-soft: rgba(59, 91, 219, .08);
+  --mptk-green: #{$green};
+  --mptk-green-hover: #1da84f;
+  --mptk-green-active: #178b42;
+  --mptk-green-soft: rgba(34, 197, 94, .08);
+  --mptk-orange: #{$orange};
+  --mptk-orange-hover: #d08409;
+  --mptk-orange-active: #ad6d08;
+  --mptk-orange-soft: rgba(245, 158, 11, .08);
+  --mptk-red: #{$red};
+  --mptk-red-hover: #c91010;
+  --mptk-red-active: #a70d0d;
+  --mptk-red-soft: rgba(236, 19, 19, .08);
+  --mptk-purple: #{$purple};
+  --mptk-purple-hover: #7d2bc7;
+  --mptk-purple-active: #6824a5;
+  --mptk-purple-soft: rgba(147, 51, 234, .08);
+  --mptk-cyan: #{$cyan};
+  --mptk-cyan-hover: #0c627a;
+  --mptk-cyan-active: #0a5266;
+  --mptk-cyan-soft: rgba(14, 116, 144, .08);
+  --mptk-pink: #{$pink};
+  --mptk-pink-hover: #ba2165;
+  --mptk-pink-active: #9b1c54;
+  --mptk-pink-soft: rgba(219, 39, 119, .08);
+  --mptk-teal: #{$teal};
+  --mptk-teal-hover: #0d645d;
+  --mptk-teal-active: #0b534e;
+  --mptk-teal-soft: rgba(15, 118, 110, .08);
+
+  /* 语义色与控件主色轴引用同一组色板值：宿主改业务色不该把开关染成自己的品牌色，
+     但库内两个名字拿到的是同一个蓝。内置色名由组件加类名切换，自定义色值由组件显式内联覆盖。 */
+  --mptk-business: #{$blue};
+  --mptk-success: #{$green};
+  --mptk-warning: #{$orange};
+  --mptk-danger: #{$red};
+
+  --mptk-control-blue: #{$blue};
+  --mptk-control-green: #{$green};
+  --mptk-control-orange: #{$orange};
+  --mptk-control-red: #{$red};
   --mptk-control-active: var(--mptk-control-blue);
-  --mptk-control-track: #e9ecf1;
+  --mptk-control-track: #{$gray-3};
   --mptk-control-thumb: #fff;
   --mptk-control-on: #fff;
 }
 
 @mixin dark {
-  --mptk-fg: #e6e8eb;
-  --mptk-fg-2: #a9b0ba;
-  --mptk-fg-3: #858d98;
-  --mptk-fg-4: #626a75;
+  // 暗色不是把明色反过来就完事：色相整体提亮，按压反而往亮走，浅底浓度也单独给。
+  // 层级编号与明色一一对应，组件取同一个编号即可。
+  $blue: #6b8afd;
+  $green: #34d399;
+  $orange: #fbbf24;
+  $red: #ff5c5c;
+  $purple: #c084fc;
+  $cyan: #22d3ee;
+  $pink: #f472b6;
+  $teal: #2dd4bf;
 
-  --mptk-surface-1: #1f2329;
-  --mptk-surface-2: #262b32;
-  --mptk-surface-3: #2d333b;
+  $gray-1: #15181c;
+  $gray-2: #1f2329;
+  $gray-3: #262b32;
+  $gray-4: #2d333b;
+  $gray-5: #3b434d;
+  $gray-6: #626a75;
+  $gray-7: #858d98;
+  $gray-8: #a9b0ba;
+
+  --mptk-fg: #e6e8eb;
+  --mptk-fg-2: #{$gray-8};
+  --mptk-fg-3: #{$gray-7};
+  --mptk-fg-4: #{$gray-6};
+
+  --mptk-surface-1: #{$gray-2};
+  --mptk-surface-2: #{$gray-3};
+  --mptk-surface-3: #{$gray-4};
   --mptk-surface-base: #15181c;
 
   --mptk-border-faint: rgba(255, 255, 255, .04);
   --mptk-border: rgba(255, 255, 255, .10);
   --mptk-border-strong: rgba(255, 255, 255, .14);
 
-  --mptk-business: #6b8afd;
-  --mptk-success: #34d399;
-  --mptk-warning: #fbbf24;
-  --mptk-danger: #ff5c5c;
+  --mptk-gray-1: #{$gray-1};
+  --mptk-gray-2: #{$gray-2};
+  --mptk-gray-3: #{$gray-3};
+  --mptk-gray-4: #{$gray-4};
+  --mptk-gray-5: #{$gray-5};
+  --mptk-gray-6: #{$gray-6};
+  --mptk-gray-7: #{$gray-7};
+  --mptk-gray-8: #{$gray-8};
 
-  --mptk-control-blue: #6b8afd;
-  --mptk-control-green: #34d399;
-  --mptk-control-orange: #fbbf24;
-  --mptk-control-red: #ff5c5c;
+  --mptk-blue: #{$blue};
+  --mptk-blue-hover: #8aa4fe;
+  --mptk-blue-active: #a8bbff;
+  --mptk-blue-soft: rgba(107, 138, 253, .12);
+  --mptk-green: #{$green};
+  --mptk-green-hover: #5fe0b1;
+  --mptk-green-active: #8aeec8;
+  --mptk-green-soft: rgba(52, 211, 153, .12);
+  --mptk-orange: #{$orange};
+  --mptk-orange-hover: #fccc53;
+  --mptk-orange-active: #fdd982;
+  --mptk-orange-soft: rgba(251, 191, 36, .12);
+  --mptk-red: #{$red};
+  --mptk-red-hover: #ff7d7d;
+  --mptk-red-active: #ff9d9d;
+  --mptk-red-soft: rgba(255, 92, 92, .12);
+  --mptk-purple: #{$purple};
+  --mptk-purple-hover: #d0a3fd;
+  --mptk-purple-active: #e0c1fe;
+  --mptk-purple-soft: rgba(192, 132, 252, .12);
+  --mptk-cyan: #{$cyan};
+  --mptk-cyan-hover: #55dff2;
+  --mptk-cyan-active: #88eaf7;
+  --mptk-cyan-soft: rgba(34, 211, 238, .12);
+  --mptk-pink: #{$pink};
+  --mptk-pink-hover: #f791c6;
+  --mptk-pink-active: #faafd6;
+  --mptk-pink-soft: rgba(244, 114, 182, .12);
+  --mptk-teal: #{$teal};
+  --mptk-teal-hover: #5adfcd;
+  --mptk-teal-active: #88eadb;
+  --mptk-teal-soft: rgba(45, 212, 191, .12);
+
+  --mptk-business: #{$blue};
+  --mptk-success: #{$green};
+  --mptk-warning: #{$orange};
+  --mptk-danger: #{$red};
+
+  --mptk-control-blue: #{$blue};
+  --mptk-control-green: #{$green};
+  --mptk-control-orange: #{$orange};
+  --mptk-control-red: #{$red};
   --mptk-control-active: var(--mptk-control-blue);
-  --mptk-control-track: #2d333b;
-  --mptk-control-thumb: #3b434d;
+  --mptk-control-track: #{$gray-4};
+  --mptk-control-thumb: #{$gray-5};
   --mptk-control-on: #fff;
 }

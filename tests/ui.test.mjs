@@ -239,7 +239,22 @@ test('演示站菜单：ready 必指真实展示页，planned 不绑跳转，条
   new Function('exports', 'module', outputText)(mod.exports, mod)
   const { menu, catalogPages, appPages } = mod.exports
 
-  assert.ok(Array.isArray(menu) && menu.length === 8, '菜单必须是固定八组')
+  assert.ok(Array.isArray(menu) && menu.length === 9, '菜单必须是固定九组')
+  assert.equal(menu[0].id, 'foundations', '首组必须是基础规范')
+  assert.equal(menu[0].title, '基础规范')
+  for (const id of ['design-foundation', 'sizing']) {
+    const entry = menu[0].entries.find((item) => item.id === id)
+    assert.equal(entry?.status, 'ready', `基础规范缺可点条目：${id}`)
+    assert.equal(entry?.pageId, id, `基础规范条目没指向自己的展示页：${id}`)
+    const page = catalogPages.find((item) => item.id === id)
+    assert.ok(page, `缺独立展示页：${id}`)
+    assert.equal(page.path, `pages/${id}/index`, `${id} 页路径必须与页 id 一致`)
+    assert.equal(page.examples.length, 2, `${id} 页必须有自己的两块内容`)
+  }
+  assert.equal(
+    catalogPages.find((item) => item.id === 'foundations'), undefined,
+    '设计基础与尺寸不许并回同一个展示页',
+  )
   const pageIds = new Set(catalogPages.map((page) => page.id))
   const ids = new Set()
   let ready = 0
