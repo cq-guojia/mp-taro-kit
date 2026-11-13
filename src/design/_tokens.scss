@@ -55,6 +55,9 @@
   --mptk-dur: .2s;
   --mptk-dur-fast: .12s;
   --mptk-dur-run: 500ms;
+  /* 等待态的底色呼吸周期：按实机观感从 1.4s 调到 280ms（快 5 倍），
+     一次 1.6s 的等待里能看到多次起伏；谷值也加深，否则浅色底几乎看不出在动。 */
+  --mptk-dur-breathe: 280ms;
   --mptk-ease: cubic-bezier(.4, 0, .2, 1);
 }
 

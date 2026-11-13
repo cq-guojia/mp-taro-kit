@@ -21,8 +21,7 @@
 | `radius` | `'pill'` | 否 | 无 | 半圆形态：容器与滑动块一起切到 `--mptk-radius-pill` |
 | `color` | `ControlColor` | 否 | 默认蓝 | 内置色名 `blue` / `green` / `orange` / `red`，或任意 CSS 色值 |
 | `disabled` | boolean | 否 | 默认 `false` | 整组禁用，所有段点击短路 |
-| `loading` | boolean | 否 | 默认 `false` | 外部驱动的等待态，与内部等待取或 |
-| `loadingContent` | ReactNode | 否 | 无 | 自定义转圈节点；不给就用全库共用的自绘 `Spinner` |
+| `loading` | boolean | 否 | 默认 `false` | 外部驱动的等待态，与内部等待取或；等待时指示器底色呼吸 |
 | `className` | string | 否 | 无 | 挂到根 `View` |
 
 `SegmentedItem` 的内容位均为 `ReactNode`，由宿主注入，库内不写死业务字段：
@@ -38,7 +37,7 @@
 
 尺寸真源与 Switch 相同：根 `View` 固定高度等于 `--mptk-control-h-*` 档值（32 / 40 / 48，默认 48，取自 WeUI 的按钮高度三档），容器内不叠加上下内边距；滑动块与下划线两种指示器共用同一档高度。要改大小覆盖同名变量，不要传任意高度。
 
-选中态主色默认**蓝**（`--mptk-control-active` 指向 `--mptk-control-blue`），与宿主会定制的业务色解耦。滑轨取 `--mptk-control-track`、滑动块取 `--mptk-control-active`、滑动块上的选中文字取 `--mptk-control-on`，明色下不会双双为白；下划线形态则用主色画线与文字。`color` 传内置色名时由组件加类名切换变量，传任意 CSS 色值时由组件把色值显式写到滑动块、下划线、选中文字与转圈上，不依赖 WXML 行内自定义属性。
+选中态主色默认**蓝**（`--mptk-control-active` 指向 `--mptk-control-blue`），与宿主会定制的业务色解耦。滑轨取 `--mptk-control-track`、滑动块取 `--mptk-control-active`、滑动块上的选中文字取 `--mptk-control-on`，明色下不会双双为白；下划线形态则用主色画线与文字。`color` 传内置色名时由组件加类名切换变量，传任意 CSS 色值时由组件把色值显式写到滑动块、下划线与选中文字上，不依赖 WXML 行内自定义属性。
 
 ### 返回 / 输出
 
@@ -98,13 +97,15 @@ function FilterBar() {
 
 | 情形 | 行为 |
 |---|---|
-| 点击后 `onChange` 返回 thenable | 立刻锁点击并转圈，选中位置**不动**，等 Promise 结束 |
-| 等待成功 | 停圈；由宿主把新 `value` 传回来，这时才滑过去 |
-| `onChange` 返回 rejected Promise | 停圈、控制台输出错误、调用 `onFailed`；位置没动过，不需要回滚 |
+| 点击后 `onChange` 返回 thenable | 立刻锁点击、指示器底色开始呼吸，选中位置**不动**，等 Promise 结束 |
+| 等待成功 | 停呼吸；由宿主把新 `value` 传回来，这时才滑过去 |
+| `onChange` 返回 rejected Promise | 停呼吸、控制台输出错误、调用 `onFailed`；位置没动过，不需要回滚 |
 | `onChange` resolve 显式 `false` | 同上，只是不记控制台错误 |
 | `disabled` / 段级 `disabled` / `loading` / 等待中 | 该段点击短路，不调用 `onChange` |
 
-异步口径与 [Switch 开关](switch.md) 完全共用：**点了先转圈、成功再切换**，不做乐观更新，所以不存在「先滑过去再弹回来」。`onChange` 里不要在 Promise 结束前改 `value`，把 `setValue(next)` 放进 `.then()`；失败时只调 `onFailed` 通知宿主。两处等待态都渲染同一个自绘 `Spinner`（默认 `circular` 圆环，不给单边边框上色），不依赖图标字体包；自定义色值通过 `currentColor` 生效；引其中一个组件不会把另一个打进产物。
+异步口径与 [Switch 开关](switch.md) 完全共用：**点了先呼吸、成功再切换**，不做乐观更新，所以不存在「先滑过去再弹回来」。`onChange` 里不要在 Promise 结束前改 `value`，把 `setValue(next)` 放进 `.then()`；失败时只调 `onFailed` 通知宿主。
+
+等待态**不盖转圈**：段里全是文字 / 图标，塞一个转圈要么把段挤宽、要么压住字，两个都不能接受。做法是只让选中那一块呼吸（滑块形态呼吸滑块底色，下划线形态呼吸那条线）：`1 → .2 → 1` 的 `opacity`（`@keyframes mptk-control-breathe`，周期 `--mptk-dur-breathe` 280ms），整条轨道、其它段与文字都不跟着闪，也不加节点、不改尺寸。因此本组件不再引 `Spinner`，引它也不会把 spinner 的样式打进产物。
 
 ### 相关
 
@@ -114,7 +115,7 @@ function FilterBar() {
 
 ### 验证状态
 
-已在主库自检与演示站编译产物里核实：三档高度、组件级出口与样式齐全、两组件互不引用、异步状态机四条转移、默认蓝与四份主题产物色板齐全、明色滑轨非白、两端留 3px、内置四色与自定义色值均有断言；自绘转圈的主色与明暗两套取值、两种形态的几何也在产物里核对过。`equal` 的等分定位、滑块过渡、下划线与转圈动画在 Skyline / WebView 双端实机**未验证**；`fit` / `ratio` 的 `createSelectorQuery` 测量路径双端实机也**未验证**。
+已在主库自检与演示站编译产物里核实：三档高度、组件级出口与样式齐全、两组件互不引用、异步状态机四条转移、默认蓝与四份主题产物色板齐全、明色滑轨非白、两端留 3px、内置四色与自定义色值均有断言；等待态用底色呼吸而不是转圈（产物里不出现 spinner 几何、出现 `mptk-control-breathe`）也有断言。`equal` 的等分定位、滑块过渡、下划线与呼吸动画在 Skyline / WebView 双端实机**未验证**；`fit` / `ratio` 的 `createSelectorQuery` 测量路径双端实机也**未验证**。
 
 ## 更新日志
 
@@ -126,3 +127,5 @@ function FilterBar() {
 - 2026-11-12 21:14:07：异步改为点了先转圈、成功再切换，去掉乐观更新与回弹
 - 2026-11-13 00:13:38：段宽改为 fit / ratio / equal 三档并补 radius，删掉「段等分、不测量、不做横滑」的旧结论
 - 2026-11-13 09:08:44：根节点改为定宽 100%、视觉底片下移到 track，说明宽度分工
+- 2026-11-13 09:37:34：等待态改为按有无内容位分流：光板控件转圈，有内容的换底色呼吸
+- 2026-11-13 09:55:46：呼吸改为只作用在选中滑块：周期快 5 倍到 280ms、谷值加深到 .2，演示站等待时长翻倍

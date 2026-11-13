@@ -192,10 +192,10 @@ export const pages: CatalogPage[] = [
       {
         id: 'switch-state',
         title: '开关状态',
-        hint: '禁用 / 外部转圈 / 先拨过去再转圈 / 失败回弹',
+        hint: '禁用 / 光板开关转圈 / 带文字开关呼吸 / 失败不动',
         usage: '<Switch checked={on} onChange={(next) => save(next).then(() => setOn(next))} onFailed={rollback} />',
         imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
-        renderNotes: '失败示例由宿主在 onFailed 里回滚自己的值；转圈是纯 CSS，不依赖图标包',
+        renderNotes: '等待态看有没有内容位：光板圆开关滑块里转圈，带文字 / 图标的只有选中那块滑块呼吸，轨道与文字不跟着闪',
       },
       {
         id: 'switch-colors',
@@ -240,7 +240,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'segmented-state',
         title: '选择状态',
-        hint: '等待后台时先选中并转圈，成功保持',
+        hint: '等待后台时指示器底色呼吸，位置与文字不动，成功才切过去',
         usage: '<Segmented items={items} value={value} onChange={(next) => save(next).then(() => setValue(next))} />',
         imports: ['mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style'],
         renderNotes: '与 Switch 共用同一套异步切换状态机',

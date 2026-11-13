@@ -30,7 +30,7 @@
 
 `Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
 
-自绘转圈是另一个组件级单元：`mp-taro-kit/ui/feedback/spinner` + `/style` 导出 `Spinner`，`variant` 两档 —— `circular`（默认，TDesign `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩）与 `chase`（SpinKit `sk-chase` 的六点追逐）。全库所有等待态（`Loader` 的 `ring`、`Loading`、`Switch`、`Segmented`）共用这一份绘制，不用图标字体，也不给单边边框上色（Skyline 下单边边框上色会让 `border-radius` 失效，见[Skyline 渲染引擎](../dependencies/skyline-rendering.md)）。颜色只取 `--mptk-spinner-active`，`light` / `dark` 各给一套；`Loader` / `Spinner` / `Loading` 都接受 `color`，不给时三种形态统一用这支主色（`blocks` 不再继承页面文字色），给了就内联覆盖容器 `color`、通过 `currentColor` 生效。圆环粗细对齐 TDesign 实测：原版 `mask: radial-gradient(transparent calc(50% - 1rpx), #fff 50%)` 的径向渐变默认 `farthest-corner`，环带约占直径 17%，这里用同一比例的环形 SVG 遮罩复刻。尺寸档跟字号一一对应，取字号的 1.6 倍（20 / 22 / 24 / 28 / 36），「圈 + 文字」并排时重心才对得上；比例同样来自 TDesign（它默认 20px 圈配 12px 文案）。
+自绘转圈是另一个组件级单元：`mp-taro-kit/ui/feedback/spinner` + `/style` 导出 `Spinner`，`variant` 两档 —— `circular`（默认，TDesign `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩）与 `chase`（SpinKit `sk-chase` 的六点追逐）。转圈只用在「没有被内容占住」的等待态：`Loader` 的 `ring`、`Loading`、光板 `Switch`（`round` 且没给 `offContent` / `onContent`）共用这一份绘制，不用图标字体，也不给单边边框上色（Skyline 下单边边框上色会让 `border-radius` 失效，见[Skyline 渲染引擎](../dependencies/skyline-rendering.md)）。有内容位的控件不盖转圈：`Segmented` 与带图标 / 文字的 `Switch` 改成「选中那块滑块」呼吸（`src/ui/form/_busy.scss` 的 `mptk-control-breathe`，周期 `--mptk-dur-breathe`、谷值 `.2`），只动滑块自身的 `opacity`，轨道整块与文字不跟着闪，也不挤宽、不遮字。颜色只取 `--mptk-spinner-active`，`light` / `dark` 各给一套；`Loader` / `Spinner` / `Loading` 都接受 `color`，不给时三种形态统一用这支主色（`blocks` 不再继承页面文字色），给了就内联覆盖容器 `color`、通过 `currentColor` 生效。圆环粗细对齐 TDesign 实测：原版 `mask: radial-gradient(transparent calc(50% - 1rpx), #fff 50%)` 的径向渐变默认 `farthest-corner`，环带约占直径 17%，这里用同一比例的环形 SVG 遮罩复刻。尺寸档跟字号一一对应，取字号的 1.6 倍（20 / 22 / 24 / 28 / 36），「圈 + 文字」并排时重心才对得上；比例同样来自 TDesign（它默认 20px 圈配 12px 文案）。
 
 组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
 
@@ -66,10 +66,10 @@ props 表、九种用法与代码示例见 [Cell 单元格](cell.md)。`.d.ts` �
 
 props 表与用法见 [Switch 开关](switch.md)、[Segmented 分段选择](segmented.md)。`.d.ts` 只表达 props 类型，以下几条由运行时保证：
 
-- 两者共用 `src/ui/form/useAsyncChange.ts`：回调返回 thenable 时**立刻锁点击并转圈，界面位置不动**，成功后由宿主把新值传回来才切换；显式 `false` 与 rejected Promise 都算失败，失败只调 `onFailed`，不做回弹（对齐 Ant Design Mobile）。
+- 两者共用 `src/ui/form/useAsyncChange.ts`：回调返回 thenable 时**立刻锁点击进入等待态，界面位置不动**，成功后由宿主把新值传回来才切换；显式 `false` 与 rejected Promise 都算失败，失败只调 `onFailed`，不做回弹（对齐 Ant Design Mobile）。
 - 宿主给回的 `checked` / `value` 始终是唯一真值，组件从不自己改它；因此没有临时显示值，原 `change-state.ts` 已删除。
 - 禁用态包含整控件、段级 `disabled`、外部 `loading` 与等待中四种，任一成立都短路回调。
-- 转圈统一由组件级单元 `ui/feedback/spinner` 自绘，不依赖图标字体包；Switch 与 Segmented 只引 `Spinner` 本身，不引 feedback 子域 barrel。等待失败的错误输出到控制台，不向页面抛出。
+- 转圈统一由组件级单元 `ui/feedback/spinner` 自绘，不依赖图标字体包；只有光板 Switch 引 `Spinner` 本身，`Segmented` 不引（等待态走底色呼吸），都不引 feedback 子域 barrel。等待失败的错误输出到控制台，不向页面抛出。
 
 ### 错误口径
 
@@ -248,3 +248,5 @@ setThemeMode('auto', {
 - 2026-11-12 20:56:53：加载圈五档改为跟字号一一对应，取字号的 1.6 倍（20/22/24/28/36）
 - 2026-11-12 21:14:07：异步切换统一走 useAsyncChange，删掉 change-state 临时显示值
 - 2026-11-12 21:14:30：默认色按组件区分，去掉已删除的 change-state 引用
+- 2026-11-13 09:37:35：等待态改为按有无内容位分流：光板控件转圈，有内容的换底色呼吸
+- 2026-11-13 09:55:46：呼吸改为只作用在选中滑块：周期快 5 倍到 280ms、谷值加深到 .2，演示站等待时长翻倍

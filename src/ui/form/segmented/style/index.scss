@@ -8,8 +8,9 @@
    scroll-view（flex-basis 0）会塌成 0 宽，整块只剩空白，真机却正常。
    滑块 / 下划线都是 track 内的绝对定位元素，与段同一个滚动容器，滚动时自然跟随。
    圆角引用 --mptk-control-radius，半圆由组件加 --radius-pill 类切到 pill token。
-   等待态由全库共用的自绘 Spinner 绘制（见文件顶部 @use），这里不另画一份。 */
-@use '../../../feedback/spinner/style/index' as spinner;
+   等待态不盖转圈：段里全是文字 / 图标，转圈会把段挤宽或压住字，
+   改成滑块（下划线形态是线本身）的底色呼吸，见文件顶部 @use。 */
+@use '../../busy' as busy;
 
 .mptk-seg {
   /* 指示器内缩：滑块四边各让 3px（细分视觉值，不是间距档）。上下两条读这里的变量，
@@ -187,13 +188,9 @@
   transition-timing-function: var(--mptk-ease);
 }
 
-/* 等待态的转圈几何统一由自绘 Spinner 提供（见文件顶部 @use），这里不再画第二份。
-   主色跟控件主色走（内置色名时也一致），自定义色值由组件内联 color 覆盖。 */
-.mptk-seg .mptk-spinner {
-  color: var(--mptk-control-active);
-}
-
-/* 转圈与文字并排时的间距；.mptk-seg__spinner 只留作调用点定位用的类名 hook。 */
-.mptk-seg__spinner {
-  margin-left: var(--mptk-space-1);
+/* 等待态：滑块自己的底色呼吸，文字、段宽、指示器位置一律不动。
+   下划线形态没有滑块，呼吸的就是那条线；两者同一份关键帧（见文件顶部 @use）。 */
+.mptk-seg--busy .mptk-seg__thumb,
+.mptk-seg--busy .mptk-seg__line {
+  animation: mptk-control-breathe var(--mptk-dur-breathe) var(--mptk-ease) infinite;
 }

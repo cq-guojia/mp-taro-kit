@@ -96,19 +96,22 @@ test('不给单边 border 上色，避开 Skyline 让圆角失效的限制', () 
   for (const file of [
     'dist/ui/feedback/style/index.css',
     'dist/ui/form/switch/style/index.css',
-    'dist/ui/form/segmented/style/index.css',
   ]) {
     const built = read(file)
     assert.match(built, /\.mptk-spinner__ring\s*\{/, `${file} 的圆环几何没跟上`)
     assert.doesNotMatch(built, /border-top-color/, `${file} 又用了单边边框上色`)
   }
+  assert.doesNotMatch(
+    read('dist/ui/form/segmented/style/index.css'),
+    /\.mptk-spinner/,
+    'Segmented 不再盖转圈（改底色呼吸），产物里不该再带圆环几何',
+  )
 })
 
-test('四处等待态共用同一份自绘几何，不再各画一个转圈', () => {
+test('转圈只留在光板控件里，有内容位的一律改底色呼吸', () => {
   for (const file of [
     'dist/ui/feedback/style/index.css',
     'dist/ui/form/switch/style/index.css',
-    'dist/ui/form/segmented/style/index.css',
   ]) {
     const css = read(file)
     assert.match(css, /\.mptk-spinner\s*\{/, `${file} 没带进自绘几何`)
@@ -119,12 +122,29 @@ test('四处等待态共用同一份自绘几何，不再各画一个转圈', ()
       `${file} 还留着旧转圈`,
     )
   }
-  for (const file of [
-    'src/ui/form/switch/Switch.tsx',
-    'src/ui/form/segmented/Segmented.tsx',
+
+  /* 底色呼吸：一份关键帧（src/ui/form/_busy.scss）给两个控件的等待态，都不加节点。 */
+  for (const [file, rule] of [
+    ['dist/ui/form/switch/style/index.css', /\.mptk-switch--breathe \.mptk-switch__thumb\s*\{[^}]*mptk-control-breathe/],
+    ['dist/ui/form/segmented/style/index.css', /\.mptk-seg--busy \.mptk-seg__thumb[\s\S]{0,80}mptk-control-breathe/],
   ]) {
-    assert.match(read(file), /<Spinner\b/, `${file} 没改用共用 Spinner`)
+    const css = read(file)
+    assert.match(css, /@keyframes mptk-control-breathe/, `${file} 没带进底色呼吸关键帧`)
+    assert.match(css, rule, `${file} 的等待态没挂底色呼吸`)
+    assert.doesNotMatch(
+      css,
+      /mptk-(?:switch--breathe|seg--busy)[^{]*track\s*\{[^}]*mptk-control-breathe/,
+      `${file} 不该让整条轨道一起呼吸`,
+    )
+    assert.match(css, /50%\s*\{\s*opacity:\s*0?\.2/, `${file} 的呼吸谷值不够明显`)
   }
+
+  /* 组件侧：有内容位时不许再把转圈塞进滑块；Segmented 彻底不引转圈。 */
+  const switchSrc = read('src/ui/form/switch/Switch.tsx')
+  assert.match(switchSrc, /<Spinner\b/, '光板开关仍要用共用 Spinner')
+  assert.match(switchSrc, /busy && !hasContent/, '转圈只能在没有内容位时出现')
+  assert.match(switchSrc, /busy && hasContent \? 'mptk-switch--breathe'/, '有内容位时要挂呼吸类')
+  assert.doesNotMatch(read('src/ui/form/segmented/Segmented.tsx'), /<Spinner\b/, 'Segmented 不该再有转圈')
 })
 
 test('两种形态共用一个默认主色，且都能被 color 覆盖', () => {

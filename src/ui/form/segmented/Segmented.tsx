@@ -4,7 +4,6 @@ import Taro from '@tarojs/taro'
 import type { CSSProperties, ReactNode } from 'react'
 import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
-import { Spinner } from '../../feedback/spinner/index.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*。 */
 export type SegmentedSize = 'sm' | 'md' | 'lg'
@@ -49,10 +48,8 @@ export interface SegmentedProps<T extends string = string> {
   /** 选中态主色：内置色名或任意 CSS 色值，默认蓝。 */
   color?: ControlColor
   disabled?: boolean
-  /** 外部驱动的等待态；等待时选中段里转圈，位置与尺寸都不变。 */
+  /** 外部驱动的等待态；等待时指示器底色呼吸，位置、尺寸与文字都不变。 */
   loading?: boolean
-  /** 转圈节点；不给就用全库共用的自绘 Spinner，不连图标包。 */
-  loadingContent?: ReactNode
   className?: string
 }
 
@@ -76,7 +73,6 @@ export function Segmented<T extends string = string>({
   color,
   disabled = false,
   loading = false,
-  loadingContent,
   className,
 }: SegmentedProps<T>) {
   const { display, busy, change } = useAsyncChange(value, onChange, disabled, loading, onFailed)
@@ -110,7 +106,7 @@ export function Segmented<T extends string = string>({
   }, [items.length, needsMeasure, uid])
 
   /* 首帧布局没完成时量不到，放到下一拍；items 数量 / 档位 / 圆角变化都会改变段宽，需要重量。
-     等待态里选中段多出一个转圈节点、段宽跟着变，也要重量，否则滑块比段窄一截。 */
+     等待态只让指示器底色呼吸，不加节点、不改段宽，所以不必重量。 */
   useEffect(() => {
     if (!needsMeasure) {
       setCells(null)
@@ -120,7 +116,7 @@ export function Segmented<T extends string = string>({
     return () => {
       clearTimeout(timer)
     }
-  }, [busy, measure, needsMeasure, size, radius, width])
+  }, [measure, needsMeasure, size, radius, width])
 
   useEffect(() => {
     if (!needsMeasure) return undefined
@@ -164,6 +160,7 @@ export function Segmented<T extends string = string>({
     radius === undefined ? '' : `mptk-seg--radius-${radius}`,
     colorClass,
     locked ? 'mptk-seg--locked' : '',
+    busy ? 'mptk-seg--busy' : '',
     className,
   ]
 
@@ -207,10 +204,6 @@ export function Segmented<T extends string = string>({
                     <View className="mptk-seg__desc">{item.description}</View>
                   )}
                 </View>
-                {/* 等待态：选中段里转圈，位置不动；与 Loader / Switch 共用同一份自绘几何。 */}
-                {busy && active ? (
-                  loadingContent ?? <Spinner size={12} color={inlineColor} className="mptk-seg__spinner" />
-                ) : null}
               </View>
             )
           })}

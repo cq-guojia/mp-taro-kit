@@ -22,7 +22,7 @@ const CHANNEL_ITEMS = [
 /** 模拟一次要等后台的切换：ok 决定这次是成还是败。 */
 function wait(ok: boolean) {
   return new Promise<void>((resolve, reject) => {
-    setTimeout(() => (ok ? resolve() : reject(new Error('模拟后台失败'))), 800)
+    setTimeout(() => (ok ? resolve() : reject(new Error('模拟后台失败'))), 1600)
   })
 }
 
@@ -136,7 +136,7 @@ export default function SegmentedPage() {
             onChange={(next) => wait(false).then(() => setChannel(next))}
             onFailed={() => { setFailed(true) }}
           />
-          {failed ? <Text className="demo-note">失败：转圈停了，位置没动过，宿主值也没变</Text> : null}
+          {failed ? <Text className="demo-note">失败：呼吸停下，位置没动过，宿主值也没变</Text> : null}
         </View>
       )
     }

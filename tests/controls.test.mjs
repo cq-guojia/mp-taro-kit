@@ -269,7 +269,7 @@ test('方形开关圆角落到最小档，轨道、遮罩、滑块三处一致',
   assert.match(thumb[1], /border-radius:\s*var\(--mptk-radius-xs\)/, '滑块内角同取 xs')
 })
 
-test('圆形开关的图标进滑块，等待态优先显示转圈', () => {
+test('圆形开关的图标进滑块，字号按轨道高走', () => {
   const js = read('../dist/ui/form/switch/Switch.js')
   assert.match(js, /mptk-switch__icon/, '圆形形态要有滑块内图标容器')
   assert.match(js, /shape === 'round'/, '图标只进圆形形态，方形走两侧')

@@ -28,7 +28,7 @@ export interface SwitchProps {
   disabled?: boolean
   /** 外部驱动的等待态。 */
   loading?: boolean
-  /** 转圈节点；不给就用全库共用的自绘 Spinner，不连图标包。 */
+  /** 光板开关的转圈节点；不给就用全库共用的自绘 Spinner。有内容位时不画转圈，改由底色呼吸。 */
   loadingContent?: ReactNode
   /**
    * 不变色：轨道底色恒为 `color` 指定的主色，只有滑块位置区分状态。
@@ -57,6 +57,13 @@ export function Switch({
   const on = display
   const locked = disabled || loading || busy
   const { className: colorClass, inlineColor } = resolveControlColor('mptk-switch', color)
+  /* 圆形形态没有两侧，开 / 关内容放进滑块里。 */
+  const thumbContent = shape === 'round' ? (on ? onContent : offContent) : undefined
+  const filled = (node: ReactNode): boolean => node !== undefined && node !== null && node !== false
+  const hasThumbContent = filled(thumbContent)
+  /* 有内容位（滑块里的图标，或方形两侧的文字 / 图标）时，等待态不再盖转圈 ——
+     转圈会压住内容，改成整块底色呼吸；只有「光板」开关才继续用转圈。 */
+  const hasContent = hasThumbContent || (shape === 'block' && (filled(offContent) || filled(onContent)))
   const names = [
     'mptk-switch',
     `mptk-switch--${size}`,
@@ -65,22 +72,20 @@ export function Switch({
     colorClass,
     locked ? 'mptk-switch--locked' : '',
     busy ? 'mptk-switch--busy' : '',
+    busy && hasContent ? 'mptk-switch--breathe' : '',
     keepColor ? 'mptk-switch--keep-color' : '',
     className,
   ]
   /* 轨道底色是状态色本身的真源，自定义色值只在选中态内联：关态必须留给 track 灰。
      不变色模式下底色恒为主色，所以自定义色值也一直挂着。 */
   const trackStyle = (on || keepColor) && inlineColor !== undefined ? { backgroundColor: inlineColor } : undefined
-  /* 圆形形态没有两侧，开 / 关内容放进滑块里；等待态优先显示转圈。 */
-  const thumbContent = shape === 'round' ? (on ? onContent : offContent) : undefined
-  const hasThumbContent = thumbContent !== undefined && thumbContent !== null && thumbContent !== false
 
   return (
     <View className={names.filter(Boolean).join(' ')} onClick={() => change(!on)}>
       <View className="mptk-switch__track" style={trackStyle}>
         <View className="mptk-switch__veil" />
         <View className="mptk-switch__thumb">
-          {busy ? (
+          {busy && !hasContent ? (
             loadingContent ?? <Spinner size={16} color={inlineColor} className="mptk-switch__spinner" />
           ) : hasThumbContent ? (
             <View className="mptk-switch__icon">{thumbContent}</View>

@@ -14,7 +14,7 @@ const MOON = <Text className={iconClass('shensemoshi')} />
 /** 模拟一次要等后台的切换：ok 决定这次是成还是败。 */
 function wait(ok: boolean) {
   return new Promise<void>((resolve, reject) => {
-    setTimeout(() => (ok ? resolve() : reject(new Error('模拟后台失败'))), 800)
+    setTimeout(() => (ok ? resolve() : reject(new Error('模拟后台失败'))), 1600)
   })
 }
 
@@ -138,6 +138,7 @@ export default function SwitchPage() {
     if (id === 'switch-state') {
       return (
         <View className="demo-stack">
+          <Text className="demo-note">光板开关：等待时滑块里转圈</Text>
           <View className="demo-row">
             <Switch className="demo-item" checked={false} size="md" disabled />
             <Switch className="demo-item" checked={false} size="md" loading />
@@ -147,7 +148,19 @@ export default function SwitchPage() {
               size="md"
               onChange={(next) => wait(true).then(() => setOn(next))}
             />
-            {/* 失败：点了先转圈、位置不动；宿主只在成功时改值，失败什么都不用回滚 */}
+          </View>
+          <Text className="demo-note">带内容的开关：只有选中那块滑块呼吸，轨道与文字不跟着闪</Text>
+          <View className="demo-row">
+            <Switch
+              className="demo-item"
+              checked={blockOn}
+              shape="block"
+              size="md"
+              offContent="关"
+              onContent="开"
+              loading
+            />
+            {/* 失败：等待时只呼吸、位置不动；宿主只在成功时改值，失败什么都不用回滚 */}
             <Switch
               className="demo-item"
               checked={blockOn}
@@ -159,7 +172,7 @@ export default function SwitchPage() {
               onFailed={() => { setFailed(true) }}
             />
           </View>
-          {failed ? <Text className="demo-note">失败：转圈停了，位置没动过，宿主值也没变</Text> : null}
+          {failed ? <Text className="demo-note">失败：等待停下，位置没动过，宿主值也没变</Text> : null}
         </View>
       )
     }

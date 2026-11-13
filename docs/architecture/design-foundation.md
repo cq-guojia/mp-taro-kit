@@ -37,6 +37,8 @@
 
 `--mptk-business` / `success` / `warning` / `danger` 是给宿主用的语义别名，`--mptk-control-*` 是控件内部用的主色轴，两者引用同一组色板值。分开的原因是宿主定制业务色不该把开关染成自己的品牌色；主色轴默认指向蓝，内置蓝绿橙红四色、也接受任意 CSS 色值；其中 Switch 把默认值覆盖成绿，对齐微信原生开关，见 [Switch 开关](../api/switch.md) 与 [Segmented 分段选择](../api/segmented.md)。
 
+等待态有两种表达：转圈（只给没有被内容占住的控件，如 `Loader` 的 `ring`、`Loading`、光板 `Switch`）与底色呼吸（内容位已被占住时用，如 `Segmented`、带图标 / 文字的 `Switch`）。呼吸只加在选中那块滑块上、只动它自己的 `opacity`（`1 → .2 → 1`），轨道整块与文字不跟着闪，也不加节点、不挤宽；周期取 `--mptk-dur-breathe`（280ms，一次 1.6s 的等待里能看清多次起伏），关键帧 `mptk-control-breathe` 与两个控件共用同一份真源 `src/ui/form/_busy.scss`。
+
 自绘转圈只占一个键：`--mptk-spinner-active` 是圆环与追逐点的主色，明暗各给一套。`Spinner` 有两种形态，几何都取自成熟开源实现、只把颜色换成主题变量：默认 `circular` 是 TDesign 小程序 `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩挖空，`chase` 是 SpinKit `sk-chase` 的六点追逐。两者都不给单边边框上色：Skyline 下单边边框上色会让圆角整个失效，圆环会退化成旋转的方框。颜色统一走 `currentColor`：容器默认挂 `--mptk-spinner-active`，圆环、追逐点、`Loader` 的 blocks 三种形态同色；`Loader` / `Spinner` / `Loading` 的 `color` 内联覆盖它 —— 不复用业务色，也不跟宿主品牌色跑。圆环粗细照 TDesign 实测比例：其 `radial-gradient` 遮罩默认 `farthest-corner`，环带约占直径 17%。
 
 ### 3.4 明暗对应
@@ -82,3 +84,5 @@
 - 2026-11-12 20:49:51：环宽对齐 TDesign 实测比例（约 17% 直径），Loader/Loading 补 color，三形态统一默认主色
 - 2026-11-12 20:56:53：加载圈五档改为跟字号一一对应，取字号的 1.6 倍（20/22/24/28/36）
 - 2026-11-12 21:14:30：控件默认色按组件区分：Switch 绿、Segmented 蓝
+- 2026-11-13 09:37:35：等待态改为按有无内容位分流：光板控件转圈，有内容的换底色呼吸
+- 2026-11-13 09:55:46：呼吸改为只作用在选中滑块：周期快 5 倍到 280ms、谷值加深到 .2，演示站等待时长翻倍
