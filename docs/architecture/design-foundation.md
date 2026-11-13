@@ -22,6 +22,8 @@
 
 边框三档 `--mptk-border-faint` / `--mptk-border` / `--mptk-border-strong` 之外，`--mptk-cell-divider` 是 Cell 组内分隔线的语义键，默认比外框的 `--mptk-border` 浅一档（明暗各 `.06`）。控件级切换由 `CellGroup` 的 `dividerTone` 等 props 派生修饰类完成，宿主也可在业务级主题定制时覆盖同名变量；组件只引用变量、不写兜底。新增颜色键仍须明暗同名同数。
 
+`--mptk-card-bg` / `--mptk-card-border` 是卡片面与描边的语义键，`light` / `dark` 同名同数；`--mptk-card-radius`（默认指向 `--mptk-radius-lg`）与 `--mptk-card-spacing` 是不随明暗变化的基线量，只写在 `base`。`--mptk-card-spacing` 只决定普通内容的留白：内容是贴边组件时由 `Card` 派生 `--edge-content` 直接归零，不再把这支变量交给子级抵消。容器不引用 `--mptk-control-radius`：那支是给 Button / Segmented 的控件圆角。`Card` 的 `radius` / `size` / `color` 都是枚举或色值输入，组件派生修饰类换档，宿主不查变量名单、不写样式，见 [Card 卡片](../api/card.md)。
+
 ### 3.2 色相
 
 八支基础色相：蓝、绿、橙、红、紫、青、粉、蓝绿。每支四档：
@@ -93,3 +95,6 @@
 - 2026-11-13 12:03:11：呼吸周期再放慢一倍到 1120ms，灰值与幅度不动
 - 2026-11-13 14:02:01：补 --mptk-cell-divider 语义键：默认比 --mptk-border 浅一档，宿主可覆盖
 - 2026-11-13 14:20:55：控件级切换改由 CellGroup props 派生修饰类，变量覆盖只留业务级主题定制
+- 2026-11-13 15:13:41：补卡片面/描边/圆角/间距语义键与容器不引用控件圆角的口径；展示字号与零圆角档收进 base
+- 2026-11-13 16:42:48：--mptk-card-spacing 同时被 in-card 形态用于抵消卡片上下留白，间距真源仍只此一处
+- 2026-11-13 18:43:59：--mptk-card-spacing 只管普通内容留白，贴边内容由 Card 归零，不再交给子级抵消

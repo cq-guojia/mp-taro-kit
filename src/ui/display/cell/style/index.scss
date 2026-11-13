@@ -210,3 +210,11 @@
   height: 1px;
   background-color: var(--mptk-cell-divider);
 }
+
+/* 装在 Card 里：壳由 Card 提供，本组不再铺不透明底。
+   上下留白由 Card 识别贴边内容后自己关掉（--edge-content），本组不做反向抵消：
+   小程序 WXSS 会静默丢弃「变量参与计算的负 margin」，拿子级抵消父级 padding 不可靠。 */
+.mptk-cell-group--in-card .mptk-cell-group__body,
+.mptk-cell-group--in-card .mptk-cell {
+  background-color: transparent;
+}

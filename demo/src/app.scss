@@ -70,9 +70,8 @@ page {
 
 .demo-hero__logo {
   color: var(--mptk-business);
-  /* shortcut: 96px 是展示级手写值，偶数且对齐档位步长；以后要统一再提为 --mptk-font-display。 */
-  font-size: 96px;
-  line-height: 1;
+  font-size: var(--mptk-font-display);
+  line-height: var(--mptk-line-display);
 }
 
 .demo-hero__desc {
@@ -146,7 +145,7 @@ page {
 .demo-block--bare {
   background-color: transparent;
   border-top-width: 0;
-  border-radius: 0;
+  border-radius: var(--mptk-radius-none);
   margin-right: 0;
   margin-left: 0;
   padding-right: 0;
@@ -262,12 +261,12 @@ page {
 /* 字体图标样式来自 mp-taro-kit/ui/icon/style（app.tsx 引入），字号一律走文字档位。 */
 .demo-nav__logo {
   font-size: var(--mptk-font-nav);
-  line-height: 1;
+  line-height: var(--mptk-line-tight);
 }
 
 .demo-nav__back {
   font-size: var(--mptk-font-nav);
-  line-height: 1;
+  line-height: var(--mptk-line-tight);
 }
 
 .demo-loader-spaced {
@@ -291,7 +290,7 @@ page {
 .demo-icon-cell__glyph {
   color: var(--mptk-fg);
   font-size: var(--mptk-font-lg);
-  line-height: 1;
+  line-height: var(--mptk-line-tight);
   margin-bottom: var(--mptk-space-1);
 }
 
@@ -423,6 +422,19 @@ $demo-tiers: '', '-hover', '-active', '-soft';
   padding-right: var(--mptk-space-2);
   padding-bottom: var(--mptk-space-1);
   padding-left: var(--mptk-space-2);
+}
+
+/* Card 页 cover 槽位的示例内容：只表达「这里可以放东西」，不写死圆角与字号。 */
+.demo-card-cover {
+  background-color: var(--mptk-surface-3);
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  padding-top: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
+  text-align: center;
 }
 
 

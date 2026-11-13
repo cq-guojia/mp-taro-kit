@@ -183,8 +183,8 @@ test('resetUIForTests 清空栈、通知、loading 与挂载标记', () => {
   assert.equal(ui.uiState().loading.getSnapshot().active, false)
 })
 
-test('七个子域出口与样式实体齐全，产物只指向 peer 不打包平台包', () => {
-  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout', 'form']) {
+test('各 ui 子域出口与样式实体齐全，产物只指向 peer 不打包平台包', () => {
+  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout', 'form', 'card']) {
     assert.equal(exists(`../dist/ui/${domain}/index.js`), true)
     assert.equal(exists(`../dist/ui/${domain}/style/index.css`), true)
   }
@@ -223,7 +223,7 @@ test('B 方案：宿主真类型环境下组件 .d.ts 可直接作为 JSX 组件
 })
 
 test('样式只写 var(--mptk-*)，不硬编码颜色值', () => {
-  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout', 'form']) {
+  for (const domain of ['infra', 'actions', 'feedback', 'display', 'navigation', 'layout', 'form', 'card']) {
     const css = read(`../dist/ui/${domain}/style/index.css`)
     assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/)
     assert.doesNotMatch(css, /--mp-/)
@@ -343,6 +343,10 @@ test('cell 分组形态：inset 不画外框，最后一格由位置关掉分隔
   assert.match(flush.className, /mptk-cell-group--flush/)
   assert.equal(flush.outerBorder, true)
   assert.equal(cellState.resolveCellGroupState({ border: false }).outerBorder, false)
+  const inCard = cellState.resolveCellGroupState({ inCard: true })
+  assert.equal(inCard.outerBorder, false, '装在 Card 里不画上下外框')
+  assert.match(inCard.className, /mptk-cell-group--in-card/, '卡片内形态要派生修饰类')
+  assert.equal(cellState.resolveCellGroupState({ inCard: false }).outerBorder, true)
   assert.equal(cellState.cellDividerVisible(true, 0, 2), true)
   assert.equal(cellState.cellDividerVisible(true, 2, 2), false)
   assert.equal(cellState.cellDividerVisible(false, 0, 2), false)
@@ -404,6 +408,7 @@ test('cell 菜单翻 ready，展示页覆盖 Vant Weapp 全部形态', () => {
   const expected = [
     'cell-basic',
     'cell-inset',
+    'cell-with-card',
     'cell-size',
     'cell-icon',
     'cell-link',
@@ -490,7 +495,7 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   }
 })
 
-test('Cell 展示页按四组顺序铺开，分组标题只在组首出现', () => {
+test('Cell 展示页按五组顺序铺开，分组标题只在组首出现', () => {
   const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
   const { outputText } = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
@@ -503,12 +508,17 @@ test('Cell 展示页按四组顺序铺开，分组标题只在组首出现', () 
     ['二 · 组级外观设置', ['cell-divider-tone', 'cell-divider-span', 'cell-card-frame']],
     ['三 · 单格内容与排布', ['cell-size', 'cell-icon', 'cell-slot', 'cell-center', 'cell-link']],
     ['四 · 交互与状态', ['cell-navigate', 'cell-state']],
+    ['五 · 与 Card 组合', ['cell-with-card']],
   ]
-  assert.deepEqual(display.examples.map((example) => example.id), expected.flatMap(([, group]) => group), 'Cell 示例顺序要按四组由大到小铺开')
+  assert.deepEqual(display.examples.map((example) => example.id), expected.flatMap(([, group]) => group), 'Cell 示例顺序要按五组由大到小铺开')
   assert.deepEqual(display.examples.map((example) => example.section), expected.flatMap(([name, group]) => group.map(() => name)), '分组不许交错')
-  for (const other of mod.exports.catalogPages.filter((page) => page.id !== 'display')) {
+  for (const other of mod.exports.catalogPages.filter((page) => page.id !== 'display' && page.id !== 'card')) {
     assert.ok(other.examples.every((example) => example.section === undefined), `${other.id} 页不该被分组改动`)
   }
+  const card = mod.exports.catalogPages.find((page) => page.id === 'card')
+  assert.ok(card, '缺 Card 展示页')
+  const cardGroups = [...new Set(card.examples.map((example) => example.section))]
+  assert.deepEqual(cardGroups, ['一 · 容器形态', '二 · 外观设置', '三 · 槽位与状态'], 'Card 页也按三组铺开')
   const shell = read('../demo/src/components/DemoBlock.tsx')
   assert.match(shell, /demo-section__title/, '页壳要渲染分组标题')
   assert.match(shell, /example\.section/, '分组标题要由 catalog 的 section 驱动')

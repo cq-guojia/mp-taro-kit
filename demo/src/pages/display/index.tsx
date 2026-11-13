@@ -3,10 +3,12 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { Badge } from 'mp-taro-kit/ui/display'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
+import { Card } from 'mp-taro-kit/ui/card'
 import { iconClass } from 'mp-taro-kit/ui/icon'
 
 import 'mp-taro-kit/ui/display/style'
 import 'mp-taro-kit/ui/display/cell/style'
+import 'mp-taro-kit/ui/card/style'
 import { pagePathOf } from '../../catalog'
 import { DemoPage } from '../../components/DemoBlock'
 
@@ -120,6 +122,16 @@ export default function DisplayPage() {
             <Cell title="单元格" value="内容" />
           </CellGroup>
         </View>
+      )
+    }
+    if (id === 'cell-with-card') {
+      return (
+        <Card>
+          <CellGroup>
+            <Cell title="单元格" value="内容" />
+            <Cell title="单元格" value="内容" label="描述信息" />
+          </CellGroup>
+        </Card>
       )
     }
     if (id === 'cell-slot') {

@@ -13,6 +13,7 @@ docs/                                               # 项目文档库入口
 ├── guides/                                         # 具体操作步骤：接入、更新、排障
 │   └── icon-update.md                              # 平台增删图标后同步生成物与验证的操作步骤
 ├── api/                                            # 对外承诺的契约与导出
+│   ├── card.md                                     # Card 的竞品对比结论、槽位与设置契约、颜色双路、与 Cell 的组合
 │   ├── cell.md                                     # Cell / CellGroup 的 props、组内行为与九种用法代码
 │   ├── exports.md                                  # exports 子路径形态、挂载与注入约定、peer 版本下限
 │   ├── icons.md                                    # 平台项目与命名规则、类名契约、多色行为与字体加载稳定性
@@ -35,3 +36,7 @@ docs/                                               # 项目文档库入口
 - 2026-11-13 14:02:01：cell.md 改内线默认更浅并给出变量覆盖设置；design-foundation 补新语义键
 - 2026-11-13 14:20:55：cell.md 收口三个控件级设置到 props（dividerTone 枚举、dividerInset、frame）；design-foundation 同步措辞
 - 2026-11-13 14:36:07：demo-mapping 补示例分组与顺序判据，Cell 展示页按四组重排
+- 2026-11-13 15:13:41：索引补 card.md；Card 契约、设计语义键、演示站映射与 Cell 组合同步
+- 2026-11-13 16:42:48：Card 与 Cell 组合改为零参数契约，card.md / cell.md / exports.md / demo-mapping 同步
+- 2026-11-13 18:43:59：Card / Cell / exports / design-foundation 同步贴边留白归属：改为 Card 侧归零
+- 2026-11-13 19:09:20：演示站展示顺序同步：组合示例归引用方 Cell 页末组，Card 页不再向下引用 Cell

@@ -1,6 +1,8 @@
 import { View, Text } from '@tarojs/components'
 import { Children, cloneElement, isValidElement } from 'react'
 import type { ReactNode } from 'react'
+import { useCardSurface } from '../../infra/card-context.js'
+import { markCardEdgeContent } from '../../infra/card-edge.js'
 import { Cell, type CellProps } from './Cell.js'
 import { cellDividerVisible, resolveCellGroupState, type CellDividerTone } from './state.js'
 
@@ -8,7 +10,7 @@ export interface CellGroupProps {
   title?: ReactNode
   /** 圆角内收的卡片风格；不给则是左右通到底的通栏。 */
   inset?: boolean
-  /** 通栏形态下是否画上下外边框；卡片形态不画。 */
+  /** 通栏形态下是否画上下外边框；卡片形态与装在 Card 内时都不画。 */
   border?: boolean
   /** 组内分隔线颜色档位：soft 比外框浅一档（默认），match 与外框同色。 */
   dividerTone?: CellDividerTone
@@ -20,7 +22,8 @@ export interface CellGroupProps {
   className?: string
 }
 
-/** 单元格分组：通栏 / 卡片共用一套 DOM，最后一格的分隔线由位置决定。 */
+/** 单元格分组：通栏 / 卡片共用一套 DOM，最后一格的分隔线由位置决定。
+    装在 Card 里时由上下文自动关掉上下外框与自身底色，消费方无需传参。 */
 export function CellGroup({
   title,
   inset = false,
@@ -31,7 +34,8 @@ export function CellGroup({
   children,
   className,
 }: CellGroupProps) {
-  const state = resolveCellGroupState({ inset, border, dividerTone, dividerInset, frame, className })
+  const { inCard } = useCardSurface()
+  const state = resolveCellGroupState({ inset, border, dividerTone, dividerInset, frame, inCard, className })
   const items = Children.toArray(children)
   let lastCellIndex = -1
   items.forEach((item, index) => {
@@ -58,3 +62,7 @@ export function CellGroup({
     </View>
   )
 }
+
+/* 向 Card 声明：本组每行自带上下留白，壳不该再给一层 padding。
+   声明是渲染期静态契约，消费方零参数，也不需要 Card import cell 子域。 */
+markCardEdgeContent(CellGroup)

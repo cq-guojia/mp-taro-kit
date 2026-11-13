@@ -18,11 +18,18 @@
   --mptk-radius-lg: 16px;
   --mptk-radius-xl: 20px;
   --mptk-radius-pill: 999px;
+  /* 通栏 / 不圆角也是一个档位，演示站不手写 0。 */
+  --mptk-radius-none: 0;
 
   /* 控件圆角（Button / Segmented / 将来的 Input 共用）：要整体调控件圆角只改这一行，
      组件一律引用它，不各自写档位；半圆形态由组件把类名切到 --mptk-radius-pill。
      容器（卡片、弹窗、列表块）不引用它，直接用 --mptk-radius-* 档位。 */
   --mptk-control-radius: var(--mptk-radius-sm);
+
+  /* 卡片族：默认圆角取容器级最大常规档，分区间距只在这里定一次。
+     容器不引用 --mptk-control-radius；radius 枚举只是把下面这个键换到别的档位。 */
+  --mptk-card-radius: var(--mptk-radius-lg);
+  --mptk-card-spacing: var(--mptk-space-3);
 
   --mptk-space-1: 4px;
   --mptk-space-2: 8px;
@@ -51,6 +58,13 @@
   --mptk-line-lg: 24px;
   --mptk-line-xl: 30px;
   --mptk-line-nav: 24px;
+
+  /* 展示级字号：首页 logo 这类展示面唯一一次写值；紧凑行高给单字形 / 图标压行。
+     演示站不手写 font-size / line-height，一律取上面的档位或这两个语义键。 */
+  --mptk-font-display: 96px;
+  --mptk-line-display: 1;
+  --mptk-line-tight: 1;
+  --mptk-opacity-busy: .6;
 
   --mptk-dur: .2s;
   --mptk-dur-fast: .12s;
@@ -106,6 +120,10 @@
 
   /* 组内分隔线比外框浅一档（取 .06，对齐 WeUI 的 .05 层）；宿主覆盖同名变量即可改回同色。 */
   --mptk-cell-divider: rgba(0, 0, 0, .06);
+
+  /* 卡片面：默认白，描边取外框档；宿主在业务级覆盖同名键即可整体换卡片配色。 */
+  --mptk-card-bg: var(--mptk-surface-1);
+  --mptk-card-border: var(--mptk-border);
 
   /* 中性灰阶：编号表示层级，1 是最底层、8 是最上层文字；明暗两套方向相反。
      组件取同一编号即可拿到当前主题下该层的色，不必按主题改类名。 */
@@ -216,6 +234,10 @@
   --mptk-border-strong: rgba(255, 255, 255, .14);
 
   --mptk-cell-divider: rgba(255, 255, 255, .06);
+
+  /* 与明色同名同数：卡片面取次级面，描边取暗色外框档。 */
+  --mptk-card-bg: var(--mptk-surface-1);
+  --mptk-card-border: var(--mptk-border);
 
   --mptk-gray-1: #{$gray-1};
   --mptk-gray-2: #{$gray-2};

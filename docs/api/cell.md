@@ -49,7 +49,7 @@
 |---|---|
 | `mptk-cell` | 单元格根；修饰类 `--center` / `--large` / `--disabled` / `--divider` |
 | `mptk-cell__icon` / `__main` / `__title` / `__label` / `__value` / `__extra` / `__right-icon` / `__arrow` / `__divider` | 单元格内部结构 |
-| `mptk-cell-group` | 分组根；修饰类 `--inset` / `--flush`，以及三个设置派生的 `--divider-match` / `--divider-inset` / `--frameless` |
+| `mptk-cell-group` | 分组根；修饰类 `--inset` / `--flush` / `--in-card`（装在 Card 里自动派生），以及三个设置派生的 `--divider-match` / `--divider-inset` / `--frameless` |
 | `mptk-cell-group__title` / `__body` / `__border` | 分组标题、内容区与上下外框 |
 
 行为约定：
@@ -61,6 +61,21 @@
 - `frame` 只管卡片四边描边，通栏形态的上下外框仍由 `border` 管；两者互不影响。`dividerInset` 只管线的左右缩进，与卡片风格 `inset` 无关。
 - `--mptk-cell-divider` 仍是设计层语义变量，宿主可在业务级主题定制时覆盖同名变量；控件级日常切换用上面的 props，不要求宿主写 CSS。
 - 样式必须显式引入 `mp-taro-kit/ui/display/cell/style`，颜色与尺寸只取 `var(--mptk-*)`；`--mptk-*` 的默认值来自 `mp-taro-kit/styles/theme-*`（编译期三选一，或运行时热切换出口）。
+
+## 与 Card 组合
+
+圆角、外框、底色属于「壳」，已抽成通用卡片容器 [Card 卡片](card.md)。由 `Card` 提供壳，`CellGroup` 只管行与组内线，**消费方不传任何形态参数**：
+
+```tsx
+<Card>
+  <CellGroup>
+    <Cell title="单元格" value="内容" />
+    <Cell title="单元格" value="内容" label="描述信息" />
+  </CellGroup>
+</Card>
+```
+
+`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后自动收敛：不渲染上下外框、派生 `mptk-cell-group--in-card`、组与行的底色改透明。同时 `CellGroup` 用 `ui/infra/card-edge` 的 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone` / `dividerInset`）仍归 `CellGroup`，职责不重叠。
 
 ## 示例
 
@@ -161,3 +176,6 @@ export const State = () => (
 - 2026-11-13 13:40:27：卡片外框与组内分隔线同色同宽写入行为约定
 - 2026-11-13 14:02:01：组内分隔线改默认浅一档（--mptk-cell-divider），并给出变量覆盖回同色的设置入口
 - 2026-11-13 14:20:55：三个控件级设置收口到 CellGroup props：dividerTone 枚举、dividerInset、frame；宿主覆盖类删除
+- 2026-11-13 15:13:41：补「与 Card 组合」：壳职责归 Card，inset / frame 保留兼容但不再扩展
+- 2026-11-13 16:42:48：组合改零参数：Card 提供上下文，CellGroup 自动派生 --in-card 并收敛外框 / 底色 / 上下留白
+- 2026-11-13 18:43:58：与 Card 组合的留白改由 Card 侧归零，CellGroup 只声明贴边内容，不再用负 margin 抵消

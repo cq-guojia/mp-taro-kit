@@ -49,6 +49,8 @@ export interface CellGroupStateInput {
   dividerTone?: CellDividerTone
   dividerInset?: boolean
   frame?: boolean
+  /** 由 Card 的上下文传入：装在卡片里时本组不再画自己的外框。消费方无需传参。 */
+  inCard?: boolean
   className?: string
 }
 
@@ -61,6 +63,7 @@ export interface CellGroupState {
 export function resolveCellGroupState(input: CellGroupStateInput): CellGroupState {
   const inset = input.inset === true
   const names = ['mptk-cell-group', inset ? 'mptk-cell-group--inset' : 'mptk-cell-group--flush']
+  if (input.inCard === true) names.push('mptk-cell-group--in-card')
   if (input.dividerTone === 'match') names.push('mptk-cell-group--divider-match')
   if (input.dividerInset === true) names.push('mptk-cell-group--divider-inset')
   if (input.frame === false) names.push('mptk-cell-group--frameless')
@@ -70,7 +73,8 @@ export function resolveCellGroupState(input: CellGroupStateInput): CellGroupStat
   return {
     className: names.join(' '),
     bodyClassName: body.join(' '),
-    outerBorder: input.border !== false && !inset,
+    /* 卡片已提供壳：装在里面的组不再画自己的上下外框。 */
+    outerBorder: input.border !== false && !inset && input.inCard !== true,
   }
 }
 

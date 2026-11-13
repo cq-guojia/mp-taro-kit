@@ -1,0 +1,141 @@
+/* Card：卡片族唯一的壳。圆角、描边、面、分区间距全取 --mptk-*。
+   宿主只经 props 枚举切档，不写样式、不必查变量名单。 */
+
+.mptk-card {
+  position: relative;
+  background-color: var(--mptk-card-bg);
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--mptk-card-border);
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-right-color: var(--mptk-card-border);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--mptk-card-border);
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: var(--mptk-card-border);
+  border-top-left-radius: var(--mptk-card-radius);
+  border-top-right-radius: var(--mptk-card-radius);
+  border-bottom-left-radius: var(--mptk-card-radius);
+  border-bottom-right-radius: var(--mptk-card-radius);
+  padding-top: var(--mptk-card-spacing);
+  padding-right: 0;
+  padding-bottom: var(--mptk-card-spacing);
+  padding-left: 0;
+  overflow: hidden;
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+}
+
+/* radius 枚举：修饰类只把语义键换到另一档，取值仍只在 design 层写一次。 */
+.mptk-card--radius-xs { --mptk-card-radius: var(--mptk-radius-xs); }
+.mptk-card--radius-sm { --mptk-card-radius: var(--mptk-radius-sm); }
+.mptk-card--radius-md { --mptk-card-radius: var(--mptk-radius-md); }
+.mptk-card--radius-lg { --mptk-card-radius: var(--mptk-radius-lg); }
+.mptk-card--radius-xl { --mptk-card-radius: var(--mptk-radius-xl); }
+
+/* size 枚举：只换分区间距，不动字号与圆角。 */
+.mptk-card--size-sm { --mptk-card-spacing: var(--mptk-space-2); }
+.mptk-card--size-md { --mptk-card-spacing: var(--mptk-space-3); }
+.mptk-card--size-lg { --mptk-card-spacing: var(--mptk-space-4); }
+
+/* frame={false}：无边框卡片，仍保留圆角与底色。 */
+.mptk-card--frameless {
+  border-top-width: 0;
+  border-right-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0;
+}
+
+/* 内置色名一律映射到已有的淡色面，不新增色值；neutral 回到中性面。 */
+.mptk-card--neutral { --mptk-card-bg: var(--mptk-surface-1); }
+.mptk-card--blue { --mptk-card-bg: var(--mptk-blue-soft); }
+.mptk-card--green { --mptk-card-bg: var(--mptk-green-soft); }
+.mptk-card--orange { --mptk-card-bg: var(--mptk-orange-soft); }
+.mptk-card--red { --mptk-card-bg: var(--mptk-red-soft); }
+.mptk-card--purple { --mptk-card-bg: var(--mptk-purple-soft); }
+.mptk-card--cyan { --mptk-card-bg: var(--mptk-cyan-soft); }
+.mptk-card--pink { --mptk-card-bg: var(--mptk-pink-soft); }
+.mptk-card--teal { --mptk-card-bg: var(--mptk-teal-soft); }
+
+/* 按压态由 onClick 派生；disabled 不挂反馈。 */
+.mptk-card--pressed { background-color: var(--mptk-surface-2); }
+.mptk-card--disabled { color: var(--mptk-fg-4); }
+.mptk-card--busy { opacity: var(--mptk-opacity-busy); }
+
+.mptk-card__cover {
+  width: 100%;
+}
+
+.mptk-card__header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: var(--mptk-card-spacing);
+  padding-right: var(--mptk-card-spacing);
+  padding-left: var(--mptk-card-spacing);
+}
+
+.mptk-card--header-divider .mptk-card__header {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--mptk-border-faint);
+  padding-bottom: var(--mptk-space-2);
+}
+
+/* 封面贴到卡片顶边，不再叠一层上下留白。 */
+.mptk-card--cover {
+  padding-top: 0;
+}
+
+/* 贴边内容：Card 在渲染期识别到声明后自己关掉上下留白，子级不再反向抵消。
+   归零写在壳上、是字面量 0，不经 calc / 负 margin / 嵌套 var，渲染端不会静默丢弃。 */
+.mptk-card--edge-content {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.mptk-card__heading {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+}
+
+.mptk-card__title {
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-lg);
+  line-height: var(--mptk-line-lg);
+}
+
+.mptk-card__subtitle {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  margin-top: var(--mptk-space-1);
+}
+
+.mptk-card__extra {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  margin-left: var(--mptk-space-2);
+}
+
+.mptk-card__body {
+  padding-right: var(--mptk-card-spacing);
+  padding-left: var(--mptk-card-spacing);
+}
+
+.mptk-card__footer {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  margin-top: var(--mptk-card-spacing);
+  padding-right: var(--mptk-card-spacing);
+  padding-left: var(--mptk-card-spacing);
+}
