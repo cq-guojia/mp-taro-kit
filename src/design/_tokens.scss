@@ -104,6 +104,9 @@
   --mptk-border: rgba(0, 0, 0, .10);
   --mptk-border-strong: rgba(0, 0, 0, .12);
 
+  /* 组内分隔线比外框浅一档（取 .06，对齐 WeUI 的 .05 层）；宿主覆盖同名变量即可改回同色。 */
+  --mptk-cell-divider: rgba(0, 0, 0, .06);
+
   /* 中性灰阶：编号表示层级，1 是最底层、8 是最上层文字；明暗两套方向相反。
      组件取同一编号即可拿到当前主题下该层的色，不必按主题改类名。 */
   --mptk-gray-1: #{$gray-1};
@@ -211,6 +214,8 @@
   --mptk-border-faint: rgba(255, 255, 255, .04);
   --mptk-border: rgba(255, 255, 255, .10);
   --mptk-border-strong: rgba(255, 255, 255, .14);
+
+  --mptk-cell-divider: rgba(255, 255, 255, .06);
 
   --mptk-gray-1: #{$gray-1};
   --mptk-gray-2: #{$gray-2};

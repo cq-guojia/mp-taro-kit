@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { Children, cloneElement, isValidElement } from 'react'
 import type { ReactNode } from 'react'
 import { Cell, type CellProps } from './Cell.js'
-import { cellDividerVisible, resolveCellGroupState } from './state.js'
+import { cellDividerVisible, resolveCellGroupState, type CellDividerTone } from './state.js'
 
 export interface CellGroupProps {
   title?: ReactNode
@@ -10,6 +10,12 @@ export interface CellGroupProps {
   inset?: boolean
   /** 通栏形态下是否画上下外边框；卡片形态不画。 */
   border?: boolean
+  /** 组内分隔线颜色档位：soft 比外框浅一档（默认），match 与外框同色。 */
+  dividerTone?: CellDividerTone
+  /** 组内分隔线左右内缩，像微信那样留出距离；默认贯穿到两侧。 */
+  dividerInset?: boolean
+  /** 卡片形态的四边描边；默认有，false 得到无边框卡片。通栏形态不受影响。 */
+  frame?: boolean
   children?: ReactNode
   className?: string
 }
@@ -19,10 +25,13 @@ export function CellGroup({
   title,
   inset = false,
   border = true,
+  dividerTone,
+  dividerInset,
+  frame,
   children,
   className,
 }: CellGroupProps) {
-  const state = resolveCellGroupState({ inset, border, className })
+  const state = resolveCellGroupState({ inset, border, dividerTone, dividerInset, frame, className })
   const items = Children.toArray(children)
   let lastCellIndex = -1
   items.forEach((item, index) => {

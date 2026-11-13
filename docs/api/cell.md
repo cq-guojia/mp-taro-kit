@@ -15,6 +15,9 @@
 | title | ReactNode | 否 | — | 分组标题 |
 | inset | boolean | 否 | 默认 `false` | `true` 为圆角内收卡片；`false` 为左右通到底的通栏 |
 | border | boolean | 否 | 默认 `true` | 通栏形态是否画上下外框；卡片形态不画 |
+| dividerTone | `'soft' \| 'match'` | 否 | 默认 `'soft'` | 组内分隔线颜色档位：`soft` 比外框浅一档，`match` 与外框同色 |
+| dividerInset | boolean | 否 | 默认 `false` | `true` 让组内分隔线左右各留出内容区边距，不再通到底 |
+| frame | boolean | 否 | 默认 `true` | 卡片形态四边描边开关；`false` 得到无边框卡片。通栏上下外框仍由 `border` 控制 |
 | children | ReactNode | 否 | 直接子节点为 `Cell` | 组内单元格 |
 | className | string | 否 | — | 追加根类名 |
 
@@ -46,14 +49,17 @@
 |---|---|
 | `mptk-cell` | 单元格根；修饰类 `--center` / `--large` / `--disabled` / `--divider` |
 | `mptk-cell__icon` / `__main` / `__title` / `__label` / `__value` / `__extra` / `__right-icon` / `__arrow` / `__divider` | 单元格内部结构 |
-| `mptk-cell-group` | 分组根；修饰类 `--inset` / `--flush` |
+| `mptk-cell-group` | 分组根；修饰类 `--inset` / `--flush`，以及三个设置派生的 `--divider-match` / `--divider-inset` / `--frameless` |
 | `mptk-cell-group__title` / `__body` / `__border` | 分组标题、内容区与上下外框 |
 
 行为约定：
 
 - 组内最后一格的 `border` 由 `CellGroup` 按位置注入为 `false`，不依赖结构伪类；独立使用的 `Cell` 由自身 `border` 决定。
 - 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，不暴露 `clickable` prop。
-- 分隔线与上下外框都是独立 1px 元素，左右通到底；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。
+- 分隔线与上下外框都是独立 1px 元素；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。外框（卡片四边与通栏形态的上下外框）取 `--mptk-border`；组内分隔线默认取 `--mptk-cell-divider`，比外框浅一档（明色 `rgba(0,0,0,.06)`、暗色 `rgba(255,255,255,.06)`），两者宽度同为 1px。默认值真源在 `src/design/_tokens.scss` 的 `light` / `dark`。
+- 三个控件级设置都走 `CellGroup` 的 props，由 `state.ts` 派生修饰类，使用者不写样式：`dividerTone="match"` 把内线切到 `--mptk-border`（与外框同色）；`dividerInset` 让内线左右各留 `var(--mptk-space-4)`，不再通到底；`frame={false}` 去掉卡片四边描边。默认值分别是 `soft` / `false` / `true`，即浅线、贯穿、有边框。
+- `frame` 只管卡片四边描边，通栏形态的上下外框仍由 `border` 管；两者互不影响。`dividerInset` 只管线的左右缩进，与卡片风格 `inset` 无关。
+- `--mptk-cell-divider` 仍是设计层语义变量，宿主可在业务级主题定制时覆盖同名变量；控件级日常切换用上面的 props，不要求宿主写 CSS。
 - 样式必须显式引入 `mp-taro-kit/ui/display/cell/style`，颜色与尺寸只取 `var(--mptk-*)`；`--mptk-*` 的默认值来自 `mp-taro-kit/styles/theme-*`（编译期三选一，或运行时热切换出口）。
 
 ## 示例
@@ -152,3 +158,6 @@ export const State = () => (
 
 - 2026-11-11 22:31:00：新建：Cell / CellGroup 的 props、组内行为与九种用法代码
 - 2026-11-12 11:39:42：默认值来源改为含运行时热切换的主题出口
+- 2026-11-13 13:40:27：卡片外框与组内分隔线同色同宽写入行为约定
+- 2026-11-13 14:02:01：组内分隔线改默认浅一档（--mptk-cell-divider），并给出变量覆盖回同色的设置入口
+- 2026-11-13 14:20:55：三个控件级设置收口到 CellGroup props：dividerTone 枚举、dividerInset、frame；宿主覆盖类删除

@@ -31,3 +31,7 @@ docs/                                               # 项目文档库入口
 - 2026-11-11 22:30:26：索引补 cell.md 说明，用法代码改归 docs/api
 - 2026-11-12 14:53:57：索引补 switch.md 与 segmented.md
 - 2026-11-12 16:39:13：索引补 design-foundation.md 说明
+- 2026-11-13 13:40:27：cell.md 补外框同色同宽契约，demo-mapping 同步 Cell 展示页拆分
+- 2026-11-13 14:02:01：cell.md 改内线默认更浅并给出变量覆盖设置；design-foundation 补新语义键
+- 2026-11-13 14:20:55：cell.md 收口三个控件级设置到 props（dividerTone 枚举、dividerInset、frame）；design-foundation 同步措辞
+- 2026-11-13 14:36:07：demo-mapping 补示例分组与顺序判据，Cell 展示页按四组重排

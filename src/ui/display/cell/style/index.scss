@@ -35,25 +35,45 @@
   background-color: var(--mptk-surface-1);
 }
 
-/* 卡片形态自带一圈极浅描边：宿主页面底色与卡片同色时也能看出边界。 */
+/* 卡片外框取 --mptk-border；组内分隔线默认更浅（--mptk-cell-divider），两者同为 1px。
+   三个设置都由 CellGroup 的 props 派生修饰类，组件不写死颜色值。 */
 .mptk-cell-group__body--inset {
   border-top-width: 1px;
   border-top-style: solid;
-  border-top-color: var(--mptk-border-faint);
+  border-top-color: var(--mptk-border);
   border-right-width: 1px;
   border-right-style: solid;
-  border-right-color: var(--mptk-border-faint);
+  border-right-color: var(--mptk-border);
   border-bottom-width: 1px;
   border-bottom-style: solid;
-  border-bottom-color: var(--mptk-border-faint);
+  border-bottom-color: var(--mptk-border);
   border-left-width: 1px;
   border-left-style: solid;
-  border-left-color: var(--mptk-border-faint);
+  border-left-color: var(--mptk-border);
   border-top-left-radius: var(--mptk-radius-sm);
   border-top-right-radius: var(--mptk-radius-sm);
   border-bottom-left-radius: var(--mptk-radius-sm);
   border-bottom-right-radius: var(--mptk-radius-sm);
   overflow: hidden;
+}
+
+/* 设置一：dividerTone="match" 把组内分隔线调回与外框同色。 */
+.mptk-cell-group--divider-match {
+  --mptk-cell-divider: var(--mptk-border);
+}
+
+/* 设置二：dividerInset 让分隔线左右各留一个内容区边距，不再通到底。 */
+.mptk-cell-group--divider-inset .mptk-cell__divider {
+  left: var(--mptk-space-4);
+  right: var(--mptk-space-4);
+}
+
+/* 设置三：frame={false} 去掉卡片四边描边，只靠圆角与底色区分。 */
+.mptk-cell-group--frameless .mptk-cell-group__body--inset {
+  border-top-width: 0;
+  border-right-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0;
 }
 
 .mptk-cell-group__border {
@@ -188,5 +208,5 @@
   right: 0;
   bottom: 0;
   height: 1px;
-  background-color: var(--mptk-border);
+  background-color: var(--mptk-cell-divider);
 }

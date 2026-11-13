@@ -346,6 +346,12 @@ test('cell 分组形态：inset 不画外框，最后一格由位置关掉分隔
   assert.equal(cellState.cellDividerVisible(true, 0, 2), true)
   assert.equal(cellState.cellDividerVisible(true, 2, 2), false)
   assert.equal(cellState.cellDividerVisible(false, 0, 2), false)
+  assert.match(cellState.resolveCellGroupState({ dividerTone: 'match' }).className, /mptk-cell-group--divider-match/)
+  assert.doesNotMatch(cellState.resolveCellGroupState({ dividerTone: 'soft' }).className, /--divider-match/)
+  assert.match(cellState.resolveCellGroupState({ dividerInset: true }).className, /mptk-cell-group--divider-inset/)
+  assert.doesNotMatch(cellState.resolveCellGroupState({}).className, /--divider-inset/)
+  assert.match(cellState.resolveCellGroupState({ inset: true, frame: false }).className, /mptk-cell-group--frameless/)
+  assert.doesNotMatch(cellState.resolveCellGroupState({ inset: true }).className, /--frameless/)
 })
 
 test('cell 契约在宿主真类型环境下可作为 JSX 组件使用', () => {
@@ -354,11 +360,12 @@ test('cell 契约在宿主真类型环境下可作为 JSX 组件使用', () => {
   const probe = resolve(root, 'src/__probe-cell.tsx')
   const entry = JSON.stringify(resolve(root, 'dist/ui/display/cell/index'))
   const source = `import { Cell, CellGroup } from ${entry};
-import type { CellProps, CellGroupProps, CellSize, CellArrowDirection } from ${entry};
+import type { CellProps, CellGroupProps, CellSize, CellArrowDirection, CellDividerTone } from ${entry};
 const size: CellSize = 'large';
 const direction: CellArrowDirection = 'down';
+const tone: CellDividerTone = 'match';
 const cellProps: CellProps = { title: '单元格' };
-const groupProps: CellGroupProps = { inset: true };
+const groupProps: CellGroupProps = { inset: true, dividerTone: tone, dividerInset: true, frame: false };
 export const element = (
   <CellGroup {...groupProps} title="分组" border={false}>
     <Cell {...cellProps} label="描述" value="内容" icon="图标" rightIcon="右图标" extra="额外" center border size={size} isLink arrowDirection={direction} disabled onClick={() => {}} className="x">自定义值</Cell>
@@ -414,6 +421,103 @@ test('cell 菜单翻 ready，展示页覆盖 Vant Weapp 全部形态', () => {
   const home = read('../demo/src/pages/index/index.tsx')
   assert.match(home, /CellGroup/, '首页必须用 CellGroup')
   assert.match(home, /mp-taro-kit\/ui\/display\/cell\/style/, '首页必须引组件级样式')
+})
+
+test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔线分档且可覆盖', () => {
+  const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', outputText)(mod.exports, mod)
+  const { menu, catalogPages } = mod.exports
+  const entries = menu.flatMap((group) => group.entries)
+  const pageIds = new Set(catalogPages.map((page) => page.id))
+  const targets = []
+  for (const id of ['cell', 'badge', 'divider']) {
+    const entry = entries.find((item) => item.id === id)
+    assert.equal(entry?.status, 'ready', `${id} 菜单必须是 ready`)
+    assert.ok(pageIds.has(entry.pageId), `${id} 菜单没指向真实展示页`)
+    targets.push(entry.pageId)
+  }
+  assert.equal(new Set(targets).size, 3, 'Cell / Badge / Divider 三条菜单不许指向同一页')
+
+  const display = catalogPages.find((page) => page.id === 'display')
+  assert.ok(display.examples.length > 0, 'Cell 展示页不能没有示例')
+  assert.ok(display.examples.every((example) => example.id.startsWith('cell-')), 'Cell 展示页不许混入非 Cell 示例')
+  const displayPage = read('../demo/src/pages/display/index.tsx')
+  assert.doesNotMatch(displayPage, /id === 'badge'|id === 'divider'/, 'Cell 展示页不许再渲染 Badge / Divider')
+
+  for (const [id, component] of [['badge', 'Badge'], ['divider', 'Divider']]) {
+    const page = read(`../demo/src/pages/${id}/index.tsx`)
+    assert.match(page, new RegExp(`<${component}[\\s>]`), `${id} 页缺 ${component}`)
+    assert.match(page, new RegExp(`pageId="${id}"`), `${id} 页没接自己的 catalog 页`)
+    assert.ok(exists(`../demo/src/pages/${id}/index.config.ts`), `${id} 页缺 disableScroll 配置`)
+    const entry = catalogPages.find((item) => item.id === id)
+    assert.ok(entry.examples.some((example) => example.id === id), `${id} 页缺自己的示例块`)
+  }
+
+  const css = read('../dist/ui/display/cell/style/index.css')
+  assert.doesNotMatch(css, /--mptk-border-faint/, '外框不许取 faint 档')
+  const inset = css.match(/(?:^|\n)\.mptk-cell-group__body--inset\s*\{([^}]*)\}/m)
+  assert.ok(inset, '缺卡片形态样式')
+  assert.equal((inset[1].match(/border-(?:top|right|bottom|left)-color:\s*var\(--mptk-border\)/g) ?? []).length, 4, '卡片四边外框都要取 --mptk-border')
+  assert.equal((inset[1].match(/border-(?:top|right|bottom|left)-width:\s*1px/g) ?? []).length, 4, '卡片四边外框都要是 1px')
+  const divider = css.match(/(?:^|\n)\.mptk-cell__divider\s*\{([^}]*)\}/m)
+  assert.ok(divider, '缺分隔线样式')
+  assert.match(divider[1], /height:\s*1px/, '分隔线宽度要与外框一致')
+  assert.match(divider[1], /background-color:\s*var\(--mptk-cell-divider\)/, '组内分隔线走语义变量')
+  assert.match(css, /\.mptk-cell-group--divider-match\s*\{[^}]*--mptk-cell-divider:\s*var\(--mptk-border\)/, 'match 档要把内线切回外框色')
+  assert.match(css, /\.mptk-cell-group--divider-inset\s+\.mptk-cell__divider\s*\{[^}]*left:\s*var\(--mptk-space-4\)[^}]*right:\s*var\(--mptk-space-4\)/, '不贯穿档要左右缩进')
+  assert.match(css, /\.mptk-cell-group--frameless\s+\.mptk-cell-group__body--inset\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉四边描边')
+
+  for (const mode of ['light', 'dark']) {
+    const theme = read(`../dist/styles/theme-${mode}.css`)
+    const tone = theme.match(/--mptk-cell-divider:\s*rgba\([^)]*?,\s*([\d.]+)\)/)
+    const frame = theme.match(/--mptk-border:\s*rgba\([^)]*?,\s*([\d.]+)\)/)
+    assert.ok(tone, `${mode} 缺 --mptk-cell-divider`)
+    assert.ok(frame, `${mode} 缺 --mptk-border`)
+    assert.ok(Number(tone[1]) < Number(frame[1]), `${mode} 组内分隔线默认必须比外框浅`)
+  }
+
+  const demoStyle = read('../demo/src/app.scss')
+  assert.doesNotMatch(demoStyle, /demo-cell-divider-match/, '宿主侧覆盖类已删除，设置统一走 prop')
+  assert.match(displayPage, /dividerTone="match"/, '演示站要用枚举 prop')
+  assert.match(displayPage, /dividerInset/, '演示站要展示不贯穿开关')
+  assert.match(displayPage, /frame=\{false\}/, '演示站要展示无边框开关')
+  for (const id of ['cell-divider-tone', 'cell-divider-span', 'cell-card-frame']) {
+    assert.ok(display.examples.some((example) => example.id === id), `演示站缺 ${id} 示例`)
+  }
+})
+
+test('Cell 展示页按四组顺序铺开，分组标题只在组首出现', () => {
+  const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', outputText)(mod.exports, mod)
+  const display = mod.exports.catalogPages.find((page) => page.id === 'display')
+  const expected = [
+    ['一 · 容器形态', ['cell-basic', 'cell-inset', 'cell-group-title']],
+    ['二 · 组级外观设置', ['cell-divider-tone', 'cell-divider-span', 'cell-card-frame']],
+    ['三 · 单格内容与排布', ['cell-size', 'cell-icon', 'cell-slot', 'cell-center', 'cell-link']],
+    ['四 · 交互与状态', ['cell-navigate', 'cell-state']],
+  ]
+  assert.deepEqual(display.examples.map((example) => example.id), expected.flatMap(([, group]) => group), 'Cell 示例顺序要按四组由大到小铺开')
+  assert.deepEqual(display.examples.map((example) => example.section), expected.flatMap(([name, group]) => group.map(() => name)), '分组不许交错')
+  for (const other of mod.exports.catalogPages.filter((page) => page.id !== 'display')) {
+    assert.ok(other.examples.every((example) => example.section === undefined), `${other.id} 页不该被分组改动`)
+  }
+  const shell = read('../demo/src/components/DemoBlock.tsx')
+  assert.match(shell, /demo-section__title/, '页壳要渲染分组标题')
+  assert.match(shell, /example\.section/, '分组标题要由 catalog 的 section 驱动')
+  const page = read('../demo/src/pages/display/index.tsx')
+  const start = page.indexOf("if (id === 'cell-divider-span')")
+  const span = page.slice(start, page.indexOf('if (id ===', start + 10))
+  assert.match(span, /border=\{false\}/, '不贯穿对照要去掉通栏上下外框，只留组内分隔线')
+  assert.match(span, /dividerInset/, '不贯穿对照要真的传开关')
+  assert.doesNotMatch(span, /inset/, '不贯穿对照不该用卡片形态，否则看不出线端点差异')
 })
 
 test('演示站只演示形态：不渲染代码，通栏示例页裸展示', () => {

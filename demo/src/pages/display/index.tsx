@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { Badge, Divider } from 'mp-taro-kit/ui/display'
+import { Badge } from 'mp-taro-kit/ui/display'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { iconClass } from 'mp-taro-kit/ui/icon'
 
@@ -29,6 +29,48 @@ export default function DisplayPage() {
           <Cell title="单元格" value="内容" />
           <Cell title="单元格" value="内容" label="描述信息" />
         </CellGroup>
+      )
+    }
+    if (id === 'cell-divider-tone') {
+      return (
+        <View className="demo-stack">
+          <CellGroup className="demo-item" inset title="默认 soft：内线比外框浅一档">
+            <Cell title="单元格" value="内容" />
+            <Cell title="单元格" value="内容" label="描述信息" />
+          </CellGroup>
+          <CellGroup className="demo-item" inset dividerTone="match" title="match：与外框同色">
+            <Cell title="单元格" value="内容" />
+            <Cell title="单元格" value="内容" label="描述信息" />
+          </CellGroup>
+        </View>
+      )
+    }
+    if (id === 'cell-divider-span') {
+      return (
+        <View className="demo-stack">
+          <CellGroup className="demo-item" border={false} title="默认：分隔线贯穿到两端">
+            <Cell title="单元格" value="内容" />
+            <Cell title="单元格" value="内容" label="描述信息" />
+          </CellGroup>
+          <CellGroup className="demo-item" border={false} dividerInset title="dividerInset：左右各留 16px">
+            <Cell title="单元格" value="内容" />
+            <Cell title="单元格" value="内容" label="描述信息" />
+          </CellGroup>
+        </View>
+      )
+    }
+    if (id === 'cell-card-frame') {
+      return (
+        <View className="demo-stack">
+          <CellGroup className="demo-item" inset title="默认：带四边描边">
+            <Cell title="单元格" value="内容" />
+            <Cell title="单元格" value="内容" label="描述信息" />
+          </CellGroup>
+          <CellGroup className="demo-item" inset frame={false} title="frame=false：无边框卡片">
+            <Cell title="单元格" value="内容" />
+            <Cell title="单元格" value="内容" label="描述信息" />
+          </CellGroup>
+        </View>
       )
     }
     if (id === 'cell-size') {
@@ -126,31 +168,6 @@ export default function DisplayPage() {
           <View className="demo-inset">
             <Text className="demo-note">{`点击次数：${clicks}（禁用格不计）`}</Text>
           </View>
-        </View>
-      )
-    }
-    if (id === 'badge') {
-      return (
-        <View className="demo-row demo-inset">
-          <Badge count={3}>
-            <View className="demo-cell">
-              <Text>消息</Text>
-            </View>
-          </Badge>
-          <Badge dot>
-            <View className="demo-cell">
-              <Text>更新</Text>
-            </View>
-          </Badge>
-        </View>
-      )
-    }
-    if (id === 'divider') {
-      return (
-        <View className="demo-inset">
-          <Text className="demo-note">上方</Text>
-          <Divider />
-          <Text className="demo-note">下方</Text>
         </View>
       )
     }

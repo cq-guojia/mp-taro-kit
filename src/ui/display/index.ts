@@ -7,4 +7,5 @@ export {
   type CellGroupProps,
   type CellSize,
   type CellArrowDirection,
+  type CellDividerTone,
 } from './cell/index.js'

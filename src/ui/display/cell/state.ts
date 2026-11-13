@@ -41,9 +41,14 @@ export function resolveCellState(input: CellStateInput): CellState {
   }
 }
 
+export type CellDividerTone = 'soft' | 'match'
+
 export interface CellGroupStateInput {
   inset?: boolean
   border?: boolean
+  dividerTone?: CellDividerTone
+  dividerInset?: boolean
+  frame?: boolean
   className?: string
 }
 
@@ -56,6 +61,9 @@ export interface CellGroupState {
 export function resolveCellGroupState(input: CellGroupStateInput): CellGroupState {
   const inset = input.inset === true
   const names = ['mptk-cell-group', inset ? 'mptk-cell-group--inset' : 'mptk-cell-group--flush']
+  if (input.dividerTone === 'match') names.push('mptk-cell-group--divider-match')
+  if (input.dividerInset === true) names.push('mptk-cell-group--divider-inset')
+  if (input.frame === false) names.push('mptk-cell-group--frameless')
   if (input.className) names.push(input.className)
   const body = ['mptk-cell-group__body']
   if (inset) body.push('mptk-cell-group__body--inset')

@@ -162,6 +162,20 @@ page {
   padding-left: var(--mptk-space-4);
 }
 
+/* 页内分组标题：只在标了 section 的分组首块前出现，未分组的页完全不渲染。 */
+.demo-section {
+  padding-top: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-2);
+  padding-left: var(--mptk-space-4);
+}
+
+.demo-section__title {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+}
+
 .demo-block__title {
   color: var(--mptk-fg);
   font-size: var(--mptk-font-lg);
