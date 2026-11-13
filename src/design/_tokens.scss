@@ -55,9 +55,9 @@
   --mptk-dur: .2s;
   --mptk-dur-fast: .12s;
   --mptk-dur-run: 500ms;
-  /* 等待态的底色呼吸周期：按实机观感从 1.4s 调到 280ms（快 5 倍），
-     一次 1.6s 的等待里能看到多次起伏；谷值也加深，否则浅色底几乎看不出在动。 */
-  --mptk-dur-breathe: 280ms;
+  /* 等待态的底色呼吸周期：1.4s → 280ms（快 5 倍，实机偏闪）→ 560ms（再放慢一倍）。
+     一次 1.6s 的等待里约能看到三次起伏；谷值仍是 .2，颜色不动。 */
+  --mptk-dur-breathe: 560ms;
   --mptk-ease: cubic-bezier(.4, 0, .2, 1);
 }
 
@@ -165,6 +165,9 @@
   --mptk-control-active: var(--mptk-control-blue);
   --mptk-control-track: #{$gray-3};
   --mptk-control-thumb: #fff;
+  /* 等待态里白滑块要「灰一点白一点」：明色下内衬也是白的，只调透明度等于没动。
+     取中浅灰，仍压得住滑块上的深色文字。 */
+  --mptk-control-thumb-dim: #{$gray-5};
   --mptk-control-on: #fff;
   /* 滑块恒白，压在滑块上的文字 / 图标只能取深色，不能跟页面前景色走（暗色下前景是浅色）。 */
   --mptk-control-thumb-fg: #1f2328;
@@ -265,6 +268,9 @@
   /* 滑块是"白按钮"，明暗同值：暗色下取 gray-5 会与深色轨道糊成一片，
      滑块上的图标 / 文字也失去对比。 */
   --mptk-control-thumb: #fff;
+  /* 暗色下呼吸谷值也取偏浅的灰（gray-8）：既跟深色轨道分得开，
+     也保住滑块上深色文字的对比；取 gray-5 会把字糊掉。 */
+  --mptk-control-thumb-dim: #{$gray-8};
   --mptk-control-on: #fff;
   /* 滑块恒白，明暗同值：暗色下若跟 --mptk-fg 走浅色，白底上就看不见了。 */
   --mptk-control-thumb-fg: #1f2328;

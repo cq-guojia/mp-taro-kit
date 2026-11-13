@@ -1,10 +1,22 @@
 /* 控件等待态的统一表达：内容位（文字 / 图标）已经被占着时，不再盖一个转圈 ——
-   转圈要么把段挤宽、要么压在字上，两样都难看。改用「选中那块滑块」的底色呼吸
-   表示「正在处理」：只动 opacity，尺寸与位置一概不动，整块轨道、文字都不跟着闪。
-   节奏取 --mptk-dur-breathe，谷值降到 .2 —— 轻微变淡在真机上根本看不出来。
-   谁用谁引：`@use '../../busy' as busy;`（Switch / Segmented 共用这一份）。 */
+   转圈要么把段挤宽、要么压在字上，两样都难看。只让「选中那块滑块」呼吸，
+   尺寸与位置一概不动，整块轨道、文字都不跟着闪。
+   节奏取 --mptk-dur-breathe。谁用谁引：`@use '../../busy' as busy;`。
+
+   两支关键帧，按滑块自己的底色分：
+   - 彩色滑块（Segmented 的主色滑块 / 下划线）：淡下去会露出轨道色，opacity 足够明显；
+   - 白色滑块（Switch）：明色下内衬也是白的（--mptk-surface-base 取值与页面底色相同），
+     再淡也还是一片白。改用真实的灰↔白换色，不再动 opacity。
+     灰值取 --mptk-control-thumb-dim，明暗各给一支偏浅的灰，
+     压在滑块上的深色文字/图标（--mptk-control-thumb-fg）两档都还读得清。 */
 @keyframes mptk-control-breathe {
   0%,
   100% { opacity: 1; }
   50% { opacity: .2; }
+}
+
+@keyframes mptk-thumb-breathe {
+  0%,
+  100% { background-color: var(--mptk-control-thumb); }
+  50% { background-color: var(--mptk-control-thumb-dim); }
 }

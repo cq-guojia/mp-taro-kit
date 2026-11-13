@@ -245,7 +245,7 @@
 /* 有内容位时的等待态：不盖转圈，只有「选中那块滑块」呼吸 —— 轨道底色、两侧文字
    都不跟着闪。位置、尺寸、命中区都不动。光板开关仍用滑块里的转圈（见 Switch.tsx）。 */
 .mptk-switch--breathe .mptk-switch__thumb {
-  animation: mptk-control-breathe var(--mptk-dur-breathe) var(--mptk-ease) infinite;
+  animation: mptk-thumb-breathe var(--mptk-dur-breathe) var(--mptk-ease) infinite;
 }
 
 /* 转圈几何统一由自绘 Spinner 提供（见文件顶部 @use），这里不再画第二份。

@@ -123,21 +123,27 @@ test('转圈只留在光板控件里，有内容位的一律改底色呼吸', ()
     )
   }
 
-  /* 底色呼吸：一份关键帧（src/ui/form/_busy.scss）给两个控件的等待态，都不加节点。 */
-  for (const [file, rule] of [
-    ['dist/ui/form/switch/style/index.css', /\.mptk-switch--breathe \.mptk-switch__thumb\s*\{[^}]*mptk-control-breathe/],
-    ['dist/ui/form/segmented/style/index.css', /\.mptk-seg--busy \.mptk-seg__thumb[\s\S]{0,80}mptk-control-breathe/],
-  ]) {
-    const css = read(file)
-    assert.match(css, /@keyframes mptk-control-breathe/, `${file} 没带进底色呼吸关键帧`)
-    assert.match(css, rule, `${file} 的等待态没挂底色呼吸`)
-    assert.doesNotMatch(
-      css,
-      /mptk-(?:switch--breathe|seg--busy)[^{]*track\s*\{[^}]*mptk-control-breathe/,
-      `${file} 不该让整条轨道一起呼吸`,
-    )
-    assert.match(css, /50%\s*\{\s*opacity:\s*0?\.2/, `${file} 的呼吸谷值不够明显`)
-  }
+  /* 两份关键帧都在 src/ui/form/_busy.scss：白滑块走灰白换色，彩色滑块走 opacity。 */
+  const switchCss = read('dist/ui/form/switch/style/index.css')
+  assert.match(
+    switchCss,
+    /\.mptk-switch--breathe \.mptk-switch__thumb\s*\{[^}]*mptk-thumb-breathe/,
+    'Switch 的白滑块没挂灰白呼吸',
+  )
+  assert.match(
+    switchCss,
+    /@keyframes mptk-thumb-breathe[\s\S]*?background-color:\s*var\(--mptk-control-thumb\)[\s\S]*?background-color:\s*var\(--mptk-control-thumb-dim\)/,
+    '白滑块必须在白与灰之间换色，不能只调透明度',
+  )
+  assert.doesNotMatch(switchCss, /mptk-switch--breathe[^{]*track\s*\{/, 'Switch 不该让整条轨道一起呼吸')
+  assert.match(read('dist/styles/theme-light.css'), /--mptk-control-thumb-dim:/, '明色缺灰值')
+  assert.match(read('dist/styles/theme-dark.css'), /--mptk-control-thumb-dim:/, '暗色缺灰值')
+
+  const segCss = read('dist/ui/form/segmented/style/index.css')
+  assert.match(segCss, /\.mptk-seg--busy \.mptk-seg__thumb[\s\S]{0,80}mptk-control-breathe/, 'Segmented 的滑块没挂呼吸')
+  assert.match(segCss, /@keyframes mptk-control-breathe/, 'Segmented 没带进彩色滑块关键帧')
+  assert.match(segCss, /50%\s*\{\s*opacity:\s*0?\.2/, '彩色滑块的呼吸谷值不够明显')
+  assert.doesNotMatch(segCss, /mptk-seg--busy[^{]*track\s*\{/, 'Segmented 不该让整条轨道一起呼吸')
 
   /* 组件侧：有内容位时不许再把转圈塞进滑块；Segmented 彻底不引转圈。 */
   const switchSrc = read('src/ui/form/switch/Switch.tsx')
@@ -145,6 +151,21 @@ test('转圈只留在光板控件里，有内容位的一律改底色呼吸', ()
   assert.match(switchSrc, /busy && !hasContent/, '转圈只能在没有内容位时出现')
   assert.match(switchSrc, /busy && hasContent \? 'mptk-switch--breathe'/, '有内容位时要挂呼吸类')
   assert.doesNotMatch(read('src/ui/form/segmented/Segmented.tsx'), /<Spinner\b/, 'Segmented 不该再有转圈')
+})
+
+test('白滑块呼吸靠灰白换色：明暗各给一支灰，都不等于滑块白', () => {
+  const pick = (mode, key) =>
+    new RegExp(`--mptk-${key}:\\s*([^;]+);`).exec(read(`dist/styles/${mode}.css`))?.[1]?.trim()
+  for (const mode of ['theme-light', 'theme-dark']) {
+    const white = pick(mode, 'control-thumb')
+    const dim = pick(mode, 'control-thumb-dim')
+    assert.ok(white && dim, `${mode} 缺滑块白 / 呼吸灰`)
+    assert.notEqual(dim.toLowerCase(), white.toLowerCase(), `${mode} 的灰值不能还是滑块白`)
+  }
+  assert.notEqual(pick('theme-light', 'control-thumb-dim'), pick('theme-dark', 'control-thumb-dim'), '明暗灰值要各给一支')
+  for (const mode of ['theme-auto', 'theme-runtime']) {
+    assert.match(read(`dist/styles/${mode}.css`), /--mptk-control-thumb-dim:/, `${mode} 缺灰值`)
+  }
 })
 
 test('两种形态共用一个默认主色，且都能被 color 覆盖', () => {

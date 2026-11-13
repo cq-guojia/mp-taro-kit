@@ -195,7 +195,7 @@ export const pages: CatalogPage[] = [
         hint: '禁用 / 光板开关转圈 / 带文字开关呼吸 / 失败不动',
         usage: '<Switch checked={on} onChange={(next) => save(next).then(() => setOn(next))} onFailed={rollback} />',
         imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
-        renderNotes: '等待态看有没有内容位：光板圆开关滑块里转圈，带文字 / 图标的只有选中那块滑块呼吸，轨道与文字不跟着闪',
+        renderNotes: '等待态看有没有内容位：光板圆开关滑块里转圈，带文字 / 图标的白滑块在灰白之间呼吸，轨道与文字不跟着闪',
       },
       {
         id: 'switch-colors',

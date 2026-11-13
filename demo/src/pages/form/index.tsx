@@ -149,7 +149,7 @@ export default function SwitchPage() {
               onChange={(next) => wait(true).then(() => setOn(next))}
             />
           </View>
-          <Text className="demo-note">带内容的开关：只有选中那块滑块呼吸，轨道与文字不跟着闪</Text>
+          <Text className="demo-note">带内容的开关：白滑块灰一点、白一点地呼吸，轨道与文字不跟着闪</Text>
           <View className="demo-row">
             <Switch
               className="demo-item"
