@@ -166,12 +166,20 @@ export const pages: CatalogPage[] = [
     summary: '开关：两种形状、三档尺寸、内置色板与异步等待',
     examples: [
       {
+        id: 'switch-size',
+        title: '尺寸',
+        hint: '圆形三档（轨道 33×20 / 42×26 / 52×32）与方形三档（格子 20 / 30 / 39），从左到右 sm → md → lg',
+        usage: '<Switch size="sm|md|lg" /> 或 <Switch shape="block" size="sm|md|lg" />',
+        imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
+        renderNotes: '根框总高恒等于 --mptk-control-h-*（32 / 40 / 48）；圆形轨道按微信原生 52:32 缩放，方形格子边长 = 内容盒 + 2 × 内边距、不吃圆形比例；双端实机未验证',
+      },
+      {
         id: 'switch-basic',
         title: '开关',
-        hint: 'Switch：圆形 / 圆角方，两侧可放文字或图标，三档尺寸',
+        hint: '圆形 / 圆角方两种形状，两侧可放文字或图标',
         usage: '<Switch checked={on} onChange={(next) => setOn(next)} />',
         imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
-        renderNotes: '根框高度吃 --mptk-control-h-*；圆形轨道按 52:32 缩放，方形态格子边长 = 1em + 2 × 内边距（不再吃圆形比例）；双端实机未验证',
+        renderNotes: '圆形看滑块位移，方形看底色与滑块位置；两侧文字跟随所在区域的对比色；双端实机未验证',
       },
       {
         id: 'switch-icon',
@@ -206,12 +214,20 @@ export const pages: CatalogPage[] = [
     summary: '分段选择：滑动块 / 下划线两种指示器，可带图标、计数、副文本与段级禁用',
     examples: [
       {
-        id: 'segmented-basic',
-        title: '分段选择',
-        hint: 'Segmented：三档段宽（fit / ratio / equal）、半圆形态，可带图标 / 计数 / 副文本 / 段级禁用',
-        usage: '<Segmented items={items} value={value} onChange={setValue} /> 或 width="equal" radius="pill"',
+        id: 'segmented-size',
+        title: '尺寸',
+        hint: '三档总高 sm 32 / md 40 / lg 48，从上到下逐档放大；段宽默认 fit，按内容撑开',
+        usage: '<Segmented size="sm|md|lg" items={items} value={value} onChange={setValue} />',
         imports: ['mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style'],
-        renderNotes: '段宽默认 fit 按内容撑开、超出横滑，equal 严格等分；fit / ratio 用 createSelectorQuery 量段宽，双端实机未验证',
+        renderNotes: '总高恒等于 --mptk-control-h-*，容器不叠加上下内边距；滑块上下各让 3px，段最小宽度取同档控件高度；双端实机未验证',
+      },
+      {
+        id: 'segmented-basic',
+        title: '段宽与形态',
+        hint: 'width：fit 按内容、ratio 内容 + 剩余均摊、equal 严格等分；radius="pill" 是半圆',
+        usage: '<Segmented items={items} value={value} width="equal" radius="pill" />',
+        imports: ['mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style'],
+        renderNotes: '底片宽度随 width 变：fit 按内容、ratio / equal 撑满；fit / ratio 用 createSelectorQuery 量段宽，equal 零测量；超出父宽时横滑',
       },
       {
         id: 'segmented-line',

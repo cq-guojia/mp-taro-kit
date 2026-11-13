@@ -1,7 +1,11 @@
 /* Segmented：容器高度吃控件高度轴，段宽由 width 轴三选一。
-   fit   = 段宽 = 内容 + 左右内边距，整块宽 = 各段之和，超出即横向滚动（内置 scroll-view）；
+   fit   = 段宽 = 内容 + 左右内边距，底片宽 = 各段之和，超出即横向滚动（内置 scroll-view）；
    ratio = 撑满，段先按内容占宽、剩余均摊（两字窄、四字宽）；
    equal = 撑满，严格 100 / N 等分，唯一不需要测量的模式。
+   根节点恒为「占满父宽的布局容器」（背景透明、不带圆角底色），视觉上的那条底片是 track：
+   fit 时 track 按内容宽，ratio / equal 时 track 撑满。宽度必须由根节点定死 100%，
+   不能反过来靠内容收缩取宽 —— 开发者工具 Skyline 下，「inline-flex 收缩取宽」包着内部
+   scroll-view（flex-basis 0）会塌成 0 宽，整块只剩空白，真机却正常。
    滑块 / 下划线都是 track 内的绝对定位元素，与段同一个滚动容器，滚动时自然跟随。
    圆角引用 --mptk-control-radius，半圆由组件加 --radius-pill 类切到 pill token。
    等待态由全库共用的自绘 Spinner 绘制（见文件顶部 @use），这里不另画一份。 */
@@ -16,11 +20,10 @@
   --mptk-seg-item-pad: var(--mptk-space-4);
   --mptk-seg-item-min: var(--mptk-control-h-lg);
   position: relative;
-  display: inline-flex;
-  max-width: 100%;
+  display: flex;
+  width: 100%;
   height: var(--mptk-control-h-lg);
   border-radius: var(--mptk-control-radius);
-  background-color: var(--mptk-control-track);
   overflow: hidden;
 }
 
@@ -38,24 +41,22 @@
 
 .mptk-seg--lg { height: var(--mptk-control-h-lg); }
 
-/* 撑满型：容器与滚动区都吃满父级宽度。 */
-.mptk-seg--ratio,
-.mptk-seg--equal {
-  display: flex;
-  width: 100%;
-}
-
 .mptk-seg--blue { --mptk-control-active: var(--mptk-control-blue); }
 .mptk-seg--green { --mptk-control-active: var(--mptk-control-green); }
 .mptk-seg--orange { --mptk-control-active: var(--mptk-control-orange); }
 .mptk-seg--red { --mptk-control-active: var(--mptk-control-red); }
 
-/* 半圆形态：容器与滑块一起切到 pill；下划线形态不需要圆角，那条规则写在后面靠后，
+/* 半圆形态：容器、底片与滑块一起切到 pill；下划线形态不需要圆角，那条规则写在后面靠后，
    同特异性下后者胜出，所以 --line 一定能盖掉 --radius-pill。 */
 .mptk-seg--radius-pill { border-radius: var(--mptk-radius-pill); }
+.mptk-seg--radius-pill .mptk-seg__track { border-radius: var(--mptk-radius-pill); }
 .mptk-seg--radius-pill .mptk-seg__thumb { border-radius: var(--mptk-radius-pill); }
 
 .mptk-seg--line {
+  border-radius: 0;
+}
+
+.mptk-seg--line .mptk-seg__track {
   border-radius: 0;
   background-color: transparent;
 }
@@ -64,8 +65,8 @@
   opacity: .5;
 }
 
-/* 横向滚动容器：flex:1 1 0 让它在 fit 模式下正好等于内容宽（根是 inline-flex 收缩到内容），
-   在 ratio / equal 模式下被父级的 100% 撑满。overflow 交给 scroll-view 自己。 */
+/* 横向滚动容器：宽度由根节点定死的 100% 给出（flex:1 1 0 在确定宽度的容器里才成立），
+   内容比它宽就横滑。overflow 交给 scroll-view 自己。 */
 .mptk-seg__scroll {
   flex: 1 1 0;
   min-width: 0;
@@ -73,11 +74,16 @@
   white-space: nowrap;
 }
 
+/* 底片：fit 时按内容宽（inline-flex 收缩），ratio / equal 时被 100% 撑满。
+   底色与圆角都在这一层，根节点只负责占位与裁剪 —— 见文件顶部说明。 */
 .mptk-seg__track {
   position: relative;
   display: inline-flex;
   align-items: stretch;
   height: 100%;
+  border-radius: var(--mptk-control-radius);
+  background-color: var(--mptk-control-track);
+  overflow: hidden;
 }
 
 .mptk-seg--ratio .mptk-seg__track,

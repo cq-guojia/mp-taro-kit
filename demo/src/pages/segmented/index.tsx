@@ -32,9 +32,10 @@ export default function SegmentedPage() {
   const [failed, setFailed] = useState(false)
 
   const render = (id: string) => {
-    if (id === 'segmented-basic') {
+    if (id === 'segmented-size') {
       return (
         <View className="demo-stack">
+          <Text className="demo-note">sm（总高 32）</Text>
           <Segmented
             className="demo-item"
             items={FILTER_ITEMS}
@@ -42,19 +43,35 @@ export default function SegmentedPage() {
             size="sm"
             onChange={(next) => { setFilter(next) }}
           />
+          <Text className="demo-note">md（总高 40）</Text>
+          <Segmented
+            className="demo-item"
+            items={FILTER_ITEMS}
+            value={filter}
+            size="md"
+            onChange={(next) => { setFilter(next) }}
+          />
+          <Text className="demo-note">lg（总高 48，默认）</Text>
           <Segmented
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
             onChange={(next) => { setFilter(next) }}
           />
+        </View>
+      )
+    }
+    if (id === 'segmented-basic') {
+      return (
+        <View className="demo-stack">
+          <Text className="demo-note">fit（默认）：底片按内容宽</Text>
           <Segmented
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
-            radius="pill"
             onChange={(next) => { setFilter(next) }}
           />
+          <Text className="demo-note">ratio：撑满，内容多的段更宽</Text>
           <Segmented
             className="demo-item"
             items={FILTER_ITEMS}
@@ -62,11 +79,20 @@ export default function SegmentedPage() {
             width="ratio"
             onChange={(next) => { setFilter(next) }}
           />
+          <Text className="demo-note">equal：撑满，严格等分</Text>
           <Segmented
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
             width="equal"
+            onChange={(next) => { setFilter(next) }}
+          />
+          <Text className="demo-note">radius=&quot;pill&quot;：半圆形态</Text>
+          <Segmented
+            className="demo-item"
+            items={FILTER_ITEMS}
+            value={filter}
+            radius="pill"
             onChange={(next) => { setFilter(next) }}
           />
         </View>

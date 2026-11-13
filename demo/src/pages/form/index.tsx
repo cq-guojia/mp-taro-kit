@@ -25,11 +25,51 @@ export default function SwitchPage() {
   const [failed, setFailed] = useState(false)
 
   const render = (id: string) => {
+    if (id === 'switch-size') {
+      return (
+        <View className="demo-stack">
+          <Text className="demo-note">圆形：sm（33×20）/ md（42×26）/ lg（52×32）</Text>
+          <View className="demo-row">
+            <Switch className="demo-item" checked={on} size="sm" onChange={(next) => { setOn(next) }} />
+            <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
+            <Switch className="demo-item" checked={on} onChange={(next) => { setOn(next) }} />
+          </View>
+          <Text className="demo-note">方形：sm（格子 20）/ md（格子 30）/ lg（格子 39）</Text>
+          <View className="demo-row">
+            <Switch
+              className="demo-item"
+              checked={blockOn}
+              shape="block"
+              size="sm"
+              offContent="关"
+              onContent="开"
+              onChange={(next) => { setBlockOn(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={blockOn}
+              shape="block"
+              size="md"
+              offContent="关"
+              onContent="开"
+              onChange={(next) => { setBlockOn(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={blockOn}
+              shape="block"
+              offContent="关"
+              onContent="开"
+              onChange={(next) => { setBlockOn(next) }}
+            />
+          </View>
+        </View>
+      )
+    }
     if (id === 'switch-basic') {
       return (
         <View className="demo-row">
-          <Switch className="demo-item" checked={on} size="sm" onChange={(next) => { setOn(next) }} />
-          <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
+          <Switch className="demo-item" checked={false} />
           <Switch className="demo-item" checked={on} onChange={(next) => { setOn(next) }} />
           <Switch
             className="demo-item"
