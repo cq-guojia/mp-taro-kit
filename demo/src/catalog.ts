@@ -184,7 +184,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'switch-icon',
         title: '图标',
-        hint: 'offContent / onContent 放图标：方形一边一个（单图标即正方形，格子 20 / 30 / 39，最小号图标小一号），圆形塞进滑块里；末行 keepColor 底色不随状态变',
+        hint: 'offContent / onContent 放图标：方形一边一个、圆形塞进滑块里；后两个 keepColor，底色不随状态变',
         usage: '<Switch shape="block" keepColor offContent={<Text className={iconClass("qiansemoshi")} />} onContent={<Text className={iconClass("shensemoshi")} />} />',
         imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style', 'mp-taro-kit/ui/icon/base', 'mp-taro-kit/ui/icon/base/style'],
         renderNotes: '圆形形态的图标在滑块里，字号按轨道高比例走；keepColor 时轨道恒为主色、内衬不收缩，只有滑块位移表示状态；双端实机未验证',

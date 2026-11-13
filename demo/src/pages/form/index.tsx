@@ -24,6 +24,7 @@ export default function SwitchPage() {
   const [dayNight, setDayNight] = useState(false)
   const [failed, setFailed] = useState(false)
 
+  /* 除「尺寸」示例外，一律按 md 档摆：形态之间要能横向比较，档位混用会被看成形态差异。 */
   const render = (id: string) => {
     if (id === 'switch-size') {
       return (
@@ -69,12 +70,13 @@ export default function SwitchPage() {
     if (id === 'switch-basic') {
       return (
         <View className="demo-row">
-          <Switch className="demo-item" checked={false} />
-          <Switch className="demo-item" checked={on} onChange={(next) => { setOn(next) }} />
+          <Switch className="demo-item" checked={false} size="md" />
+          <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
           <Switch
             className="demo-item"
             checked={blockOn}
             shape="block"
+            size="md"
             offContent="关"
             onContent="开"
             onChange={(next) => { setBlockOn(next) }}
@@ -83,6 +85,7 @@ export default function SwitchPage() {
             className="demo-item"
             checked={blockOn}
             shape="block"
+            size="md"
             offContent="待办"
             onContent="完成"
             onChange={(next) => { setBlockOn(next) }}
@@ -92,79 +95,43 @@ export default function SwitchPage() {
     }
     if (id === 'switch-icon') {
       return (
-        <View className="demo-stack">
-          <View className="demo-row">
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              shape="block"
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              shape="block"
-              size="md"
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              shape="block"
-              size="sm"
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-          </View>
-          <View className="demo-row">
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              size="md"
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              size="sm"
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-          </View>
-          <View className="demo-row">
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              shape="block"
-              keepColor
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-            <Switch
-              className="demo-item"
-              checked={dayNight}
-              keepColor
-              offContent={SUN}
-              onContent={MOON}
-              onChange={(next) => { setDayNight(next) }}
-            />
-          </View>
+        <View className="demo-row">
+          <Switch
+            className="demo-item"
+            checked={dayNight}
+            shape="block"
+            size="md"
+            offContent={SUN}
+            onContent={MOON}
+            onChange={(next) => { setDayNight(next) }}
+          />
+          <Switch
+            className="demo-item"
+            checked={dayNight}
+            size="md"
+            offContent={SUN}
+            onContent={MOON}
+            onChange={(next) => { setDayNight(next) }}
+          />
+          <Switch
+            className="demo-item"
+            checked={dayNight}
+            shape="block"
+            size="md"
+            keepColor
+            offContent={SUN}
+            onContent={MOON}
+            onChange={(next) => { setDayNight(next) }}
+          />
+          <Switch
+            className="demo-item"
+            checked={dayNight}
+            size="md"
+            keepColor
+            offContent={SUN}
+            onContent={MOON}
+            onChange={(next) => { setDayNight(next) }}
+          />
         </View>
       )
     }
@@ -172,11 +139,12 @@ export default function SwitchPage() {
       return (
         <View className="demo-stack">
           <View className="demo-row">
-            <Switch className="demo-item" checked={false} disabled />
-            <Switch className="demo-item" checked={false} loading />
+            <Switch className="demo-item" checked={false} size="md" disabled />
+            <Switch className="demo-item" checked={false} size="md" loading />
             <Switch
               className="demo-item"
               checked={on}
+              size="md"
               onChange={(next) => wait(true).then(() => setOn(next))}
             />
             {/* 失败：点了先转圈、位置不动；宿主只在成功时改值，失败什么都不用回滚 */}
@@ -184,6 +152,7 @@ export default function SwitchPage() {
               className="demo-item"
               checked={blockOn}
               shape="block"
+              size="md"
               offContent="月亮"
               onContent="太阳"
               onChange={(next) => wait(false).then(() => setBlockOn(next))}
@@ -197,12 +166,12 @@ export default function SwitchPage() {
     if (id === 'switch-colors') {
       return (
         <View className="demo-row">
-          <Switch className="demo-item" checked color="blue" />
-          <Switch className="demo-item" checked color="green" />
-          <Switch className="demo-item" checked color="orange" />
-          <Switch className="demo-item" checked color="red" />
-          <Switch className="demo-item" checked color="#8b5cf6" />
-          <Switch className="demo-item" checked shape="block" color="green" offContent="关" onContent="开" />
+          <Switch className="demo-item" checked size="md" color="blue" />
+          <Switch className="demo-item" checked size="md" color="green" />
+          <Switch className="demo-item" checked size="md" color="orange" />
+          <Switch className="demo-item" checked size="md" color="red" />
+          <Switch className="demo-item" checked size="md" color="#8b5cf6" />
+          <Switch className="demo-item" checked size="md" shape="block" color="green" offContent="关" onContent="开" />
         </View>
       )
     }

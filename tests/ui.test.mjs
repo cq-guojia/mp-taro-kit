@@ -446,3 +446,31 @@ test('演示站组件之间必须留空隙：每个组件都带 demo-item，且�
     assert.equal(items.length, tags.length, `${file} 里每个 ${component} 都要带 demo-item`)
   }
 })
+
+test('演示站除尺寸示例外一律用 md 档摆，形态之间口径一致', () => {
+  for (const [file, component] of [
+    ['../demo/src/pages/form/index.tsx', 'Switch'],
+    ['../demo/src/pages/segmented/index.tsx', 'Segmented'],
+  ]) {
+    const page = read(file)
+    const marks = [...page.matchAll(/if \(id === '([^']+)'\) \{/g)]
+    assert.ok(marks.length > 0, `${file} 没解析到示例块`)
+    let sizeBlocks = 0
+    for (const [index, mark] of marks.entries()) {
+      if (mark[1].endsWith('-size')) {
+        sizeBlocks += 1
+        continue
+      }
+      const start = mark.index
+      const end = index + 1 < marks.length ? marks[index + 1].index : page.length
+      for (const tag of page.slice(start, end).match(new RegExp(`<${component}\\b[\\s\\S]*?/>`, 'g')) ?? []) {
+        assert.match(
+          tag,
+          /size="md"/,
+          `${file} 的 ${mark[1]} 里有组件没用 md 档：${tag.replace(/\s+/g, ' ').slice(0, 72)}`,
+        )
+      }
+    }
+    assert.equal(sizeBlocks, 1, `${file} 必须有且只有一个尺寸示例（逐档铺开的那块）`)
+  }
+})

@@ -31,6 +31,7 @@ export default function SegmentedPage() {
   const [channel, setChannel] = useState('all')
   const [failed, setFailed] = useState(false)
 
+  /* 除「尺寸」示例外，一律按 md 档摆：形态之间要能横向比较，档位混用会被看成形态差异。 */
   const render = (id: string) => {
     if (id === 'segmented-size') {
       return (
@@ -69,6 +70,7 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
+            size="md"
             onChange={(next) => { setFilter(next) }}
           />
           <Text className="demo-note">ratio：撑满，内容多的段更宽</Text>
@@ -76,6 +78,7 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
+            size="md"
             width="ratio"
             onChange={(next) => { setFilter(next) }}
           />
@@ -84,6 +87,7 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
+            size="md"
             width="equal"
             onChange={(next) => { setFilter(next) }}
           />
@@ -92,6 +96,7 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
+            size="md"
             radius="pill"
             onChange={(next) => { setFilter(next) }}
           />
@@ -105,6 +110,7 @@ export default function SegmentedPage() {
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
+            size="md"
             indicator="line"
             onChange={(next) => { setChannel(next) }}
           />
@@ -118,13 +124,15 @@ export default function SegmentedPage() {
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
+            size="md"
             onChange={(next) => wait(true).then(() => setChannel(next))}
           />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} disabled />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" disabled />
           <Segmented
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
+            size="md"
             onChange={(next) => wait(false).then(() => setChannel(next))}
             onFailed={() => { setFailed(true) }}
           />
@@ -135,15 +143,16 @@ export default function SegmentedPage() {
     if (id === 'segmented-colors') {
       return (
         <View className="demo-stack">
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="blue" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="green" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="orange" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="red" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="#8b5cf6" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="blue" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="green" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="orange" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="red" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="#8b5cf6" onChange={(next) => { setChannel(next) }} />
           <Segmented
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
+            size="md"
             indicator="line"
             color="#8b5cf6"
             onChange={(next) => { setChannel(next) }}
