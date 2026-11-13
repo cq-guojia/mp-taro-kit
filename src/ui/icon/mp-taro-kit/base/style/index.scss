@@ -1,0 +1,26 @@
+/* 本文件由 scripts/icons.mjs 生成，请勿手改。
+   包：mp-taro-kit.base
+   源：https://at.alicdn.com/t/c/font_5251349_rhl0bjkzk0c.css
+   归属：对外图标包
+   颜色：单色字形，吃 color，明暗跟随主题
+   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。
+   更新：平台改图标 → 改 scripts/icons.sources.mjs 的 SOURCES → pnpm run icons */
+
+@font-face {
+  font-family: "mptk-i-base"; /* Project id 5251349 */
+  src: url('https://at.alicdn.com/t/c/font_5251349_rhl0bjkzk0c.woff2?t=1794580845899') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5251349_rhl0bjkzk0c.woff?t=1794580845899') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5251349_rhl0bjkzk0c.ttf?t=1794580845899') format('truetype');
+}
+
+.mptk-i-base {
+  font-family: "mptk-i-base" !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mptk-i-base-_:before {
+  content: "\e8c6";
+}
+

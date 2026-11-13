@@ -9,7 +9,7 @@ import 'mp-taro-kit/ui/display/cell/style'
 import 'mp-taro-kit/ui/form/segmented/style'
 import { menu, pagePathOf } from '../../catalog'
 import { DemoShell } from '../../components/DemoShell'
-import { DEMO_LOGO_CLASS } from '../../icons/demo-color/class'
+import { DEMO_LOGO_CLASS } from '../../icons/mp-taro-kit/demo/color/class'
 
 // 由 demo/config/index.js 的 defineConstants 在编译期替换。
 declare const __MTPK_VERSION__: string

@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { Switch } from 'mp-taro-kit/ui/form/switch'
-import { iconClass } from 'mp-taro-kit/ui/icon/base'
+import { Icon } from 'mp-taro-kit/ui/display/icon'
 
 import 'mp-taro-kit/ui/form/switch/style'
-import 'mp-taro-kit/ui/icon/base/style'
 import { DemoPage } from '../../components/DemoBlock'
 
 /** 浅色模式是太阳，深色模式是月亮，正好拿来当开 / 关两面的图标。 */
-const SUN = <Text className={iconClass('qiansemoshi')} />
-const MOON = <Text className={iconClass('shensemoshi')} />
+const SUN = <Icon name="common.base:qiansemoshi" />
+const MOON = <Icon name="common.base:shensemoshi" />
 
 /** 模拟一次要等后台的切换：ok 决定这次是成还是败。 */
 function wait(ok: boolean) {

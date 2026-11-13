@@ -1,0 +1,210 @@
+/* 本文件由 scripts/icons.mjs 生成，请勿手改。
+   包：common.base
+   源：https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.css
+   归属：对外图标包
+   颜色：单色字形，吃 color，明暗跟随主题
+   尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。
+   更新：平台改图标 → 改 scripts/icons.sources.mjs 的 SOURCES → pnpm run icons */
+
+@font-face {
+  font-family: "koc-i-common-base"; /* Project id 5252971 */
+  src: url('https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.woff2?t=1794588774492') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.woff?t=1794588774492') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.ttf?t=1794588774492') format('truetype');
+}
+
+.koc-i-common-base {
+  font-family: "koc-i-common-base" !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.koc-i-common-base-fuzhi:before {
+  content: "\e63d";
+}
+
+.koc-i-common-base-shuaxin:before {
+  content: "\e619";
+}
+
+.koc-i-common-base-gongzuoqu:before {
+  content: "\e650";
+}
+
+.koc-i-common-base-AIdamoxing:before {
+  content: "\e885";
+}
+
+.koc-i-common-base-chexiao:before {
+  content: "\e613";
+}
+
+.koc-i-common-base-chazhao:before {
+  content: "\e62a";
+}
+
+.koc-i-common-base-info:before {
+  content: "\e639";
+}
+
+.koc-i-common-base-warn:before {
+  content: "\e61d";
+}
+
+.koc-i-common-base-shensemoshi:before {
+  content: "\e62e";
+}
+
+.koc-i-common-base-qiansemoshi:before {
+  content: "\e609";
+}
+
+.koc-i-common-base-yonghu-refresh:before {
+  content: "\e67a";
+}
+
+.koc-i-common-base-youxiangshuangjiantou:before {
+  content: "\e6b5";
+}
+
+.koc-i-common-base-zuoxiangshuangjiantou:before {
+  content: "\e6b8";
+}
+
+.koc-i-common-base-jia:before {
+  content: "\e603";
+}
+
+.koc-i-common-base-jian:before {
+  content: "\e605";
+}
+
+.koc-i-common-base-shezhi:before {
+  content: "\e604";
+}
+
+.koc-i-common-base-xihuan:before {
+  content: "\e612";
+}
+
+.koc-i-common-base-xihuan-a:before {
+  content: "\e63b";
+}
+
+.koc-i-common-base-saoma:before {
+  content: "\e670";
+}
+
+.koc-i-common-base-tuichu:before {
+  content: "\e659";
+}
+
+.koc-i-common-base-shoucanga:before {
+  content: "\e646";
+}
+
+.koc-i-common-base-gou:before {
+  content: "\e618";
+}
+
+.koc-i-common-base-shoucang:before {
+  content: "\e65a";
+}
+
+.koc-i-common-base-huidingbu:before {
+  content: "\e644";
+}
+
+.koc-i-common-base-shuju:before {
+  content: "\e61b";
+}
+
+.koc-i-common-base-shijian1:before {
+  content: "\e623";
+}
+
+.koc-i-common-base-move-right:before {
+  content: "\e615";
+}
+
+.koc-i-common-base-shaixuan:before {
+  content: "\e680";
+}
+
+.koc-i-common-base-xiugai:before {
+  content: "\e719";
+}
+
+.koc-i-common-base-iconjia:before {
+  content: "\e601";
+}
+
+.koc-i-common-base-sort-down:before {
+  content: "\e610";
+}
+
+.koc-i-common-base-guanbi:before {
+  content: "\e620";
+}
+
+.koc-i-common-base-shanchu:before {
+  content: "\e7f4";
+}
+
+.koc-i-common-base-sort-up:before {
+  content: "\e873";
+}
+
+.koc-i-common-base-move-left:before {
+  content: "\e874";
+}
+
+.koc-i-common-base-move-down:before {
+  content: "\e875";
+}
+
+.koc-i-common-base-move-up:before {
+  content: "\e876";
+}
+
+.koc-i-common-base-sort-right:before {
+  content: "\e877";
+}
+
+.koc-i-common-base-sort-left:before {
+  content: "\e878";
+}
+
+.koc-i-common-base-home:before {
+  content: "\e61c";
+}
+
+.koc-i-common-base-yonghu-close:before {
+  content: "\e677";
+}
+
+.koc-i-common-base-yonghu-warn:before {
+  content: "\e678";
+}
+
+.koc-i-common-base-yonghu-minus:before {
+  content: "\e679";
+}
+
+.koc-i-common-base-shezhi1:before {
+  content: "\e8f4";
+}
+
+.koc-i-common-base-yonghu-add:before {
+  content: "\e606";
+}
+
+.koc-i-common-base-yonghu:before {
+  content: "\e7ed";
+}
+
+.koc-i-common-base-yonghu-check:before {
+  content: "\e626";
+}
+

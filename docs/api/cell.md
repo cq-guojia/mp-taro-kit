@@ -83,7 +83,7 @@
 import Taro from '@tarojs/taro'
 import { Text, View } from '@tarojs/components'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
-import { iconClass } from 'mp-taro-kit/ui/icon'
+import { iconClass } from 'mp-taro-kit/ui/icon/common/base'
 import 'mp-taro-kit/ui/display/cell/style'
 
 // 基础用法：通栏，组内最后一格自动不画分隔线
@@ -179,3 +179,4 @@ export const State = () => (
 - 2026-11-13 15:13:41：补「与 Card 组合」：壳职责归 Card，inset / frame 保留兼容但不再扩展
 - 2026-11-13 16:42:48：组合改零参数：Card 提供上下文，CellGroup 自动派生 --in-card 并收敛外框 / 底色 / 上下留白
 - 2026-11-13 18:43:58：与 Card 组合的留白改由 Card 侧归零，CellGroup 只声明贴边内容，不再用负 margin 抵消
+- 2026-11-13 23:24:15：示例图标引用改到 common.base

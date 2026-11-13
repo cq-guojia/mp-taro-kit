@@ -1,5 +1,5 @@
 // 本文件由 scripts/icons.mjs 生成，请勿手改。
-// 包：base-color；需要别的包的图标时引那个包自己的出口，不要跨包 import。
+// 包：common.logo；需要别的包的图标时引那个包自己的出口，不要跨包 import。
 import { iconBaseClass, iconMap, iconPrefix } from './names.js'
 
 export { iconBaseClass, iconPrefix, iconMap, iconNames, iconColored, iconPaired } from './names.js'

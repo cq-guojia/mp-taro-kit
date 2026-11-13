@@ -14,9 +14,11 @@
 | `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件 |
 | `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 子域出口；`*` 可穿透多段，组件级与图标包级细路径同走这条 |
 | `mp-taro-kit/ui/*/style` | 无 | 无 | 无 | 字符串出口，`*` 可穿透多段，指向对应单元的 `style/index.css` |
-| `mp-taro-kit/ui/icon/base` / `.../base/style` | 有 / 无 | 有 / 无 | 有 / 无 | 基础图标包的清单与样式，**宿主 app 入口引一次，必需** |
-| `mp-taro-kit/ui/icon/<id>` / `.../<id>/style` | 有 / 无 | 有 / 无 | 有 / 无 | 扩展图标包，用哪个引哪个 |
-| `mp-taro-kit/ui/icon` / `.../icon/style` | 有 / 无 | 有 / 无 | 有 / 无 | 旧出口，只转发到基础包，保留兼容 |
+| `mp-taro-kit/ui/display/icon` | 有 | 有 | 有 | `Icon` 组件；出口同时带全量图标样式（`@font-face` 只声明不下载，字体按使用懒加载） |
+| `mp-taro-kit/ui/icon/all` / `.../all/style` | 有 / 无 | 有 / 无 | 有 / 无 | 聚合入口：`库名:图标名` 解析与全量样式；组件出口用的就是它 |
+| `mp-taro-kit/ui/icon/common/base` / `.../common/base/style` | 有 / 无 | 有 / 无 | 有 / 无 | 跨框架通用基础图标包的清单与样式；按需只引基础包时用 |
+| `mp-taro-kit/ui/icon/<命名空间>/<库名>` / `.../style` | 有 / 无 | 有 / 无 | 有 / 无 | 每个对外图标包各自的清单与样式，用哪个引哪个；`*` 可穿透多段 |
+| `mp-taro-kit/ui/icon` / `.../icon/style` | 有 / 无 | 有 / 无 | 有 / 无 | 旧出口，只转发到 `common.base`，保留兼容 |
 | `mp-taro-kit/styles/theme-light` | 无 | 无 | 无 | **固定明**：只有明色值；宿主定制配色覆盖的都是明色，没有暗色变体 |
 | `mp-taro-kit/styles/theme-dark` | 无 | 无 | 无 | **固定暗**：只写基线与暗色值，不铺明色、不做覆盖，不随系统变化 |
 | `mp-taro-kit/styles/theme-auto` | 无 | 无 | 无 | **跟随系统**：暗色值包在 `prefers-color-scheme: dark` 媒体查询里 |
@@ -256,3 +258,5 @@ setThemeMode('auto', {
 - 2026-11-13 15:13:41：补 ui/card 组件级细路径与卡片族同子域并列规划
 - 2026-11-13 16:42:48：补 ui/infra 卡片上下文；CellGroup 装在 Card 里自动派生 --in-card，消费方零参数
 - 2026-11-13 18:43:59：运行时约定补贴边内容声明契约：Card 派生 --edge-content 关掉壳的上下留白
+- 2026-11-13 23:24:15：图标出口行同步到命名空间分层路径
+- 2026-11-13 23:51:56：补 ui/display/icon 与 ui/icon/all 出口

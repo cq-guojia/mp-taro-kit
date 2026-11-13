@@ -41,7 +41,7 @@ demo/                                               # 仓库内的 Taro 小程�
         ├── actions/index.tsx                       # src/ui/actions/：Button
         ├── form/index.tsx                          # src/ui/form/：Switch，一页只放一个组件
         ├── segmented/index.tsx                     # src/ui/form/：Segmented，与 Switch 各占一页
-        ├── icon/index.tsx                          # src/ui/icon/：图标清单，铺出全部 glyph 与类名
+        ├── icon/index.tsx                          # src/ui/icon/：按命名空间分组铺出各图标库的 glyph 与类名
         ├── feedback/index.tsx                      # src/ui/feedback/：Dialog、Loader、Loading、Toast
         ├── display/index.tsx                       # src/ui/display/：只放 Cell / CellGroup；与 Card 的组合归本页末组（向上引用）
         ├── badge/index.tsx                         # src/ui/display/：Badge，独立成页
@@ -112,3 +112,4 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-13 15:13:41：新增 Card 展示页（16 个展示页 / 17 条路由），补卡片族分组判据与 Cell 组合示例；子域数量不再写死
 - 2026-11-13 16:42:48：两处 Card 组合示例改零参数，Card 页「装 Cell」示例改名 card-cell
 - 2026-11-13 19:09:20：组合示例按引用方向归属：Card 页删掉装 Cell 示例，Cell 页新增末组「与 Card 组合」；补向上引用与展示顺序约束
+- 2026-11-13 23:24:15：图标页说明改为按命名空间分组

@@ -4,7 +4,7 @@ import Taro from '@tarojs/taro'
 import { Badge } from 'mp-taro-kit/ui/display'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Card } from 'mp-taro-kit/ui/card'
-import { iconClass } from 'mp-taro-kit/ui/icon'
+import { Icon } from 'mp-taro-kit/ui/display/icon'
 
 import 'mp-taro-kit/ui/display/style'
 import 'mp-taro-kit/ui/display/cell/style'
@@ -86,8 +86,8 @@ export default function DisplayPage() {
     if (id === 'cell-icon') {
       return (
         <CellGroup>
-          <Cell title="单元格" icon={<Text className={iconClass('home')} />} />
-          <Cell title="单元格" value="内容" isLink icon={<Text className={iconClass('shaixuan')} />} />
+          <Cell title="单元格" icon={<Icon name="common.base:home" />} />
+          <Cell title="单元格" value="内容" isLink icon={<Icon name="common.base:shaixuan" />} />
         </CellGroup>
       )
     }
@@ -140,7 +140,7 @@ export default function DisplayPage() {
           <Cell
             value="内容"
             isLink
-            icon={<Text className={iconClass('home')} />}
+            icon={<Icon name="common.base:home" />}
             title={
               <View className="demo-row">
                 <Text>单元格</Text>
@@ -148,7 +148,7 @@ export default function DisplayPage() {
               </View>
             }
           />
-          <Cell title="右侧图标位" rightIcon={<Text className={iconClass('xiugai')} />}>
+          <Cell title="右侧图标位" rightIcon={<Icon name="common.base:xiugai" />}>
             自定义 value
           </Cell>
           <Cell title="额外内容位" value="内容" extra={<Text>extra</Text>} />
@@ -163,7 +163,7 @@ export default function DisplayPage() {
             title="垂直居中"
             value="内容"
             label="描述信息"
-            icon={<Text className={iconClass('home')} />}
+            icon={<Icon name="common.base:home" />}
             isLink
           />
           <Cell title="默认顶部对齐" value="内容" label="描述信息" />

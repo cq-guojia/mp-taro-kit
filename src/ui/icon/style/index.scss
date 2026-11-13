@@ -1,3 +1,3 @@
-/* 旧出口兼容：基础图标包的样式实体在 base/style，这里只做转发，不复制规则。
-   新代码一律直接引 mp-taro-kit/ui/icon/base/style；扩展包引各自的 <id>/style。 */
-@use '../base/style/index';
+/* 旧出口兼容：基础图标包的样式实体在 common/base/style，这里只做转发，不复制规则。
+   新代码一律直接引 mp-taro-kit/ui/icon/common/base/style；扩展包引各自的命名空间路径。 */
+@use '../common/base/style/index';

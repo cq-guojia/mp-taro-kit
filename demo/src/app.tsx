@@ -13,9 +13,8 @@ import themeConfig from './theme.json'
 
 import 'mp-taro-kit/styles/theme-runtime'
 import 'mp-taro-kit/ui/infra/style'
-import 'mp-taro-kit/ui/icon/base/style'
-// 演示站自有的图标：只引样式，类名在用到的地方直接写，不做包出口。
-import './icons/demo-color/style/index.scss'
+// 对外图标样式由 Icon 组件出口带入，这里只引演示站自有的图标样式。
+import './icons/mp-taro-kit/demo/color/style/index.scss'
 import './app.scss'
 
 function urlOf(options: NavigateOptions): string {

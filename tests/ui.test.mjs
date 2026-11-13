@@ -5,6 +5,8 @@ import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
+import { SOURCES } from '../scripts/icons.sources.mjs'
+import { exportPathOf, pathOf } from '../scripts/lib/icons-pack.mjs'
 import * as ui from '../dist/ui/index.js'
 import * as cellState from '../dist/ui/display/cell/state.js'
 
@@ -20,31 +22,42 @@ function exists(relative) {
   return existsSync(new URL(relative, import.meta.url))
 }
 
-test('图标基础类不写死 font-size，生成物与发布产物都遵守', () => {
-  for (const relative of [
-    '../src/ui/icon/base/style/index.scss',
-    '../dist/ui/icon/base/style/index.css',
-    '../dist/ui/icon/style/index.css',
-  ]) {
-    const rule = read(relative).match(/\.mptk-icons-base\s*\{([^}]*)\}/)
-    assert.ok(rule, `${relative} 找不到图标基础类规则`)
-    assert.match(rule[1], /font-family/, `${relative} 基础类必须保留 font-family`)
-    assert.doesNotMatch(rule[1], /font-size/, `${relative} 基础类不应写死 font-size`)
+test('图标基础类不写死 font-size：全部对外包的生成物与发布产物都遵守', () => {
+  for (const pack of SOURCES.filter((item) => item.visibility === 'public')) {
+    for (const relative of [
+      `../${pathOf(pack)}/style/index.scss`,
+      `../dist/${exportPathOf(pack)}/style/index.css`,
+    ]) {
+      const css = read(relative)
+      const rule = css.match(/\.[\w-]+\s*\{[^}]*font-family:[^}]*!important[^}]*\}/)
+      assert.ok(rule, `${relative} 找不到图标基础类规则`)
+      assert.doesNotMatch(rule[0], /font-size/, `${relative} 基础类不应写死 font-size`)
+    }
   }
   assert.match(read('../scripts/icons.mjs'), /stripBaseFontSize/, '生成器必须剥离平台产物的基础类字号')
 })
 
-test('图标分包：base 包有独立三件套，旧出口只做转发', () => {
-  for (const relative of [
-    '../src/ui/icon/base/index.ts',
-    '../src/ui/icon/base/names.ts',
-    '../src/ui/icon/base/style/index.scss',
-  ]) {
-    assert.ok(exists(relative), `${relative} 缺失`)
+test('图标库按命名空间分包：public 三件套齐全，demo 不进发布产物，旧出口只转发', () => {
+  for (const pack of SOURCES) {
+    const dir = pathOf(pack)
+    assert.ok(exists(`../${dir}/style/index.scss`), `${pack.id} 缺样式生成物`)
+    assert.ok(exists(`../${dir}/names.ts`), `${pack.id} 缺类名清单`)
+    if (pack.visibility === 'public') {
+      assert.ok(exists(`../${dir}/index.ts`), `${pack.id} 缺包出口`)
+      assert.ok(exists(`../dist/${exportPathOf(pack)}/index.js`), `${pack.id} 缺 dist 出口`)
+    } else {
+      assert.ok(!exists(`../${dir}/index.ts`), `${pack.id} 是演示站自有，不应生成包出口`)
+      assert.ok(!exists(`../dist/${exportPathOf(pack)}`), `${pack.id} 不应进发布产物`)
+    }
   }
-  assert.match(read('../scripts/icons.mjs'), /const SOURCES = \[/, '生成器必须按包列表生成')
-  assert.match(read('../src/ui/icon/index.ts'), /base\/index\.js/, '旧 JS 出口须转发到 base')
-  assert.match(read('../src/ui/icon/style/index.scss'), /@use '\.\.\/base\/style\/index'/, '旧样式出口须转发到 base')
+  assert.match(read('../scripts/icons.sources.mjs'), /export const SOURCES/, '注册表必须是独立真源')
+  assert.match(read('../scripts/icons.mjs'), /validateParsed/, '生成器必须做平台 CSS 交叉校验')
+  assert.match(read('../src/ui/icon/index.ts'), /common\/base\/index\.js/, '旧 JS 出口须转发到 common.base')
+  assert.match(
+    read('../src/ui/icon/style/index.scss'),
+    /common\/base\/style\/index/,
+    '旧样式出口须转发到 common.base',
+  )
   assert.doesNotMatch(read('../src/ui/feedback/style/index.scss'), /@use.*icon/, 'feedback 不得内联图标样式')
 })
 

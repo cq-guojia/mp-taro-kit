@@ -258,7 +258,7 @@ page {
   padding-left: var(--mptk-space-4);
 }
 
-/* 字体图标样式来自 mp-taro-kit/ui/icon/style（app.tsx 引入），字号一律走文字档位。 */
+/* 字体图标样式由 Icon 组件出口带入，字号一律走文字档位。 */
 .demo-nav__logo {
   font-size: var(--mptk-font-nav);
   line-height: var(--mptk-line-tight);
@@ -271,6 +271,24 @@ page {
 
 .demo-loader-spaced {
   margin-right: var(--mptk-space-3);
+}
+
+.demo-icon-group {
+  margin-bottom: var(--mptk-space-3);
+}
+
+.demo-icon-group__title {
+  color: var(--mptk-fg-2);
+  display: block;
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  margin-bottom: var(--mptk-space-2);
+}
+
+.demo-icon-group__empty {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
 }
 
 .demo-icon-grid {

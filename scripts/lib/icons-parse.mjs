@@ -13,6 +13,7 @@ const DARK_SUFFIX = '-dark'
  */
 export function parseIcons(css) {
   const colored = css.includes('/* Color fonts */')
+  const faceMatch = css.match(/@font-face\s*\{[^}]*font-family:\s*"([^"]+)"/)
   const baseMatch = css.match(/\.([\w-]+)\s*\{[^}]*font-family/)
   if (baseMatch === null) {
     throw new Error('找不到带 font-family 的基础类，平台产物结构可能变了')
@@ -39,10 +40,19 @@ export function parseIcons(css) {
   const baseNameOf = (name) => (name.endsWith(DARK_SUFFIX) ? name.slice(0, -DARK_SUFFIX.length) : null)
   const isVariant = (name) => baseNameOf(name) !== null && nameSet.has(baseNameOf(name))
 
-  const usable = rules.filter((rule) => !rule.name.startsWith('_'))
-  const icons = usable.filter((rule) => !isVariant(rule.name))
-  const variants = usable.filter((rule) => isVariant(rule.name))
+  // 平台占位（空项目里那个名字为 `_` 的图标）按正常图标输出：每个包在清单里至少有一项，
+  // 演示站与消费端据此能看出链路是否接上；它是空字形，渲染出来多半是空白或空心方框。
+  const icons = rules.filter((rule) => !isVariant(rule.name))
+  const variants = rules.filter((rule) => isVariant(rule.name))
   const paired = variants.map((rule) => baseNameOf(rule.name))
 
-  return { baseClass: baseMatch[1], prefix, icons, variants, paired, colored }
+  return {
+    baseClass: baseMatch[1],
+    fontFamily: faceMatch?.[1] ?? null,
+    prefix,
+    icons,
+    variants,
+    paired,
+    colored,
+  }
 }

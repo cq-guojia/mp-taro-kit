@@ -65,10 +65,13 @@ test('parseIcons 不把没有主名的 -dark 拆成变体', () => {
   )
 })
 
-test('parseIcons 过滤下划线占位图标', () => {
+test('parseIcons 把下划线占位当正常图标输出', () => {
   const parsed = parseIcons(cssOf(['mptk-i-base-color-_', '\\e615']))
 
-  assert.deepEqual(parsed.icons, [])
+  assert.deepEqual(
+    parsed.icons.map((icon) => icon.name),
+    ['_'],
+  )
   assert.deepEqual(parsed.variants, [])
 })
 

@@ -1,8 +1,8 @@
 import Taro from '@tarojs/taro'
 import { Text } from '@tarojs/components'
-import { iconClass } from 'mp-taro-kit/ui/icon'
+import { Icon } from 'mp-taro-kit/ui/display/icon'
 import { NavBar } from 'mp-taro-kit/ui/navigation'
-import { DEMO_LOGO_CLASS } from '../icons/demo-color/class'
+import { DEMO_LOGO_CLASS } from '../icons/mp-taro-kit/demo/color/class'
 
 // 图标字体样式由 app.tsx 全局引入一次，这里不再重复
 import 'mp-taro-kit/ui/navigation/style'
@@ -48,7 +48,10 @@ export function DemoNav({
       menuButton={{ top: menuButton.top, height: menuButton.height }}
       showBack={!home}
       backIcon={
-        <Text className={`${iconClass(canGoBack ? 'move-left' : 'home')} demo-nav__back`} />
+        <Icon
+          name={canGoBack ? 'common.base:move-left' : 'common.base:home'}
+          className="demo-nav__back"
+        />
       }
       onBack={back}
     />

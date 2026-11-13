@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { SOURCES } from './icons.sources.mjs'
+import { exportPathOf, pathOf, validateRegistry } from './lib/icons-pack.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'))
@@ -75,6 +77,33 @@ for (const file of await collectFiles(srcUiDir)) {
   if (rel.endsWith(`style${path.sep}index.scss`)) {
     const target = path.join(distUiDir, rel.replace(/\.scss$/, '.css'))
     if (!existsSync(target)) errors.push(`通配样式出口 ${rel} 在 dist 里缺 index.css`)
+  }
+}
+
+// 图标库注册表：新增一条记录即纳入校验。public 包必须进 dist，demo 包不得进 dist。
+try {
+  validateRegistry(SOURCES)
+} catch (error) {
+  errors.push(error instanceof Error ? error.message : String(error))
+}
+for (const pack of SOURCES) {
+  const srcDirOfPack = path.join(root, pathOf(pack))
+  const distDirOfPack = path.join(root, 'dist', exportPathOf(pack))
+  if (!existsSync(path.join(srcDirOfPack, 'style', 'index.scss'))) {
+    errors.push(`图标库 ${pack.id} 缺样式生成物`)
+  }
+  if (pack.visibility === 'public') {
+    if (!existsSync(path.join(srcDirOfPack, 'index.ts'))) errors.push(`图标库 ${pack.id} 缺包出口`)
+    for (const name of ['index.js', 'index.cjs', 'index.d.ts']) {
+      if (!existsSync(path.join(distDirOfPack, name))) {
+        errors.push(`图标库 ${pack.id} 在 dist 缺 ${name}`)
+      }
+    }
+    if (!existsSync(path.join(distDirOfPack, 'style', 'index.css'))) {
+      errors.push(`图标库 ${pack.id} 在 dist 缺 style/index.css`)
+    }
+  } else if (existsSync(distDirOfPack)) {
+    errors.push(`演示站自有图标库 ${pack.id} 不应进 dist`)
   }
 }
 

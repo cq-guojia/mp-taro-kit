@@ -74,7 +74,13 @@ for (const { fileName, text } of emit({
   moduleResolution: ts.ModuleResolutionKind.Bundler,
   declaration: true,
 }, fileNames)) {
-  write(fileName, text)
+  // 声明文件里的样式副作用 import 对类型无用，消费端 TS 也不认识 .css，写入前剥掉。
+  write(
+    fileName,
+    fileName.endsWith('.d.ts')
+      ? text.replace(/^import\s+['"][^'"]+\.(css|scss)['"];?\s*$/gm, '')
+      : text,
+  )
 }
 
 for (const { fileName, text } of emit({
