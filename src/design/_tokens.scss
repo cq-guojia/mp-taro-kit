@@ -55,9 +55,9 @@
   --mptk-dur: .2s;
   --mptk-dur-fast: .12s;
   --mptk-dur-run: 500ms;
-  /* 等待态的底色呼吸周期：1.4s → 280ms（快 5 倍，实机偏闪）→ 560ms（再放慢一倍）。
-     一次 1.6s 的等待里约能看到三次起伏；谷值仍是 .2，颜色不动。 */
-  --mptk-dur-breathe: 560ms;
+  /* 等待态的底色呼吸周期：1.4s → 280ms → 560ms → 1120ms（每次实机观感翻一倍）。
+     谷值与颜色都不动。 */
+  --mptk-dur-breathe: 1120ms;
   --mptk-ease: cubic-bezier(.4, 0, .2, 1);
 }
 
