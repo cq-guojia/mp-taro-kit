@@ -48,6 +48,27 @@ export default function SegmentedPage() {
             value={filter}
             onChange={(next) => { setFilter(next) }}
           />
+          <Segmented
+            className="demo-item"
+            items={FILTER_ITEMS}
+            value={filter}
+            radius="pill"
+            onChange={(next) => { setFilter(next) }}
+          />
+          <Segmented
+            className="demo-item"
+            items={FILTER_ITEMS}
+            value={filter}
+            width="ratio"
+            onChange={(next) => { setFilter(next) }}
+          />
+          <Segmented
+            className="demo-item"
+            items={FILTER_ITEMS}
+            value={filter}
+            width="equal"
+            onChange={(next) => { setFilter(next) }}
+          />
         </View>
       )
     }

@@ -144,10 +144,10 @@ export const pages: CatalogPage[] = [
       {
         id: 'button-basic',
         title: '基础按钮',
-        hint: 'Button',
-        usage: '',
+        hint: 'Button：三档高度（32 / 40 / 48，默认 48）与半圆形态（radius="pill"）',
+        usage: '<Button size="md">中</Button> <Button radius="pill">半圆</Button>',
         imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
-        renderNotes: '',
+        renderNotes: '总高逐像素等于 --mptk-control-h-* 档位，靠 height 不靠上下内边距；圆角走 --mptk-control-radius，pill 用 999px 而不是 50%',
       },
       {
         id: 'button-state',
@@ -208,10 +208,10 @@ export const pages: CatalogPage[] = [
       {
         id: 'segmented-basic',
         title: '分段选择',
-        hint: 'Segmented：滑动块指示器，可带图标 / 计数 / 副文本 / 段级禁用',
-        usage: '<Segmented items={items} value={value} onChange={setValue} />',
+        hint: 'Segmented：三档段宽（fit / ratio / equal）、半圆形态，可带图标 / 计数 / 副文本 / 段级禁用',
+        usage: '<Segmented items={items} value={value} onChange={setValue} /> 或 width="equal" radius="pill"',
         imports: ['mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style'],
-        renderNotes: '段等分，滑动块位置由组件按段数算百分比，不读 DOM 尺寸；双端实机未验证',
+        renderNotes: '段宽默认 fit 按内容撑开、超出横滑，equal 严格等分；fit / ratio 用 createSelectorQuery 量段宽，双端实机未验证',
       },
       {
         id: 'segmented-line',
@@ -219,7 +219,7 @@ export const pages: CatalogPage[] = [
         hint: 'indicator="line"：下划线指示器',
         usage: '<Segmented items={channels} value={channel} indicator="line" onChange={setChannel} />',
         imports: ['mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style'],
-        renderNotes: '与滑动块共用同一档高度；横滑未纳入本版，双端实机未验证',
+        renderNotes: '与滑动块共用同一档高度；下划线左右各缩一个间距档，双端实机未验证',
       },
       {
         id: 'segmented-state',

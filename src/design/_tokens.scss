@@ -19,6 +19,11 @@
   --mptk-radius-xl: 20px;
   --mptk-radius-pill: 999px;
 
+  /* 控件圆角（Button / Segmented / 将来的 Input 共用）：要整体调控件圆角只改这一行，
+     组件一律引用它，不各自写档位；半圆形态由组件把类名切到 --mptk-radius-pill。
+     容器（卡片、弹窗、列表块）不引用它，直接用 --mptk-radius-* 档位。 */
+  --mptk-control-radius: var(--mptk-radius-sm);
+
   --mptk-space-1: 4px;
   --mptk-space-2: 8px;
   --mptk-space-3: 12px;

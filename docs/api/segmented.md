@@ -2,7 +2,7 @@
 
 ## 接口 / 导出
 
-`mp-taro-kit/ui/form/segmented`：`Segmented`、`SegmentedProps`、`SegmentedItem`、`SegmentedSize`、`SegmentedIndicator`、`ControlColor`、`BuiltinControlColor`
+`mp-taro-kit/ui/form/segmented`：`Segmented`、`SegmentedProps`、`SegmentedItem`、`SegmentedSize`、`SegmentedWidth`、`SegmentedIndicator`、`SegmentedRadius`、`ControlColor`、`BuiltinControlColor`
 `mp-taro-kit/ui/form/segmented/style`：组件级样式出口，宿主显式引一次
 
 从 N 个候选里选 1 个：`value` 是宿主给的真值，组件完全受控；点第 k 段选第 k 段，点已选中段不重复触发。段数不固定为 2，与二元翻转的 [Switch 开关](switch.md) 是两个不同组件。
@@ -16,7 +16,9 @@
 | `onChange` | `(next: T) => unknown` | 否 | 返回 thenable 时进入等待态 | 点某段调用，`next` 是该段的 `value` |
 | `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主；组件不做回弹，位置从未变过 |
 | `size` | `'sm' \| 'md' \| 'lg'` | 否 | 默认 `lg` | 取 `--mptk-control-h-*`，三档为 32 / 40 / 48 |
+| `width` | `'fit' \| 'ratio' \| 'equal'` | 否 | 默认 `fit` | 段宽策略：按内容撑开 / 内容 + 剩余均摊 / 严格等分，见下 |
 | `indicator` | `'thumb' \| 'line'` | 否 | 默认 `thumb` | 滑动块或频道切换式下划线 |
+| `radius` | `'pill'` | 否 | 无 | 半圆形态：容器与滑动块一起切到 `--mptk-radius-pill` |
 | `color` | `ControlColor` | 否 | 默认蓝 | 内置色名 `blue` / `green` / `orange` / `red`，或任意 CSS 色值 |
 | `disabled` | boolean | 否 | 默认 `false` | 整组禁用，所有段点击短路 |
 | `loading` | boolean | 否 | 默认 `false` | 外部驱动的等待态，与内部等待取或 |
@@ -42,9 +44,21 @@
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| 渲染结果 | `JSX.Element` | 根 `View` 的类名含 `mptk-seg--<size>`、`--<indicator>`、色板与等待状态；段等分，滑动块位置由段数与当前索引算百分比写进内联样式 |
+| 渲染结果 | `JSX.Element` | 根 `View` 的类名含 `mptk-seg--<size>`、`--<width>`、`--<indicator>`、`--radius-<radius>`、色板；滑动块与下划线的位置、宽度写在这两个指示器节点的内联样式里 |
 
-段等分是刻意约束：滑动块按 `100 / items.length` 百分比定位，不读 DOM 尺寸，因此不依赖 `createSelectorQuery`，两端都不受测量时机影响。滑动块宽度减 6px、起点加 3px，选中首段或末段时左右各留 3px，不贴边。横向滚动未纳入本版，段数多时由宿主自行决定容器宽度。
+段宽有三种策略，由 `width` 选：
+
+| `width` | 段宽 | 定位方式 |
+|---|---|---|
+| `fit`（默认） | 内容 + 左右内边距，整块宽 = 各段之和 | 量真实矩形 |
+| `ratio` | 撑满容器，段先按内容占宽、剩余空间均摊 | 量真实矩形 |
+| `equal` | 撑满容器，严格 `100 / N` 等分 | 纯百分比，零测量 |
+
+`fit` / `ratio` 的段宽由内容决定，百分比算不出位置，组件因此在挂载后的下一拍用 `Taro.createSelectorQuery()` 量一次 track 与各段的矩形，窗口尺寸变化、段数 / 档位 / 圆角 / 等待态变化时重量；量到之前不画指示器，避免先在错位置闪一下。`equal` 不测量。
+
+超宽时由内置 `ScrollView` 横向滚动，当前选中段靠 `scrollIntoView` 自动滚进可视区（`fit` 模式下段数多也不用宿主自己包容器）。
+
+滑动块宽度减 6px、起点加 3px，选中首段或末段时左右各留 3px，不贴边；这两个值写在 `src/ui/form/segmented/Segmented.tsx`，样式里的 `--mptk-seg-inset` 只管滑块上下两条边，改留边时两处一起改。下划线的左右缩进取间距档 `--mptk-seg-line-inset`。
 
 ### 示例
 
@@ -76,6 +90,7 @@ function FilterBar() {
 ```
 
 频道切换只换指示器形态，其余契约不变：`<Segmented items={channels} value={channel} indicator="line" color="#8b5cf6" onChange={setChannel} />`。
+段宽策略同理：`<Segmented items={channels} value={channel} width="equal" />` 严格等分、不测量；`width="ratio"` 让两字窄四字宽；不传即 `fit`，按内容撑开、超出就横滑。
 
 ### 错误 / 抛出
 
@@ -97,7 +112,7 @@ function FilterBar() {
 
 ### 验证状态
 
-已在主库自检与演示站编译产物里核实：三档高度、组件级出口与样式齐全、两组件互不引用、异步状态机四条转移、默认蓝与四份主题产物色板齐全、明色滑轨非白、两端留 3px、内置四色与自定义色值均有断言；自绘转圈的主色与明暗两套取值、两种形态的几何也在产物里核对过。段等分定位、滑块过渡、下划线与转圈动画在 Skyline / WebView 双端实机**未验证**。
+已在主库自检与演示站编译产物里核实：三档高度、组件级出口与样式齐全、两组件互不引用、异步状态机四条转移、默认蓝与四份主题产物色板齐全、明色滑轨非白、两端留 3px、内置四色与自定义色值均有断言；自绘转圈的主色与明暗两套取值、两种形态的几何也在产物里核对过。`equal` 的等分定位、滑块过渡、下划线与转圈动画在 Skyline / WebView 双端实机**未验证**；`fit` / `ratio` 的 `createSelectorQuery` 测量路径双端实机也**未验证**。
 
 ## 更新日志
 
@@ -107,3 +122,4 @@ function FilterBar() {
 - 2026-11-12 18:22:33：转圈改为自绘 8 点圆点环，绕开 Skyline 单边边框让圆角失效
 - 2026-11-12 20:42:05：转圈改为 TDesign circular 圆环与 SpinKit 六点追逐两形态，默认圆环
 - 2026-11-12 21:14:07：异步改为点了先转圈、成功再切换，去掉乐观更新与回弹
+- 2026-11-13 00:13:38：段宽改为 fit / ratio / equal 三档并补 radius，删掉「段等分、不测量、不做横滑」的旧结论

@@ -1,17 +1,41 @@
+/* 高度吃 --mptk-control-h-* 三档，与 Switch / Segmented / 将来的 Input 同一套轴；
+   总高逐像素等于档位值，不再由上下内边距撑（那样各控件永远差一截）。
+   圆角走语义变量 --mptk-control-radius，`radius` 参数只翻成类名，谁都不写像素。 */
 .mptk-btn {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--mptk-business);
-  border-radius: var(--mptk-radius-md);
-  padding-top: var(--mptk-space-2);
+  height: var(--mptk-control-h-lg);
   padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-2);
   padding-left: var(--mptk-space-4);
+  background-color: var(--mptk-business);
+  border-radius: var(--mptk-control-radius);
   color: var(--mptk-surface-1);
   font-size: var(--mptk-font-lg);
   line-height: var(--mptk-line-lg);
 }
+
+.mptk-btn--sm {
+  height: var(--mptk-control-h-sm);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+}
+
+.mptk-btn--md {
+  height: var(--mptk-control-h-md);
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+}
+
+.mptk-btn--lg {
+  height: var(--mptk-control-h-lg);
+}
+
+.mptk-btn--radius-sm { border-radius: var(--mptk-radius-sm); }
+.mptk-btn--radius-md { border-radius: var(--mptk-radius-md); }
+.mptk-btn--radius-lg { border-radius: var(--mptk-radius-lg); }
+.mptk-btn--radius-pill { border-radius: var(--mptk-radius-pill); }
 
 .mptk-btn--disabled {
   background-color: var(--mptk-fg-4);

@@ -13,8 +13,16 @@ export default function ActionsPage() {
     if (id === 'button-basic') {
       return (
         <View>
-          <View className="demo-row">
-            <Button onClick={() => setClicked(true)}>点击触发</Button>
+          <View className="demo-stack">
+            <View className="demo-row">
+              <Button size="sm" onClick={() => setClicked(true)}>小</Button>
+              <Button size="md" onClick={() => setClicked(true)}>中</Button>
+              <Button onClick={() => setClicked(true)}>默认 48</Button>
+            </View>
+            <View className="demo-row">
+              <Button radius="pill" onClick={() => setClicked(true)}>半圆</Button>
+              <Button size="sm" radius="pill" onClick={() => setClicked(true)}>半圆小</Button>
+            </View>
           </View>
           {clicked ? <Text className="demo-note">onClick 已触发</Text> : null}
         </View>

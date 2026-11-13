@@ -10,8 +10,12 @@ autoInstallPeers: false
 
 # Taro 把主库 dist 里的 @tarojs/components 重写成平台插件的裸包名；
 # dist 位于工作区根、不在 demo 的 node_modules 树下，需把该插件公开提升到根才能解析。
+# 同理，主库源码要调 Taro.createSelectorQuery 量段宽（@tarojs/taro 是本包的 peerDependency，
+# 由 demo 提供），构建期需要它的类型能解析，也走公开提升 —— 不给根包再加一份 devDependency，
+# 免得与 demo 的 peer 变体各装一份、版本漂移。
 publicHoistPattern:
   - '@tarojs/plugin-platform-weapp'
+  - '@tarojs/taro'
 
 # @parcel/watcher 是 sass 的可选依赖，只服务 --watch；本库构建只用 sass.compile()，不需要它的原生构建脚本。
 # pnpm 12 的写法是 allowBuilds（老的 ignoredBuiltDependencies 不会让 install/add 静默）

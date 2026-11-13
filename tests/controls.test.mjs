@@ -49,6 +49,65 @@ test('Switch 与 Segmented 三档总高逐档等于 token，根规则不叠加�
   }
 })
 
+test('控件圆角统一走语义变量，容器统一降一号', () => {
+  for (const mode of ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']) {
+    assert.match(
+      read(`../dist/styles/${mode}.css`),
+      /--mptk-control-radius:\s*var\(--mptk-radius-sm\)/,
+      `${mode} 缺控件圆角语义变量`,
+    )
+  }
+  const btn = read('../dist/ui/actions/style/index.css')
+  const btnRoot = /\.mptk-btn\s*\{([^}]*)\}/.exec(btn)
+  assert.ok(btnRoot, '缺 .mptk-btn 根规则')
+  assert.match(btnRoot[1], /border-radius:\s*var\(--mptk-control-radius\)/, 'Button 圆角必须引用语义变量')
+  assert.doesNotMatch(btnRoot[1], /border-radius:\s*var\(--mptk-radius-(xs|sm|md|lg|xl)\)/, 'Button 不许自己写档位')
+  const seg = read('../dist/ui/form/segmented/style/index.css')
+  const segRoot = /\.mptk-seg\s*\{([^}]*)\}/.exec(seg)
+  assert.ok(segRoot, '缺 .mptk-seg 根规则')
+  assert.match(segRoot[1], /border-radius:\s*var\(--mptk-control-radius\)/, 'Segmented 容器圆角必须引用语义变量')
+  assert.match(seg, /\.mptk-seg__thumb\s*\{[^}]*border-radius:\s*var\(--mptk-radius-xs\)/, '滑块比容器小一号')
+  const cell = read('../dist/ui/display/cell/style/index.css')
+  assert.match(cell, /border-top-left-radius:\s*var\(--mptk-radius-sm\)/, 'Cell 四角降到 sm')
+  assert.doesNotMatch(cell, /border-(top|bottom)-(left|right)-radius:\s*var\(--mptk-radius-md\)/, 'Cell 不许留在 md')
+})
+
+test('Button 三档总高逐档等于 token，靠 height 不靠上下内边距', () => {
+  const css = read('../dist/ui/actions/style/index.css')
+  const root = /\.mptk-btn\s*\{([^}]*)\}/.exec(css)
+  assert.ok(root, '缺 .mptk-btn 根规则')
+  assert.match(root[1], /box-sizing:\s*border-box/, '固定高度必须盒模型含边框')
+  assert.match(root[1], /height:\s*var\(--mptk-control-h-lg\)/, '默认档必须是 48')
+  assert.doesNotMatch(root[1], /padding-(top|bottom)/, '总高不许由上下内边距叠加')
+  for (const tier of ['sm', 'md', 'lg']) {
+    const rule = new RegExp(`\\.mptk-btn--${tier}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(rule, `缺 .mptk-btn--${tier}`)
+    assert.match(rule[1], new RegExp(`height:\\s*var\\(--mptk-control-h-${tier}\\)`), `${tier} 档没吃对应 token`)
+  }
+})
+
+test('半圆形态用 pill token，不许写 50%', () => {
+  const btn = read('../dist/ui/actions/style/index.css')
+  assert.match(
+    btn,
+    /\.mptk-btn--radius-pill\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
+    'Button 缺 pill 圆角',
+  )
+  const seg = read('../dist/ui/form/segmented/style/index.css')
+  assert.match(
+    seg,
+    /\.mptk-seg--radius-pill\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
+    'Segmented 缺 pill 圆角',
+  )
+  for (const file of ['../dist/ui/actions/style/index.css', '../dist/ui/form/segmented/style/index.css']) {
+    assert.doesNotMatch(read(file), /border-radius:\s*50%/, '长方形上 50% 会变椭圆，必须用 pill token')
+  }
+  assert.match(read('../dist/ui/actions/Button.js'), /mptk-btn--radius-/, 'Button 要把 radius 翻成类名')
+  assert.match(read('../dist/ui/form/segmented/Segmented.js'), /mptk-seg--radius-/, 'Segmented 要把 radius 翻成类名')
+  assert.match(read('../dist/ui/actions/Button.d.ts'), /ButtonRadius/, 'd.ts 缺 ButtonRadius')
+  assert.match(read('../dist/ui/form/segmented/Segmented.d.ts'), /SegmentedRadius/, 'd.ts 缺 SegmentedRadius')
+})
+
 test('控件主色与业务色解耦：默认蓝、色板齐全；明色滑轨与滑块不是一片白', () => {
   for (const mode of ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']) {
     const css = read(`../dist/styles/${mode}.css`)

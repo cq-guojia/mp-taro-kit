@@ -1,27 +1,59 @@
-/* Segmented：容器高度吃控件高度轴，段等分、滑动块按段数用百分比定位。
-   不读 DOM 尺寸，位置由组件算好写进内联 style，双端都不依赖 measurements。
-   滑轨与滑块取不同颜色键，明色下不能双双为白。 */
+/* Segmented：容器高度吃控件高度轴，段宽由 width 轴三选一。
+   fit   = 段宽 = 内容 + 左右内边距，整块宽 = 各段之和，超出即横向滚动（内置 scroll-view）；
+   ratio = 撑满，段先按内容占宽、剩余均摊（两字窄、四字宽）；
+   equal = 撑满，严格 100 / N 等分，唯一不需要测量的模式。
+   滑块 / 下划线都是 track 内的绝对定位元素，与段同一个滚动容器，滚动时自然跟随。
+   圆角引用 --mptk-control-radius，半圆由组件加 --radius-pill 类切到 pill token。
+   等待态由全库共用的自绘 Spinner 绘制（见文件顶部 @use），这里不另画一份。 */
 @use '../../../feedback/spinner/style/index' as spinner;
 
 .mptk-seg {
+  /* 指示器内缩：滑块四边各让 3px（细分视觉值，不是间距档）。上下两条读这里的变量，
+     左右两条由组件内联写成 3px / 6px —— 两边同值，改的时候一起改。
+     下划线左右各缩 one step。 */
+  --mptk-seg-inset: 3px;
+  --mptk-seg-line-inset: var(--mptk-space-3);
+  --mptk-seg-item-pad: var(--mptk-space-4);
+  --mptk-seg-item-min: var(--mptk-control-h-lg);
   position: relative;
-  display: flex;
-  align-items: stretch;
-  width: 100%;
+  display: inline-flex;
+  max-width: 100%;
   height: var(--mptk-control-h-lg);
-  border-radius: var(--mptk-radius-md);
+  border-radius: var(--mptk-control-radius);
   background-color: var(--mptk-control-track);
   overflow: hidden;
 }
 
-.mptk-seg--sm { height: var(--mptk-control-h-sm); }
-.mptk-seg--md { height: var(--mptk-control-h-md); }
+.mptk-seg--sm {
+  --mptk-seg-item-pad: var(--mptk-space-3);
+  --mptk-seg-item-min: var(--mptk-control-h-sm);
+  height: var(--mptk-control-h-sm);
+}
+
+.mptk-seg--md {
+  --mptk-seg-item-pad: var(--mptk-space-3);
+  --mptk-seg-item-min: var(--mptk-control-h-md);
+  height: var(--mptk-control-h-md);
+}
+
 .mptk-seg--lg { height: var(--mptk-control-h-lg); }
+
+/* 撑满型：容器与滚动区都吃满父级宽度。 */
+.mptk-seg--ratio,
+.mptk-seg--equal {
+  display: flex;
+  width: 100%;
+}
 
 .mptk-seg--blue { --mptk-control-active: var(--mptk-control-blue); }
 .mptk-seg--green { --mptk-control-active: var(--mptk-control-green); }
 .mptk-seg--orange { --mptk-control-active: var(--mptk-control-orange); }
 .mptk-seg--red { --mptk-control-active: var(--mptk-control-red); }
+
+/* 半圆形态：容器与滑块一起切到 pill；下划线形态不需要圆角，那条规则写在后面靠后，
+   同特异性下后者胜出，所以 --line 一定能盖掉 --radius-pill。 */
+.mptk-seg--radius-pill { border-radius: var(--mptk-radius-pill); }
+.mptk-seg--radius-pill .mptk-seg__thumb { border-radius: var(--mptk-radius-pill); }
 
 .mptk-seg--line {
   border-radius: 0;
@@ -32,28 +64,64 @@
   opacity: .5;
 }
 
-.mptk-seg__thumb {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  border-radius: var(--mptk-radius-sm);
-  background-color: var(--mptk-control-active);
-  transition: left var(--mptk-dur) var(--mptk-ease);
+/* 横向滚动容器：flex:1 1 0 让它在 fit 模式下正好等于内容宽（根是 inline-flex 收缩到内容），
+   在 ratio / equal 模式下被父级的 100% 撑满。overflow 交给 scroll-view 自己。 */
+.mptk-seg__scroll {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  white-space: nowrap;
 }
 
+.mptk-seg__track {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.mptk-seg--ratio .mptk-seg__track,
+.mptk-seg--equal .mptk-seg__track {
+  display: flex;
+  width: 100%;
+  min-width: 100%;
+}
+
+.mptk-seg__thumb {
+  position: absolute;
+  top: var(--mptk-seg-inset);
+  bottom: var(--mptk-seg-inset);
+  border-radius: var(--mptk-radius-xs);
+  background-color: var(--mptk-control-active);
+  transition-property: left, width;
+  transition-duration: var(--mptk-dur);
+  transition-timing-function: var(--mptk-ease);
+}
+
+/* 段：fit 下按内容撑开（min-width 兜住触控热区），ratio 让剩余均摊，equal 严格等分。 */
 .mptk-seg__item {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   display: flex;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0;
-  min-width: 0;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  min-width: var(--mptk-seg-item-min);
+  padding-right: var(--mptk-seg-item-pad);
+  padding-left: var(--mptk-seg-item-pad);
   color: var(--mptk-fg-2);
   font-size: var(--mptk-font-sm);
   line-height: var(--mptk-line-sm);
+}
+
+.mptk-seg--ratio .mptk-seg__item {
+  flex: 1 1 auto;
+}
+
+.mptk-seg--equal .mptk-seg__item {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .mptk-seg--thumb .mptk-seg__item--on {
@@ -102,16 +170,24 @@
   line-height: var(--mptk-line-xs);
 }
 
+/* 下划线是容器级元素（不是选中段的子元素），切换时在段之间滑过去，而不是瞬移。 */
 .mptk-seg__line {
   position: absolute;
-  right: 20%;
   bottom: 0;
-  left: 20%;
   height: 2px;
   background-color: var(--mptk-control-active);
+  transition-property: left, width;
+  transition-duration: var(--mptk-dur);
+  transition-timing-function: var(--mptk-ease);
 }
 
-/* 转圈几何统一由自绘 Spinner 提供（见文件顶部 @use），这里只补与文字的间距。 */
+/* 等待态的转圈几何统一由自绘 Spinner 提供（见文件顶部 @use），这里不再画第二份。
+   主色跟控件主色走（内置色名时也一致），自定义色值由组件内联 color 覆盖。 */
+.mptk-seg .mptk-spinner {
+  color: var(--mptk-control-active);
+}
+
+/* 转圈与文字并排时的间距；.mptk-seg__spinner 只留作调用点定位用的类名 hook。 */
 .mptk-seg__spinner {
   margin-left: var(--mptk-space-1);
 }
