@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ScrollView, View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import type { CSSProperties, ReactNode } from 'react'
+import { CONTROL_SIZE_DEFAULT } from '../../../design/index.js'
 import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
 
@@ -66,7 +67,7 @@ export function Segmented<T extends string = string>({
   value,
   onChange,
   onFailed,
-  size = 'lg',
+  size = CONTROL_SIZE_DEFAULT,
   width = 'fit',
   indicator = 'thumb',
   radius,

@@ -1,6 +1,6 @@
 // 本文件由 scripts/icons.mjs 生成，请勿手改。
 // 包：common.base
-// 源：https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.css
+// 源：https://at.alicdn.com/t/c/font_5252971_dn4wfq92dar.css
 export const iconBaseClass = 'koc-i-common-base'
 export const iconPrefix = 'koc-i-common-base-'
 
@@ -9,6 +9,8 @@ export const iconPrefix = 'koc-i-common-base-'
  * 随平台增删变化，每次 pnpm run icons 重写；不作为对外契约，调用处直接用图标名即可。
  */
 export const iconMap: Readonly<Record<string, string>> = {
+  "riqi": 'koc-i-common-base koc-i-common-base-riqi',
+  "qm": 'koc-i-common-base koc-i-common-base-qm',
   "fuzhi": 'koc-i-common-base koc-i-common-base-fuzhi',
   "shuaxin": 'koc-i-common-base koc-i-common-base-shuaxin',
   "gongzuoqu": 'koc-i-common-base koc-i-common-base-gongzuoqu',
@@ -59,7 +61,7 @@ export const iconMap: Readonly<Record<string, string>> = {
 }
 
 /** 当前图标名清单，供展示页遍历与自检，同样不承诺稳定。变体（-dark）不在其中。 */
-export const iconNames: readonly string[] = ['fuzhi', 'shuaxin', 'gongzuoqu', 'AIdamoxing', 'chexiao', 'chazhao', 'info', 'warn', 'shensemoshi', 'qiansemoshi', 'yonghu-refresh', 'youxiangshuangjiantou', 'zuoxiangshuangjiantou', 'jia', 'jian', 'shezhi', 'xihuan', 'xihuan-a', 'saoma', 'tuichu', 'shoucanga', 'gou', 'shoucang', 'huidingbu', 'shuju', 'shijian1', 'move-right', 'shaixuan', 'xiugai', 'iconjia', 'sort-down', 'guanbi', 'shanchu', 'sort-up', 'move-left', 'move-down', 'move-up', 'sort-right', 'sort-left', 'home', 'yonghu-close', 'yonghu-warn', 'yonghu-minus', 'shezhi1', 'yonghu-add', 'yonghu', 'yonghu-check']
+export const iconNames: readonly string[] = ['riqi', 'qm', 'fuzhi', 'shuaxin', 'gongzuoqu', 'AIdamoxing', 'chexiao', 'chazhao', 'info', 'warn', 'shensemoshi', 'qiansemoshi', 'yonghu-refresh', 'youxiangshuangjiantou', 'zuoxiangshuangjiantou', 'jia', 'jian', 'shezhi', 'xihuan', 'xihuan-a', 'saoma', 'tuichu', 'shoucanga', 'gou', 'shoucang', 'huidingbu', 'shuju', 'shijian1', 'move-right', 'shaixuan', 'xiugai', 'iconjia', 'sort-down', 'guanbi', 'shanchu', 'sort-up', 'move-left', 'move-down', 'move-up', 'sort-right', 'sort-left', 'home', 'yonghu-close', 'yonghu-warn', 'yonghu-minus', 'shezhi1', 'yonghu-add', 'yonghu', 'yonghu-check']
 
 /**
  * 本包字形是否带颜色（COLR/CPAL）：true 时 color 与明暗主题都改不动它。

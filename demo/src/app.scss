@@ -1,6 +1,9 @@
 /* 演示站全局样式：颜色一律走 var(--mptk-*)，不硬编码色值。
    属性用长写，避开 Skyline 对「简写属性内 var()」尚未实机验证的行为。 */
 
+/* 站点自己的主题配置：只覆盖要改的键，其余吃库默认值。 */
+@use './app-theme';
+
 page {
   /* 页面底色不在 WXSS 里写死：由 app.json + theme.json 的窗口主题配置在页面创建前解析。
      写在这里会恒取 page 上的明色变量，后代 .mptk-dark 覆盖不到，转场首帧露白。 */
@@ -230,22 +233,111 @@ page {
 
 .demo-swatch {
   border-radius: var(--mptk-radius-sm);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--mptk-border);
   height: 48px;
   margin-right: var(--mptk-space-2);
   margin-bottom: var(--mptk-space-2);
   width: 48px;
 }
 
-.demo-swatch--business {
-  background-color: var(--mptk-business);
+/* 主题配置页的取值块：键名与 --mptk-* 一一对应，值不复制。 */
+$demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, border, business, success, warning, danger, control-active;
+@each $key in $demo-token-swatches {
+  .demo-swatch--#{$key} {
+    background-color: var(--mptk-#{$key});
+  }
 }
 
-.demo-swatch--success {
-  background-color: var(--mptk-success);
+/* 设置列表里的小色块。 */
+.demo-swatch--sm {
+  border-radius: var(--mptk-radius-xs);
+  height: 20px;
+  margin-right: var(--mptk-space-1);
+  margin-bottom: 0;
+  width: 20px;
 }
 
-.demo-swatch--danger {
-  background-color: var(--mptk-danger);
+/* 主题配置页的设置列表：一组一块，行内三段（名称 / 取值 / 档位）。 */
+.demo-settings {
+  background-color: var(--mptk-surface-1);
+  border-radius: var(--mptk-radius-lg);
+  margin-bottom: var(--mptk-space-3);
+  padding-top: var(--mptk-space-3);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-2);
+  padding-left: var(--mptk-space-4);
+}
+
+.demo-settings__title {
+  color: var(--mptk-fg-3);
+  display: block;
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  padding-bottom: var(--mptk-space-1);
+}
+
+.demo-settings__row {
+  align-items: center;
+  border-bottom-color: var(--mptk-cell-divider);
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  display: flex;
+  flex-direction: row;
+  min-height: 40px;
+  padding-top: var(--mptk-space-1);
+  padding-bottom: var(--mptk-space-1);
+}
+
+.demo-settings__name {
+  color: var(--mptk-fg);
+  flex-basis: 0;
+  flex-grow: 1;
+  flex-shrink: 1;
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+}
+
+.demo-settings__value {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  margin-left: var(--mptk-space-2);
+}
+
+.demo-settings__value--text {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  text-align: right;
+}
+
+.demo-settings__hint {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  margin-left: var(--mptk-space-2);
+  text-align: right;
+  width: 56px;
+}
+
+/* 主题配置页的配置片段：一行一条，等宽字体。 */
+.demo-code {
+  background-color: var(--mptk-surface-2);
+  border-radius: var(--mptk-radius-sm);
+  padding-top: var(--mptk-space-3);
+  padding-right: var(--mptk-space-3);
+  padding-bottom: var(--mptk-space-3);
+  padding-left: var(--mptk-space-3);
+}
+
+.demo-code__line {
+  color: var(--mptk-fg-2);
+  display: block;
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
 }
 
 .demo-panel {

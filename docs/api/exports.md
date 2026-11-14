@@ -7,7 +7,7 @@
 | 子路径 | 类型条件 | ESM | CJS | 说明 |
 |---|---|---|---|---|
 | `mp-taro-kit` | `dist/index.d.ts` | `dist/index.js` | `dist/index.cjs` | 五个能力域的具名汇总出口 |
-| `mp-taro-kit/design` | `dist/design/index.d.ts` | `dist/design/index.js` | `dist/design/index.cjs` | 当前为空导出 |
+| `mp-taro-kit/design` | `dist/design/index.d.ts` | `dist/design/index.js` | `dist/design/index.cjs` | 设计层常量：控件默认尺寸档 `CONTROL_SIZE_DEFAULT` |
 | `mp-taro-kit/runtime` | `dist/runtime/index.d.ts` | `dist/runtime/index.js` | `dist/runtime/index.cjs` | 单例、覆盖层栈、通知队列、loading 句柄 |
 | `mp-taro-kit/utils` | `dist/utils/index.d.ts` | `dist/utils/index.js` | `dist/utils/index.cjs` | 纯函数与 i18n 注册口 |
 | `mp-taro-kit/core` | `dist/core/index.d.ts` | `dist/core/index.js` | `dist/core/index.cjs` | `configure` 与注入式平台操作 |
@@ -22,7 +22,7 @@
 | `mp-taro-kit/styles/theme-light` | 无 | 无 | 无 | **固定明**：只有明色值；宿主定制配色覆盖的都是明色，没有暗色变体 |
 | `mp-taro-kit/styles/theme-dark` | 无 | 无 | 无 | **固定暗**：只写基线与暗色值，不铺明色、不做覆盖，不随系统变化 |
 | `mp-taro-kit/styles/theme-auto` | 无 | 无 | 无 | **跟随系统**：暗色值包在 `prefers-color-scheme: dark` 媒体查询里 |
-| `mp-taro-kit/styles/theme-runtime` | 无 | 无 | 无 | **运行时热切换**：明色为默认，`.mptk-dark` 只覆盖颜色键，由 `setThemeMode` 随时切 |
+| `mp-taro-kit/styles/theme-runtime` | 无 | 无 | 无 | **运行时热切换**：明色为默认，`.mptk-dark` / `.mptk-light` 只覆盖颜色键，由 `setThemeMode` 随时切 |
 | `mp-taro-kit/styles/tokens` | 无 | 无 | 无 | 旧出口，等价于固定明；新代码从上面几项里选一 |
 | `mp-taro-kit/package.json` | 无 | 无 | 无 | 指向包清单自身 |
 
@@ -40,7 +40,7 @@
 
 `styles/theme-*` 的字号档位固定为 12 / 14 / 15 / 17 / 22（另 `font-nav` 17），与《微信小程序设计指南》5.1 的常用字号一一对应；行高与字号成对。宿主不应整体覆盖档位，演示站自身也不覆盖。
 
-控件高度档位固定为 32 / 40 / 48（`--mptk-control-h-sm` / `-md` / `-lg`，默认 48），与 WeUI 的按钮高度三档一致；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。真源同为 `src/design/_tokens.scss` 的 `base` mixin，`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于该值。
+控件高度档位固定为 32 / 40 / 48（`--mptk-control-h-sm` / `-md` / `-lg`，默认 48），与 WeUI 的按钮高度三档一致；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。真源同为 `src/design/_tokens.scss` 的 `base` mixin，`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于该值。不传 `size` 时取 `mp-taro-kit/design` 导出的 `CONTROL_SIZE_DEFAULT`（当前 `lg`），Button / Switch / Segmented 与将来的输入类控件共用它。
 
 控件主色轴默认指向 `--mptk-control-blue`，内置蓝 / 绿 / 橙 / 红四色；`Switch` 在组件样式里把默认值覆盖成绿（对齐微信原生开关），`Segmented` 仍用蓝；滑轨、滑块、选中文字各有独立颜色键。这组变量写在 `light` / `dark` mixin，与 `--mptk-business` 等语义色解耦：宿主定制业务色不会改变控件默认外观，明色下滑轨与滑块也不会双双为白。组件的 `color` 可传内置色名（走类名切变量）或任意 CSS 色值（走显式内联上色，不依赖 WXML 行内自定义属性）；`tests/controls.test.mjs` 核对四份主题产物都带全这组键，并断言组件不引用业务色。
 
@@ -120,7 +120,7 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 | 固定明 | `mp-taro-kit/styles/theme-light` | 只有明色值，宿主定制配色全是明色 | 不要 |
 | 固定暗 | `mp-taro-kit/styles/theme-dark` | 只写基线与暗色值，不铺明色、不做覆盖，与系统设置无关 | 不要 |
 | 跟随系统 | `mp-taro-kit/styles/theme-auto` | 暗色值包在 `@media (prefers-color-scheme: dark)` 里 | 不要 |
-| 运行时热切换 | `mp-taro-kit/styles/theme-runtime` | 明色为默认，`.mptk-dark` 只覆盖颜色键，由 `setThemeMode` 随时切 | 要，见下 |
+| 运行时热切换 | `mp-taro-kit/styles/theme-runtime` | 明色为默认，`.mptk-dark` / `.mptk-light` 只覆盖颜色键，由 `setThemeMode` 随时切，也可套在容器上局部反色 | 要，见下 |
 
 前三条是**编译期三选一**，一行 import 定死，不需要 JS、`faces` 注入或根容器标记。第四条是并存的另一种模式，**不改动前三条**：已接入宿主的一行 import 一个字不用改；`dist/styles/tokens.css` 仍是固定明的兼容副本。四份都由 `src/design/_tokens.scss` 的 mixin 编译，颜色值只写一次，组件仍只写 `var(--mptk-*)`。
 
@@ -185,7 +185,7 @@ setThemeMode('auto', {
 
 页面**不用写主题代码**，但根容器要用库的 `<PageShell />` 替换原来的根 `<View />`（层级不增加，`PageShell` 不设 `height`，高度链仍由宿主自己的外壳类控制）：`<PageShell className="order-page">{children}</PageShell>`。`<OverlayHost />` 与页面内容是兄弟节点，它自己读同一份主题状态挂标记，Toast / Dialog / Loading 一起换色。
 
-`.mptk-dark` 只覆盖 `dark` mixin 的颜色键，其余基线变量继续从 `page` 继承。`page` 自身不能被后代 class 反向改色，所以本出口**不在 `page` 上声明底色**：首帧底色由上述官方窗口主题配置在页面创建前决定；`PageShell` 铺 `--mptk-surface-base` 是 Skyline 安全区要求的内容区底色，不承担首帧；回弹区与 Android 手势条由 `onDarkChange` 里的 `setBackgroundColor` 同步。主题状态走 `runtime` 层的跨副本单例，不新建 React Context；状态是否持久化（storage / store）由消费端决定，库不接管。
+`.mptk-dark` 只覆盖 `dark` mixin 的颜色键，`.mptk-light` 只覆盖 `light` mixin 的颜色键（套在容器上就是局部反色），其余基线变量继续从 `page` 继承。`page` 自身不能被后代 class 反向改色，所以本出口**不在 `page` 上声明底色**：首帧底色由上述官方窗口主题配置在页面创建前决定；`PageShell` 铺 `--mptk-surface-base` 是 Skyline 安全区要求的内容区底色，不承担首帧；回弹区与 Android 手势条由 `onDarkChange` 里的 `setBackgroundColor` 同步。主题状态走 `runtime` 层的跨副本单例，不新建 React Context；状态是否持久化（storage / store）由消费端决定，库不接管。
 
 ##### 边界与验证状态
 
@@ -260,3 +260,5 @@ setThemeMode('auto', {
 - 2026-11-13 18:43:59：运行时约定补贴边内容声明契约：Card 派生 --edge-content 关掉壳的上下留白
 - 2026-11-13 23:24:15：图标出口行同步到命名空间分层路径
 - 2026-11-13 23:51:56：补 ui/display/icon 与 ui/icon/all 出口
+- 2026-11-14 01:24:34：design 出口补 CONTROL_SIZE_DEFAULT，控件默认档统一到这里
+- 2026-11-14 01:31:50：运行时出口补 .mptk-light：只覆盖颜色键，可套容器局部反色

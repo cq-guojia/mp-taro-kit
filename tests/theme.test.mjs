@@ -11,6 +11,10 @@ function exists(relative) {
   return existsSync(new URL(relative, import.meta.url))
 }
 
+function cssValue(css, key) {
+  return new RegExp(`--mptk-${key}:\\s*([^;]+);`).exec(css)?.[1]?.trim()
+}
+
 /** 十六进制颜色按语义比较：#fff 与 #ffffff 是同一色，不算真源漂移。 */
 function hex(value) {
   const raw = value.trim().toLowerCase()
@@ -24,7 +28,7 @@ test('运行时主题出口：三选一原样保留，第四份只覆盖颜色�
   const css = read('../dist/styles/theme-runtime.css')
   assert.match(css, /page\s*\{/, 'page 仍是变量根')
   assert.match(css, /--mptk-radius-md:\s*12px/, '基线仍由 page 提供')
-  assert.match(css, /--mptk-surface-base:\s*#fff/, 'page 默认明色')
+  assert.match(css, /--mptk-surface-base:\s*#f2f3f5/, 'page 默认明色')
   assert.match(css, /\.mptk-dark\s*\{/, '必须有运行时根标记')
   assert.match(css, /--mptk-fg:\s*#e6e8eb/, '根标记提供暗色值')
   assert.doesNotMatch(css, /prefers-color-scheme/, '运行时模式不靠媒体查询双轨判定')
@@ -35,6 +39,14 @@ test('运行时主题出口：三选一原样保留，第四份只覆盖颜色�
     darkRule[1],
     /--mptk-radius-|--mptk-font-|--mptk-space-|--mptk-line-/,
     '根标记只覆盖颜色键，不重写 26 个基线变量',
+  )
+
+  const lightRule = css.match(/\.mptk-light\s*\{([^}]*)\}/)
+  assert.ok(lightRule, '必须有局部明色标记')
+  assert.doesNotMatch(
+    lightRule[1],
+    /--mptk-radius-|--mptk-font-|--mptk-space-|--mptk-line-/,
+    '局部明色同样只覆盖颜色键',
   )
 
   const pkg = JSON.parse(read('../package.json'))
@@ -54,9 +66,9 @@ test('页面底色真源分层：编译期出口由 WXSS 画，运行时出口�
   assert.ok(runtime, 'theme-runtime 缺 page 规则')
   assert.doesNotMatch(runtime[1], /background-color/, '运行时出口不得把页面底色写死在 page 上')
 
-  const tokens = read('../src/design/_tokens.scss')
-  const lightBase = /@mixin light[\s\S]*?--mptk-surface-base:\s*(#[0-9a-fA-F]+)/.exec(tokens)?.[1]
-  const darkBase = /@mixin dark[\s\S]*?--mptk-surface-base:\s*(#[0-9a-fA-F]+)/.exec(tokens)?.[1]
+  /* 底色可能由 SCSS 变量插值而来，源文件里取不到具体色值，改读编译产物。 */
+  const lightBase = cssValue(read('../dist/styles/theme-light.css'), 'surface-base')
+  const darkBase = cssValue(read('../dist/styles/theme-dark.css'), 'surface-base')
   assert.ok(lightBase && darkBase, '取不到令牌的明暗底色')
   const theme = JSON.parse(read('../demo/src/theme.json'))
   assert.equal(hex(theme.light.bgColor), hex(lightBase), 'theme.json 明色档必须与令牌一致')

@@ -1,6 +1,6 @@
 /* 本文件由 scripts/icons.mjs 生成，请勿手改。
    包：common.base
-   源：https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.css
+   源：https://at.alicdn.com/t/c/font_5252971_dn4wfq92dar.css
    归属：对外图标包
    颜色：单色字形，吃 color，明暗跟随主题
    尺寸：基础类不设 font-size，图标继承所在文字字号，放大由宿主的 --mptk-font-* 档位决定。
@@ -8,9 +8,9 @@
 
 @font-face {
   font-family: "koc-i-common-base"; /* Project id 5252971 */
-  src: url('https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.woff2?t=1794588774492') format('woff2'),
-       url('https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.woff?t=1794588774492') format('woff'),
-       url('https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.ttf?t=1794588774492') format('truetype');
+  src: url('https://at.alicdn.com/t/c/font_5252971_dn4wfq92dar.woff2?t=1794625096922') format('woff2'),
+       url('https://at.alicdn.com/t/c/font_5252971_dn4wfq92dar.woff?t=1794625096922') format('woff'),
+       url('https://at.alicdn.com/t/c/font_5252971_dn4wfq92dar.ttf?t=1794625096922') format('truetype');
 }
 
 .koc-i-common-base {
@@ -18,6 +18,14 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.koc-i-common-base-riqi:before {
+  content: "\e6b9";
+}
+
+.koc-i-common-base-qm:before {
+  content: "\e647";
 }
 
 .koc-i-common-base-fuzhi:before {

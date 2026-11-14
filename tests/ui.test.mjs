@@ -72,11 +72,11 @@ test('明暗三选一：三个主题出口产物齐全且行为分明', () => {
   assert.doesNotMatch(light, /prefers-color-scheme|--mptk-fg:\s*#e6e8eb/, '固定明不得含暗色值')
   assert.doesNotMatch(
     dark,
-    /--mptk-surface-base:\s*#fff|@media \(prefers-color-scheme: dark\)/,
+    /--mptk-surface-base:\s*#f2f3f5|@media \(prefers-color-scheme: dark\)/,
     '固定暗不得铺明色值，也不得跟系统走',
   )
   assert.match(dark, /--mptk-fg:\s*#e6e8eb/, '固定暗必须含暗色值')
-  assert.match(auto, /--mptk-surface-base:\s*#fff/, '跟随系统默认明')
+  assert.match(auto, /--mptk-surface-base:\s*#f2f3f5/, '跟随系统默认明')
   assert.match(auto, /@media \(prefers-color-scheme: dark\)/, '跟随系统必须包媒体查询')
   assert.match(auto, /--mptk-fg:\s*#e6e8eb/, '跟随系统必须含暗色值')
   for (const stale of ['../src/design/tokens.css', '../src/design/dark-values.css']) {

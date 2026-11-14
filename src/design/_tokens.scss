@@ -107,12 +107,13 @@
   --mptk-fg-3: #{$gray-7};
   --mptk-fg-4: #9aa1ab;
 
-  /* 明色下三级面不再统统是纯白：卡片保持白，次级面走最浅灰，下沉面与滑轨同档。
-     页面底色仍是 #fff，与官方窗口主题配置的 bgColor 保持一致，不许两处漂移。 */
+  /* 明色下三级面都不是纯白：卡片仍为白，页面底走浅灰（小程序页面的常规观感是
+     「白卡片浮在灰底上」，不是整屏纯白），次级面比页面浅一档，下沉面与滑轨同档。
+     页面底色与官方窗口主题配置的 bgColor 保持一致，不许两处漂移。 */
   --mptk-surface-1: #fff;
   --mptk-surface-2: #{$gray-1};
   --mptk-surface-3: #{$gray-3};
-  --mptk-surface-base: #fff;
+  --mptk-surface-base: #{$gray-2};
 
   --mptk-border-faint: rgba(0, 0, 0, .04);
   --mptk-border: rgba(0, 0, 0, .10);

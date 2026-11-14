@@ -8,14 +8,14 @@
 
 ## 2. 目录树
 
-小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 16 个展示页；基础规范组下的设计基础与尺寸各成一页，不共用一个展示页，也不对应单个 `ui` 子域。
+小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 17 个展示页；基础规范组下的主题配置、设计基础与尺寸各成一页，不共用一个展示页，也不对应单个 `ui` 子域。
 
 以下是约定的目录结构，每个节点后的备注说明该路径的职责与对应的库侧能力域；骨架屏只在 `catalog.ts` 预留 id，树中不生成节点。
 
 ```text
 demo/                                               # 仓库内的 Taro 小程序宿主
 ├── package.json                                    # 演示站清单：mp-taro-kit 用 workspace:*，并装宿主 peer 与 Taro Vite 编译链
-├── app.config.ts                                   # 页面路由真源：pages 共 17 项，由 src/app.config.ts 转发给 Taro
+├── app.config.ts                                   # 页面路由真源：pages 共 18 项，由 src/app.config.ts 转发给 Taro
 ├── project.config.json                             # 微信开发者工具工程配置：renderer 在 Skyline 与 WebView 之间切换
 ├── tsconfig.json                                   # 演示站 TS 配置：jsx 用 react-jsx、target 用 es2020
 ├── babel.config.js                                 # Taro React + Vite 的 babel 预设，编译期使用
@@ -27,14 +27,15 @@ demo/                                               # 仓库内的 Taro 小程�
     ├── app.config.ts                               # Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
     ├── theme.json                                  # 官方 DarkMode 变量配置：明暗两档窗口/导航底色，编译后自动进产物根
     ├── app.tsx                                     # 宿主入口：configure(faces)、setThemeMode、挂一次 <OverlayHost />、引 theme-runtime
-    ├── catalog.ts                                  # 单一事实源：16 个展示页 + 9 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
+    ├── catalog.ts                                  # 单一事实源：17 个展示页 + 9 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
     ├── app.scss                                    # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
     ├── components/                                 # 演示站共用组件：页面外壳、示例块与统一头部
     │   ├── DemoBlock.tsx                           # 单个示例外壳；另导出 DemoPage 页壳，按 catalog 铺块并把正文交给 DemoShell
     │   ├── DemoNav.tsx                             # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
     │   └── DemoShell.tsx                           # 页面外壳：固定视口高度的 View + scroll-view；导航栏在滚动区外
-    └── pages/                                      # 演示站页面：1 个索引页 + 16 个展示页
+    └── pages/                                      # 演示站页面：1 个索引页 + 17 个展示页
         ├── index/index.tsx                         # 目录页：用 CellGroup 铺 menu 固定分组；主题三态由 Segmented 渲染
+        ├── theme-config/index.tsx                  # 主题配置：四组默认值清单（基础配置 / 颜色规范 / 空间属性 / Icon 规范）与站点覆盖写法
         ├── design-foundation/index.tsx             # 设计基础：中性灰阶、色相与明暗两套，独立成页
         ├── sizing/index.tsx                        # 尺寸：控件高度三档与其余档位，独立成页
         ├── infra/index.tsx                         # src/ui/infra/：OverlayHost、SafeArea、use-store
@@ -66,8 +67,9 @@ demo/                                               # 仓库内的 Taro 小程�
 - **组合示例按引用方向归属，只向上引用、不向下引用**：通用容器不知道自己会被谁装，`Card` 页只列自身能力与宿主手搓的内容（`Text` / `View` + 自身槽位），不列举具体子组件的组合；`Cell` 与 `Card` 的组合归引用方 `Cell` 页展示，并放在该页自身能力之后。展示顺序固定为「先看默认值 → 再看可枚举档位 → 再看设置开关 → 再看槽位与内容 → 再看交互状态 → 最后看与其他组件的组合」。`tests/card.test.mjs` 断言 Card 页源码与示例 `imports` 都不出现 `ui/display/cell`；`tests/ui.test.mjs` 断言组合示例归 Cell 页末组。
 - 有尺寸轴的组件，页面第一块固定是「尺寸」示例：逐档铺开（sm / md / lg 各一条）并标出档位与取值，其余示例不再兼差当尺寸表。除这一块之外，演示一律按 `size="md"` 摆：同一形态有多个实例、或一页有多个形态时，全部用同一档 `md`，不混用 `lg` / `sm` —— 尺寸混用会被读成形态差异，形态之间也就没法横向比较。`tests/ui.test.mjs` 按示例块断言这条。
 - 菜单与展示页是多对一：`menu` 的 `ready` 条目必须带 `pageId` 且指向真实展示页，`planned` 条目不带 `pageId`、不绑跳转；`tests/ui.test.mjs` 断言这两条。
-- 菜单分组固定为九组：首组「基础规范」（Foundations）收纳颜色、尺寸等设计依据，中间六组对齐 Vant Weapp 六类（基础 / 表单 / 反馈 / 展示 / 导航 / 业务），末两组是「基础能力」「命令式 API」。顺序固定；已有占位只把 `planned` 改为 `ready`，新条目追加到该组末尾，不插入既有条目之间、不重排。`planned` 只是占位，不是待办清单。
-- 基础规范组按「使用者查规范」的场景归类，不按 `src/ui/` 目录归类；「设计基础」与「尺寸」各指向自己的展示页，一页只装一件事，不把两块内容并回同页。两页各有自己的示例块，路由由 `pages` 派生；`tests/foundations.test.mjs` 断言两页独立、内容不串页。取值依据见[设计基础](design-foundation.md)，演示站不复制正文。
+- 菜单分组固定为九组：首组「基础规范」（Foundations）收纳颜色、尺寸等设计依据，中间六组对齐 Vant Weapp 六类（基础 / 表单 / 反馈 / 展示 / 导航 / 业务），末两组是「基础能力」「命令式 API」。顺序固定；基础规范组首条固定为「主题配置」——使用者先拿到总配置与覆盖写法，再看具体色板与档位；其余新条目追加到该组末尾，不插入既有条目之间、不重排。`planned` 只是占位，不是待办清单。
+- 基础规范组按「使用者查规范」的场景归类，不按 `src/ui/` 目录归类；「主题配置」「设计基础」与「尺寸」各指向自己的展示页，一页只装一件事，不把几块内容并回同页。三页各有自己的示例块，路由由 `pages` 派生；`tests/foundations.test.mjs` 断言各页独立、内容不串页。取值依据见[设计基础](design-foundation.md)，演示站不复制正文。
+- 三页职责固定：「主题配置」是**配置项清单**（基础配置 / 颜色规范 / 空间属性 / Icon 规范，颜色左明右暗并标出标准色相名），回答「默认值是什么、在哪改」；「设计基础」是**取值依据**（灰阶层级与色相分档的理由）；「尺寸」是**档位标尺**（逐档铺开看比例）。同一条取值允许在配置页出现一次，但只列值与档位名，不重复讲理由。
 - 分组判据按「使用者找组件时的场景」，不按 `src/ui/` 的目录：`Toast` 排基础组件、`Dialog` 排反馈组件、`Popup` 排基础而 `Overlay` 排反馈，但库侧路径仍是 `ui/feedback` / `ui/layout`，目录不反向约束 exports。
 - 每个页面必须走 `DemoShell`：外壳 `height: 100vh` + `scroll-view type="custom"`，页面 json 配 `disableScroll: true`。Skyline 不支持页面全局滚动，绕开外壳写普通容器会让超屏内容滚不到；平台依据见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md)。
 - 控件的效果展示归演示站；props、组内行为与用法代码归 `docs/api/<组件>.md`（如 [Cell 单元格](../api/cell.md)、[Switch 开关](../api/switch.md)、[Segmented 分段选择](../api/segmented.md)），演示站不展示代码。演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
@@ -113,3 +115,6 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-13 16:42:48：两处 Card 组合示例改零参数，Card 页「装 Cell」示例改名 card-cell
 - 2026-11-13 19:09:20：组合示例按引用方向归属：Card 页删掉装 Cell 示例，Cell 页新增末组「与 Card 组合」；补向上引用与展示顺序约束
 - 2026-11-13 23:24:15：图标页说明改为按命名空间分组
+- 2026-11-14 01:24:34：新增「主题配置」页并固定为基础规范首条，页数与路由同步
+- 2026-11-14 01:31:50：主题配置页改为设置列表：颜色分列明暗、尺寸单列，末尾给覆盖写法
+- 2026-11-14 01:45:00：主题配置页按四类重排（基础配置 / 颜色规范 / 空间属性 / Icon 规范），补三页职责边界

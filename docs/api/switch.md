@@ -46,7 +46,7 @@
 切换不是两种底色互相渐隐，是**内衬往回收**：
 
 - 轨道底色自己随状态变：关态 `--mptk-control-track`（灰），选中态 `--mptk-control-active`（主色），不加过渡 —— 切换瞬间被内衬盖着，看不见突变。
-- 内衬 `mptk-switch__veil` 比轨道内缩 2px，取 `--mptk-surface-base`（明色是页面白、暗色是页面底色）；选中时 `transform: scale(1)` → `scale(0)` 往中心收，露出轨道的主色。
+- 内衬 `mptk-switch__veil` 比轨道内缩 2px，取 `--mptk-surface-base`（明色是页面浅灰、暗色是页面底色）；选中时 `transform: scale(1)` → `scale(0)` 往中心收，露出轨道的主色。
 - 滑块同时滑到另一端，时长 `--mptk-dur`（0.2s）、曲线 `--mptk-ease`。
 
 与 Ant Design Mobile 的 Switch 同构：那边 `::before` 内缩 2px、底色取 `--adm-color-background`、`transition: all 200ms`。
@@ -112,7 +112,7 @@ function NoticeSwitch() {
 
 转圈压在有内容的控件上会把图标遮掉，或者把格子撑大；呼吸只加在滑块上（周期 1120ms），轨道整块、文字、位置与命中区都不变。不整块一起闪，是因为整块淡下去既看不出「等待」，还会让文字跟着忽明忽暗。
 
-白滑块**不用透明度呼吸**：明色下内衬也是白的（`--mptk-surface-base` 与页面底色同值），白滑块淡下去露出还是白，几乎看不出动。改用 `mptk-thumb-breathe` 在 `--mptk-control-thumb`（白）与 `--mptk-control-thumb-dim`（灰）之间来回换色，即「灰一点、白一点」；灰值明暗各给一支偏浅的中性灰（`light` 取 `gray-5`、`dark` 取 `gray-8`），压在滑块上的深色文字 / 图标两档都还读得清。彩色滑块（Segmented）没有这个问题，仍走 `opacity` 呼吸。
+白滑块**不用透明度呼吸**：内衬取 `--mptk-surface-base`（明色是很浅的灰、暗色是页面底色），白滑块淡下去露出的仍是浅色底，几乎看不出动。改用 `mptk-thumb-breathe` 在 `--mptk-control-thumb`（白）与 `--mptk-control-thumb-dim`（灰）之间来回换色，即「灰一点、白一点」；灰值明暗各给一支偏浅的中性灰（`light` 取 `gray-5`、`dark` 取 `gray-8`），压在滑块上的深色文字 / 图标两档都还读得清。彩色滑块（Segmented）没有这个问题，仍走 `opacity` 呼吸。
 
 ### 相关
 
@@ -149,3 +149,4 @@ function NoticeSwitch() {
 - 2026-11-13 10:08:23：白滑块改为灰白换色呼吸（--mptk-control-thumb-dim 明暗各一支），彩色滑块仍走 opacity
 - 2026-11-13 12:03:11：呼吸周期再放慢一倍到 1120ms，灰值与幅度不动
 - 2026-11-13 12:47:21：异步与等待态正文改为最终口径：先等待后翻转、白滑块灰白换色
+- 2026-11-14 01:24:34：页面底色改浅灰，内衬与呼吸理由的措辞同步

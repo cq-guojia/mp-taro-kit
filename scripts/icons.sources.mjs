@@ -7,7 +7,7 @@
 export const SOURCES = [
   {
     id: 'common.base',
-    source: 'https://at.alicdn.com/t/c/font_5252971_834xyulhmq2.css',
+    source: 'https://at.alicdn.com/t/c/font_5252971_dn4wfq92dar.css',
     visibility: 'public',
   },
   {

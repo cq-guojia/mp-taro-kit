@@ -1,5 +1,6 @@
 import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
+import { CONTROL_SIZE_DEFAULT } from '../../../design/index.js'
 import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
 import { Spinner } from '../../feedback/spinner/index.js'
@@ -42,7 +43,7 @@ export function Switch({
   checked,
   onChange,
   onFailed,
-  size = 'lg',
+  size = CONTROL_SIZE_DEFAULT,
   shape = 'round',
   color,
   offContent,

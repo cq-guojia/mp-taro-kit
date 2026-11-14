@@ -42,11 +42,12 @@ test('明暗两套颜色键同名同数，新增颜色不许只给一档', () =>
   assert.deepEqual(keys(light), keys(dark), 'light 与 dark 的颜色键必须一一对应')
 })
 
-test('明色三级面不再一片白，页面底色仍与官方窗口配置一致', () => {
+test('明色三级面都不纯白，页面底色与官方窗口配置一致', () => {
   const light = read('../dist/styles/theme-light.css')
-  assert.equal(cssValue(light, 'surface-base'), '#fff', '页面底色不能漂移')
+  assert.equal(cssValue(light, 'surface-base'), '#f2f3f5', '页面底色是浅灰，不是纯白')
   assert.notEqual(cssValue(light, 'surface-2'), '#fff', '次级面不能还是纯白')
   assert.notEqual(cssValue(light, 'surface-3'), '#fff', '下沉面不能还是纯白')
+  assert.notEqual(cssValue(light, 'surface-2'), cssValue(light, 'surface-base'), '次级面不能与页面底色同档')
   assert.equal(cssValue(light, 'control-track'), cssValue(light, 'surface-3'), '滑轨与下沉面同档')
 })
 
@@ -101,4 +102,38 @@ test('设计基础与尺寸各成一页，合并页已删干净', () => {
   assert.doesNotMatch(colors, /demo-ruler|HEIGHT_TIERS/, '设计基础页不许混进尺寸内容')
   assert.match(sizing, /pageId="sizing"/)
   assert.doesNotMatch(sizing, /demo-swatch|const HUES/, '尺寸页不许混进色板内容')
+})
+
+test('站点主题配置：独立成文件、明暗两套、由 app.scss 引入', () => {
+  assert.ok(exists('../demo/src/app-theme.scss'), '站点必须有可覆盖的配置文件')
+  const theme = read('../demo/src/app-theme.scss')
+  assert.match(theme, /^page\s*\{/m, '明色覆盖落 page')
+  assert.match(theme, /^\.mptk-dark\s*\{/m, '暗色覆盖落 .mptk-dark')
+  assert.match(theme, /--mptk-surface-base/, '背景是可覆盖项，必须列出来')
+  assert.match(read('../demo/src/app.scss'), /@use '\.\/app-theme'/, 'app.scss 必须引入站点配置')
+})
+
+test('主题配置页：按四类列默认值，颜色标出标准色相名', () => {
+  const page = read('../demo/src/pages/theme-config/index.tsx')
+  for (const title of ['基础配置', '颜色规范', '空间属性', 'Icon 规范']) {
+    assert.match(page, new RegExp(title), `缺分组：${title}`)
+  }
+  assert.match(page, /mptk-light/, '必须展示明色列')
+  assert.match(page, /mptk-dark/, '必须展示暗色列')
+  assert.match(page, /CONTROL_SIZE_DEFAULT/, '默认尺寸取常量，不硬编码')
+  assert.match(page, /ICON_SIZES/, '图标尺寸取组件导出的档位，不另写一份')
+  for (const hue of ['blue', 'green', 'orange', 'red']) {
+    assert.match(page, new RegExp(`hint: '${hue}'`), `语义色没标出标准色相名：${hue}`)
+  }
+  assert.match(read('../dist/styles/theme-runtime.css'), /\.mptk-light\s*\{/, '局部反色能力由主题产物提供')
+})
+
+test('控件默认尺寸只有一处定义，三个控件都引用它', () => {
+  const design = read('../src/design/index.ts')
+  assert.match(design, /export const CONTROL_SIZE_DEFAULT[^=]*=\s*'lg'/, '默认档必须由 design 层定义')
+  for (const file of ['../src/ui/actions/Button.tsx', '../src/ui/form/switch/Switch.tsx', '../src/ui/form/segmented/Segmented.tsx']) {
+    const source = read(file)
+    assert.match(source, /size = CONTROL_SIZE_DEFAULT/, `${file} 没引用默认档常量`)
+    assert.doesNotMatch(source, /size = 'lg'/, `${file} 还在各写一次默认档`)
+  }
 })

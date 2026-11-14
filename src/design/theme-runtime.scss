@@ -15,3 +15,9 @@ page {
 .mptk-dark {
   @include t.dark;
 }
+
+// 局部强制明色：与 .mptk-dark 对称，供同一屏并排展示明暗两套取值（演示站配置页）。
+// 同样只覆盖颜色键；暗色页面里套一层即可看到明色值。
+.mptk-light {
+  @include t.light;
+}

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { isThenable, isSuccess } from '../../runtime/thenable.js'
+import { CONTROL_SIZE_DEFAULT } from '../../design/index.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*，与 Switch / Segmented / Input 同轴。 */
 export type ButtonSize = 'sm' | 'md' | 'lg'
@@ -28,7 +29,7 @@ export interface ButtonProps {
 
 export function Button({
   children,
-  size = 'lg',
+  size = CONTROL_SIZE_DEFAULT,
   radius,
   disabled = false,
   loadingText,

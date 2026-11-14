@@ -42,6 +42,30 @@ export type MenuGroup = {
 // 预留 id：skeleton（骨架屏归属 feedback / display 未定，不生成页面）。
 export const pages: CatalogPage[] = [
   {
+    id: 'theme-config',
+    title: '主题配置',
+    path: 'pages/theme-config/index',
+    summary: '总配置的默认值、站点怎么覆盖，以及控件不传尺寸时的默认档',
+    examples: [
+      {
+        id: 'settings',
+        title: '默认值清单',
+        hint: '四组：基础配置 / 颜色规范 / 空间属性 / Icon 规范；颜色一行一个，左明右暗并标出标准色相名',
+        usage: '',
+        imports: ['mp-taro-kit/styles/theme-runtime', 'mp-taro-kit/ui/display/icon', 'mp-taro-kit/design'],
+        renderNotes: '色块读 var(--mptk-*)，明暗标签打在色块自身（.mptk-light / .mptk-dark）；双端实机未验证',
+      },
+      {
+        id: 'config-file',
+        title: '配置文件',
+        hint: '站点要改就覆盖同名变量：明色落 page、暗色落 .mptk-dark',
+        usage: '',
+        imports: ['mp-taro-kit/styles/theme-runtime'],
+        renderNotes: '演示站自带 demo/src/app-theme.scss，默认全部注释、沿用库默认值',
+      },
+    ],
+  },
+  {
     id: 'design-foundation',
     title: '设计基础',
     path: 'pages/design-foundation/index',
@@ -698,6 +722,7 @@ export const menu: MenuGroup[] = [
     id: 'foundations',
     title: '基础规范',
     entries: [
+      { id: 'theme-config', label: '主题配置', status: 'ready', pageId: 'theme-config' },
       { id: 'design-foundation', label: '设计基础', status: 'ready', pageId: 'design-foundation' },
       { id: 'sizing', label: '尺寸', status: 'ready', pageId: 'sizing' },
       { id: 'icons-spec', label: '图标规范', status: 'planned' },
