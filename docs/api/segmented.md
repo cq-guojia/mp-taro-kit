@@ -15,7 +15,7 @@
 | `value` | `T extends string` | 是 | 应命中某个 `item.value` | 宿主真值；等待期间的临时显示值不会写回它 |
 | `onChange` | `(next: T) => unknown` | 否 | 返回 thenable 时进入等待态 | 点某段调用，`next` 是该段的 `value` |
 | `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主；组件不做回弹，位置从未变过 |
-| `size` | `'sm' \| 'md' \| 'lg'` | 否 | 默认 `lg` | 取 `--mptk-control-h-*`，三档为 32 / 40 / 48 |
+| `size` | `'sm' \| 'md' \| 'lg'` | 否 | 默认 `md` | 取 `--mptk-control-h-*`，三档为 32 / 40 / 48 |
 | `width` | `'fit' \| 'ratio' \| 'equal'` | 否 | 默认 `fit` | 段宽策略：按内容撑开 / 内容 + 剩余均摊 / 严格等分，见下 |
 | `indicator` | `'thumb' \| 'line'` | 否 | 默认 `thumb` | 滑动块或频道切换式下划线 |
 | `radius` | `'pill'` | 否 | 无 | 半圆形态：容器与滑动块一起切到 `--mptk-radius-pill` |
@@ -35,7 +35,7 @@
 | `description` | ReactNode | 标题下更小的副文本 |
 | `disabled` | boolean | 段级禁用，只短路这一段 |
 
-尺寸真源与 Switch 相同：根 `View` 固定高度等于 `--mptk-control-h-*` 档值（32 / 40 / 48，默认 48，取自 WeUI 的按钮高度三档），容器内不叠加上下内边距；滑动块与下划线两种指示器共用同一档高度。要改大小覆盖同名变量，不要传任意高度。
+尺寸真源与 Switch 相同：根 `View` 固定高度等于 `--mptk-control-h-*` 档值（32 / 40 / 48，默认 40，取自 WeUI 的按钮高度三档），容器内不叠加上下内边距；滑动块与下划线两种指示器共用同一档高度。要改大小覆盖同名变量，不要传任意高度。
 
 选中态主色默认**蓝**（`--mptk-control-active` 指向 `--mptk-control-blue`），与宿主会定制的业务色解耦。滑轨取 `--mptk-control-track`、滑动块取 `--mptk-control-active`、滑动块上的选中文字取 `--mptk-control-on`，明色下不会双双为白；下划线形态则用主色画线与文字。`color` 传内置色名时由组件加类名切换变量，传任意 CSS 色值时由组件把色值显式写到滑动块、下划线与选中文字上，不依赖 WXML 行内自定义属性。
 
@@ -132,3 +132,4 @@ function FilterBar() {
 - 2026-11-13 10:02:55：呼吸周期放慢一倍到 560ms，谷值与颜色保持不动
 - 2026-11-13 10:08:23：白滑块改为灰白换色呼吸（--mptk-control-thumb-dim 明暗各一支），彩色滑块仍走 opacity
 - 2026-11-13 12:03:11：呼吸周期再放慢一倍到 1120ms，灰值与幅度不动
+- 2026-11-14 12:12:20：默认档改 md（40）

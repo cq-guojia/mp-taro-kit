@@ -61,3 +61,25 @@ test('演示站不再手写图标样式或包级 iconClass', () => {
     assert.doesNotMatch(text, /\biconClass\(/, `${file} 仍用包级 iconClass`)
   }
 })
+
+// 图标尺寸只有一张表：档名 = 字号档名，取值 = 对应的 --mptk-font-*。
+// 这条守住两件事：不许再冒出图标专用的像素数字，档位指向的变量必须真的在主题产物里。
+test('图标尺寸档就是字号档：档名与 token 一一对应，不留独立像素表', () => {
+  const TIERS = ['xs', 'sm', 'md', 'lg', 'xl', 'nav']
+  const js = read('../dist/ui/display/icon/Icon.js')
+
+  for (const tier of TIERS) {
+    assert.match(
+      js,
+      new RegExp(`\\b${tier}:\\s*['"]var\\(--mptk-font-${tier}\\)['"]`),
+      `Icon 的 ${tier} 档没有指向 var(--mptk-font-${tier})`,
+    )
+  }
+  assert.doesNotMatch(js, /\d+px/, '图标档位不许写固定像素，取值只能来自字号 token')
+
+  const tokens = read('../dist/styles/theme-light.css')
+  for (const tier of TIERS) {
+    assert.match(tokens, new RegExp(`--mptk-font-${tier}:\\s*\\d+px`), `tokens 缺 --mptk-font-${tier}`)
+  }
+  assert.match(read('../dist/ui/display/icon/Icon.d.ts'), /IconSize/, 'Icon 的 d.ts 缺 IconSize')
+})

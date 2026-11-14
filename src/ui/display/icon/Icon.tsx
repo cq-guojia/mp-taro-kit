@@ -2,10 +2,20 @@ import { Text } from '@tarojs/components'
 import type { CSSProperties } from 'react'
 import { iconClass } from '../../icon/all/index.js'
 
-/** 尺寸预设（px）；也可以直接给数字。 */
-export const ICON_SIZES = { sm: 14, md: 16, lg: 20, xl: 24 } as const
+/**
+ * 尺寸档：图标不另立一套数字，档位名与取值都直接取字号档 `--mptk-font-*`，
+ * 与文字同一尺度。档位只用于显式换档；不传 `size` 时图标继承所在文字的字号。
+ */
+export const ICON_SIZES = {
+  xs: 'var(--mptk-font-xs)',
+  sm: 'var(--mptk-font-sm)',
+  md: 'var(--mptk-font-md)',
+  lg: 'var(--mptk-font-lg)',
+  xl: 'var(--mptk-font-xl)',
+  nav: 'var(--mptk-font-nav)',
+} as const
 
-/** 尺寸预设名。 */
+/** 尺寸档名，即字号档名。 */
 export type IconSize = keyof typeof ICON_SIZES
 
 export interface IconProps {
@@ -14,7 +24,7 @@ export interface IconProps {
    * 库名就是 `mp-taro-kit/ui/icon/<命名空间>/<库名>` 里点号前那整段。
    */
   name: string
-  /** 预设名或 px；不传则继承所在文字字号。 */
+  /** 字号档名（`IconSize`）或 px 数字；不传则继承所在文字字号。 */
   size?: IconSize | number
   className?: string
   style?: CSSProperties

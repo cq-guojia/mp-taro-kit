@@ -17,11 +17,11 @@ export default function ActionsPage() {
             <View className="demo-row">
               <Button size="sm" onClick={() => setClicked(true)}>小</Button>
               <Button size="md" onClick={() => setClicked(true)}>中</Button>
-              <Button onClick={() => setClicked(true)}>默认 48</Button>
+              <Button size="lg" onClick={() => setClicked(true)}>大</Button>
             </View>
             <View className="demo-row">
               <Button radius="pill" onClick={() => setClicked(true)}>半圆</Button>
-              <Button size="sm" radius="pill" onClick={() => setClicked(true)}>半圆小</Button>
+              <Button disabled radius="pill" onClick={() => setClicked(true)}>半圆禁用</Button>
             </View>
           </View>
           {clicked ? <Text className="demo-note">onClick 已触发</Text> : null}

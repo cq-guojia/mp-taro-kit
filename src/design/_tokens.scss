@@ -26,9 +26,9 @@
      容器（卡片、弹窗、列表块）不引用它，直接用 --mptk-radius-* 档位。 */
   --mptk-control-radius: var(--mptk-radius-sm);
 
-  /* 卡片族：默认圆角取容器级最大常规档，分区间距只在这里定一次。
+  /* 卡片族：默认圆角与控件同档（md），分区间距只在这里定一次。
      容器不引用 --mptk-control-radius；radius 枚举只是把下面这个键换到别的档位。 */
-  --mptk-card-radius: var(--mptk-radius-lg);
+  --mptk-card-radius: var(--mptk-radius-md);
   --mptk-card-spacing: var(--mptk-space-3);
 
   --mptk-space-1: 4px;
@@ -102,15 +102,21 @@
   $gray-7: #767d87;
   $gray-8: #3b434d;
 
-  --mptk-fg: #1f2328;
-  --mptk-fg-2: #5c6370;
+  /* 纯白与文字三档也在色板里占名字：面板、反色文字都引用它们，不写字面量。 */
+  $white: #fff;
+  $ink-1: #1f2328;
+  $ink-2: #5c6370;
+  $ink-3: #9aa1ab;
+
+  --mptk-fg: #{$ink-1};
+  --mptk-fg-2: #{$ink-2};
   --mptk-fg-3: #{$gray-7};
-  --mptk-fg-4: #9aa1ab;
+  --mptk-fg-4: #{$ink-3};
 
   /* 明色下三级面都不是纯白：卡片仍为白，页面底走浅灰（小程序页面的常规观感是
      「白卡片浮在灰底上」，不是整屏纯白），次级面比页面浅一档，下沉面与滑轨同档。
      页面底色与官方窗口主题配置的 bgColor 保持一致，不许两处漂移。 */
-  --mptk-surface-1: #fff;
+  --mptk-surface-1: #{$white};
   --mptk-surface-2: #{$gray-1};
   --mptk-surface-3: #{$gray-3};
   --mptk-surface-base: #{$gray-2};
@@ -220,15 +226,20 @@
   $gray-7: #858d98;
   $gray-8: #a9b0ba;
 
-  --mptk-fg: #e6e8eb;
-  --mptk-fg-2: #{$gray-8};
+  $white: #fff;
+  $ink-1: #e6e8eb;
+  $ink-2: #a9b0ba;
+  $ink-3: #858d98;
+
+  --mptk-fg: #{$ink-1};
+  --mptk-fg-2: #{$ink-2};
   --mptk-fg-3: #{$gray-7};
-  --mptk-fg-4: #{$gray-6};
+  --mptk-fg-4: #{$ink-3};
 
   --mptk-surface-1: #{$gray-2};
   --mptk-surface-2: #{$gray-3};
   --mptk-surface-3: #{$gray-4};
-  --mptk-surface-base: #15181c;
+  --mptk-surface-base: #{$gray-1};
 
   --mptk-border-faint: rgba(255, 255, 255, .04);
   --mptk-border: rgba(255, 255, 255, .10);

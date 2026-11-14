@@ -40,7 +40,7 @@
 
 `styles/theme-*` 的字号档位固定为 12 / 14 / 15 / 17 / 22（另 `font-nav` 17），与《微信小程序设计指南》5.1 的常用字号一一对应；行高与字号成对。宿主不应整体覆盖档位，演示站自身也不覆盖。
 
-控件高度档位固定为 32 / 40 / 48（`--mptk-control-h-sm` / `-md` / `-lg`，默认 48），与 WeUI 的按钮高度三档一致；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。真源同为 `src/design/_tokens.scss` 的 `base` mixin，`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于该值。不传 `size` 时取 `mp-taro-kit/design` 导出的 `CONTROL_SIZE_DEFAULT`（当前 `lg`），Button / Switch / Segmented 与将来的输入类控件共用它。
+控件高度档位固定为 32 / 40 / 48（`--mptk-control-h-sm` / `-md` / `-lg`，默认 40），与 WeUI 的按钮高度三档一致；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。真源同为 `src/design/_tokens.scss` 的 `base` mixin，`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于该值。不传 `size` 时取 `mp-taro-kit/design` 导出的 `CONTROL_SIZE_DEFAULT`（当前 `md`），Button / Switch / Segmented 与将来的输入类控件共用它。
 
 控件主色轴默认指向 `--mptk-control-blue`，内置蓝 / 绿 / 橙 / 红四色；`Switch` 在组件样式里把默认值覆盖成绿（对齐微信原生开关），`Segmented` 仍用蓝；滑轨、滑块、选中文字各有独立颜色键。这组变量写在 `light` / `dark` mixin，与 `--mptk-business` 等语义色解耦：宿主定制业务色不会改变控件默认外观，明色下滑轨与滑块也不会双双为白。组件的 `color` 可传内置色名（走类名切变量）或任意 CSS 色值（走显式内联上色，不依赖 WXML 行内自定义属性）；`tests/controls.test.mjs` 核对四份主题产物都带全这组键，并断言组件不引用业务色。
 
@@ -262,3 +262,4 @@ setThemeMode('auto', {
 - 2026-11-13 23:51:56：补 ui/display/icon 与 ui/icon/all 出口
 - 2026-11-14 01:24:34：design 出口补 CONTROL_SIZE_DEFAULT，控件默认档统一到这里
 - 2026-11-14 01:31:50：运行时出口补 .mptk-light：只覆盖颜色键，可套容器局部反色
+- 2026-11-14 12:12:20：控件默认档改 md（40）

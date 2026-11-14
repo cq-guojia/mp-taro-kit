@@ -588,10 +588,10 @@ test('演示站除尺寸示例外一律用 md 档摆，形态之间口径一致'
       const start = mark.index
       const end = index + 1 < marks.length ? marks[index + 1].index : page.length
       for (const tag of page.slice(start, end).match(new RegExp(`<${component}\\b[\\s\\S]*?/>`, 'g')) ?? []) {
-        assert.match(
+        assert.doesNotMatch(
           tag,
-          /size="md"/,
-          `${file} 的 ${mark[1]} 里有组件没用 md 档：${tag.replace(/\s+/g, ' ').slice(0, 72)}`,
+          /size="(sm|lg)"/,
+          `${file} 的 ${mark[1]} 里写死了档位，应该走默认档：${tag.replace(/\s+/g, ' ').slice(0, 72)}`,
         )
       }
     }

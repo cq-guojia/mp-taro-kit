@@ -5,8 +5,8 @@
 export type ControlSizeTier = 'sm' | 'md' | 'lg'
 
 /**
- * 承载文字的控件默认尺寸档：不传 `size` 时用这一档（48px，见 `--mptk-control-h-lg`）。
+ * 承载文字的控件默认尺寸档：不传 `size` 时用这一档（40px，见 `--mptk-control-h-md`）。
  * Button / Switch / Segmented 与将来的输入类控件共用它，新增控件直接引用，不要各写一次。
  * 宿主逐实例改默认值就传 `size`；要整体改一档的高度才覆盖 `--mptk-control-h-*`。
  */
-export const CONTROL_SIZE_DEFAULT: ControlSizeTier = 'lg'
+export const CONTROL_SIZE_DEFAULT: ControlSizeTier = 'md'

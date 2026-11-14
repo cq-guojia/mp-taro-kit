@@ -19,11 +19,11 @@
   --mptk-seg-inset: 3px;
   --mptk-seg-line-inset: var(--mptk-space-3);
   --mptk-seg-item-pad: var(--mptk-space-4);
-  --mptk-seg-item-min: var(--mptk-control-h-lg);
+  --mptk-seg-item-min: var(--mptk-control-h-md);
   position: relative;
   display: flex;
   width: 100%;
-  height: var(--mptk-control-h-lg);
+  height: var(--mptk-control-h-md);
   border-radius: var(--mptk-control-radius);
   overflow: hidden;
 }

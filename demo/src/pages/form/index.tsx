@@ -32,7 +32,7 @@ export default function SwitchPage() {
           <View className="demo-row">
             <Switch className="demo-item" checked={on} size="sm" onChange={(next) => { setOn(next) }} />
             <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
-            <Switch className="demo-item" checked={on} onChange={(next) => { setOn(next) }} />
+            <Switch className="demo-item" checked={on} size="lg" onChange={(next) => { setOn(next) }} />
           </View>
           <Text className="demo-note">方形：sm（格子 20）/ md（格子 30）/ lg（格子 39）</Text>
           <View className="demo-row">
@@ -58,6 +58,7 @@ export default function SwitchPage() {
               className="demo-item"
               checked={blockOn}
               shape="block"
+              size="lg"
               offContent="关"
               onContent="开"
               onChange={(next) => { setBlockOn(next) }}
@@ -69,13 +70,12 @@ export default function SwitchPage() {
     if (id === 'switch-basic') {
       return (
         <View className="demo-row">
-          <Switch className="demo-item" checked={false} size="md" />
-          <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
+          <Switch className="demo-item" checked={false} />
+          <Switch className="demo-item" checked={on} onChange={(next) => { setOn(next) }} />
           <Switch
             className="demo-item"
             checked={blockOn}
             shape="block"
-            size="md"
             offContent="关"
             onContent="开"
             onChange={(next) => { setBlockOn(next) }}
@@ -84,7 +84,6 @@ export default function SwitchPage() {
             className="demo-item"
             checked={blockOn}
             shape="block"
-            size="md"
             offContent="待办"
             onContent="完成"
             onChange={(next) => { setBlockOn(next) }}
@@ -99,7 +98,6 @@ export default function SwitchPage() {
             className="demo-item"
             checked={dayNight}
             shape="block"
-            size="md"
             offContent={SUN}
             onContent={MOON}
             onChange={(next) => { setDayNight(next) }}
@@ -107,7 +105,6 @@ export default function SwitchPage() {
           <Switch
             className="demo-item"
             checked={dayNight}
-            size="md"
             offContent={SUN}
             onContent={MOON}
             onChange={(next) => { setDayNight(next) }}
@@ -116,7 +113,6 @@ export default function SwitchPage() {
             className="demo-item"
             checked={dayNight}
             shape="block"
-            size="md"
             keepColor
             offContent={SUN}
             onContent={MOON}
@@ -125,7 +121,6 @@ export default function SwitchPage() {
           <Switch
             className="demo-item"
             checked={dayNight}
-            size="md"
             keepColor
             offContent={SUN}
             onContent={MOON}
@@ -139,12 +134,11 @@ export default function SwitchPage() {
         <View className="demo-stack">
           <Text className="demo-note">光板开关：等待时滑块里转圈</Text>
           <View className="demo-row">
-            <Switch className="demo-item" checked={false} size="md" disabled />
-            <Switch className="demo-item" checked={false} size="md" loading />
+            <Switch className="demo-item" checked={false} disabled />
+            <Switch className="demo-item" checked={false} loading />
             <Switch
               className="demo-item"
               checked={on}
-              size="md"
               onChange={(next) => wait(true).then(() => setOn(next))}
             />
           </View>
@@ -154,7 +148,6 @@ export default function SwitchPage() {
               className="demo-item"
               checked={blockOn}
               shape="block"
-              size="md"
               offContent="关"
               onContent="开"
               loading
@@ -164,7 +157,6 @@ export default function SwitchPage() {
               className="demo-item"
               checked={blockOn}
               shape="block"
-              size="md"
               offContent="月亮"
               onContent="太阳"
               onChange={(next) => wait(false).then(() => setBlockOn(next))}
@@ -178,12 +170,12 @@ export default function SwitchPage() {
     if (id === 'switch-colors') {
       return (
         <View className="demo-row">
-          <Switch className="demo-item" checked size="md" color="blue" />
-          <Switch className="demo-item" checked size="md" color="green" />
-          <Switch className="demo-item" checked size="md" color="orange" />
-          <Switch className="demo-item" checked size="md" color="red" />
-          <Switch className="demo-item" checked size="md" color="#8b5cf6" />
-          <Switch className="demo-item" checked size="md" shape="block" color="green" offContent="关" onContent="开" />
+          <Switch className="demo-item" checked color="blue" />
+          <Switch className="demo-item" checked color="green" />
+          <Switch className="demo-item" checked color="orange" />
+          <Switch className="demo-item" checked color="red" />
+          <Switch className="demo-item" checked color="#8b5cf6" />
+          <Switch className="demo-item" checked shape="block" color="green" offContent="关" onContent="开" />
         </View>
       )
     }

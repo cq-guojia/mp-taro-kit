@@ -37,7 +37,7 @@ test('Switch 与 Segmented 三档总高逐档等于 token，根规则不叠加�
     const css = read(`../dist/ui/form/${dir}/style/index.css`)
     const root = new RegExp(`\\.${base}\\s*\\{([^}]*)\\}`).exec(css)
     assert.ok(root, `${dir} 缺根规则`)
-    assert.match(root[1], /height:\s*var\(--mptk-control-h-lg\)/, `${dir} 默认档必须是官方 48`)
+    assert.match(root[1], /height:\s*var\(--mptk-control-h-md\)/, `${dir} 默认档必须是 md（40）`)
     assert.doesNotMatch(css, /padding-(top|bottom):/, `${dir} 总高不许由上下内边距叠加`)
     for (const [tier] of TIERS) {
       const rule = new RegExp(`\\.${base}--${tier}\\s*\\{([^}]*)\\}`).exec(css)
@@ -77,7 +77,7 @@ test('Button 三档总高逐档等于 token，靠 height 不靠上下内边距',
   const root = /\.mptk-btn\s*\{([^}]*)\}/.exec(css)
   assert.ok(root, '缺 .mptk-btn 根规则')
   assert.match(root[1], /box-sizing:\s*border-box/, '固定高度必须盒模型含边框')
-  assert.match(root[1], /height:\s*var\(--mptk-control-h-lg\)/, '默认档必须是 48')
+  assert.match(root[1], /height:\s*var\(--mptk-control-h-md\)/, '默认档必须是 md（40）')
   assert.doesNotMatch(root[1], /padding-(top|bottom)/, '总高不许由上下内边距叠加')
   for (const tier of ['sm', 'md', 'lg']) {
     const rule = new RegExp(`\\.mptk-btn--${tier}\\s*\\{([^}]*)\\}`).exec(css)

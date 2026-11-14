@@ -13,13 +13,13 @@ import { Icon } from 'mp-taro-kit/ui/display/icon'
 
 <Icon name="common.base:home" />
 <Icon name="common.base:shanchu" size="lg" />
-<Icon name="common.logo:github" size={24} />
+<Icon name="common.logo:github" size="xl" />
 ```
 
 | 参数 | 类型 | 默认 | 说明 |
 |---|---|---|---|
 | `name` | `string` | 必填 | `库名:图标名`，库名不可省，如 `common.base:home` |
-| `size` | `'sm' \| 'md' \| 'lg' \| 'xl' \| number` | 继承 | 不传则继承所在文字字号；传预设名或 px 才设 |
+| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'nav' \| number` | 继承 | 不传则继承所在文字字号；档位名即字号档，取值见下节「尺寸」 |
 | `className` | `string` | — | 追加类名，用于局部上色、定位 |
 | `style` | `CSSProperties` | — | 内联样式；与 `size` 同时给时 `style` 优先 |
 
@@ -201,9 +201,27 @@ const dark = useThemeDark()
 | 变体进 `iconMap`、不进 `iconNames` | 已验证 | 同文件断言 |
 | 真实暗色字形切换 | **未验证** | 当前所有包都没有 `-dark` 图标，机制只有单测覆盖 |
 
-**图标基础类不设 `font-size`**：图标是字体，继承所在文字的字号，因此与相邻文字天然同尺寸。平台产物自带 `font-size: 16px`，生成脚本 `scripts/icons.mjs` 在写入时会剥掉它，重跑 `pnpm run icons` 不会把固定值带回来；`pnpm test` 逐个对外包守住这条契约，生成脚本发现剥不掉会直接拒绝写出。
+### 尺寸：与字号同一套，不另立图标数字
 
-需要图标比文字大（品牌 logo、返回箭头等）时，由宿主或组件在自己的类名上用 `--mptk-font-*` 档位或具体 `font-size` 显式设定，不要改基础类。行高建议 `1`，否则字形会被行高撑开。
+图标是字体，本来就没有自己的尺寸表：不传 `size` 就继承所在文字的字号，与相邻文字天然同尺寸。`size` 的档位名就是字号档名，取值只有一个真源 `--mptk-font-*`：
+
+| `size` | 取值 | 默认档位下的等效像素 |
+|---|---|---|
+| `xs` | `var(--mptk-font-xs)` | 12px |
+| `sm` | `var(--mptk-font-sm)` | 14px |
+| `md` | `var(--mptk-font-md)` | 15px |
+| `lg` | `var(--mptk-font-lg)` | 17px |
+| `xl` | `var(--mptk-font-xl)` | 22px |
+| `nav` | `var(--mptk-font-nav)` | 17px（导航栏语义档） |
+| `number` | 该值 px | 缺档时的逃生口，正常不写 |
+
+比文字大一级（列表行图标、返回箭头）就选高一级：正文 `md` 配 `size="lg"`。宿主改字号档位后图标跟着变，不需要再维护第二份图标尺寸。
+
+口径与成熟字体图标库一致——Font Awesome 默认 `1em`（继承字号）、尺寸类只做换档，Element Plus 的 `size` 默认 `inherit from font size`；区别在于本库换档直接落到自己的字号 token，不另立一套图标像素表。`ICON_SIZES` 就是把档名映到 token 的唯一一张表，`pnpm test` 守住「档名 = 字号档名、值 = 对应 token」。
+
+**图标基础类不设 `font-size`**：平台产物自带 `font-size: 16px`，生成脚本 `scripts/icons.mjs` 在写入时会剥掉它，重跑 `pnpm run icons` 不会把固定值带回来；`pnpm test` 逐个对外包守住这条契约，生成脚本发现剥不掉会直接拒绝写出。
+
+行高：显式给了 `size` 时组件同时写 `line-height: 1`，字形不会被继承的行高撑开；不传则跟随所在文字的行高，与文字共用一个行盒。宿主自己写类名放大图标（不经过 `size`）时同样建议 `line-height: 1`。
 
 ## 图标清单
 
@@ -261,3 +279,4 @@ const dark = useThemeDark()
 - 2026-11-13 23:51:56：补 Icon 组件入口、全量样式与体积口径，用法改为组件优先
 - 2026-11-14：demo 两包换新版字体（`mptk-i-demo` / `mptk-i-demo-c`）；占位 `_` 不再过滤，按正常图标进清单；图标页仍只列对外库，本站自用包由演示站自己引用
 - 2026-11-14：`common.base` 换新版字体，39 → 47 个图标（新增 `fuzhi` / `shuaxin` / `gongzuoqu` / `AIdamoxing` / `chexiao` / `chazhao` / `info` / `warn`，无删除）；聚合入口的图标数断言改为「清单非空 + 每个名字都能拼出本库类名」，不再锁具体数量
+- 2026-11-14：图标尺寸并入字号体系：`size` 档位改为 `xs` / `sm` / `md` / `lg` / `xl` / `nav`，取值即 `--mptk-font-*`，删掉独立的 14 / 16 / 20 / 24 图标像素表；不传仍继承所在文字字号

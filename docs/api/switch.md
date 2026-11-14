@@ -14,7 +14,7 @@
 | `checked` | boolean | 是 | 无 | 宿主真值；组件从不自己改它，等待期间位置也不动 |
 | `onChange` | `(next: boolean) => unknown` | 否 | 返回 thenable 时进入等待态 | 点一下调用，`next` 是想变成的值 |
 | `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主；组件不做回弹，位置从未变过 |
-| `size` | `'sm' \| 'md' \| 'lg'` | 否 | 默认 `lg` | 取 `--mptk-control-h-*`，三档为 32 / 40 / 48 |
+| `size` | `'sm' \| 'md' \| 'lg'` | 否 | 默认 `md` | 取 `--mptk-control-h-*`，三档为 32 / 40 / 48 |
 | `shape` | `'round' \| 'block'` | 否 | 默认 `round` | 圆形滑块或圆角方形滑块 |
 | `color` | `ControlColor` | 否 | 默认绿 | 内置色名 `blue` / `green` / `orange` / `red`，或任意 CSS 色值 |
 | `offContent` | ReactNode | 否 | 无 | 关态内容：`block` 放在轨道左侧，`round` 放在滑块里 |
@@ -25,7 +25,7 @@
 | `keepColor` | boolean | 否 | 默认 `false` | 不变色：底色恒为 `color` 的主色、内衬不收缩，只有滑块位置表示状态 |
 | `className` | string | 否 | 无 | 挂到根 `View` |
 
-尺寸三档与默认值取自 WeUI 的按钮高度变量 `--weui-BTN-HEIGHT-SMALL` / `MEDIUM` / `HEIGHT`（32 / 40 / 48，默认 48），真源在本库 `src/design/_tokens.scss` 的 `base` mixin。根 `View` 固定高度等于该档，轨道比行高小并垂直居中，因此与同档控件并排时热区等高、基线一致；要改大小覆盖 `--mptk-control-h-*`，不要给组件传任意高度。轨道与滑块左右各留 3px，拨到两端都不贴边：方形滑块宽 `calc(50% - 6px)`、位移 `calc(100% + 6px)`，两半区里的间隙都是 3px。按 `calc(50% - 4px)` / `calc(100% + 2px)` 写会一边 3px、一边 1px，压在滑块上的文字看着偏 2px（踩过）。
+尺寸三档与默认值取自 WeUI 的按钮高度变量 `--weui-BTN-HEIGHT-SMALL` / `MEDIUM` / `HEIGHT`（32 / 40 / 48，默认 40），真源在本库 `src/design/_tokens.scss` 的 `base` mixin。根 `View` 固定高度等于该档，轨道比行高小并垂直居中，因此与同档控件并排时热区等高、基线一致；要改大小覆盖 `--mptk-control-h-*`，不要给组件传任意高度。轨道与滑块左右各留 3px，拨到两端都不贴边：方形滑块宽 `calc(50% - 6px)`、位移 `calc(100% + 6px)`，两半区里的间隙都是 3px。按 `calc(50% - 4px)` / `calc(100% + 2px)` 写会一边 3px、一边 1px，压在滑块上的文字看着偏 2px（踩过）。
 
 圆形形态的轨道宽高比照微信原生开关的 52:32（`lg` 档即 52×32），三档按比例缩放为 33×20 / 42×26 / 52×32；滑块直径等于轨道高减 4，带 `0 2px 4px rgba(0,0,0,.2)` 投影 —— 明色关态的白滑块靠这层投影才有边界，否则看着是空的。
 
@@ -150,3 +150,4 @@ function NoticeSwitch() {
 - 2026-11-13 12:03:11：呼吸周期再放慢一倍到 1120ms，灰值与幅度不动
 - 2026-11-13 12:47:21：异步与等待态正文改为最终口径：先等待后翻转、白滑块灰白换色
 - 2026-11-14 01:24:34：页面底色改浅灰，内衬与呼吸理由的措辞同步
+- 2026-11-14 12:12:20：默认档改 md（40）

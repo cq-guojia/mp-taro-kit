@@ -268,12 +268,17 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   justify-content: center;
   margin-right: var(--mptk-space-1);
   margin-bottom: 0;
+  overflow: hidden;
   width: 62px;
 }
 
+/* 名字写不下就裁掉，不换行；标注字比正文小一档，只示意不细读。 */
 .demo-swatch__ink {
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
+  overflow: hidden;
+  transform: scale(0.8);
+  white-space: nowrap;
 }
 
 /* 条上的字按底色亮度取黑或白，只解决可读性，不参与主题。 */
@@ -304,14 +309,9 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   text-align: right;
 }
 
-/* 主题配置页的配置片段：一行一条，等宽字体。 */
+/* 主题配置页的配置片段：壳由 Card 给，这里只管一行一条的排版。 */
 .demo-code {
-  background-color: var(--mptk-surface-2);
-  border-radius: var(--mptk-radius-sm);
-  padding-top: var(--mptk-space-3);
-  padding-right: var(--mptk-space-3);
-  padding-bottom: var(--mptk-space-3);
-  padding-left: var(--mptk-space-3);
+  display: block;
 }
 
 .demo-code__line {
@@ -390,6 +390,38 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
   text-align: center;
+}
+
+/* 尺寸档示例：字形字号由 Icon 的 size 档给（就是字号 token），这里只管布局与文字色。 */
+.demo-icon-sizes {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.demo-icon-size {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--mptk-space-3);
+  width: 33.333%;
+}
+
+.demo-icon-size__glyph {
+  color: var(--mptk-fg);
+  margin-bottom: var(--mptk-space-1);
+}
+
+.demo-icon-size__label {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+}
+
+.demo-icon-size__token {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
 }
 
 /* 基础规范页：色块类名由色相名与档位名拼出，Sass 循环生成，取值仍全走 var(--mptk-*)。

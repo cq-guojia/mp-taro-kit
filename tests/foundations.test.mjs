@@ -131,7 +131,7 @@ test('主题配置页：色值、默认值与标准色相名都和真源一致',
   assert.match(page, /mptk-\$\{[^}]*mode[^}]*\}/, '必须展示明暗两条色块')
   assert.match(page, /CONTROL_SIZE_DEFAULT/, '默认尺寸取常量，不硬编码')
   for (const hue of ['blue', 'green', 'orange', 'red']) {
-    assert.match(page, new RegExp(`hue: '${hue}'`), `语义色没标出标准色相名：${hue}`)
+    assert.match(page, new RegExp(`lightName: '${hue}'`), `语义色没标出标准色相名：${hue}`)
   }
 
   /* 页面上的色值文本必须与编译产物同值，改 tokens 时这里会先红。 */
@@ -147,7 +147,7 @@ test('主题配置页：色值、默认值与标准色相名都和真源一致',
 
 test('控件默认尺寸只有一处定义，三个控件都引用它', () => {
   const design = read('../src/design/index.ts')
-  assert.match(design, /export const CONTROL_SIZE_DEFAULT[^=]*=\s*'lg'/, '默认档必须由 design 层定义')
+  assert.match(design, /export const CONTROL_SIZE_DEFAULT[^=]*=\s*'md'/, '默认档必须由 design 层定义')
   for (const file of ['../src/ui/actions/Button.tsx', '../src/ui/form/switch/Switch.tsx', '../src/ui/form/segmented/Segmented.tsx']) {
     const source = read(file)
     assert.match(source, /size = CONTROL_SIZE_DEFAULT/, `${file} 没引用默认档常量`)

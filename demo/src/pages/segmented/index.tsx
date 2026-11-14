@@ -44,7 +44,7 @@ export default function SegmentedPage() {
             size="sm"
             onChange={(next) => { setFilter(next) }}
           />
-          <Text className="demo-note">md（总高 40）</Text>
+          <Text className="demo-note">md（总高 40，默认）</Text>
           <Segmented
             className="demo-item"
             items={FILTER_ITEMS}
@@ -52,11 +52,12 @@ export default function SegmentedPage() {
             size="md"
             onChange={(next) => { setFilter(next) }}
           />
-          <Text className="demo-note">lg（总高 48，默认）</Text>
+          <Text className="demo-note">lg（总高 48）</Text>
           <Segmented
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
+            size="lg"
             onChange={(next) => { setFilter(next) }}
           />
         </View>
@@ -70,7 +71,6 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
-            size="md"
             onChange={(next) => { setFilter(next) }}
           />
           <Text className="demo-note">ratio：撑满，内容多的段更宽</Text>
@@ -78,7 +78,6 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
-            size="md"
             width="ratio"
             onChange={(next) => { setFilter(next) }}
           />
@@ -87,7 +86,6 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
-            size="md"
             width="equal"
             onChange={(next) => { setFilter(next) }}
           />
@@ -96,7 +94,6 @@ export default function SegmentedPage() {
             className="demo-item"
             items={FILTER_ITEMS}
             value={filter}
-            size="md"
             radius="pill"
             onChange={(next) => { setFilter(next) }}
           />
@@ -110,7 +107,6 @@ export default function SegmentedPage() {
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
-            size="md"
             indicator="line"
             onChange={(next) => { setChannel(next) }}
           />
@@ -124,15 +120,13 @@ export default function SegmentedPage() {
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
-            size="md"
             onChange={(next) => wait(true).then(() => setChannel(next))}
           />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" disabled />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} disabled />
           <Segmented
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
-            size="md"
             onChange={(next) => wait(false).then(() => setChannel(next))}
             onFailed={() => { setFailed(true) }}
           />
@@ -143,16 +137,15 @@ export default function SegmentedPage() {
     if (id === 'segmented-colors') {
       return (
         <View className="demo-stack">
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="blue" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="green" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="orange" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="red" onChange={(next) => { setChannel(next) }} />
-          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} size="md" color="#8b5cf6" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="blue" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="green" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="orange" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="red" onChange={(next) => { setChannel(next) }} />
+          <Segmented className="demo-item" items={CHANNEL_ITEMS} value={channel} color="#8b5cf6" onChange={(next) => { setChannel(next) }} />
           <Segmented
             className="demo-item"
             items={CHANNEL_ITEMS}
             value={channel}
-            size="md"
             indicator="line"
             color="#8b5cf6"
             onChange={(next) => { setChannel(next) }}

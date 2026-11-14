@@ -99,7 +99,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'control-height',
         title: '控件高度',
-        hint: '32 / 40 / 48 三档，对齐 WeUI 按钮高度，默认 48',
+        hint: '32 / 40 / 48 三档，对齐 WeUI 按钮高度，默认 40',
         usage: '',
         imports: ['mp-taro-kit/styles/theme-runtime'],
         renderNotes: '标尺吃 --mptk-control-h-*；Switch / Segmented 逐档吃同名 token，效果见表单页',
@@ -160,6 +160,14 @@ export const pages: CatalogPage[] = [
         imports: ['mp-taro-kit/ui/display/icon', 'mp-taro-kit/ui/icon/all'],
         renderNotes: '',
       },
+      {
+        id: 'icon-size',
+        title: '尺寸档',
+        hint: 'size 取字号档 xs / sm / md / lg / xl / nav，取值就是 --mptk-font-*；不传则继承所在文字',
+        usage: '<Icon name="common.base:home" size="lg" />',
+        imports: ['mp-taro-kit/ui/display/icon', 'mp-taro-kit/ui/icon/all'],
+        renderNotes: '图标没有独立像素表：档位名与字号档同名，值取同一支 token；比文字大一级就选高一级',
+      },
     ],
   },
   {
@@ -171,7 +179,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'button-basic',
         title: '基础按钮',
-        hint: 'Button：三档高度（32 / 40 / 48，默认 48）与半圆形态（radius="pill"）',
+        hint: 'Button：三档高度（32 / 40 / 48，默认 40）与半圆形态（radius="pill"）',
         usage: '<Button size="md">中</Button> <Button radius="pill">半圆</Button>',
         imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
         renderNotes: '总高逐像素等于 --mptk-control-h-* 档位，靠 height 不靠上下内边距；圆角走 --mptk-control-radius，pill 用 999px 而不是 50%',

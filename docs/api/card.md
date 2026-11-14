@@ -75,7 +75,7 @@
 - 五个槽位全部按需渲染：没给的槽位不产生节点，`cover` 给了还会去掉根节点的顶部留白，让封面贴到卡片上沿。
 - 上下留白归壳、由 `hasCardEdgeContent()` 在渲染期从 `children` 派生：普通内容保留 `var(--mptk-card-spacing)`；声明了贴边的内容派生 `--edge-content`，根节点上下 padding 直接为字面量 `0`，不经计算表达式、不吃渲染端支持度。子级不做负 margin 反抵消。
 - 贴边时 body 的左右留白也归零，左右间距改由贴边内容自己给（`CellGroup` 给一档 `--mptk-space-4`），保证内容与分隔线离卡片边只有一道距离。
-- 圆角默认取 `--mptk-card-radius`（`base` mixin 指向 `--mptk-radius-lg`，容器级最大常规档）；`radius` 枚举只是把同名键换到另一档，**取值仍只在 `src/design/_tokens.scss` 写一次**。`pill` 不开放给卡片，留给 Badge / Switch。
+- 圆角默认取 `--mptk-card-radius`（`base` mixin 指向 `--mptk-radius-md`，与控件同档 12px）；`radius` 枚举只是把同名键换到另一档，**取值仍只在 `src/design/_tokens.scss` 写一次**。`pill` 不开放给卡片，留给 Badge / Switch。
 - 点击态由 `onClick` 派生，按压反馈走 `hoverClass`；`disabled` 短路回调；`loading` 不短路点击，由宿主决定是否同时给 `disabled`。
 - 内容密度、字号、圆角、间距一律取 `var(--mptk-*)`，组件不写颜色值、不写兜底；`--mptk-card-bg` / `--mptk-card-border` 在 `light` / `dark` 同名同数，宿主可在业务级主题定制时覆盖。
 - 样式必须显式引入 `mp-taro-kit/ui/card/style`，基线来自 `mp-taro-kit/styles/theme-*`。
@@ -152,3 +152,4 @@ export const WithSlots = () => (
 - 2026-11-13 16:42:48：组合改为零参数：Card 提供上下文，CellGroup 自动收敛外框 / 底色 / 留白；移除 flush 参数
 - 2026-11-13 18:43:58：贴边留白改由 Card 渲染期识别内容并归零，删除子级负 margin 反抵消，补行为级断言
 - 2026-11-14 11:23:22：贴边时 body 左右留白也归零，左右间距改由贴边内容自己给
+- 2026-11-14 12:37:19：默认圆角改 md（与控件同档 12px）

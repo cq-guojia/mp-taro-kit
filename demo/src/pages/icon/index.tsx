@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components'
-import { Icon } from 'mp-taro-kit/ui/display/icon'
+import { Icon, type IconSize } from 'mp-taro-kit/ui/display/icon'
 import { iconNamesByPack } from 'mp-taro-kit/ui/icon/all'
 
 import { DemoPage } from '../../components/DemoBlock'
@@ -11,8 +11,31 @@ const GROUPS = [
   { id: 'mp-taro-kit.base', title: 'mp-taro-kit.base · 本框架基础图标' },
 ]
 
+// 档位名与字号档同名，标注里写的就是它指向的那支 token，不写具体像素。
+const SIZE_TIERS: ReadonlyArray<{ size: IconSize; token: string }> = [
+  { size: 'xs', token: '--mptk-font-xs' },
+  { size: 'sm', token: '--mptk-font-sm' },
+  { size: 'md', token: '--mptk-font-md' },
+  { size: 'lg', token: '--mptk-font-lg' },
+  { size: 'xl', token: '--mptk-font-xl' },
+  { size: 'nav', token: '--mptk-font-nav' },
+]
+
 export default function IconPage() {
   const render = (id: string) => {
+    if (id === 'icon-size') {
+      return (
+        <View className="demo-icon-sizes">
+          {SIZE_TIERS.map(({ size, token }) => (
+            <View key={size} className="demo-icon-size">
+              <Icon name="common.base:home" size={size} className="demo-icon-size__glyph" />
+              <Text className="demo-icon-size__label">{size}</Text>
+              <Text className="demo-icon-size__token">{token}</Text>
+            </View>
+          ))}
+        </View>
+      )
+    }
     if (id !== 'icon-grid') return null
     return (
       <View>

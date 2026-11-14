@@ -2,9 +2,11 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { setThemeMode, type ThemeMode } from 'mp-taro-kit/runtime'
 import { useThemeSnapshot } from 'mp-taro-kit/ui/infra'
+import { Card } from 'mp-taro-kit/ui/card'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
 
+import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/cell/style'
 import 'mp-taro-kit/ui/form/segmented/style'
 import { menu, pagePathOf } from '../../catalog'
@@ -41,21 +43,18 @@ export default function IndexPage() {
           <Text className="demo-badge">{__MTPK_BUILD_ID__}</Text>
         </View>
       </View>
-      <View className="demo-block">
-        <View className="demo-block__head">
-          <Text className="demo-block__title">主题模式</Text>
-        </View>
-        <View className="demo-row">
+      <View className="demo-cards">
+        <Card
+          className="demo-card"
+          title="主题模式"
+          subtitle={`当前 ${mode} · ${dark ? '暗色生效' : '明色生效'}；切换后全站样式、弹层与窗口背景立即生效`}
+        >
           <Segmented
             items={THEME_ITEMS}
             value={mode}
-            size="sm"
             onChange={(next) => { setThemeMode(next) }}
           />
-        </View>
-        <Text className="demo-note">
-          {`当前 ${mode} · ${dark ? '暗色生效' : '明色生效'}；切换后全站样式、弹层与窗口背景立即生效，页面不需要改。`}
-        </Text>
+        </Card>
       </View>
       {menu.map((group) => (
         <CellGroup key={group.id} title={group.title} inset>

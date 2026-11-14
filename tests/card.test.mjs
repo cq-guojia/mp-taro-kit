@@ -74,7 +74,7 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   assert.match(css, /\.mptk-card--pressed\s*\{[^}]*background-color:\s*var\(--mptk-surface-2\)/, '按压态要有反馈')
 
   const tokens = read('../src/design/_tokens.scss')
-  assert.match(tokens, /--mptk-card-radius:\s*var\(--mptk-radius-lg\)/, '默认圆角取容器级最大常规档')
+  assert.match(tokens, /--mptk-card-radius:\s*var\(--mptk-radius-md\)/, '默认圆角与控件同档（md）')
   assert.match(tokens, /--mptk-card-spacing:\s*var\(--mptk-space-3\)/, '分区间距只写一次')
   for (const mode of ['light', 'dark', 'runtime']) {
     const theme = read(`../dist/styles/theme-${mode}.css`)

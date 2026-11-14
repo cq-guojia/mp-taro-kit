@@ -64,9 +64,9 @@ export default function FeedbackPage() {
             <Loader variant="blocks" size="xl" className="demo-loader-spaced" />
           </View>
           <View className="demo-row">
-            <Loader variant="ring" size="md" color="#00a870" className="demo-loader-spaced" />
+            <Loader variant="ring" color="#00a870" className="demo-loader-spaced" />
             <Spinner variant="chase" size={24} color="#00a870" className="demo-loader-spaced" />
-            <Loader variant="blocks" size="md" color="#00a870" className="demo-loader-spaced" />
+            <Loader variant="blocks" color="#00a870" className="demo-loader-spaced" />
           </View>
         </View>
       )
