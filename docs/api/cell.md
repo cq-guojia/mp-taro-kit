@@ -75,7 +75,9 @@
 </Card>
 ```
 
-`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后自动收敛：不渲染上下外框、派生 `mptk-cell-group--in-card`、组与行的底色改透明。同时 `CellGroup` 用 `ui/infra/card-edge` 的 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone` / `dividerInset`）仍归 `CellGroup`，职责不重叠。
+`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后自动收敛：不渲染上下外框、派生 `mptk-cell-group--in-card`、组与行的底色改透明。同时 `CellGroup` 用 `ui/infra/card-edge` 的 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。
+
+卡片内的列表默认**左右不到头**：左右留白统一由组给一档 `--mptk-space-4`，行自己不再留左右白，所以分隔线也跟着内缩、不会顶到卡片边；贴边时 `Card` 的 body 左右留白同时归零，避免两道间距叠加。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone` / `dividerInset`）仍归 `CellGroup`，职责不重叠。
 
 ## 示例
 
@@ -180,3 +182,4 @@ export const State = () => (
 - 2026-11-13 16:42:48：组合改零参数：Card 提供上下文，CellGroup 自动派生 --in-card 并收敛外框 / 底色 / 上下留白
 - 2026-11-13 18:43:58：与 Card 组合的留白改由 Card 侧归零，CellGroup 只声明贴边内容，不再用负 margin 抵消
 - 2026-11-13 23:24:15：示例图标引用改到 common.base
+- 2026-11-14 11:23:22：卡片内的列表默认左右内收：组给一档留白、行归零、分隔线跟着内缩

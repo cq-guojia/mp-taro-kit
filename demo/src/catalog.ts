@@ -50,10 +50,10 @@ export const pages: CatalogPage[] = [
       {
         id: 'settings',
         title: '默认值清单',
-        hint: '四组：基础配置 / 颜色规范 / 空间属性 / Icon 规范；颜色一行一个，左明右暗并标出标准色相名',
+        hint: '三组：基础配置 / 颜色规范 / 不传时的默认值；颜色给明暗色值并标出标准色相名',
         usage: '',
-        imports: ['mp-taro-kit/styles/theme-runtime', 'mp-taro-kit/ui/display/icon', 'mp-taro-kit/design'],
-        renderNotes: '色块读 var(--mptk-*)，明暗标签打在色块自身（.mptk-light / .mptk-dark）；双端实机未验证',
+        imports: ['mp-taro-kit/styles/theme-runtime', 'mp-taro-kit/ui/display/cell', 'mp-taro-kit/design'],
+        renderNotes: '色块读 var(--mptk-*)，明暗标记打在色块自身（.mptk-light / .mptk-dark）；色值文本由自检与 tokens 对齐；双端实机未验证',
       },
       {
         id: 'config-file',
@@ -449,7 +449,7 @@ export const pages: CatalogPage[] = [
         id: 'cell-with-card',
         section: '五 · 与 Card 组合',
         title: '装进 Card',
-        hint: 'Cell 向上引用 Card：什么都不传，CellGroup 自动收敛外框、底色与上下留白',
+        hint: 'Cell 向上引用 Card：什么都不传，CellGroup 自动收敛外框、底色与留白，列表左右内收一道',
         usage: '<Card><CellGroup><Cell title="单元格" value="内容" /></CellGroup></Card>',
         imports: ['mp-taro-kit/ui/card', 'mp-taro-kit/ui/card/style', 'mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
         renderNotes: '组合归引用方（Cell 页）展示；Card 页不列举 Cell。零参数，贴边形态由 Card 渲染期识别贴边内容后收敛；双端实机未验证',

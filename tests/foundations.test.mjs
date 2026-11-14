@@ -18,6 +18,14 @@ function cssValue(css, key) {
   return new RegExp(`--mptk-${key}:\\s*([^;]+);`).exec(css)?.[1]?.trim()
 }
 
+/** #fff 与 #ffffff 视为同色。 */
+function hex(value) {
+  const raw = value.trim().toLowerCase()
+  return /^#[0-9a-f]{3}$/.test(raw)
+    ? `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`
+    : raw
+}
+
 test('基础色板：四份主题产物都有 8 级灰阶与 8 支色相的四档', () => {
   for (const mode of MODES) {
     const css = read(`../dist/styles/${mode}.css`)
@@ -113,17 +121,26 @@ test('站点主题配置：独立成文件、明暗两套、由 app.scss 引入'
   assert.match(read('../demo/src/app.scss'), /@use '\.\/app-theme'/, 'app.scss 必须引入站点配置')
 })
 
-test('主题配置页：按四类列默认值，颜色标出标准色相名', () => {
+test('主题配置页：色值、默认值与标准色相名都和真源一致', () => {
   const page = read('../demo/src/pages/theme-config/index.tsx')
-  for (const title of ['基础配置', '颜色规范', '空间属性', 'Icon 规范']) {
+  for (const title of ['基础配置', '颜色规范', '不传时的默认值']) {
     assert.match(page, new RegExp(title), `缺分组：${title}`)
   }
-  assert.match(page, /mptk-light/, '必须展示明色列')
-  assert.match(page, /mptk-dark/, '必须展示暗色列')
+  assert.match(page, /from 'mp-taro-kit\/ui\/display\/cell'/, '列表用现成的 Cell，不手搓')
+  assert.match(page, /mptk-light/, '必须展示明色色块')
+  assert.match(page, /mptk-dark/, '必须展示暗色色块')
   assert.match(page, /CONTROL_SIZE_DEFAULT/, '默认尺寸取常量，不硬编码')
-  assert.match(page, /ICON_SIZES/, '图标尺寸取组件导出的档位，不另写一份')
   for (const hue of ['blue', 'green', 'orange', 'red']) {
-    assert.match(page, new RegExp(`hint: '${hue}'`), `语义色没标出标准色相名：${hue}`)
+    assert.match(page, new RegExp(`hue: '${hue}'`), `语义色没标出标准色相名：${hue}`)
+  }
+
+  /* 页面上的色值文本必须与编译产物同值，改 tokens 时这里会先红。 */
+  const light = read('../dist/styles/theme-light.css')
+  const dark = read('../dist/styles/theme-dark.css')
+  const listed = [...page.matchAll(/'(#[0-9a-fA-F]{3,6})'/g)].map((hit) => hex(hit[1]))
+  for (const key of ['surface-base', 'surface-1', 'surface-2', 'surface-3', 'fg', 'fg-2', 'fg-3', 'business', 'success', 'warning', 'danger']) {
+    assert.ok(listed.includes(hex(cssValue(light, key))), `页面缺 ${key} 的明色值`)
+    assert.ok(listed.includes(hex(cssValue(dark, key))), `页面缺 ${key} 的暗色值`)
   }
   assert.match(read('../dist/styles/theme-runtime.css'), /\.mptk-light\s*\{/, '局部反色能力由主题产物提供')
 })

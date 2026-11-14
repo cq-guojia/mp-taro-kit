@@ -45,3 +45,4 @@ docs/                                               # 项目文档库入口
 - 2026-11-14 01:24:34：design-foundation 补站点级覆盖与控件默认尺寸，demo-mapping 同步主题配置页
 - 2026-11-14 01:31:50：design-foundation 补 .mptk-light 局部明色，exports 同步运行时出口
 - 2026-11-14 01:45:00：demo-mapping 补主题配置页四组清单与三页职责边界
+- 2026-11-14 11:23:22：配置页改回 Cell 并标出明暗色值，cell/card 文档补卡片内左右内收

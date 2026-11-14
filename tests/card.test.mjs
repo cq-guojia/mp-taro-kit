@@ -191,6 +191,23 @@ test('贴边留白由 Card 侧决定：渲染期识别 + 纯 CSS 归零，不靠
   assert.equal(declOf(ruleOf(cellCss, '.mptk-cell'), 'padding-bottom'), 'var(--mptk-space-3)')
   assert.doesNotMatch(cellCss, /margin-(?:top|bottom):\s*calc\(/, '子级不再反抵消')
 
+  /* 卡片内列表默认左右不到头：组给一档留白、行归零，卡片 body 不再叠一道。 */
+  assert.equal(
+    declOf(ruleOf(cellCss, '.mptk-cell-group--in-card .mptk-cell-group__body'), 'padding-left'),
+    'var(--mptk-space-4)',
+    '卡片内列表的左右留白由组统一给',
+  )
+  assert.match(
+    cellCss,
+    /\.mptk-cell-group--in-card \.mptk-cell\s*\{[^}]*padding-left:\s*0/,
+    '卡片内的行不再自己留左右白',
+  )
+  assert.equal(
+    declOf(ruleOf(cardCss, '.mptk-card--edge-content .mptk-card__body'), 'padding-left'),
+    '0',
+    '贴边时卡片 body 不再叠一道左右留白',
+  )
+
   const tokens = read('../src/design/_tokens.scss')
   assert.match(tokens, /--mptk-card-spacing:\s*var\(--mptk-space-3\)/)
   assert.match(tokens, /--mptk-space-3:\s*12px/, '贴边后顶部只剩这一份 12px，不再叠成 24px')

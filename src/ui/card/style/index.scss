@@ -98,6 +98,13 @@
   padding-bottom: 0;
 }
 
+/* 卡片内列表的左右留白由 CellGroup 自己给一档，body 不再叠一道；
+   两处都留会把内容和分隔线推到离卡片边两道间距。 */
+.mptk-card--edge-content .mptk-card__body {
+  padding-right: 0;
+  padding-left: 0;
+}
+
 .mptk-card__heading {
   display: flex;
   flex-direction: column;
