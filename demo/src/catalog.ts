@@ -46,14 +46,15 @@ export const pages: CatalogPage[] = [
     title: '主题配置',
     path: 'pages/theme-config/index',
     summary: '总配置的默认值、站点怎么覆盖，以及控件不传尺寸时的默认档',
+    bare: true,
     examples: [
       {
         id: 'settings',
-        title: '默认值清单',
-        hint: '三组：基础配置 / 颜色规范 / 不传时的默认值；颜色给明暗色值并标出标准色相名',
+        title: '',
+        hint: '',
         usage: '',
-        imports: ['mp-taro-kit/styles/theme-runtime', 'mp-taro-kit/ui/display/cell', 'mp-taro-kit/design'],
-        renderNotes: '色块读 var(--mptk-*)，明暗标记打在色块自身（.mptk-light / .mptk-dark）；色值文本由自检与 tokens 对齐；双端实机未验证',
+        imports: ['mp-taro-kit/styles/theme-runtime', 'mp-taro-kit/ui/card', 'mp-taro-kit/ui/display/cell', 'mp-taro-kit/design'],
+        renderNotes: '三张卡片各自带标题（基础配置 / 颜色配置 / 其他控件配置），不再套示例块卡片；色值写在色条上，由自检与 tokens 对齐；双端实机未验证',
       },
       {
         id: 'config-file',
@@ -363,15 +364,6 @@ export const pages: CatalogPage[] = [
         usage: '<CellGroup dividerTone="match" inset>…</CellGroup>',
         imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
         renderNotes: '枚举 prop 由 Group 派生修饰类，组件内部切变量，宿主不用写样式；双端实机未验证',
-      },
-      {
-        id: 'cell-divider-span',
-        section: '二 · 组级外观设置',
-        title: '分隔线贯穿',
-        hint: '默认线贯穿到两端；dividerInset 让线左右各留 16px',
-        usage: '<CellGroup dividerInset>…</CellGroup>',
-        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
-        renderNotes: '对照用通栏且关掉上下外框，只留组内线；缩进取 --mptk-space-4；双端实机未验证',
       },
       {
         id: 'cell-card-frame',

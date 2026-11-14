@@ -365,8 +365,6 @@ test('cell 分组形态：inset 不画外框，最后一格由位置关掉分隔
   assert.equal(cellState.cellDividerVisible(false, 0, 2), false)
   assert.match(cellState.resolveCellGroupState({ dividerTone: 'match' }).className, /mptk-cell-group--divider-match/)
   assert.doesNotMatch(cellState.resolveCellGroupState({ dividerTone: 'soft' }).className, /--divider-match/)
-  assert.match(cellState.resolveCellGroupState({ dividerInset: true }).className, /mptk-cell-group--divider-inset/)
-  assert.doesNotMatch(cellState.resolveCellGroupState({}).className, /--divider-inset/)
   assert.match(cellState.resolveCellGroupState({ inset: true, frame: false }).className, /mptk-cell-group--frameless/)
   assert.doesNotMatch(cellState.resolveCellGroupState({ inset: true }).className, /--frameless/)
 })
@@ -382,7 +380,7 @@ const size: CellSize = 'large';
 const direction: CellArrowDirection = 'down';
 const tone: CellDividerTone = 'match';
 const cellProps: CellProps = { title: '单元格' };
-const groupProps: CellGroupProps = { inset: true, dividerTone: tone, dividerInset: true, frame: false };
+const groupProps: CellGroupProps = { inset: true, dividerTone: tone, frame: false };
 export const element = (
   <CellGroup {...groupProps} title="分组" border={false}>
     <Cell {...cellProps} label="描述" value="内容" icon="图标" rightIcon="右图标" extra="额外" center border size={size} isLink arrowDirection={direction} disabled onClick={() => {}} className="x">自定义值</Cell>
@@ -485,8 +483,14 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   assert.ok(divider, '缺分隔线样式')
   assert.match(divider[1], /height:\s*1px/, '分隔线宽度要与外框一致')
   assert.match(divider[1], /background-color:\s*var\(--mptk-cell-divider\)/, '组内分隔线走语义变量')
+  assert.match(divider[1], /left:\s*var\(--mptk-space-4\)/, '分隔线默认左右内缩，不通到底')
+  assert.match(divider[1], /right:\s*var\(--mptk-space-4\)/)
   assert.match(css, /\.mptk-cell-group--divider-match\s*\{[^}]*--mptk-cell-divider:\s*var\(--mptk-border\)/, 'match 档要把内线切回外框色')
-  assert.match(css, /\.mptk-cell-group--divider-inset\s+\.mptk-cell__divider\s*\{[^}]*left:\s*var\(--mptk-space-4\)[^}]*right:\s*var\(--mptk-space-4\)/, '不贯穿档要左右缩进')
+  assert.match(
+    css,
+    /\.mptk-cell-group--in-card\s+\.mptk-cell__divider\s*\{[^}]*left:\s*0[^}]*right:\s*0/,
+    '卡片内已由组缩进，线回到 0 免得叠成两道',
+  )
   assert.match(css, /\.mptk-cell-group--frameless\s+\.mptk-cell-group__body--inset\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉四边描边')
 
   for (const mode of ['light', 'dark']) {
@@ -501,9 +505,8 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   const demoStyle = read('../demo/src/app.scss')
   assert.doesNotMatch(demoStyle, /demo-cell-divider-match/, '宿主侧覆盖类已删除，设置统一走 prop')
   assert.match(displayPage, /dividerTone="match"/, '演示站要用枚举 prop')
-  assert.match(displayPage, /dividerInset/, '演示站要展示不贯穿开关')
   assert.match(displayPage, /frame=\{false\}/, '演示站要展示无边框开关')
-  for (const id of ['cell-divider-tone', 'cell-divider-span', 'cell-card-frame']) {
+  for (const id of ['cell-divider-tone', 'cell-card-frame']) {
     assert.ok(display.examples.some((example) => example.id === id), `演示站缺 ${id} 示例`)
   }
 })
@@ -518,7 +521,7 @@ test('Cell 展示页按五组顺序铺开，分组标题只在组首出现', () 
   const display = mod.exports.catalogPages.find((page) => page.id === 'display')
   const expected = [
     ['一 · 容器形态', ['cell-basic', 'cell-inset', 'cell-group-title']],
-    ['二 · 组级外观设置', ['cell-divider-tone', 'cell-divider-span', 'cell-card-frame']],
+    ['二 · 组级外观设置', ['cell-divider-tone', 'cell-card-frame']],
     ['三 · 单格内容与排布', ['cell-size', 'cell-icon', 'cell-slot', 'cell-center', 'cell-link']],
     ['四 · 交互与状态', ['cell-navigate', 'cell-state']],
     ['五 · 与 Card 组合', ['cell-with-card']],
@@ -535,12 +538,6 @@ test('Cell 展示页按五组顺序铺开，分组标题只在组首出现', () 
   const shell = read('../demo/src/components/DemoBlock.tsx')
   assert.match(shell, /demo-section__title/, '页壳要渲染分组标题')
   assert.match(shell, /example\.section/, '分组标题要由 catalog 的 section 驱动')
-  const page = read('../demo/src/pages/display/index.tsx')
-  const start = page.indexOf("if (id === 'cell-divider-span')")
-  const span = page.slice(start, page.indexOf('if (id ===', start + 10))
-  assert.match(span, /border=\{false\}/, '不贯穿对照要去掉通栏上下外框，只留组内分隔线')
-  assert.match(span, /dividerInset/, '不贯穿对照要真的传开关')
-  assert.doesNotMatch(span, /inset/, '不贯穿对照不该用卡片形态，否则看不出线端点差异')
 })
 
 test('演示站只演示形态：不渲染代码，通栏示例页裸展示', () => {

@@ -259,6 +259,51 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   width: 20px;
 }
 
+/* 主题配置页的色条：正好放下 6 位色值，值写在条上。 */
+.demo-swatch--bar {
+  align-items: center;
+  border-radius: var(--mptk-radius-xs);
+  display: flex;
+  height: 22px;
+  justify-content: center;
+  margin-right: var(--mptk-space-1);
+  margin-bottom: 0;
+  width: 62px;
+}
+
+.demo-swatch__ink {
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
+/* 条上的字按底色亮度取黑或白，只解决可读性，不参与主题。 */
+.demo-swatch__ink--black {
+  color: #000000;
+}
+
+.demo-swatch__ink--white {
+  color: #ffffff;
+}
+
+/* 主题配置页：卡片直接铺在页面上，不再套示例块卡片。 */
+.demo-cards {
+  padding-right: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
+}
+
+.demo-card {
+  margin-bottom: var(--mptk-space-3);
+}
+
+/* 没有色条的行（边框）用两行小字给明暗值。 */
+.demo-cell-value {
+  color: var(--mptk-fg-3);
+  display: block;
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  text-align: right;
+}
+
 /* 主题配置页的配置片段：一行一条，等宽字体。 */
 .demo-code {
   background-color: var(--mptk-surface-2);

@@ -22,10 +22,12 @@ export function DemoBlock({
 }) {
   return (
     <View className={bare ? 'demo-block demo-block--bare' : 'demo-block'}>
-      <View className={bare ? 'demo-block__head demo-block__head--bare' : 'demo-block__head'}>
-        <Text className="demo-block__title">{example.title}</Text>
-        <Text className="demo-block__hint">{example.hint}</Text>
-      </View>
+      {example.title !== '' && (
+        <View className={bare ? 'demo-block__head demo-block__head--bare' : 'demo-block__head'}>
+          <Text className="demo-block__title">{example.title}</Text>
+          <Text className="demo-block__hint">{example.hint}</Text>
+        </View>
+      )}
       <View className="demo-block__body">{children}</View>
     </View>
   )

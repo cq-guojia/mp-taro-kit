@@ -62,10 +62,10 @@
   --mptk-cell-divider: var(--mptk-border);
 }
 
-/* 设置二：dividerInset 让分隔线左右各留一个内容区边距，不再通到底。 */
-.mptk-cell-group--divider-inset .mptk-cell__divider {
-  left: var(--mptk-space-4);
-  right: var(--mptk-space-4);
+/* 分隔线默认左右各留一个内容区边距，不通到底；卡片内由组统一缩进，线回到 0 免得叠成两道。 */
+.mptk-cell-group--in-card .mptk-cell__divider {
+  left: 0;
+  right: 0;
 }
 
 /* 设置三：frame={false} 去掉卡片四边描边，只靠圆角与底色区分。 */
@@ -204,8 +204,8 @@
 /* 通到底：左右都不缩进，避免一侧留白多；卡片形态由 Group 圆角裁切。 */
 .mptk-cell__divider {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: var(--mptk-space-4);
+  right: var(--mptk-space-4);
   bottom: 0;
   height: 1px;
   background-color: var(--mptk-cell-divider);

@@ -123,12 +123,12 @@ test('站点主题配置：独立成文件、明暗两套、由 app.scss 引入'
 
 test('主题配置页：色值、默认值与标准色相名都和真源一致', () => {
   const page = read('../demo/src/pages/theme-config/index.tsx')
-  for (const title of ['基础配置', '颜色规范', '不传时的默认值']) {
-    assert.match(page, new RegExp(title), `缺分组：${title}`)
+  for (const title of ['基础配置', '颜色配置', '其他控件配置']) {
+    assert.match(page, new RegExp(`title="${title}"`), `缺分类卡片：${title}`)
   }
+  assert.match(page, /from 'mp-taro-kit\/ui\/card'/, '圆角块用 Card，不手搓')
   assert.match(page, /from 'mp-taro-kit\/ui\/display\/cell'/, '列表用现成的 Cell，不手搓')
-  assert.match(page, /mptk-light/, '必须展示明色色块')
-  assert.match(page, /mptk-dark/, '必须展示暗色色块')
+  assert.match(page, /mptk-\$\{[^}]*mode[^}]*\}/, '必须展示明暗两条色块')
   assert.match(page, /CONTROL_SIZE_DEFAULT/, '默认尺寸取常量，不硬编码')
   for (const hue of ['blue', 'green', 'orange', 'red']) {
     assert.match(page, new RegExp(`hue: '${hue}'`), `语义色没标出标准色相名：${hue}`)
@@ -137,7 +137,7 @@ test('主题配置页：色值、默认值与标准色相名都和真源一致',
   /* 页面上的色值文本必须与编译产物同值，改 tokens 时这里会先红。 */
   const light = read('../dist/styles/theme-light.css')
   const dark = read('../dist/styles/theme-dark.css')
-  const listed = [...page.matchAll(/'(#[0-9a-fA-F]{3,6})'/g)].map((hit) => hex(hit[1]))
+  const listed = [...page.matchAll(/(?:light|dark): '([0-9a-fA-F]{3,6})'/g)].map((hit) => hex(`#${hit[1]}`))
   for (const key of ['surface-base', 'surface-1', 'surface-2', 'surface-3', 'fg', 'fg-2', 'fg-3', 'business', 'success', 'warning', 'danger']) {
     assert.ok(listed.includes(hex(cssValue(light, key))), `页面缺 ${key} 的明色值`)
     assert.ok(listed.includes(hex(cssValue(dark, key))), `页面缺 ${key} 的暗色值`)

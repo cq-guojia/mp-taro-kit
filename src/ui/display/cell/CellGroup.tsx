@@ -14,8 +14,6 @@ export interface CellGroupProps {
   border?: boolean
   /** 组内分隔线颜色档位：soft 比外框浅一档（默认），match 与外框同色。 */
   dividerTone?: CellDividerTone
-  /** 组内分隔线左右内缩，像微信那样留出距离；默认贯穿到两侧。 */
-  dividerInset?: boolean
   /** 卡片形态的四边描边；默认有，false 得到无边框卡片。通栏形态不受影响。 */
   frame?: boolean
   children?: ReactNode
@@ -29,13 +27,12 @@ export function CellGroup({
   inset = false,
   border = true,
   dividerTone,
-  dividerInset,
   frame,
   children,
   className,
 }: CellGroupProps) {
   const { inCard } = useCardSurface()
-  const state = resolveCellGroupState({ inset, border, dividerTone, dividerInset, frame, inCard, className })
+  const state = resolveCellGroupState({ inset, border, dividerTone, frame, inCard, className })
   const items = Children.toArray(children)
   let lastCellIndex = -1
   items.forEach((item, index) => {

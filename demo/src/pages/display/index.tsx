@@ -47,20 +47,6 @@ export default function DisplayPage() {
         </View>
       )
     }
-    if (id === 'cell-divider-span') {
-      return (
-        <View className="demo-stack">
-          <CellGroup className="demo-item" border={false} title="默认：分隔线贯穿到两端">
-            <Cell title="单元格" value="内容" />
-            <Cell title="单元格" value="内容" label="描述信息" />
-          </CellGroup>
-          <CellGroup className="demo-item" border={false} dividerInset title="dividerInset：左右各留 16px">
-            <Cell title="单元格" value="内容" />
-            <Cell title="单元格" value="内容" label="描述信息" />
-          </CellGroup>
-        </View>
-      )
-    }
     if (id === 'cell-card-frame') {
       return (
         <View className="demo-stack">
