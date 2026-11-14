@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | title | ReactNode | 否 | — | 分组标题 |
 | inset | boolean | 否 | 默认 `false` | `true` 为圆角内收卡片；`false` 为左右通到底的通栏 |
-| border | boolean | 否 | 默认 `true` | 通栏形态是否画上下外框；卡片形态不画 |
+| border | `boolean \| CellGroupBorder` | 否 | 跟随上下文 | 上下外边框，`'none' \| 'top' \| 'bottom' \| 'both'`，也接受 `true`（= both）/ `false`（= none）。不给则通栏画上下、装在 Card 里不画 |
 | dividerTone | `'soft' \| 'match'` | 否 | 默认 `'soft'` | 组内分隔线颜色档位：`soft` 比外框浅一档，`match` 与外框同色 |
 | frame | boolean | 否 | 默认 `true` | 卡片形态四边描边开关；`false` 得到无边框卡片。通栏上下外框仍由 `border` 控制 |
 | children | ReactNode | 否 | 直接子节点为 `Cell` | 组内单元格 |
@@ -31,7 +31,7 @@
 | rightIcon | ReactNode | 否 | — | 右侧图标位；给了就不再渲染 `isLink` 箭头 |
 | extra | ReactNode | 否 | — | 值右侧的额外内容位 |
 | children | ReactNode | 否 | `value` 为空时生效 | 自定义右侧内容 |
-| center | boolean | 否 | 默认 `false` | 左右内容整体垂直居中 |
+| center | boolean | 否 | 默认 `true` | 整行垂直对齐：默认居中；`false` 改为顶部对齐 |
 | border | boolean | 否 | 默认 `true` | 是否画下分隔线；组内最后一格由 `CellGroup` 自动关掉 |
 | size | `'normal' \| 'large'` | 否 | 默认 `'normal'` | 单元格大小 |
 | isLink | boolean | 否 | 默认 `false` | 纯视觉：只渲染右侧箭头，不派生点击态 |
@@ -46,7 +46,7 @@
 
 | 类名 | 说明 |
 |---|---|
-| `mptk-cell` | 单元格根；修饰类 `--center` / `--large` / `--disabled` / `--divider` |
+| `mptk-cell` | 单元格根；修饰类 `--center` / `--top` / `--large` / `--disabled` / `--divider` |
 | `mptk-cell__icon` / `__main` / `__title` / `__label` / `__value` / `__extra` / `__right-icon` / `__arrow` / `__divider` | 单元格内部结构 |
 | `mptk-cell-group` | 分组根；修饰类 `--inset` / `--flush` / `--in-card`（装在 Card 里自动派生），以及两个设置派生的 `--divider-match` / `--frameless` |
 | `mptk-cell-group__title` / `__body` / `__border` | 分组标题、内容区与上下外框 |
@@ -55,10 +55,13 @@
 
 - 组内最后一格的 `border` 由 `CellGroup` 按位置注入为 `false`，不依赖结构伪类；独立使用的 `Cell` 由自身 `border` 决定。
 - 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，不暴露 `clickable` prop。
-- 分隔线与上下外框都是独立 1px 元素；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。外框（卡片四边与通栏形态的上下外框）取 `--mptk-border`；组内分隔线默认取 `--mptk-cell-divider`，比外框浅一档（明色 `rgba(0,0,0,.06)`、暗色 `rgba(255,255,255,.06)`），两者宽度同为 1px。默认值真源在 `src/design/_tokens.scss` 的 `light` / `dark`。
+- 分隔线与上下外框都是独立 1px 元素；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。外框（卡片四边与通栏形态的上下外框）取 `--mptk-border`；组内分隔线默认取 `--mptk-cell-divider`，比外框浅一档（明色 `rgba(0,0,0,.06)`、暗色 `rgba(255,255,255,.06)`），两者宽度同为 1px。默认值真源在 `kit.config.mjs` 的 `light` / `dark`。
 - 两个控件级设置都走 `CellGroup` 的 props，由 `state.ts` 派生修饰类，使用者不写样式：`dividerTone="match"` 把内线切到 `--mptk-border`（与外框同色）；`frame={false}` 去掉卡片四边描边。默认值分别是 `soft` / `true`，即浅线、有边框。
+- 主标题取 `--mptk-font-sm`（14/20）、说明取 `--mptk-font-xs`（12/17）、说明上间距取 `--mptk-space-0`（2px）：字号与 Vant Weapp 的 14/12 持平，行高档位各自跟随；上间距比 WeUI / Vant 的 3～4px 再紧一档。
+- 垂直对齐默认居中（WeUI `.weui-cell` 与 TDesign `align="middle"` 的默认口径），由 `mptk-cell` 根的 `align-items: center` 实现；`center={false}` 派生 `mptk-cell--top` 改为整行顶部对齐，适用于多行 `label` 时右侧值要贴标题首行。整行只有根容器管对齐，图标位 / 额外位 / 箭头不各自写 `align-self`，两态下都不会出现「值贴顶、箭头仍居中」的错位。显式 `center` 只追加 `--center` 标记，与默认视觉一致。迁移：旧版 `center` 默认 `false`（顶部对齐），升级后要保留旧观感必须显式写 `center={false}`。不提供 `bottom` 档：单元格场景没有对应形态，不为一个没有真实用法的取值扩枚举。
+- 上下外框按边给：`border="top"` 只画上、`"bottom"` 只画下、`"both"` 两条、`"none"` 都不画；布尔 `true` / `false` 分别等于 `both` / `none`。不给时跟随上下文——通栏画上下，装在 `Card` 里不画（卡片已经提供壳）。这条对「卡片内列表想自己封一条上下线」是必须的：`<Card><CellGroup border="both">` 就长出上下两条。
 - 分隔线默认左右各留 `var(--mptk-space-4)`，不通到底；装在 `Card` 里时改由组统一内收，线回到两端对齐内容，避免缩进叠成两道。这属固定形态，不给开关。
-- `frame` 只管卡片四边描边，通栏形态的上下外框仍由 `border` 管；两者互不影响。
+- `frame` 只管卡片形态（`inset`）的四边描边，与 `border` 互不影响：卡片形态的上下线已经含在四边里，`border` 对它不生效。
 - `--mptk-cell-divider` 仍是设计层语义变量，宿主可在业务级主题定制时覆盖同名变量；控件级日常切换用上面的 props，不要求宿主写 CSS。
 - 样式必须显式引入 `mp-taro-kit/ui/display/cell/style`，颜色与尺寸只取 `var(--mptk-*)`；`--mptk-*` 的默认值来自 `mp-taro-kit/styles/theme-*`（编译期三选一，或运行时热切换出口）。
 
@@ -77,7 +80,7 @@
 
 `Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后自动收敛：不渲染上下外框、派生 `mptk-cell-group--in-card`、组与行的底色改透明。同时 `CellGroup` 用 `ui/infra/card-edge` 的 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。
 
-卡片内的列表默认**左右不到头**：左右留白统一由组给一档 `--mptk-space-4`，行自己不再留左右白，所以分隔线也跟着内缩、不会顶到卡片边；贴边时 `Card` 的 body 左右留白同时归零，避免两道间距叠加。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone`）仍归 `CellGroup`，职责不重叠。
+卡片内的列表默认**左右不到头**：左右留白统一由组给一档，取卡片自己的 `var(--mptk-card-spacing)`（`sm` 8 / `md` 12 / `lg` 16），行自己不再留左右白，所以分隔线也跟着内缩、不会顶到卡片边，文字与卡片标题、底部操作区左边界对齐；贴边时 `Card` 的 body 左右留白同时归零，避免两道间距叠加。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone`）仍归 `CellGroup`，职责不重叠。
 
 ## 示例
 
@@ -148,9 +151,12 @@ export const Slots = () => (
   />
 )
 
-// 垂直居中
+// 垂直对齐：默认居中，center={false} 改为顶部对齐
 export const Center = () => (
-  <Cell center title="单元格" value="内容" label="描述信息" />
+  <CellGroup>
+    <Cell title="默认居中" value="内容" label="描述信息" />
+    <Cell center={false} title="顶部对齐" value="内容" label="描述信息" />
+  </CellGroup>
 )
 
 // 点击态与禁用：disabled 短路回调，不触发按压反馈
@@ -184,3 +190,8 @@ export const State = () => (
 - 2026-11-13 23:24:15：示例图标引用改到 common.base
 - 2026-11-14 11:23:22：卡片内的列表默认左右内收：组给一档留白、行归零、分隔线跟着内缩
 - 2026-11-14 11:37:33：分隔线默认左右内缩、不再通到底，删除 dividerInset 开关
+- 2026-11-14：卡片内列表左右留白改取 `--mptk-card-spacing`，与卡片标题左边界对齐（原先固定 `--mptk-space-4`，差 4px）
+- 2026-11-14：Cell 主标题 15→14、说明 14→12（与 Vant Weapp 持平）；新增间距档 `--mptk-space-0: 2px`，label 上间距 4→2
+- 2026-11-14：`border` 改为按边给（`none` / `top` / `bottom` / `both`，兼容布尔），装在 Card 里也能显式画出上下线
+- 2026-11-14：`center` 默认改 `true`（整行垂直居中），`center={false}` 派生 `--top` 顶部对齐；装饰位不再各自写 `align-self`
+- 2026-11-15 00:20:59：默认值真源改为 kit.config.mjs

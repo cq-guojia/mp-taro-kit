@@ -4,16 +4,16 @@
 .mptk-card {
   position: relative;
   background-color: var(--mptk-card-bg);
-  border-top-width: 1px;
+  border-top-width: var(--mptk-c-border-w);
   border-top-style: solid;
   border-top-color: var(--mptk-card-border);
-  border-right-width: 1px;
+  border-right-width: var(--mptk-c-border-w);
   border-right-style: solid;
   border-right-color: var(--mptk-card-border);
-  border-bottom-width: 1px;
+  border-bottom-width: var(--mptk-c-border-w);
   border-bottom-style: solid;
   border-bottom-color: var(--mptk-card-border);
-  border-left-width: 1px;
+  border-left-width: var(--mptk-c-border-w);
   border-left-style: solid;
   border-left-color: var(--mptk-card-border);
   border-top-left-radius: var(--mptk-card-radius);
@@ -21,9 +21,9 @@
   border-bottom-left-radius: var(--mptk-card-radius);
   border-bottom-right-radius: var(--mptk-card-radius);
   padding-top: var(--mptk-card-spacing);
-  padding-right: 0;
+  padding-right: var(--mptk-s-zero);
   padding-bottom: var(--mptk-card-spacing);
-  padding-left: 0;
+  padding-left: var(--mptk-s-zero);
   overflow: hidden;
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
@@ -44,10 +44,10 @@
 
 /* frame={false}：无边框卡片，仍保留圆角与底色。 */
 .mptk-card--frameless {
-  border-top-width: 0;
-  border-right-width: 0;
-  border-bottom-width: 0;
-  border-left-width: 0;
+  border-top-width: var(--mptk-s-zero);
+  border-right-width: var(--mptk-s-zero);
+  border-bottom-width: var(--mptk-s-zero);
+  border-left-width: var(--mptk-s-zero);
 }
 
 /* 内置色名一律映射到已有的淡色面，不新增色值；neutral 回到中性面。 */
@@ -67,7 +67,7 @@
 .mptk-card--busy { opacity: var(--mptk-opacity-busy); }
 
 .mptk-card__cover {
-  width: 100%;
+  width: var(--mptk-s-full);
 }
 
 .mptk-card__header {
@@ -80,7 +80,7 @@
 }
 
 .mptk-card--header-divider .mptk-card__header {
-  border-bottom-width: 1px;
+  border-bottom-width: var(--mptk-c-border-w);
   border-bottom-style: solid;
   border-bottom-color: var(--mptk-border-faint);
   padding-bottom: var(--mptk-space-2);
@@ -88,29 +88,39 @@
 
 /* 封面贴到卡片顶边，不再叠一层上下留白。 */
 .mptk-card--cover {
-  padding-top: 0;
+  padding-top: var(--mptk-s-zero);
 }
 
-/* 贴边内容：Card 在渲染期识别到声明后自己关掉上下留白，子级不再反向抵消。
-   归零写在壳上、是字面量 0，不经 calc / 负 margin / 嵌套 var，渲染端不会静默丢弃。 */
-.mptk-card--edge-content {
-  padding-top: 0;
-  padding-bottom: 0;
+/* 贴边内容：Card 在渲染期识别到声明后自己关掉贴边那一端的留白，子级不再反向抵消。
+   归零写在壳上、是字面量 0，不经 calc / 负 margin / 嵌套 var，渲染端不会静默丢弃。
+   只在没有头部 / 底部的那一端归零：有标题还归零，标题会被顶到卡片边上。 */
+.mptk-card--edge-top {
+  padding-top: var(--mptk-s-zero);
+}
+
+.mptk-card--edge-bottom {
+  padding-bottom: var(--mptk-s-zero);
 }
 
 /* 卡片内列表的左右留白由 CellGroup 自己给一档，body 不再叠一道；
    两处都留会把内容和分隔线推到离卡片边两道间距。 */
 .mptk-card--edge-content .mptk-card__body {
-  padding-right: 0;
-  padding-left: 0;
+  padding-right: var(--mptk-s-zero);
+  padding-left: var(--mptk-s-zero);
+}
+
+/* 贴边列表的首行自带一份上留白，头部不再叠 margin：
+   否则分割线到第一行的距离会变成行间距的两倍。 */
+.mptk-card--edge-content .mptk-card__header {
+  margin-bottom: var(--mptk-s-zero);
 }
 
 .mptk-card__heading {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0;
+  flex-grow: var(--mptk-s-flex-grow);
+  flex-shrink: var(--mptk-s-flex-shrink);
+  flex-basis: var(--mptk-s-zero);
 }
 
 .mptk-card__title {
@@ -119,17 +129,18 @@
   line-height: var(--mptk-line-lg);
 }
 
+/* 说明比正文低一档：正文是 md（15），说明取 xs（12），与列表里的辅助文字同一档。 */
 .mptk-card__subtitle {
   color: var(--mptk-fg-3);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
   margin-top: var(--mptk-space-1);
 }
 
 .mptk-card__extra {
   align-items: center;
   display: flex;
-  flex-shrink: 0;
+  flex-shrink: var(--mptk-s-flex-none);
   margin-left: var(--mptk-space-2);
 }
 

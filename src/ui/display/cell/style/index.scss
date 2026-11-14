@@ -7,10 +7,10 @@
 
 /* 通栏：显式归零外边距，宿主给 Group 设过 margin 也不会被卡片形态带跑。 */
 .mptk-cell-group--flush {
-  margin-top: 0;
-  margin-right: 0;
-  margin-bottom: 0;
-  margin-left: 0;
+  margin-top: var(--mptk-s-zero);
+  margin-right: var(--mptk-s-zero);
+  margin-bottom: var(--mptk-s-zero);
+  margin-left: var(--mptk-s-zero);
 }
 
 .mptk-cell-group--inset {
@@ -38,16 +38,16 @@
 /* 卡片外框取 --mptk-border；组内分隔线默认更浅（--mptk-cell-divider），两者同为 1px。
    三个设置都由 CellGroup 的 props 派生修饰类，组件不写死颜色值。 */
 .mptk-cell-group__body--inset {
-  border-top-width: 1px;
+  border-top-width: var(--mptk-c-border-w);
   border-top-style: solid;
   border-top-color: var(--mptk-border);
-  border-right-width: 1px;
+  border-right-width: var(--mptk-c-border-w);
   border-right-style: solid;
   border-right-color: var(--mptk-border);
-  border-bottom-width: 1px;
+  border-bottom-width: var(--mptk-c-border-w);
   border-bottom-style: solid;
   border-bottom-color: var(--mptk-border);
-  border-left-width: 1px;
+  border-left-width: var(--mptk-c-border-w);
   border-left-style: solid;
   border-left-color: var(--mptk-border);
   border-top-left-radius: var(--mptk-radius-sm);
@@ -64,39 +64,39 @@
 
 /* 分隔线默认左右各留一个内容区边距，不通到底；卡片内由组统一缩进，线回到 0 免得叠成两道。 */
 .mptk-cell-group--in-card .mptk-cell__divider {
-  left: 0;
-  right: 0;
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
 }
 
 /* 设置三：frame={false} 去掉卡片四边描边，只靠圆角与底色区分。 */
 .mptk-cell-group--frameless .mptk-cell-group__body--inset {
-  border-top-width: 0;
-  border-right-width: 0;
-  border-bottom-width: 0;
-  border-left-width: 0;
+  border-top-width: var(--mptk-s-zero);
+  border-right-width: var(--mptk-s-zero);
+  border-bottom-width: var(--mptk-s-zero);
+  border-left-width: var(--mptk-s-zero);
 }
 
 .mptk-cell-group__border {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  height: var(--mptk-c-border-w);
   background-color: var(--mptk-border);
 }
 
 .mptk-cell-group__border--top {
-  top: 0;
+  top: var(--mptk-s-zero);
 }
 
 .mptk-cell-group__border--bottom {
-  bottom: 0;
+  bottom: var(--mptk-s-zero);
 }
 
 .mptk-cell {
   position: relative;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   background-color: var(--mptk-surface-1);
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
@@ -109,6 +109,12 @@
 
 .mptk-cell--center {
   align-items: center;
+}
+
+/* 垂直对齐只由根容器的 align-items 驱动：默认居中，显式 center={false} 整行贴顶。
+   图标位 / 额外位 / 箭头不各自写 align-self，否则顶部对齐时会出现「值贴顶、箭头还居中」的错位。 */
+.mptk-cell--top {
+  align-items: flex-start;
 }
 
 .mptk-cell--large {
@@ -136,37 +142,37 @@
 .mptk-cell__main {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0;
+  flex-grow: var(--mptk-s-flex-grow);
+  flex-shrink: var(--mptk-s-flex-shrink);
+  flex-basis: var(--mptk-s-zero);
 }
 
 .mptk-cell__title {
   color: var(--mptk-fg);
-  font-size: var(--mptk-font-md);
-  line-height: var(--mptk-line-md);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
 }
 
 .mptk-cell__label {
   color: var(--mptk-fg-3);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
-  margin-top: var(--mptk-space-1);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  margin-top: var(--mptk-space-0);
 }
 
 .mptk-cell__value {
   color: var(--mptk-fg-2);
-  flex-shrink: 1;
+  flex-shrink: var(--mptk-s-flex-shrink);
   font-size: var(--mptk-font-sm);
   line-height: var(--mptk-line-sm);
   margin-left: var(--mptk-space-2);
   text-align: right;
 }
 
+/* 自身内部的内容居中；在整行里的位置交给根容器的 align-items，不写 align-self。 */
 .mptk-cell__extra,
 .mptk-cell__right-icon {
   align-items: center;
-  align-self: center;
   display: flex;
   margin-left: var(--mptk-space-2);
 }
@@ -175,30 +181,29 @@
    右边界与左边界都只吃 Cell 自己的 padding，左右留白对称。
    尺寸是视觉值，不吃 --mptk-space 档位：8px 方框旋转 45° 后外接 11.3px，相对 --mptk-font-md 正文明显偏大。 */
 .mptk-cell__arrow {
-  align-self: center;
-  border-top-width: 1px;
+  border-top-width: var(--mptk-c-border-w);
   border-top-style: solid;
   border-top-color: var(--mptk-fg-4);
-  border-right-width: 1px;
+  border-right-width: var(--mptk-c-border-w);
   border-right-style: solid;
   border-right-color: var(--mptk-fg-4);
-  flex-shrink: 0;
-  height: 6px;
+  flex-shrink: var(--mptk-s-flex-none);
+  height: var(--mptk-c-cell-arrow-size);
   margin-left: var(--mptk-space-3);
-  transform: rotate(45deg);
-  width: 6px;
+  transform: var(--mptk-s-rotate-45);
+  width: var(--mptk-c-cell-arrow-size);
 }
 
 .mptk-cell__arrow--left {
-  transform: rotate(-135deg);
+  transform: var(--mptk-s-rotate-neg-135);
 }
 
 .mptk-cell__arrow--up {
-  transform: rotate(-45deg);
+  transform: var(--mptk-s-rotate-neg-45);
 }
 
 .mptk-cell__arrow--down {
-  transform: rotate(135deg);
+  transform: var(--mptk-s-rotate-135);
 }
 
 /* 通到底：左右都不缩进，避免一侧留白多；卡片形态由 Group 圆角裁切。 */
@@ -206,8 +211,8 @@
   position: absolute;
   left: var(--mptk-space-4);
   right: var(--mptk-space-4);
-  bottom: 0;
-  height: 1px;
+  bottom: var(--mptk-s-zero);
+  height: var(--mptk-c-border-w);
   background-color: var(--mptk-cell-divider);
 }
 
@@ -216,17 +221,18 @@
    小程序 WXSS 会静默丢弃「变量参与计算的负 margin」，拿子级抵消父级 padding 不可靠。 */
 .mptk-cell-group--in-card .mptk-cell-group__body,
 .mptk-cell-group--in-card .mptk-cell {
-  background-color: transparent;
+  background-color: var(--mptk-s-transparent);
 }
 
 /* 卡片内列表默认左右不到头：内容与分隔线都离卡片边一档，
-   左右留白统一由组给，行自己不再留（否则两处相加变成两道间距）。 */
+   左右留白统一由组给，行自己不再留（否则两处相加变成两道间距）。
+   这一档直接取卡片自己的分区间距，列表文字才跟卡片标题、底部操作区对齐，换 size 档也一起走。 */
 .mptk-cell-group--in-card .mptk-cell-group__body {
-  padding-right: var(--mptk-space-4);
-  padding-left: var(--mptk-space-4);
+  padding-right: var(--mptk-card-spacing);
+  padding-left: var(--mptk-card-spacing);
 }
 
 .mptk-cell-group--in-card .mptk-cell {
-  padding-right: 0;
-  padding-left: 0;
+  padding-right: var(--mptk-s-zero);
+  padding-left: var(--mptk-s-zero);
 }

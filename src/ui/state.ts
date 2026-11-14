@@ -1,4 +1,5 @@
 import { createSingleton } from '../runtime/singleton.js'
+import { getKitConfig } from '../runtime/kit-config.js'
 import { createOverlayStack } from '../runtime/overlay-stack.js'
 import type { OverlayStack } from '../runtime/overlay-stack.js'
 import { createNotifyCenter } from '../runtime/notify.js'
@@ -23,6 +24,8 @@ export interface UIState {
   /** 宿主是否已挂载 <OverlayHost />；命令式 API 靠它判定开发者契约。 */
   mounted: boolean
   readonly loadingHandles: Set<number>
+  /** Toast 自动消失的定时器句柄：hide/clear/reset 时统一清掉，不留悬空回调。 */
+  readonly toastTimers: Map<number, ReturnType<typeof setTimeout>>
 }
 
 /**
@@ -32,9 +35,10 @@ export interface UIState {
 export function uiState(): UIState {
   return createSingleton<UIState>('ui', () => ({
     overlays: createOverlayStack<DialogPayload>(),
-    notices: createNotifyCenter(),
+    notices: createNotifyCenter(getKitConfig().runtime.notifyLimit),
     loading: createLoadingSlot(),
     mounted: false,
     loadingHandles: new Set<number>(),
+    toastTimers: new Map<number, ReturnType<typeof setTimeout>>(),
   }))
 }

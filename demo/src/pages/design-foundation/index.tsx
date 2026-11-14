@@ -1,16 +1,9 @@
 import { View, Text } from '@tarojs/components'
 
+import { KIT_SWATCH_GRAYS, KIT_SWATCH_HUES, KIT_SWATCH_TIERS } from '../../kit-config.generated'
 import { DemoPage } from '../../components/DemoBlock'
 
-/** 色相与档位的展示清单；类名由 app.scss 的同名循环生成，取值仍全部来自 var(--mptk-*)。 */
-const HUES = ['blue', 'green', 'orange', 'red', 'purple', 'cyan', 'pink', 'teal']
-const TIERS = [
-  { suffix: '', label: '本色' },
-  { suffix: '-hover', label: '悬停' },
-  { suffix: '-active', label: '按下' },
-  { suffix: '-soft', label: '浅底' },
-]
-const GRAYS = [1, 2, 3, 4, 5, 6, 7, 8]
+/** 色相 / 档位 / 灰阶与色块类名都由 kit.config.mjs 生成；本页不复制任何清单或色值。 */
 
 /** 设计基础：中性灰阶、色相与明暗两套取值，各占一块。 */
 export default function DesignFoundationPage() {
@@ -20,7 +13,7 @@ export default function DesignFoundationPage() {
         <View>
           <Text className="demo-note">编号表示层级：1 是最底层、8 是最上层文字；明色下 1 最浅 8 最深，暗色下反过来。</Text>
           <View className="demo-palette">
-            {GRAYS.map((level) => (
+            {KIT_SWATCH_GRAYS.map((level) => (
               <View key={level} className="demo-palette__cell">
                 <View className={`demo-swatch demo-swatch--gray-${String(level)}`} />
                 <Text className="demo-palette__label">{`gray-${String(level)}`}</Text>
@@ -35,11 +28,11 @@ export default function DesignFoundationPage() {
       return (
         <View>
           <Text className="demo-note">每支四档：本色是实面，悬停与按下是按压两档，浅底是同色系极淡底。</Text>
-          {HUES.map((hue) => (
+          {KIT_SWATCH_HUES.map((hue) => (
             <View key={hue} className="demo-palette__row">
               <Text className="demo-palette__name">{hue}</Text>
               <View className="demo-palette">
-                {TIERS.map((tier) => (
+                {KIT_SWATCH_TIERS.map((tier) => (
                   <View key={tier.suffix} className="demo-palette__cell">
                     <View className={`demo-swatch demo-swatch--${hue}${tier.suffix}`} />
                     <Text className="demo-palette__label">{tier.label}</Text>

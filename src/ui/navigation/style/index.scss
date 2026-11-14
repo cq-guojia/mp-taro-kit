@@ -1,18 +1,18 @@
 .mptk-drawer__mask,
 .mptk-dropdown__mask {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
   background-color: var(--mptk-fg);
-  opacity: 0.4;
+  opacity: var(--mptk-c-mask-opacity);
 }
 
 .mptk-drawer__panel {
   position: fixed;
-  top: 0;
-  bottom: 0;
+  top: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
   background-color: var(--mptk-surface-1);
   padding-top: var(--mptk-space-4);
   padding-right: var(--mptk-space-4);
@@ -21,17 +21,17 @@
 }
 
 .mptk-drawer__panel--left {
-  left: 0;
+  left: var(--mptk-s-zero);
 }
 
 .mptk-drawer__panel--right {
-  right: 0;
+  right: var(--mptk-s-zero);
 }
 
 .mptk-dropdown__panel {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
   background-color: var(--mptk-surface-1);
   border-bottom-left-radius: var(--mptk-radius-sm);
   border-bottom-right-radius: var(--mptk-radius-sm);
@@ -43,8 +43,8 @@
 
 .mptk-navbar {
   position: sticky;
-  top: 0;
-  z-index: 10;
+  top: var(--mptk-s-zero);
+  z-index: var(--mptk-c-navbar-z);
   background-color: var(--mptk-surface-1);
 }
 
@@ -58,7 +58,7 @@
 .mptk-navbar__title {
   font-size: var(--mptk-font-nav);
   line-height: var(--mptk-line-nav);
-  font-weight: 500;
+  font-weight: var(--mptk-c-navbar-weight);
   color: var(--mptk-fg);
 }
 
@@ -70,9 +70,9 @@
 
 .mptk-navbar__back {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
+  top: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
   display: flex;
   align-items: center;
   padding-left: var(--mptk-space-4);
@@ -82,6 +82,6 @@
 /* 返回图标取正文档：22 的档位是给大标题的，图标用会明显过大。 */
 .mptk-navbar__back-icon {
   font-size: var(--mptk-font-lg);
-  line-height: 1;
+  line-height: var(--mptk-s-line-flat);
   color: var(--mptk-fg);
 }

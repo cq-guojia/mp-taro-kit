@@ -112,12 +112,20 @@ export default function DisplayPage() {
     }
     if (id === 'cell-with-card') {
       return (
-        <Card>
-          <CellGroup>
-            <Cell title="单元格" value="内容" />
-            <Cell title="单元格" value="内容" label="描述信息" />
-          </CellGroup>
-        </Card>
+        <View>
+          <Card className="demo-card">
+            <CellGroup>
+              <Cell title="单元格" value="内容" />
+              <Cell title="单元格" value="内容" label="描述信息" />
+            </CellGroup>
+          </Card>
+          <Card className="demo-card" title="列表自己封上下线">
+            <CellGroup border="both">
+              <Cell title="单元格" value="内容" />
+              <Cell title="单元格" value="内容" label="border=&quot;both&quot;" />
+            </CellGroup>
+          </Card>
+        </View>
       )
     }
     if (id === 'cell-slot') {
@@ -145,14 +153,13 @@ export default function DisplayPage() {
       return (
         <CellGroup>
           <Cell
-            center
-            title="垂直居中"
+            title="默认垂直居中"
             value="内容"
             label="描述信息"
             icon={<Icon name="common.base:home" />}
             isLink
           />
-          <Cell title="默认顶部对齐" value="内容" label="描述信息" />
+          <Cell center={false} title="顶部对齐" value="内容" label="描述信息" isLink />
         </CellGroup>
       )
     }

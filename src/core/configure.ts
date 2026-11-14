@@ -1,4 +1,5 @@
 import { createSingleton } from '../runtime/singleton.js'
+import { getKitConfig } from '../runtime/kit-config.js'
 import type { PlatformFaces } from './faces.js'
 
 export interface CoreConfig {
@@ -11,14 +12,6 @@ export interface CoreConfig {
 
 interface CoreSlot {
   state: { faces: PlatformFaces; config: CoreConfig } | null
-}
-
-const DEFAULT_CONFIG: CoreConfig = {
-  baseURL: '',
-  timeout: 10_000,
-  storagePrefix: 'mptk:',
-  debug: false,
-  headers: {},
 }
 
 const REQUIRED_FACES: readonly (keyof PlatformFaces)[] = [
@@ -47,7 +40,8 @@ function slot(): CoreSlot {
 
 /**
  * 宿主启动时调用一次，注入平台能力与库配置。
- * 缺字段是开发者契约违例 ⇒ 当场抛错，不静默降级。
+ * 默认值不再散落在 core 里，统一取 kit.config.mjs 的 runtime.core；
+ * 单次传值仍可覆盖。缺字段是开发者契约违例 ⇒ 当场抛错，不静默降级。
  */
 export function configure(faces: PlatformFaces, options: Partial<CoreConfig> = {}): void {
   if (faces === null || typeof faces !== 'object') {
@@ -58,14 +52,15 @@ export function configure(faces: PlatformFaces, options: Partial<CoreConfig> = {
       throw new Error(`[mp-taro-kit/core] configure() 的 faces 缺少 ${key}()；请注入该方法`)
     }
   }
+  const defaults = getKitConfig().runtime.core
   slot().state = {
     faces,
     config: {
-      baseURL: options.baseURL ?? DEFAULT_CONFIG.baseURL,
-      timeout: options.timeout ?? DEFAULT_CONFIG.timeout,
-      storagePrefix: options.storagePrefix ?? DEFAULT_CONFIG.storagePrefix,
-      debug: options.debug ?? DEFAULT_CONFIG.debug,
-      headers: options.headers ?? DEFAULT_CONFIG.headers,
+      baseURL: options.baseURL ?? defaults.baseURL,
+      timeout: options.timeout ?? defaults.timeout,
+      storagePrefix: options.storagePrefix ?? defaults.storagePrefix,
+      debug: options.debug ?? defaults.debug,
+      headers: options.headers ?? defaults.headers,
     },
   }
 }

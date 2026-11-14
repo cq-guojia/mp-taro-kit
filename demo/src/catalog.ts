@@ -1,3 +1,13 @@
+import { KIT_CONFIG_BY_KEY } from './kit-config.generated'
+
+/** 说明文案里的尺寸取值同样来自生成表，改配置时不会与展示漂移。 */
+const configValue = (key: string) => KIT_CONFIG_BY_KEY[key]?.value ?? ''
+const heightsOf = (prefix: string) =>
+  ['sm', 'md', 'lg'].map((tier) => `${configValue(`--mptk-${prefix}-w-${tier}`)}×${configValue(`--mptk-${prefix}-h-${tier}`)}`).join(' / ')
+const CONTROL_HEIGHTS = ['sm', 'md', 'lg'].map((tier) => configValue(`--mptk-control-h-${tier}`)).join(' / ')
+const DEFAULT_HEIGHT = configValue('--mptk-control-h-md')
+const SWITCH_TRACKS = heightsOf('c-switch')
+
 export type CatalogExample = {
   id: string
   title: string
@@ -54,15 +64,15 @@ export const pages: CatalogPage[] = [
         hint: '',
         usage: '',
         imports: ['mp-taro-kit/styles/theme-runtime', 'mp-taro-kit/ui/card', 'mp-taro-kit/ui/display/cell', 'mp-taro-kit/design'],
-        renderNotes: '三张卡片各自带标题（基础配置 / 颜色配置 / 其他控件配置），不再套示例块卡片；色值写在色条上，由自检与 tokens 对齐；双端实机未验证',
+        renderNotes: '三张卡片各自用 Card 的 title 做标题，列表是不带标题的 CellGroup，卡片头部默认带分隔线；色值写在色条上，由自检与 tokens 对齐；双端实机未验证',
       },
       {
         id: 'config-file',
-        title: '配置文件',
-        hint: '站点要改就覆盖同名变量：明色落 page、暗色落 .mptk-dark',
+        title: '',
+        hint: '',
         usage: '',
         imports: ['mp-taro-kit/styles/theme-runtime'],
-        renderNotes: '演示站自带 demo/src/app-theme.scss，默认全部注释、沿用库默认值',
+        renderNotes: '标题与说明都写在卡片自己的 title / subtitle 槽位上，示例块外层不再重复一遍；站点要改就覆盖同名变量：明色落 page、暗色落 .mptk-dark；演示站自带 demo/src/app-theme.scss，默认全部注释、沿用库默认值',
       },
     ],
   },
@@ -99,7 +109,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'control-height',
         title: '控件高度',
-        hint: '32 / 40 / 48 三档，对齐 WeUI 按钮高度，默认 40',
+        hint: `${CONTROL_HEIGHTS} 三档，对齐 WeUI 按钮高度，默认 ${DEFAULT_HEIGHT}`,
         usage: '',
         imports: ['mp-taro-kit/styles/theme-runtime'],
         renderNotes: '标尺吃 --mptk-control-h-*；Switch / Segmented 逐档吃同名 token，效果见表单页',
@@ -179,7 +189,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'button-basic',
         title: '基础按钮',
-        hint: 'Button：三档高度（32 / 40 / 48，默认 40）与半圆形态（radius="pill"）',
+        hint: `Button：三档高度（${CONTROL_HEIGHTS}，默认 ${DEFAULT_HEIGHT}）与半圆形态（radius="pill"）`,
         usage: '<Button size="md">中</Button> <Button radius="pill">半圆</Button>',
         imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
         renderNotes: '总高逐像素等于 --mptk-control-h-* 档位，靠 height 不靠上下内边距；圆角走 --mptk-control-radius，pill 用 999px 而不是 50%',
@@ -203,10 +213,10 @@ export const pages: CatalogPage[] = [
       {
         id: 'switch-size',
         title: '尺寸',
-        hint: '圆形三档（轨道 33×20 / 42×26 / 52×32）与方形三档（格子 20 / 30 / 39），从左到右 sm → md → lg',
+        hint: `圆形三档（轨道 ${SWITCH_TRACKS}）与方形三档（格子由内容盒加内边距推导），从左到右 sm → md → lg`,
         usage: '<Switch size="sm|md|lg" /> 或 <Switch shape="block" size="sm|md|lg" />',
         imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
-        renderNotes: '根框总高恒等于 --mptk-control-h-*（32 / 40 / 48）；圆形轨道按微信原生 52:32 缩放，方形格子边长 = 内容盒 + 2 × 内边距、不吃圆形比例；双端实机未验证',
+        renderNotes: `根框总高恒等于 --mptk-control-h-*（${CONTROL_HEIGHTS}）；圆形轨道按微信原生 52:32 缩放，方形格子边长 = 内容盒 + 2 × 内边距、不吃圆形比例；双端实机未验证`,
       },
       {
         id: 'switch-basic',
@@ -412,11 +422,11 @@ export const pages: CatalogPage[] = [
       {
         id: 'cell-center',
         section: '三 · 单格内容与排布',
-        title: '垂直居中',
-        hint: 'center 让左右内容整体垂直居中，适合有 label 的长单元格',
-        usage: '<Cell center title="单元格" value="内容" label="描述信息" />',
+        title: '垂直对齐',
+        hint: '默认垂直居中；center={false} 才切到顶部对齐，适合多行 label 时右侧贴首行',
+        usage: '<Cell center={false} title="单元格" value="内容" label="描述信息" />',
         imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
-        renderNotes: '',
+        renderNotes: '对齐由 Cell 根的 align-items 统一驱动，图标位与箭头一起跟随；默认居中，只给居中 / 顶部两态',
       },
       {
         id: 'cell-link',
@@ -449,10 +459,10 @@ export const pages: CatalogPage[] = [
         id: 'cell-with-card',
         section: '五 · 与 Card 组合',
         title: '装进 Card',
-        hint: 'Cell 向上引用 Card：什么都不传，CellGroup 自动收敛外框、底色与留白，列表左右内收一道',
-        usage: '<Card><CellGroup><Cell title="单元格" value="内容" /></CellGroup></Card>',
+        hint: 'Cell 向上引用 Card：什么都不传，CellGroup 自动收敛外框、底色与留白；要自己封上下线就传 border="both"',
+        usage: '<Card><CellGroup><Cell title="单元格" value="内容" /></CellGroup></Card> / <CellGroup border="top|bottom|both|none">',
         imports: ['mp-taro-kit/ui/card', 'mp-taro-kit/ui/card/style', 'mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
-        renderNotes: '组合归引用方（Cell 页）展示；Card 页不列举 Cell。零参数，贴边形态由 Card 渲染期识别贴边内容后收敛；双端实机未验证',
+        renderNotes: '组合归引用方（Cell 页）展示；Card 页不列举 Cell。零参数时贴边形态由 Card 渲染期识别贴边内容后收敛；border 按边给，卡片内默认不画、显式才画；双端实机未验证',
       },
     ],
   },

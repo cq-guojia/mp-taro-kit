@@ -4,14 +4,22 @@ import type { ReactNode } from 'react'
 import { useCardSurface } from '../../infra/card-context.js'
 import { markCardEdgeContent } from '../../infra/card-edge.js'
 import { Cell, type CellProps } from './Cell.js'
-import { cellDividerVisible, resolveCellGroupState, type CellDividerTone } from './state.js'
+import {
+  cellDividerVisible,
+  resolveCellGroupState,
+  type CellDividerTone,
+  type CellGroupBorder,
+} from './state.js'
 
 export interface CellGroupProps {
   title?: ReactNode
   /** 圆角内收的卡片风格；不给则是左右通到底的通栏。 */
   inset?: boolean
-  /** 通栏形态下是否画上下外边框；卡片形态与装在 Card 内时都不画。 */
-  border?: boolean
+  /**
+   * 上下外边框：`'none' | 'top' | 'bottom' | 'both'`，也接受 `true`（= both）/ `false`（= none）。
+   * 不给则跟随上下文：通栏画上下，装在 Card 里不画。卡片形态（`inset`）的四边由 `frame` 管。
+   */
+  border?: boolean | CellGroupBorder
   /** 组内分隔线颜色档位：soft 比外框浅一档（默认），match 与外框同色。 */
   dividerTone?: CellDividerTone
   /** 卡片形态的四边描边；默认有，false 得到无边框卡片。通栏形态不受影响。 */
@@ -25,7 +33,7 @@ export interface CellGroupProps {
 export function CellGroup({
   title,
   inset = false,
-  border = true,
+  border,
   dividerTone,
   frame,
   children,
@@ -53,8 +61,8 @@ export function CellGroup({
       )}
       <View className={state.bodyClassName}>
         {cells}
-        {state.outerBorder && <View className="mptk-cell-group__border mptk-cell-group__border--top" />}
-        {state.outerBorder && <View className="mptk-cell-group__border mptk-cell-group__border--bottom" />}
+        {state.borderTop && <View className="mptk-cell-group__border mptk-cell-group__border--top" />}
+        {state.borderBottom && <View className="mptk-cell-group__border mptk-cell-group__border--bottom" />}
       </View>
     </View>
   )

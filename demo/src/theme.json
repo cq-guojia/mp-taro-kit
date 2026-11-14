@@ -2,7 +2,7 @@
   "light": {
     "bgColor": "#f2f3f5",
     "bgTxtStyle": "light",
-    "navBgColor": "#ffffff",
+    "navBgColor": "#fff",
     "navTxtStyle": "black"
   },
   "dark": {

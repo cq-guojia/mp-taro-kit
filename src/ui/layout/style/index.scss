@@ -1,32 +1,32 @@
 .mptk-overlay {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 900;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
+  z-index: var(--mptk-c-overlay-z);
 }
 
 .mptk-mask {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
   background-color: var(--mptk-fg);
-  opacity: 0.4;
-  z-index: 910;
+  opacity: var(--mptk-c-mask-opacity);
+  z-index: var(--mptk-c-mask-z);
 }
 
 .mptk-popup {
   position: relative;
-  z-index: 920;
+  z-index: var(--mptk-c-popup-z);
 }
 
 .mptk-popup__panel {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
   background-color: var(--mptk-surface-1);
   border-top-left-radius: var(--mptk-radius-md);
   border-top-right-radius: var(--mptk-radius-md);
@@ -39,13 +39,13 @@
 }
 
 .mptk-popup__panel--top {
-  top: 0;
+  top: var(--mptk-s-zero);
 }
 
 .mptk-popup__panel--bottom {
-  bottom: 0;
+  bottom: var(--mptk-s-zero);
 }
 
 .mptk-popup__panel--center {
-  top: 50%;
+  top: var(--mptk-s-center);
 }

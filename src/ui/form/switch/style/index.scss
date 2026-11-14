@@ -7,8 +7,8 @@
 @use '../../busy' as busy;
 
 .mptk-switch {
-  --mptk-switch-track-w: 52px;
-  --mptk-switch-track-h: 32px;
+  --mptk-switch-track-w: var(--mptk-c-switch-w-lg);
+  --mptk-switch-track-h: var(--mptk-c-switch-h-lg);
   --mptk-control-active: var(--mptk-control-green);
   align-items: center;
   display: inline-flex;
@@ -16,20 +16,20 @@
 }
 
 .mptk-switch--sm {
-  --mptk-switch-track-w: 33px;
-  --mptk-switch-track-h: 20px;
+  --mptk-switch-track-w: var(--mptk-c-switch-w-sm);
+  --mptk-switch-track-h: var(--mptk-c-switch-h-sm);
   height: var(--mptk-control-h-sm);
 }
 
 .mptk-switch--md {
-  --mptk-switch-track-w: 42px;
-  --mptk-switch-track-h: 26px;
+  --mptk-switch-track-w: var(--mptk-c-switch-w-md);
+  --mptk-switch-track-h: var(--mptk-c-switch-h-md);
   height: var(--mptk-control-h-md);
 }
 
 .mptk-switch--lg {
-  --mptk-switch-track-w: 52px;
-  --mptk-switch-track-h: 32px;
+  --mptk-switch-track-w: var(--mptk-c-switch-w-lg);
+  --mptk-switch-track-h: var(--mptk-c-switch-h-lg);
   height: var(--mptk-control-h-lg);
 }
 
@@ -39,7 +39,7 @@
 .mptk-switch--red { --mptk-control-active: var(--mptk-control-red); }
 
 .mptk-switch--locked {
-  opacity: .5;
+  opacity: var(--mptk-c-locked-opacity);
 }
 
 .mptk-switch__track {
@@ -56,13 +56,13 @@
    inset:0，Skyline 不认 inset，内衬会塌成 0×0。 */
 .mptk-switch__veil {
   position: absolute;
-  z-index: 0;
-  top: 2px;
-  left: 2px;
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
+  z-index: var(--mptk-s-z-base);
+  top: var(--mptk-c-switch-inset);
+  left: var(--mptk-c-switch-inset);
+  width: calc(var(--mptk-s-full) - var(--mptk-c-switch-inset-2x));
+  height: calc(var(--mptk-s-full) - var(--mptk-c-switch-inset-2x));
   background-color: var(--mptk-surface-base);
-  transform: scale(1);
+  transform: var(--mptk-s-scale-full);
   transition-property: transform;
   transition-duration: var(--mptk-dur);
   transition-timing-function: var(--mptk-ease);
@@ -77,7 +77,7 @@
 }
 
 .mptk-switch--on .mptk-switch__veil {
-  transform: scale(0);
+  transform: var(--mptk-s-scale-zero);
 }
 
 /* 轨道底色自己随状态切换（关态 track 灰、开态主色），不加过渡：切换瞬间被内衬盖着，
@@ -95,13 +95,13 @@
 
 .mptk-switch--round .mptk-switch__thumb {
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: var(--mptk-c-switch-inset);
+  left: var(--mptk-c-switch-inset);
   width: calc(var(--mptk-switch-track-h) - 4px);
   height: calc(var(--mptk-switch-track-h) - 4px);
   border-radius: var(--mptk-radius-pill);
   background-color: var(--mptk-control-thumb);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+  box-shadow: var(--mptk-c-thumb-shadow);
   transition: transform var(--mptk-dur) var(--mptk-ease);
 }
 
@@ -166,7 +166,7 @@
   width: calc(50% - var(--mptk-switch-cell-inset) - var(--mptk-switch-cell-inset));
   border-radius: var(--mptk-radius-xs);
   background-color: var(--mptk-control-thumb);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+  box-shadow: var(--mptk-c-thumb-shadow);
   transition: transform var(--mptk-dur) var(--mptk-ease);
 }
 
@@ -176,7 +176,7 @@
 
 .mptk-switch__sides {
   position: relative;
-  z-index: 2;
+  z-index: var(--mptk-s-z-top);
   display: flex;
 }
 
@@ -193,7 +193,7 @@
   min-width: var(--mptk-switch-cell);
   padding: var(--mptk-switch-cell-pad);
   font-size: var(--mptk-switch-cell-content);
-  line-height: 1;
+  line-height: var(--mptk-s-line-flat);
 }
 
 /* 文字在哪一层就用哪一层的对比色，不跟页面主题的前景色走：
@@ -226,7 +226,7 @@
   align-items: center;
   display: flex;
   justify-content: center;
-  z-index: 1;
+  z-index: var(--mptk-s-z-raised);
 }
 
 /* 圆形形态放在滑块里的开 / 关图标：字号按轨道高比例走，三档不用各写一份。
@@ -234,7 +234,7 @@
 .mptk-switch__icon {
   color: var(--mptk-control-thumb-fg);
   font-size: calc(var(--mptk-switch-track-h) * .44);
-  line-height: 1;
+  line-height: var(--mptk-s-line-flat);
 }
 
 /* 内置色名时转圈跟着开关主色走；自定义色值由组件内联覆盖。 */
@@ -245,7 +245,7 @@
 /* 有内容位时的等待态：不盖转圈，只有「选中那块滑块」呼吸 —— 轨道底色、两侧文字
    都不跟着闪。位置、尺寸、命中区都不动。光板开关仍用滑块里的转圈（见 Switch.tsx）。 */
 .mptk-switch--breathe .mptk-switch__thumb {
-  animation: mptk-thumb-breathe var(--mptk-dur-breathe) var(--mptk-ease) infinite;
+  animation: mptk-thumb-breathe var(--mptk-dur-breathe) var(--mptk-ease) var(--mptk-s-infinite);
 }
 
 /* 转圈几何统一由自绘 Spinner 提供（见文件顶部 @use），这里不再画第二份。
@@ -259,5 +259,5 @@
 }
 
 .mptk-switch.mptk-switch--keep-color .mptk-switch__veil {
-  transform: scale(0);
+  transform: var(--mptk-s-scale-zero);
 }

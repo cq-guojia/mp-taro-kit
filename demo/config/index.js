@@ -25,6 +25,8 @@ const buildId = [
 
 export default {
   projectName: 'mp-taro-kit-demo',
+  // 一次性接入：统一配置生成器挂在编译链里，之后只改项目根 kit.config.mjs。
+  plugins: ['mp-taro-kit/plugin'],
   designWidth: 375,
   deviceRatio: {
     640: 2.34 / 2,

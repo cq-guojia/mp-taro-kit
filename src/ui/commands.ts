@@ -1,4 +1,5 @@
 import type { Notice, NoticeTone } from '../runtime/notify.js'
+import { getKitConfig } from '../runtime/kit-config.js'
 import { uiState } from './state.js'
 import type { DialogPayload } from './state.js'
 
@@ -8,6 +9,16 @@ const NOT_MOUNTED =
 /** 开发者契约违例：没挂宿主就想用命令式能力，每次都抛并直给修复动作。 */
 function ensureMounted(): void {
   if (!uiState().mounted) throw new Error(NOT_MOUNTED)
+}
+
+/** 清掉某条 Toast 的自动消失定时器；hide / clear / reset 都走这里，不留悬空回调。 */
+function clearToastTimer(id: number): void {
+  const state = uiState()
+  const timer = state.toastTimers.get(id)
+  if (timer !== undefined) {
+    clearTimeout(timer)
+    state.toastTimers.delete(id)
+  }
 }
 
 /** 供 <OverlayHost /> 在挂载 / 卸载时调用；业务代码不要碰。 */
@@ -23,17 +34,36 @@ export function isOverlayHostMounted(): boolean {
   return uiState().mounted
 }
 
-export function showToast(text: string, tone: NoticeTone = 'info'): number {
+/**
+ * 弹一条 Toast。默认关闭时间取 kit.config.mjs 的 runtime.toastDuration；
+ * 单次传 duration 可覆盖，传 0 表示常驻、由业务自己 hideToast。
+ */
+export function showToast(text: string, tone: NoticeTone = 'info', duration?: number): number {
   ensureMounted()
-  return uiState().notices.show(text, tone)
+  const state = uiState()
+  const id = state.notices.show(text, tone)
+  const ms = duration ?? getKitConfig().runtime.toastDuration
+  if (ms > 0) {
+    const timer = setTimeout(() => {
+      state.toastTimers.delete(id)
+      state.notices.dismiss(id)
+    }, ms)
+    // Node 单测里不该让待触发的 Toast 定时器拖住进程退出；小程序无 unref 时静默跳过。
+    ;(timer as ReturnType<typeof setTimeout> & { unref?: () => void }).unref?.()
+    state.toastTimers.set(id, timer)
+  }
+  return id
 }
 
 export function hideToast(id: number): boolean {
+  clearToastTimer(id)
   return uiState().notices.dismiss(id)
 }
 
 export function clearToasts(): Notice[] {
-  return uiState().notices.clear()
+  const state = uiState()
+  for (const id of [...state.toastTimers.keys()]) clearToastTimer(id)
+  return state.notices.clear()
 }
 
 export function showLoading(): number {
@@ -91,6 +121,8 @@ export function confirm(message: string, options: DialogOptions = {}): Promise<b
 /** 仅供单测清空全局状态；产品代码不要调用。 */
 export function resetUIForTests(): void {
   const state = uiState()
+  for (const id of state.toastTimers.keys()) clearTimeout(state.toastTimers.get(id))
+  state.toastTimers.clear()
   for (const id of state.loadingHandles) state.loading.hide(id)
   state.loadingHandles.clear()
   state.overlays.clear()

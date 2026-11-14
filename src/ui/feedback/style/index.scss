@@ -1,3 +1,5 @@
+@use '../../../design/keyframes' as kf;
+
 /* feedback 的转圈全走自绘 Spinner：这里把那份几何带进来，宿主不用再单独引样式。
    不再依赖基础图标包的 loading 字形，也不再受字体在线加载与 currentColor 影响。 */
 @use '../spinner/style/index' as spinner;
@@ -34,8 +36,10 @@
 .mptk-fb-loader {
   color: var(--mptk-spinner-active);
   display: inline-block;
-  flex: none;
-  line-height: 1;
+  flex-grow: var(--mptk-s-flex-none);
+  flex-shrink: var(--mptk-s-flex-none);
+  flex-basis: var(--mptk-s-margin-auto);
+  line-height: var(--mptk-s-line-flat);
   text-align: center;
 }
 
@@ -55,21 +59,21 @@
 
 /* 三块圆角短条依次脉动（透明度 + 缩放），延迟由组件按序号注入。 */
 .mptk-fb-loader__block {
-  animation: mptk-fb-loader-blink 1.2s ease-in-out infinite;
-  background-color: currentColor;
-  transform-origin: center;
+  animation: mptk-fb-loader-blink var(--mptk-c-loader-blink-dur) var(--mptk-s-ease-in-out) var(--mptk-s-infinite);
+  background-color: var(--mptk-s-current-color);
+  transform-origin: var(--mptk-s-transform-center);
 }
 
 @keyframes mptk-fb-loader-blink {
-  0%,
-  80%,
-  100% {
-    opacity: 0.25;
-    transform: scale(0.8);
+  #{kf.$mptk-kf-0},
+  #{kf.$mptk-kf-80},
+  #{kf.$mptk-kf-full} {
+    opacity: var(--mptk-c-loader-dim);
+    transform: var(--mptk-c-loader-scale);
   }
-  40% {
-    opacity: 1;
-    transform: scale(1);
+  #{kf.$mptk-kf-40} {
+    opacity: var(--mptk-s-opacity-full);
+    transform: var(--mptk-s-scale-full);
   }
 }
 

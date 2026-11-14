@@ -3,6 +3,7 @@
 
 /* 站点自己的主题配置：只覆盖要改的键，其余吃库默认值。 */
 @use './app-theme';
+@use './kit-swatches.generated' as sw;
 
 page {
   /* 页面底色不在 WXSS 里写死：由 app.json + theme.json 的窗口主题配置在页面创建前解析。
@@ -22,23 +23,26 @@ page {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: var(--mptk-s-full);
   padding-bottom: env(safe-area-inset-bottom);
 }
 
 .demo-shell__body {
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0;
-  height: 0;
+  flex-grow: var(--mptk-s-flex-grow);
+  flex-shrink: var(--mptk-s-flex-shrink);
+  flex-basis: var(--mptk-s-zero);
+  height: var(--mptk-s-zero);
 }
 
 /* 页面不再统一加左右内边距：普通示例块自己留 16，裸展示的组件才能真正通到底。 */
+/* 演示站纵向节奏只由四层决定，每层只管自己那一道，不再互相叠加：
+   页 16（顶部给、底部由最后一个块的尾距承担）→ 页头 16 → 块间距 16 → 卡/项间距 16 或 12。
+   裸块（bare，无底色）不长垂直留白，块间距由内容最后一项的尾距承担。 */
 .demo-page {
   padding-top: var(--mptk-space-4);
-  padding-right: 0;
-  padding-bottom: var(--mptk-space-4);
-  padding-left: 0;
+  padding-right: var(--mptk-s-zero);
+  padding-bottom: var(--mptk-s-zero);
+  padding-left: var(--mptk-s-zero);
 }
 
 .demo-page__head {
@@ -66,9 +70,9 @@ page {
   flex-direction: column;
   margin-bottom: var(--mptk-space-4);
   padding-top: var(--mptk-space-2);
-  padding-right: 0;
+  padding-right: var(--mptk-s-zero);
   padding-bottom: var(--mptk-space-2);
-  padding-left: 0;
+  padding-left: var(--mptk-s-zero);
 }
 
 .demo-hero__logo {
@@ -94,16 +98,16 @@ page {
 }
 
 .demo-badge {
-  border-top-width: 1px;
+  border-top-width: var(--mptk-c-border-w);
   border-top-style: solid;
   border-top-color: var(--mptk-border);
-  border-bottom-width: 1px;
+  border-bottom-width: var(--mptk-c-border-w);
   border-bottom-style: solid;
   border-bottom-color: var(--mptk-border);
-  border-left-width: 1px;
+  border-left-width: var(--mptk-c-border-w);
   border-left-style: solid;
   border-left-color: var(--mptk-border);
-  border-right-width: 1px;
+  border-right-width: var(--mptk-c-border-w);
   border-right-style: solid;
   border-right-color: var(--mptk-border);
   border-radius: var(--mptk-radius-pill);
@@ -125,7 +129,7 @@ page {
 
 .demo-block {
   background-color: var(--mptk-surface-1);
-  border-top-width: 1px;
+  border-top-width: var(--mptk-c-border-w);
   border-top-style: solid;
   border-top-color: var(--mptk-border-faint);
   border-radius: var(--mptk-radius-md);
@@ -146,13 +150,17 @@ page {
 
 /* 裸展示：不套演示卡片、不加左右内边距，整行直接铺到屏幕两侧。 */
 .demo-block--bare {
-  background-color: transparent;
-  border-top-width: 0;
+  background-color: var(--mptk-s-transparent);
+  border-top-width: var(--mptk-s-zero);
   border-radius: var(--mptk-radius-none);
-  margin-right: 0;
-  margin-left: 0;
-  padding-right: 0;
-  padding-left: 0;
+  margin-top: var(--mptk-s-zero);
+  margin-right: var(--mptk-s-zero);
+  margin-bottom: var(--mptk-s-zero);
+  margin-left: var(--mptk-s-zero);
+  padding-top: var(--mptk-s-zero);
+  padding-right: var(--mptk-s-zero);
+  padding-bottom: var(--mptk-s-zero);
+  padding-left: var(--mptk-s-zero);
 }
 
 .demo-block__head {
@@ -190,8 +198,9 @@ page {
   line-height: var(--mptk-line-xs);
 }
 
+/* 块底留白由块自己（padding 或内容尾距）给，body 不再叠一道。 */
 .demo-block__body {
-  margin-bottom: var(--mptk-space-2);
+  margin-bottom: var(--mptk-s-zero);
 }
 
 /* 演示内容之间必须留空隙，组件不许一个个贴在一起：
@@ -233,30 +242,25 @@ page {
 
 .demo-swatch {
   border-radius: var(--mptk-radius-sm);
-  border-width: 1px;
+  border-width: var(--mptk-c-border-w);
   border-style: solid;
   border-color: var(--mptk-border);
-  height: 48px;
+  height: var(--mptk-c-demo-swatch-size);
   margin-right: var(--mptk-space-2);
   margin-bottom: var(--mptk-space-2);
-  width: 48px;
+  width: var(--mptk-c-demo-swatch-size);
 }
 
-/* 主题配置页的取值块：键名与 --mptk-* 一一对应，值不复制。 */
-$demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, border, business, success, warning, danger, control-active;
-@each $key in $demo-token-swatches {
-  .demo-swatch--#{$key} {
-    background-color: var(--mptk-#{$key});
-  }
-}
+/* 色块类名与 --mptk-* 一一对应，由 kit.config.mjs 生成；宿主只负责在原位置引入。 */
+@include sw.demo-swatches;
 
 /* 设置列表里的小色块。 */
 .demo-swatch--sm {
   border-radius: var(--mptk-radius-xs);
-  height: 20px;
+  height: var(--mptk-c-demo-swatch-sm-size);
   margin-right: var(--mptk-space-1);
-  margin-bottom: 0;
-  width: 20px;
+  margin-bottom: var(--mptk-s-zero);
+  width: var(--mptk-c-demo-swatch-sm-size);
 }
 
 /* 主题配置页的色条：正好放下 6 位色值，值写在条上。 */
@@ -264,12 +268,12 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   align-items: center;
   border-radius: var(--mptk-radius-xs);
   display: flex;
-  height: 22px;
+  height: var(--mptk-c-demo-swatch-bar-h);
   justify-content: center;
   margin-right: var(--mptk-space-1);
-  margin-bottom: 0;
+  margin-bottom: var(--mptk-s-zero);
   overflow: hidden;
-  width: 62px;
+  width: var(--mptk-c-demo-swatch-bar-w);
 }
 
 /* 名字写不下就裁掉，不换行；标注字比正文小一档，只示意不细读。 */
@@ -277,17 +281,17 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
   overflow: hidden;
-  transform: scale(0.8);
-  white-space: nowrap;
+  transform: var(--mptk-c-loader-scale);
+  white-space: var(--mptk-s-white-space-nowrap);
 }
 
 /* 条上的字按底色亮度取黑或白，只解决可读性，不参与主题。 */
 .demo-swatch__ink--black {
-  color: #000000;
+  color: var(--mptk-c-demo-swatch-ink-black);
 }
 
 .demo-swatch__ink--white {
-  color: #ffffff;
+  color: var(--mptk-c-demo-swatch-ink-white);
 }
 
 /* 主题配置页：卡片直接铺在页面上，不再套示例块卡片。 */
@@ -296,11 +300,19 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   padding-left: var(--mptk-space-4);
 }
 
+/* 卡片之间与块之间同档：最后一张卡片的尾距就是块的尾距，块不再另加 margin。 */
 .demo-card {
-  margin-bottom: var(--mptk-space-3);
+  margin-bottom: var(--mptk-space-4);
 }
 
 /* 没有色条的行（边框）用两行小字给明暗值。 */
+/* 色名后的英文别名走注释档，不跟中文标题同号；行内嵌套 Text 自动基线对齐。 */
+.demo-cell-title-note {
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
 .demo-cell-value {
   color: var(--mptk-fg-3);
   display: block;
@@ -375,7 +387,7 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   display: flex;
   flex-direction: column;
   margin-bottom: var(--mptk-space-3);
-  width: 25%;
+  width: var(--mptk-s-quarter);
 }
 
 .demo-icon-cell__glyph {
@@ -404,7 +416,7 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   display: flex;
   flex-direction: column;
   margin-bottom: var(--mptk-space-3);
-  width: 33.333%;
+  width: var(--mptk-s-third);
 }
 
 .demo-icon-size__glyph {
@@ -424,10 +436,9 @@ $demo-token-swatches: surface-base, surface-1, surface-2, surface-3, fg, fg-2, b
   line-height: var(--mptk-line-xs);
 }
 
-/* 基础规范页：色块类名由色相名与档位名拼出，Sass 循环生成，取值仍全走 var(--mptk-*)。
-   新增色相时只需在 _tokens.scss 与本页展示清单各加一个名字，tests/foundations.test.mjs 核对两处不漂移。 */
-$demo-hues: blue, green, orange, red, purple, cyan, pink, teal;
-$demo-tiers: '', '-hover', '-active', '-soft';
+/* 基础规范页的展示清单与色块类名都由 kit.config.mjs 生成：
+   类名在 kit-swatches.generated.scss，色相 / 档位 / 灰阶在 kit-config.generated.ts，
+   tests/foundations.test.mjs 核对两份清单与配置不漂移。 */
 
 .demo-palette {
   display: flex;
@@ -451,7 +462,7 @@ $demo-tiers: '', '-hover', '-active', '-soft';
   flex-direction: column;
   margin-right: var(--mptk-space-2);
   margin-bottom: var(--mptk-space-2);
-  width: 60px;
+  width: var(--mptk-c-demo-palette-cell-w);
 }
 
 .demo-palette__label {
@@ -460,20 +471,6 @@ $demo-tiers: '', '-hover', '-active', '-soft';
   line-height: var(--mptk-line-xs);
   margin-top: var(--mptk-space-1);
   text-align: center;
-}
-
-@each $hue in $demo-hues {
-  @each $tier in $demo-tiers {
-    .demo-swatch--#{$hue}#{$tier} {
-      background-color: var(--mptk-#{$hue}#{$tier});
-    }
-  }
-}
-
-@for $level from 1 through 8 {
-  .demo-swatch--gray-#{$level} {
-    background-color: var(--mptk-gray-#{$level});
-  }
 }
 
 .demo-rulers {
@@ -494,7 +491,7 @@ $demo-tiers: '', '-hover', '-active', '-soft';
 .demo-ruler__bar {
   background-color: var(--mptk-control-active);
   border-radius: var(--mptk-radius-sm);
-  width: 96px;
+  width: var(--mptk-c-demo-ruler-bar-w);
 }
 
 .demo-ruler__bar--sm {
@@ -559,5 +556,3 @@ $demo-tiers: '', '-hover', '-active', '-soft';
   padding-left: var(--mptk-space-4);
   text-align: center;
 }
-
-

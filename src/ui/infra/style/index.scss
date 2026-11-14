@@ -10,11 +10,11 @@
 
 .mptk-overlay-host {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1000;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
+  z-index: var(--mptk-c-overlay-host-z);
 }
 
 .mptk-loading {
@@ -81,7 +81,7 @@
 }
 
 .mptk-safe-area {
-  width: 100%;
+  width: var(--mptk-s-full);
 }
 
 .mptk-safe-area--top {

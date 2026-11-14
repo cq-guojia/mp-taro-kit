@@ -1,6 +1,6 @@
 .mptk-divider {
-  width: 100%;
-  height: 1px;
+  width: var(--mptk-s-full);
+  height: var(--mptk-c-border-w);
   background-color: var(--mptk-border);
 }
 
@@ -10,8 +10,8 @@
 
 .mptk-badge__dot {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
   width: var(--mptk-space-2);
   height: var(--mptk-space-2);
   border-radius: var(--mptk-radius-pill);
@@ -20,8 +20,8 @@
 
 .mptk-badge__count {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
   border-radius: var(--mptk-radius-pill);
   background-color: var(--mptk-danger);
   color: var(--mptk-surface-1);

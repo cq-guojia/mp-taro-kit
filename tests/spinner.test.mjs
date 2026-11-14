@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { resolveCssVars } from './helpers/kit-config.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -57,7 +58,7 @@ test('自绘 Spinner 组件级出口与样式齐全，颜色只吃主题变量',
 })
 
 test('两种形态都照抄开源实现：circular 走圆锥渐变 + 环形遮罩，chase 六点追逐', () => {
-  const css = read(SPINNER_CSS)
+  const css = resolveCssVars(read(SPINNER_CSS))
 
   // circular —— TDesign t-loading theme="circular"：父级匀速转，子元素画渐变弧
   assert.match(css, /\.mptk-spinner--circular\s*\{[^}]*animation:\s*mptk-spinner-rotate/)
@@ -139,7 +140,7 @@ test('转圈只留在光板控件里，有内容位的一律改底色呼吸', ()
   assert.match(read('dist/styles/theme-light.css'), /--mptk-control-thumb-dim:/, '明色缺灰值')
   assert.match(read('dist/styles/theme-dark.css'), /--mptk-control-thumb-dim:/, '暗色缺灰值')
 
-  const segCss = read('dist/ui/form/segmented/style/index.css')
+  const segCss = resolveCssVars(read('dist/ui/form/segmented/style/index.css'))
   assert.match(segCss, /\.mptk-seg--busy \.mptk-seg__thumb[\s\S]{0,80}mptk-control-breathe/, 'Segmented 的滑块没挂呼吸')
   assert.match(segCss, /@keyframes mptk-control-breathe/, 'Segmented 没带进彩色滑块关键帧')
   assert.match(segCss, /50%\s*\{\s*opacity:\s*0?\.2/, '彩色滑块的呼吸谷值不够明显')

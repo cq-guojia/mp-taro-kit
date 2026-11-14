@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { tokensOf } from './helpers/kit-config.mjs'
 import { existsSync, readFileSync } from 'node:fs'
 
 function read(relative) {
@@ -13,6 +14,7 @@ function exists(relative) {
 const HUES = ['blue', 'green', 'orange', 'red', 'purple', 'cyan', 'pink', 'teal']
 const TIERS = ['', '-hover', '-active', '-soft']
 const MODES = ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']
+const config = (await import(new URL('../kit.config.mjs', import.meta.url))).default
 
 function cssValue(css, key) {
   return new RegExp(`--mptk-${key}:\\s*([^;]+);`).exec(css)?.[1]?.trim()
@@ -71,30 +73,59 @@ test('语义色与控件主色轴引用同一组色板值，不产生第二份�
   }
 })
 
-test('演示站色相清单与 tokens 的色相键一致，色块类名真的引用变量', () => {
+test('演示站色板清单由配置生成，Sass 与页面都不再各写一份', () => {
   const page = read('../demo/src/pages/design-foundation/index.tsx')
-  const listed = /const HUES = \[([^\]]+)\]/.exec(page)?.[1] ?? ''
-  assert.deepEqual([...listed.matchAll(/'([a-z]+)'/g)].map((hit) => hit[1]), HUES)
+  const generated = read('../demo/src/kit-config.generated.ts')
+  const swatches = read('../demo/src/kit-swatches.generated.scss')
   const app = read('../demo/src/app.scss')
-  const declared = /\$demo-hues: ([^;]+);/.exec(app)?.[1] ?? ''
-  assert.deepEqual(declared.split(',').map((item) => item.trim()), HUES)
-  assert.match(app, /@each \$hue in \$demo-hues/)
-  assert.match(app, /@for \$level from 1 through 8/)
-  assert.match(app, /var\(--mptk-#\{\$hue\}#\{\$tier\}\)/, '色块必须读 token，不许硬编码色值')
+
+  assert.match(page, /from '\.\.\/\.\.\/kit-config\.generated'/, '设计基础页必须读生成表')
+  assert.doesNotMatch(page, /const (HUES|TIERS|GRAYS) = \[/, '设计基础页不许再写死色板清单')
+  assert.doesNotMatch(app, /\$demo-hues|\$demo-tiers|\$demo-token-swatches/, 'app.scss 不许再写死色板清单')
+  assert.match(app, /@use '\.\/kit-swatches\.generated' as sw/, 'app.scss 必须引用色板生成物')
+  assert.match(app, /@include sw\.demo-swatches/, 'app.scss 必须 include 色板 mixin')
+
+  const wantNames = Object.keys(config.light)
+    .filter((key) => key.startsWith('--mptk-'))
+    .map((key) => key.replace(/^--mptk-/, ''))
+    .sort()
+  const gotNames = [...swatches.matchAll(/\.demo-swatch--([a-z0-9-]+)\s*\{/g)]
+    .map((hit) => hit[1]).sort()
+  assert.deepEqual(gotNames, wantNames, '色板生成物的类名集合与配置颜色键不一致')
+  for (const name of wantNames) {
+    assert.match(swatches, new RegExp(`background-color:\\s*var\\(--mptk-${name}\\);`),
+      `${name} 色块没读对应 token，或写了硬编码色值`)
+  }
+
+  const hueConst = /export const KIT_SWATCH_HUES[^=]*=\s*\[([\s\S]*?)\]/.exec(generated)?.[1] ?? ''
+  assert.deepEqual([...hueConst.matchAll(/"([^"]+)"/g)].map((hit) => hit[1]), HUES,
+    '生成表色相清单与期望不一致')
+  const grayConst = /export const KIT_SWATCH_GRAYS[^=]*=\s*\[([\s\S]*?)\]/.exec(generated)?.[1] ?? ''
+  assert.deepEqual([...grayConst.matchAll(/\d+/g)].map((hit) => Number(hit[0])), [1, 2, 3, 4, 5, 6, 7, 8],
+    '生成表灰阶清单与期望不一致')
+  for (const tier of TIERS) {
+    assert.ok(generated.includes(`"suffix": ${JSON.stringify(tier)}`), `生成表缺档位 ${tier || '本色'}`)
+  }
 })
 
 test('尺寸标尺逐档吃控件高度 token，档位数值与真源一致', () => {
   const page = read('../demo/src/pages/sizing/index.tsx')
   const app = read('../demo/src/app.scss')
   const light = read('../dist/styles/theme-light.css')
-  for (const [tier, px] of [['sm', 32], ['md', 40], ['lg', 48]]) {
+  const generated = read('../demo/src/kit-config.generated.ts')
+  const tokens = tokensOf()
+  assert.match(page, /from '\.\.\/\.\.\/kit-config\.generated'/, '尺寸页必须读生成表，不许写死档位数值')
+  for (const tier of ['sm', 'md', 'lg']) {
+    const key = `--mptk-control-h-${tier}`
+    const px = tokens[key]
     assert.match(
       app,
-      new RegExp(`\\.demo-ruler__bar--${tier}\\s*\\{[^}]*height:\\s*var\\(--mptk-control-h-${tier}\\)`),
+      new RegExp(`\\.demo-ruler__bar--${tier}\\s*\\{[^}]*height:\\s*var\\(${key}\\)`),
       `${tier} 标尺没吃对应 token`,
     )
-    assert.match(page, new RegExp(`tier: '${tier}', px: ${String(px)}`), `${tier} 展示数值漂移`)
-    assert.match(light, new RegExp(`--mptk-control-h-${tier}:\\s*${String(px)}px`))
+    assert.match(light, new RegExp(`${key}:\\s*${px}`))
+    const row = new RegExp(`"key": "${key}",[\\s\\S]*?"value": "([^"]*)"`).exec(generated)
+    assert.equal(row?.[1], px, `${tier} 生成表里的展示值漂移`)
   }
 })
 
@@ -134,20 +165,28 @@ test('主题配置页：色值、默认值与标准色相名都和真源一致',
     assert.match(page, new RegExp(`lightName: '${hue}'`), `语义色没标出标准色相名：${hue}`)
   }
 
-  /* 页面上的色值文本必须与编译产物同值，改 tokens 时这里会先红。 */
+  /* 页面只读生成表；生成表里的色值必须与编译产物同值，改配置时这里会先红。 */
+  assert.match(page, /from '\.\.\/\.\.\/kit-config\.generated'/, '主题配置页必须读生成表，不许复制色值')
   const light = read('../dist/styles/theme-light.css')
   const dark = read('../dist/styles/theme-dark.css')
-  const listed = [...page.matchAll(/(?:light|dark): '([0-9a-fA-F]{3,6})'/g)].map((hit) => hex(`#${hit[1]}`))
+  const generated = read('../demo/src/kit-config.generated.ts')
+  const listed = [...generated.matchAll(/"value":\s*"([^"]+)"/g)].map((hit) => hex(hit[1]))
   for (const key of ['surface-base', 'surface-1', 'surface-2', 'surface-3', 'fg', 'fg-2', 'fg-3', 'business', 'success', 'warning', 'danger']) {
-    assert.ok(listed.includes(hex(cssValue(light, key))), `页面缺 ${key} 的明色值`)
-    assert.ok(listed.includes(hex(cssValue(dark, key))), `页面缺 ${key} 的暗色值`)
+    assert.ok(listed.includes(hex(cssValue(light, key))), `生成表缺 ${key} 的明色值`)
+    assert.ok(listed.includes(hex(cssValue(dark, key))), `生成表缺 ${key} 的暗色值`)
   }
   assert.match(read('../dist/styles/theme-runtime.css'), /\.mptk-light\s*\{/, '局部反色能力由主题产物提供')
 })
 
 test('控件默认尺寸只有一处定义，三个控件都引用它', () => {
   const design = read('../src/design/index.ts')
-  assert.match(design, /export const CONTROL_SIZE_DEFAULT[^=]*=\s*'md'/, '默认档必须由 design 层定义')
+  const generated = read('../src/design/kit-config.generated.ts')
+  // 期望取自配置真源，不再把 'md' 写死在测试里：改默认档时测试跟着配置走。
+  const tier = /["']?controlSizeDefault["']?\s*:\s*["'](sm|md|lg)["']/.exec(read('../kit.config.mjs'))?.[1]
+  assert.ok(tier, '配置真源缺 runtime.controlSizeDefault')
+  assert.match(generated, new RegExp(`CONTROL_SIZE_DEFAULT[^=]*=\\s*"${tier}"`), '生成物没写对默认档')
+  assert.match(design, /export \{[^}]*CONTROL_SIZE_DEFAULT[^}]*\} from '\.\/kit-config\.generated\.js'/, 'design 层只转发生成物')
+  assert.doesNotMatch(design, /export const CONTROL_SIZE_DEFAULT\s*=/, 'design 层不许再写第二份默认值')
   for (const file of ['../src/ui/actions/Button.tsx', '../src/ui/form/switch/Switch.tsx', '../src/ui/form/segmented/Segmented.tsx']) {
     const source = read(file)
     assert.match(source, /size = CONTROL_SIZE_DEFAULT/, `${file} 没引用默认档常量`)

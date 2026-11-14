@@ -1,3 +1,5 @@
+@use '../../design/keyframes' as kf;
+
 /* 控件等待态的统一表达：内容位（文字 / 图标）已经被占着时，不再盖一个转圈 ——
    转圈要么把段挤宽、要么压在字上，两样都难看。只让「选中那块滑块」呼吸，
    尺寸与位置一概不动，整块轨道、文字都不跟着闪。
@@ -10,13 +12,13 @@
      灰值取 --mptk-control-thumb-dim，明暗各给一支偏浅的灰，
      压在滑块上的深色文字/图标（--mptk-control-thumb-fg）两档都还读得清。 */
 @keyframes mptk-control-breathe {
-  0%,
-  100% { opacity: 1; }
-  50% { opacity: .2; }
+  #{kf.$mptk-kf-0},
+  #{kf.$mptk-kf-full} { opacity: var(--mptk-s-opacity-full); }
+  #{kf.$mptk-kf-50} { opacity: var(--mptk-c-control-breathe-dim); }
 }
 
 @keyframes mptk-thumb-breathe {
-  0%,
-  100% { background-color: var(--mptk-control-thumb); }
-  50% { background-color: var(--mptk-control-thumb-dim); }
+  #{kf.$mptk-kf-0},
+  #{kf.$mptk-kf-full} { background-color: var(--mptk-control-thumb); }
+  #{kf.$mptk-kf-50} { background-color: var(--mptk-control-thumb-dim); }
 }

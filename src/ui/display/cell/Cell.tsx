@@ -17,6 +17,7 @@ export interface CellProps {
   extra?: ReactNode
   /** 自定义 value 显示内容，value 优先。 */
   children?: ReactNode
+  /** 垂直对齐：默认居中；传 false 改为顶部对齐（多行 label 时右侧贴标题顶边）。 */
   center?: boolean
   /** 是否画下分隔线；组内最后一格由 CellGroup 自动关掉。 */
   border?: boolean

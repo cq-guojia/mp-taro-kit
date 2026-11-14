@@ -26,7 +26,7 @@
 
 竞品普遍没有、本库补上的两处：`radius` 枚举（别家靠主题或宿主写 CSS）、`color` 内置色名 + 任意 CSS 色值双路。组合形态**不新增参数**，由上下文自动收敛，见「与 Cell 组合」。
 
-**样式逃生口不给 `*-style` / `*-ClassName`**：竞品常见这一组，但本库约定「颜色与尺寸值只在 `src/design/_tokens.scss` 写一次」，开了裸样式口子就会绕过档位。宿主定制改走根 `className` 加结构类名（见下表），或业务级覆盖 `--mptk-card-*` 同名变量。
+**样式逃生口不给 `*-style` / `*-ClassName`**：竞品常见这一组，但本库约定「颜色与尺寸值只在 `kit.config.mjs` 写一次」，开了裸样式口子就会绕过档位。宿主定制改走根 `className` 加结构类名（见下表），或业务级覆盖 `--mptk-card-*` 同名变量。
 
 ## 参数 / 输入
 
@@ -41,7 +41,7 @@
 | `radius` | `CardRadius` | 否 | 不传走 `--mptk-card-radius` | 枚举 `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'`，对应 4 / 8 / 12 / 16 / 20；由 `state.ts` 派生修饰类，宿主不查变量名单、不写样式 |
 | `size` | `CardSize` | 否 | `'md'` | 枚举 `'sm' \| 'md' \| 'lg'`，只换分区间距（`--mptk-space-2 / -3 / -4`），不动字号与圆角 |
 | `frame` | boolean | 否 | `true` | 四边描边开关；`false` 得到无边框卡片，圆角与底色仍在 |
-| `headerDivider` | boolean | 否 | `false` | 头部与主体之间补一条 1px 线，取 `--mptk-border-faint` |
+| `headerDivider` | boolean | 否 | 跟随头部 | 有头部（标题 / 副标题 / 右侧操作任一）默认就画一条 1px 线，取 `--mptk-border-faint`；传 `false` 关掉 |
 | `color` | `CardColor` | 否 | 不传走 `--mptk-card-bg` | 内置色名或任意 CSS 色值，见下 |
 | `onClick` | `() => void` | 否 | — | 给了才派生按压态；跳转由宿主注入，本库不接 `url` |
 | `disabled` | boolean | 否 | `false` | 短路 `onClick` 与按压反馈 |
@@ -64,7 +64,7 @@
 
 | 类名 | 说明 |
 |---|---|
-| `mptk-card` | 根；修饰类 `--radius-*`、`--size-*`、`--frameless`、`--header-divider`、`--cover`、`--edge-content`、`--<色名>`、`--clickable`、`--pressed`、`--disabled`、`--busy` |
+| `mptk-card` | 根；修饰类 `--radius-*`、`--size-*`、`--frameless`、`--header-divider`、`--cover`、`--edge-content`、`--edge-top`、`--edge-bottom`、`--<色名>`、`--clickable`、`--pressed`、`--disabled`、`--busy` |
 | `mptk-card__cover` | 封面区 |
 | `mptk-card__header` / `__heading` / `__title` / `__subtitle` / `__extra` | 头部四区 |
 | `mptk-card__body` | 主体 |
@@ -73,9 +73,13 @@
 行为约定：
 
 - 五个槽位全部按需渲染：没给的槽位不产生节点，`cover` 给了还会去掉根节点的顶部留白，让封面贴到卡片上沿。
-- 上下留白归壳、由 `hasCardEdgeContent()` 在渲染期从 `children` 派生：普通内容保留 `var(--mptk-card-spacing)`；声明了贴边的内容派生 `--edge-content`，根节点上下 padding 直接为字面量 `0`，不经计算表达式、不吃渲染端支持度。子级不做负 margin 反抵消。
-- 贴边时 body 的左右留白也归零，左右间距改由贴边内容自己给（`CellGroup` 给一档 `--mptk-space-4`），保证内容与分隔线离卡片边只有一道距离。
-- 圆角默认取 `--mptk-card-radius`（`base` mixin 指向 `--mptk-radius-md`，与控件同档 12px）；`radius` 枚举只是把同名键换到另一档，**取值仍只在 `src/design/_tokens.scss` 写一次**。`pill` 不开放给卡片，留给 Badge / Switch。
+- 头部字号取字号档：`title` 是 `--mptk-font-lg`（17/24），`subtitle` 是 `--mptk-font-xs`（12/17、`--mptk-fg-3`），比正文（`md`，15）低一档，与列表里的辅助文字同档。宿主不改字号，换档就走主题变量。
+- 头部与主体之间默认带一条 1px 分隔线（`--mptk-border-faint`）：有头部就该把标题区和内容分开，不必每个调用点再传 `headerDivider`；要连成一片时传 `headerDivider={false}`。
+- 上下留白归壳、由 `hasCardEdgeContent()` 在渲染期从 `children` 派生：普通内容保留 `var(--mptk-card-spacing)`；声明了贴边的内容派生 `--edge-content`，并**按端**派生 `--edge-top` / `--edge-bottom`，该端 padding 直接为字面量 `0`，不经计算表达式、不吃渲染端支持度。子级不做负 margin 反抵消。
+- 归零只作用在真正贴边的那一端：没有 `title` / `subtitle` / `extra` 才派生 `--edge-top`（否则标题会被顶到卡片上边），没有 `footer` 才派生 `--edge-bottom`。所以「Card 带标题 + 里面一个 CellGroup」两端都保留留白，标题不再贴着卡片边、列表最后一行也不贴底。
+- 贴边时 body 的左右留白归零，左右间距改由贴边内容自己给（`CellGroup` 取 `var(--mptk-card-spacing)`，与卡片标题、底部操作区同一档），保证内容与分隔线离卡片边只有一道距离、且左边界与标题对齐。
+- 贴边列表的首行自带一份上留白，所以头部到 body 的 `margin-bottom` 同时归零：否则「分割线 → 第一行」会变成「行与行」的两倍。
+- 圆角默认取 `--mptk-card-radius`（`base` mixin 指向 `--mptk-radius-md`，与控件同档 12px）；`radius` 枚举只是把同名键换到另一档，**取值仍只在 `kit.config.mjs` 写一次**。`pill` 不开放给卡片，留给 Badge / Switch。
 - 点击态由 `onClick` 派生，按压反馈走 `hoverClass`；`disabled` 短路回调；`loading` 不短路点击，由宿主决定是否同时给 `disabled`。
 - 内容密度、字号、圆角、间距一律取 `var(--mptk-*)`，组件不写颜色值、不写兜底；`--mptk-card-bg` / `--mptk-card-border` 在 `light` / `dark` 同名同数，宿主可在业务级主题定制时覆盖。
 - 样式必须显式引入 `mp-taro-kit/ui/card/style`，基线来自 `mp-taro-kit/styles/theme-*`。
@@ -103,7 +107,7 @@ export const CellInCard = () => (
 组合由 `ui/infra` 的两处契约自己成立，都不需要消费方参与：
 
 - `card-context.ts` 的 `CardSurfaceContext` 向后代声明「你在卡片里」；`CellGroup` 用 `useCardSurface()` 消费后不渲染上下外框（`outerBorder=false`）、派生 `mptk-cell-group--in-card`、组与行底色改透明。父传子调整的模式对齐 react-native-paper 的 `CardContext`。
-- `card-edge.ts` 的 `markCardEdgeContent()` 让 `CellGroup` 声明「我每行自带留白」；`Card` 在渲染期用 `hasCardEdgeContent(children)` 识别到它，派生 `mptk-card--edge-content`，把根节点上下 padding 直接置 0。声明是渲染期静态契约，不引入运行时状态、不产生首帧跳动，也不需要 `card` 与 `display/cell` 互相 import。
+- `card-edge.ts` 的 `markCardEdgeContent()` 让 `CellGroup` 声明「我每行自带留白」；`Card` 在渲染期用 `hasCardEdgeContent(children)` 识别到它，派生 `mptk-card--edge-content`，再按槽位派生 `mptk-card--edge-top` / `--edge-bottom` 把该端 padding 直接置 0。声明是渲染期静态契约，不引入运行时状态、不产生首帧跳动，也不需要 `card` 与 `display/cell` 互相 import。
 
 贴边取 shadcn/ui 的 Edge to edge 语义，但**不用负 margin**：小程序渲染端会静默丢弃变量参与计算的负 margin，编译与 CSS 层叠都查不出来，实机表现为 `margin: 0`，于是壳的 12px 与行的 12px 叠成 24px。改成壳上字面量 `0` 归零后，组合态顶部只剩 Cell 自身的一份 `--mptk-space-3`（12px）。不用 `:has()`，因为小程序 WXSS 不支持结构伪类。
 
@@ -152,4 +156,7 @@ export const WithSlots = () => (
 - 2026-11-13 16:42:48：组合改为零参数：Card 提供上下文，CellGroup 自动收敛外框 / 底色 / 留白；移除 flush 参数
 - 2026-11-13 18:43:58：贴边留白改由 Card 渲染期识别内容并归零，删除子级负 margin 反抵消，补行为级断言
 - 2026-11-14 11:23:22：贴边时 body 左右留白也归零，左右间距改由贴边内容自己给
+- 2026-11-14：贴边归零改按端生效（`--edge-top` / `--edge-bottom`）：有标题不再顶到卡片上边、有底部操作区不再贴底；贴边时头部 `margin-bottom` 归零，分割线到首行不再双倍；卡片内列表左右留白改取 `--mptk-card-spacing`，与标题对齐
 - 2026-11-14 12:37:19：默认圆角改 md（与控件同档 12px）
+- 2026-11-14：头部默认带分隔线（`headerDivider` 不给就跟随头部）；说明字号降到 `--mptk-font-xs`
+- 2026-11-15 00:20:59：取值真源改为 kit.config.mjs

@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
@@ -11,11 +12,13 @@ const release = process.argv.includes('--release')
 const errors = []
 
 const requiredExports = [
-  '.', './design', './runtime', './utils', './core', './ui',
+  '.', './design', './runtime', './config', './plugin', './utils', './core', './ui',
   './ui/*', './ui/*/style', './styles/tokens', './package.json',
 ]
 
 if (!pkg.files?.includes('dist')) errors.push('files 未包含 dist')
+// Taro 4 用 resolve.sync 解析插件名，只认包根的物理目录；漏了它 plugins: ['mp-taro-kit/plugin'] 会找不到。
+if (!pkg.files?.includes('plugin')) errors.push('files 未包含 plugin（Taro 插件物理入口）')
 if ('miniprogram' in pkg) errors.push('不应存在 miniprogram 字段')
 if (!pkg.types?.startsWith('./dist/')) errors.push('types 未指向 dist/')
 
@@ -39,8 +42,13 @@ for (const [key, value] of Object.entries(exportsMap)) {
   const targets = typeof value === 'string'
     ? [value]
     : [value.types, value.import, value.require].filter(Boolean)
+  const distBuilt = existsSync(path.join(root, 'dist'))
   for (const target of targets) {
     if (!target.startsWith('./dist/')) errors.push(`exports ${key} 的目标 ${target} 不在 dist/ 下`)
+    // 通配出口由下面的 src/ui 清单逐条核对；这里只查可直接落盘的静态目标。
+    if (distBuilt && !target.includes('*') && !existsSync(path.join(root, target))) {
+      errors.push(`exports ${key} 的目标 ${target} 在 dist/ 里不存在`)
+    }
   }
   const cssOnly = typeof value === 'string' && value.endsWith('.css')
   const hasTypes = typeof value === 'object' && Boolean(value.types)
@@ -151,12 +159,40 @@ async function collect(dir) {
 }
 if (existsSync(distDir)) await collect(distDir)
 
+// 生成物与配置真源一致性：独立重算期望 + 输入指纹 + 变异测试，不依赖 dist。
+for (const args of [
+  ['--lib', '--check'],
+  ['--host', '--check', '--config', 'demo/kit.config.mjs', '--out', 'demo/src'],
+]) {
+  const result = spawnSync(process.execPath, [path.join(root, 'scripts/gen-kit-config.mjs'), ...args], {
+    cwd: root,
+    encoding: 'utf8',
+  })
+  if (result.status !== 0) {
+    errors.push(`统一配置生成物漂移（${args[0]}）：${(result.stderr || result.stdout || '').trim()}`)
+  }
+}
+
 if (release) {
   if (artifacts === 0) errors.push('dist/ 没有构建产物，拒绝发布空包；请先落源码并接入 TS/SCSS 编译器')
   for (const required of ['index.js', 'index.cjs', 'index.d.ts']) {
     if (!existsSync(path.join(distDir, required))) {
       errors.push(`dist/ 缺少 ${required}，拒绝发布只有样式或半成品的包`)
     }
+  }
+  // 生成器与插件必须随包发布，否则消费方侧 require/import 会找不到模块。
+  for (const relative of [
+    'config/cli.mjs', 'config/lib/kit-config.mjs', 'config/defaults.mjs',
+    'plugin/index.cjs', 'plugin/index.mjs', 'plugin/index.d.ts',
+    'runtime/kit-config.js', 'runtime/kit-config.cjs', 'runtime/kit-config.d.ts',
+  ]) {
+    if (!existsSync(path.join(distDir, relative))) errors.push(`发布包缺统一配置产物 dist/${relative}`)
+  }
+  for (const relative of ['plugin/index.js', 'plugin/package.json']) {
+    if (!existsSync(path.join(root, relative))) errors.push(`发布包缺 Taro 插件物理入口 ${relative}`)
+  }
+  if (pkg.bin?.['mptk-gen-config'] && !existsSync(path.join(root, pkg.bin['mptk-gen-config']))) {
+    errors.push(`bin.mptk-gen-config 指向的 ${pkg.bin['mptk-gen-config']} 不存在`)
   }
 }
 if (errors.length > 0) {

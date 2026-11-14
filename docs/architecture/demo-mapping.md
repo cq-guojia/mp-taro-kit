@@ -35,7 +35,7 @@ demo/                                               # 仓库内的 Taro 小程�
     │   └── DemoShell.tsx                           # 页面外壳：固定视口高度的 View + scroll-view；导航栏在滚动区外
     └── pages/                                      # 演示站页面：1 个索引页 + 17 个展示页
         ├── index/index.tsx                         # 目录页：主题三态装 Card（title + subtitle + Segmented）；menu 用 CellGroup 铺固定分组
-        ├── theme-config/index.tsx                  # 主题配置：三张 Card（基础配置 / 颜色配置 / 其他控件配置），色条上直接写色值
+        ├── theme-config/index.tsx                  # 主题配置：三张 Card 用 title 做标题、列表是不带标题的 CellGroup，色条上写色板名字
         ├── design-foundation/index.tsx             # 设计基础：中性灰阶、色相与明暗两套，独立成页
         ├── sizing/index.tsx                        # 尺寸：控件高度三档与其余档位，独立成页
         ├── infra/index.tsx                         # src/ui/infra/：OverlayHost、SafeArea、use-store
@@ -63,6 +63,7 @@ demo/                                               # 仓库内的 Taro 小程�
 - 展示页与库侧路径仍一一对应：一页承载一个子域（`foundation` / `commands` 各承载一组能力域），路由由 `pages` 派生；新增能力域先在本树定位，再改 `demo/src/catalog.ts` 与 `demo/app.config.ts` 的 `pages`。
 - 同一子域里已实现的多个组件各占一页，不混排：`form` 只放 Switch，`segmented` 只放 Segmented，`display` 只放 Cell / CellGroup，Badge 与 Divider 各自成页；`card` 是独立子域、通用卡片容器单独成页，业务向商品卡片占位改名 `ProductCard` 让出通用名；菜单条目通过 `pageId` 各自指向自己的页，点进去只看到这一件内容。`tests/ui.test.mjs` 断言 `ready` 条目指向真实展示页，并断言 Cell / Badge / Divider 三条菜单各指自己、Cell 页示例不混入别的内容。多对一仍是全站其余菜单的既有结构，不在本条约束内。
 - 演示内容之间必须留空隙，组件不许一个个贴在一起：横排用 `.demo-row`、纵向多段用 `.demo-stack`，其中的组件一律带 `.demo-item`（自带右、下外边距，取值 `--mptk-space-3`）。不用 `gap` —— 老 WebView 内核不支持，Skyline 与 WebView 会呈现两种结果。
+- **纵向节奏只有四层，每层只负责自己那一道**：页 `padding-top: --mptk-space-4`（底部由最后一个块的尾距承担，页不再加 padding-bottom）→ 页头 `margin-bottom: --mptk-space-4` → 块与块 `--mptk-space-4` → 卡片与卡片 `--mptk-space-4`。裸块（`bare`，无底色）不贡献垂直留白（`padding-top/bottom: 0`、`margin: 0`），块间距由内容最后一项的尾距承担，因此「卡片之间」和「块与块」是同一个 16。`.demo-block__body` 不再带 `margin-bottom`，块底留白只由块自己给。禁止在块上再叠一层 margin「看起来保险」——三层相加会得到 28 / 56 这种没人能解释的数。
 - 一页内示例较多时按 `section` 分组：`CatalogExample.section` 是页内分组标题，`DemoPage` 只在分组首块前插一个标题，未标 `section` 的页行为不变。分组判据按「使用者看效果的顺序」，不按库侧目录：Cell 页固定五组「容器形态 → 组级外观设置 → 单格内容与排布 → 交互与状态 → 与 Card 组合」，由大到小、由静态到交互；同类设置集中，新增设置追加到本组末尾、不插回形态组。Card 页固定三组「容器形态 → 外观设置 → 槽位与状态」，同样由大到小、由静态到交互。`tests/ui.test.mjs` 与 `tests/card.test.mjs` 断言两页的组顺序与分组连续，其他未标 `section` 的页不受影响。
 - **组合示例按引用方向归属，只向上引用、不向下引用**：通用容器不知道自己会被谁装，`Card` 页只列自身能力与宿主手搓的内容（`Text` / `View` + 自身槽位），不列举具体子组件的组合；`Cell` 与 `Card` 的组合归引用方 `Cell` 页展示，并放在该页自身能力之后。展示顺序固定为「先看默认值 → 再看可枚举档位 → 再看设置开关 → 再看槽位与内容 → 再看交互状态 → 最后看与其他组件的组合」。`tests/card.test.mjs` 断言 Card 页源码与示例 `imports` 都不出现 `ui/display/cell`；`tests/ui.test.mjs` 断言组合示例归 Cell 页末组。
 - 有尺寸轴的组件，页面第一块固定是「尺寸」示例：逐档铺开（sm / md / lg 各一条）并标出档位与取值，其余示例不再兼差当尺寸表。除这一块之外，演示一律走默认档（不传 `size`，即 `md`），不写死 `sm` / `lg`：同一形态有多个实例、或一页有多个形态时口径一致，尺寸混用会被读成形态差异，形态之间也就没法横向比较；宿主看到的就是不配参数时的样子。`tests/ui.test.mjs` 按示例块断言这条。
@@ -124,3 +125,5 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-14 11:45:51：配置页改为三张卡片即三块（不再套示例块卡片），补 bare 页规则
 - 2026-11-14 12:12:20：演示站除尺寸块外一律走默认档，不写死 size
 - 2026-11-14 12:37:19：首页主题块改用 Card；配置页说明走 Card subtitle
+- 2026-11-14：配置页三块标题改用 Card 的 title（CellGroup 不再当卡片标题），配置文件块的标题与说明只留在卡片里
+- 2026-11-14：定死演示站纵向节奏（页 16 / 页头 16 / 块 16 / 卡 16，裸块不长垂直留白），删掉块 padding 与 body margin 的叠加

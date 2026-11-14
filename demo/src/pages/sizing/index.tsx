@@ -1,20 +1,28 @@
 import { View, Text } from '@tarojs/components'
 
 import { DemoPage } from '../../components/DemoBlock'
+import { KIT_CONFIG_BY_KEY } from '../../kit-config.generated'
 
-const HEIGHT_TIERS = [
-  { tier: 'sm', px: 32 },
-  { tier: 'md', px: 40 },
-  { tier: 'lg', px: 48 },
-]
+/** 档位与取值全部来自生成表，本页不写死任何尺寸数字。 */
+const configValue = (key: string) => KIT_CONFIG_BY_KEY[key]?.value ?? ''
+const pxOf = (key: string) => configValue(key).replace(/px$/, '')
+
+const HEIGHT_TIERS = ['sm', 'md', 'lg'].map((tier) => ({
+  tier,
+  px: pxOf(`--mptk-control-h-${tier}`),
+}))
+
+const FONT_TIERS = ['xs', 'sm', 'md', 'lg', 'xl']
+const SPACE_TIERS = ['0', '1', '2', '3', '4']
+const RADIUS_TIERS = ['xs', 'sm', 'md', 'lg', 'xl', 'pill']
 
 const SIZE_GROUPS = [
   {
     title: '字号 / 行高',
-    items: ['xs 12 / 17', 'sm 14 / 20', 'md 15 / 22', 'lg 17 / 24', 'xl 22 / 30'],
+    items: FONT_TIERS.map((tier) => `${tier} ${pxOf(`--mptk-font-${tier}`)} / ${pxOf(`--mptk-line-${tier}`)}`),
   },
-  { title: '间距', items: ['space-1 4', 'space-2 8', 'space-3 12', 'space-4 16'] },
-  { title: '圆角', items: ['xs 4', 'sm 8', 'md 12', 'lg 16', 'xl 20', 'pill 全圆'] },
+  { title: '间距', items: SPACE_TIERS.map((tier) => `space-${tier} ${pxOf(`--mptk-space-${tier}`)}`) },
+  { title: '圆角', items: RADIUS_TIERS.map((tier) => `${tier} ${pxOf(`--mptk-radius-${tier}`)}`) },
 ]
 
 /** 尺寸：控件高度三档，及其余不随明暗变化的档位。 */
@@ -28,7 +36,7 @@ export default function SizingPage() {
             {HEIGHT_TIERS.map((item) => (
               <View key={item.tier} className="demo-ruler">
                 <View className={`demo-ruler__bar demo-ruler__bar--${item.tier}`} />
-                <Text className="demo-ruler__label">{`${item.tier} · ${String(item.px)}px`}</Text>
+                <Text className="demo-ruler__label">{`${item.tier} · ${item.px}px`}</Text>
               </View>
             ))}
           </View>
@@ -50,7 +58,7 @@ export default function SizingPage() {
               </View>
             </View>
           ))}
-          <Text className="demo-note">字号档位与《微信小程序设计指南》5.1 的常用字号对应；宿主不整体覆盖档位，也不新增档位。</Text>
+          <Text className="demo-note">字号档位与《微信小程序设计指南》5.1 的常用字号对应；宿主可逐档覆盖，生成器会校验档位严格递增。</Text>
         </View>
       )
     }

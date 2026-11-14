@@ -1,44 +1,20 @@
-/* 站点级主题配置：在库的总配置（src/design/_tokens.scss）之上覆盖本站要改的项。
-   本站沿用库默认值，所以下面每一条都注释着；站点要改哪条就取消注释。
-   两条规则与总配置一致：
-   1. 颜色必须明暗两套一起给：本站用 theme-runtime，明色落 page、暗色落 .mptk-dark；
-   2. 值落具体色值，不用 color-mix（小程序 WXSS 不保证支持）。
-   覆盖只写要改的键，没写的继续吃库默认值。 */
+// @mptk-inputs:78857645c544
+// 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（站点主题覆盖层）。
+// 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
 page {
-  /* 页面底色：库默认明色是浅灰；要更接近纯白可换成更浅的灰阶。 */
-  // --mptk-surface-base: var(--mptk-gray-1);
-
-  /* 卡片面与描边。 */
-  // --mptk-card-bg: #fff;
-  // --mptk-card-border: var(--mptk-border-strong);
-
-  /* 语义色：业务主色、成功、警告、错误。 */
-  // --mptk-business: var(--mptk-purple);
-  // --mptk-success: var(--mptk-green);
-  // --mptk-warning: var(--mptk-orange);
-  // --mptk-danger: var(--mptk-red);
-
-  /* 控件主色轴：开关与分段的选中色，以及将来的输入类控件。 */
-  // --mptk-control-active: var(--mptk-blue);
-
-  /* 控件圆角：Button / Segmented 共用，输入类控件也引用它。 */
-  // --mptk-control-radius: var(--mptk-radius-sm);
-
-  /* 控件高度三档：改档位值等于整体缩放所有控件，一般不动。 */
-  // --mptk-control-h-sm: 32px;
-  // --mptk-control-h-md: 40px;
-  // --mptk-control-h-lg: 48px;
+  // 这里展示的是「可覆盖项清单」：取消注释即生效，值仍由生成器写入，不在样式里手写。
+  // 可配项示例（完整清单见 src/kit-config.generated.ts）：
+  //   --mptk-surface-base / --mptk-radius-md / --mptk-business / --mptk-font-md
+  //   --mptk-c-mask-opacity / --mptk-c-spinner-rotate-dur / --mptk-s-full
+  // 只写要改的键到项目根 kit.config.mjs，值由生成器写回这里。
+  --mptk-c-spinner-rotate-dur: .9s;
 }
 
 .mptk-dark {
-  /* 暗色不是把明色反过来：色相提亮、页面底色取深灰（不是纯黑）。 */
-  // --mptk-surface-base: var(--mptk-gray-1);
-  // --mptk-card-bg: var(--mptk-gray-2);
-  // --mptk-card-border: var(--mptk-border-strong);
-  // --mptk-business: var(--mptk-blue);
-  // --mptk-success: var(--mptk-green);
-  // --mptk-warning: var(--mptk-orange);
-  // --mptk-danger: var(--mptk-red);
-  // --mptk-control-active: var(--mptk-blue);
+  // 暗色差异落这里；明色未覆盖的键继续吃库默认。
+}
+
+.mptk-light {
+  // 局部反色覆盖位；通常无需改动。
 }

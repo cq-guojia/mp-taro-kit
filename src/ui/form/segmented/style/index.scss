@@ -16,13 +16,13 @@
   /* 指示器内缩：滑块四边各让 3px（细分视觉值，不是间距档）。上下两条读这里的变量，
      左右两条由组件内联写成 3px / 6px —— 两边同值，改的时候一起改。
      下划线左右各缩 one step。 */
-  --mptk-seg-inset: 3px;
+  --mptk-seg-inset: var(--mptk-c-seg-inset);
   --mptk-seg-line-inset: var(--mptk-space-3);
   --mptk-seg-item-pad: var(--mptk-space-4);
   --mptk-seg-item-min: var(--mptk-control-h-md);
   position: relative;
   display: flex;
-  width: 100%;
+  width: var(--mptk-s-full);
   height: var(--mptk-control-h-md);
   border-radius: var(--mptk-control-radius);
   overflow: hidden;
@@ -54,25 +54,27 @@
 .mptk-seg--radius-pill .mptk-seg__thumb { border-radius: var(--mptk-radius-pill); }
 
 .mptk-seg--line {
-  border-radius: 0;
+  border-radius: var(--mptk-radius-none);
 }
 
 .mptk-seg--line .mptk-seg__track {
-  border-radius: 0;
-  background-color: transparent;
+  border-radius: var(--mptk-radius-none);
+  background-color: var(--mptk-s-transparent);
 }
 
 .mptk-seg--locked {
-  opacity: .5;
+  opacity: var(--mptk-c-locked-opacity);
 }
 
 /* 横向滚动容器：宽度由根节点定死的 100% 给出（flex:1 1 0 在确定宽度的容器里才成立），
    内容比它宽就横滑。overflow 交给 scroll-view 自己。 */
 .mptk-seg__scroll {
-  flex: 1 1 0;
-  min-width: 0;
-  height: 100%;
-  white-space: nowrap;
+  flex-grow: var(--mptk-s-flex-grow);
+  flex-shrink: var(--mptk-s-flex-shrink);
+  flex-basis: var(--mptk-s-zero);
+  min-width: var(--mptk-s-zero);
+  height: var(--mptk-s-full);
+  white-space: var(--mptk-s-white-space-nowrap);
 }
 
 /* 底片：fit 时按内容宽（inline-flex 收缩），ratio / equal 时被 100% 撑满。
@@ -81,7 +83,7 @@
   position: relative;
   display: inline-flex;
   align-items: stretch;
-  height: 100%;
+  height: var(--mptk-s-full);
   border-radius: var(--mptk-control-radius);
   background-color: var(--mptk-control-track);
   overflow: hidden;
@@ -90,8 +92,8 @@
 .mptk-seg--ratio .mptk-seg__track,
 .mptk-seg--equal .mptk-seg__track {
   display: flex;
-  width: 100%;
-  min-width: 100%;
+  width: var(--mptk-s-full);
+  min-width: var(--mptk-s-full);
 }
 
 .mptk-seg__thumb {
@@ -108,10 +110,12 @@
 /* 段：fit 下按内容撑开（min-width 兜住触控热区），ratio 让剩余均摊，equal 严格等分。 */
 .mptk-seg__item {
   position: relative;
-  z-index: 1;
+  z-index: var(--mptk-s-z-raised);
   box-sizing: border-box;
   display: flex;
-  flex: 0 0 auto;
+  flex-grow: var(--mptk-s-flex-none);
+  flex-shrink: var(--mptk-s-flex-none);
+  flex-basis: var(--mptk-s-margin-auto);
   align-items: center;
   justify-content: center;
   min-width: var(--mptk-seg-item-min);
@@ -123,12 +127,16 @@
 }
 
 .mptk-seg--ratio .mptk-seg__item {
-  flex: 1 1 auto;
+  flex-grow: var(--mptk-s-flex-grow);
+  flex-shrink: var(--mptk-s-flex-shrink);
+  flex-basis: var(--mptk-s-margin-auto);
 }
 
 .mptk-seg--equal .mptk-seg__item {
-  flex: 1 1 0;
-  min-width: 0;
+  flex-grow: var(--mptk-s-flex-grow);
+  flex-shrink: var(--mptk-s-flex-shrink);
+  flex-basis: var(--mptk-s-zero);
+  min-width: var(--mptk-s-zero);
 }
 
 .mptk-seg--thumb .mptk-seg__item--on {
@@ -180,8 +188,8 @@
 /* 下划线是容器级元素（不是选中段的子元素），切换时在段之间滑过去，而不是瞬移。 */
 .mptk-seg__line {
   position: absolute;
-  bottom: 0;
-  height: 2px;
+  bottom: var(--mptk-s-zero);
+  height: var(--mptk-c-seg-line-h);
   background-color: var(--mptk-control-active);
   transition-property: left, width;
   transition-duration: var(--mptk-dur);
@@ -192,5 +200,5 @@
    下划线形态没有滑块，呼吸的就是那条线；两者同一份关键帧（见文件顶部 @use）。 */
 .mptk-seg--busy .mptk-seg__thumb,
 .mptk-seg--busy .mptk-seg__line {
-  animation: mptk-control-breathe var(--mptk-dur-breathe) var(--mptk-ease) infinite;
+  animation: mptk-control-breathe var(--mptk-dur-breathe) var(--mptk-ease) var(--mptk-s-infinite);
 }

@@ -23,7 +23,7 @@ export interface CardProps {
   size?: CardSize
   /** 四边描边；默认有，false 得到无边框卡片。 */
   frame?: boolean
-  /** 头部与主体之间画一条分隔线；默认不画。 */
+  /** 头部与主体之间的分隔线；不给则跟随头部：有头部默认画，传 false 关掉。 */
   headerDivider?: boolean
   /** 内置色名或任意 CSS 色值；不给走 --mptk-card-bg。 */
   color?: CardColor
@@ -64,7 +64,8 @@ export function Card({
   const hasCover = filled(cover)
   const body = loading === true && filled(loadingContent) ? loadingContent : children
   const state = resolveCardState({
-    radius, size, frame, headerDivider, color, hasCover, onClick, disabled, loading, className,
+    radius, size, frame, headerDivider, color, hasCover, hasHeader, onClick, disabled, loading, className,
+    hasFooter: filled(footer),
     hasEdgeContent: hasCardEdgeContent(body),
   })
   const cardStyle = state.inlineColor !== undefined ? { backgroundColor: state.inlineColor } : undefined

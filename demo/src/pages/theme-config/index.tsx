@@ -6,48 +6,65 @@ import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/cell/style'
 import { DemoPage } from '../../components/DemoBlock'
+import { KIT_CONFIG_ROWS } from '../../kit-config.generated'
 
-/** 配置里写的是设计基础的名字：色条上写名字，色值只用来决定条上的字是黑还是白。 */
+/** 只列名字与色板项名；色值一律从生成表读，页面不复制任何取值。 */
 const BASE_ROWS = [
-  { token: 'surface-base', name: '页面底色', light: 'f2f3f5', dark: '15181c', lightName: 'gray-2', darkName: 'gray-1' },
-  { token: 'surface-1', name: '卡片面', light: 'ffffff', dark: '1f2329', lightName: 'white', darkName: 'gray-2' },
-  { token: 'surface-2', name: '次级面', light: 'f7f8fa', dark: '262b32', lightName: 'gray-1', darkName: 'gray-3' },
-  { token: 'surface-3', name: '下沉面', light: 'e9ecf1', dark: '2d333b', lightName: 'gray-3', darkName: 'gray-4' },
-  { token: 'fg', name: '主要文字', light: '1f2328', dark: 'e6e8eb', lightName: 'ink-1', darkName: 'ink-1' },
-  { token: 'fg-2', name: '次要文字', light: '5c6370', dark: 'a9b0ba', lightName: 'ink-2', darkName: 'ink-2' },
-  { token: 'fg-3', name: '弱化文字', light: '767d87', dark: '858d98', lightName: 'gray-7', darkName: 'gray-7' },
+  { token: 'surface-base', name: '页面底色', lightName: 'gray-2', darkName: 'gray-1' },
+  { token: 'surface-1', name: '卡片面', lightName: 'white', darkName: 'gray-2' },
+  { token: 'surface-2', name: '次级面', lightName: 'gray-1', darkName: 'gray-3' },
+  { token: 'surface-3', name: '下沉面', lightName: 'gray-3', darkName: 'gray-4' },
+  { token: 'fg', name: '主要文字', lightName: 'ink-1', darkName: 'ink-1' },
+  { token: 'fg-2', name: '次要文字', lightName: 'ink-2', darkName: 'ink-2' },
+  { token: 'fg-3', name: '弱化文字', lightName: 'gray-7', darkName: 'gray-7' },
 ]
 
 /** 语义色 + 它落在标准色板的哪一支。 */
 const COLOR_ROWS = [
-  { token: 'business', name: '业务色 business', light: '3b5bdb', dark: '6b8afd', lightName: 'blue', darkName: 'blue' },
-  { token: 'success', name: '成功色 success', light: '22c55e', dark: '34d399', lightName: 'green', darkName: 'green' },
-  { token: 'warning', name: '警告色 warning', light: 'f59e0b', dark: 'fbbf24', lightName: 'orange', darkName: 'orange' },
-  { token: 'danger', name: '错误色 danger', light: 'ec1313', dark: 'ff5c5c', lightName: 'red', darkName: 'red' },
+  { token: 'business', name: '业务色', note: 'business', lightName: 'blue', darkName: 'blue' },
+  { token: 'success', name: '成功色', note: 'success', lightName: 'green', darkName: 'green' },
+  { token: 'warning', name: '警告色', note: 'warning', lightName: 'orange', darkName: 'orange' },
+  { token: 'danger', name: '错误色', note: 'danger', lightName: 'red', darkName: 'red' },
 ]
+
+/** 从生成表按「分组 + CSS 变量名」取当前生效值。 */
+function configValue(group: string, token: string) {
+  return KIT_CONFIG_ROWS.find((row) => row.group === group && row.key === `--mptk-${token}`)?.value ?? ''
+}
 
 /** 只列「不传时有默认值」的项；必须传的一律不列。 */
 const DEFAULT_ROWS = [
-  { name: '控件尺寸', label: 'Button / Switch / Segmented', value: `${CONTROL_SIZE_DEFAULT}（40px）` },
-  { name: '控件圆角', label: 'Button / Segmented', value: 'sm（8px）' },
-  { name: '卡片圆角', label: 'Card', value: 'lg（16px）' },
+  { name: '控件尺寸', label: 'Button / Switch / Segmented', value: `${CONTROL_SIZE_DEFAULT}（${configValue('base', 'control-h-md')}）` },
+  { name: '控件圆角', label: 'Button / Segmented', value: `sm（${configValue('base', 'radius-sm')}）` },
+  { name: '卡片圆角', label: 'Card', value: `md（${configValue('base', 'radius-md')}）` },
   { name: '图标字号', label: 'Icon', value: '跟随所在文字' },
 ]
 
+const groups: Record<string, { label: string; count: number }> = {}
+for (const row of KIT_CONFIG_ROWS) {
+  const entry = groups[row.group] ?? { label: row.groupLabel, count: 0 }
+  entry.count += 1
+  groups[row.group] = entry
+}
+const GROUP_STATS = Object.values(groups)
+
+/** 差异文件示例也由生成表拼出，不写死任何键或值。 */
+const SAMPLE = KIT_CONFIG_ROWS.find((row) => row.group === 'light' && row.value.startsWith('#')) ?? KIT_CONFIG_ROWS[0]
 const CONFIG_LINES = [
-  '// demo/src/app-theme.scss',
-  'page {',
-  '  --mptk-business: var(--mptk-purple);',
-  '}',
-  '',
-  '.mptk-dark {',
-  '  --mptk-business: var(--mptk-blue);',
+  '// kit.config.mjs（项目根，只写与库默认不同的键）',
+  'export default {',
+  `  ${SAMPLE.group}: {`,
+  `    "${SAMPLE.key}": "${SAMPLE.value}",`,
+  '  },',
   '}',
 ]
 
 /** 色条上的字按底色亮度取黑或白，只解决可读性，不参与主题。 */
-function inkOf(hex: string) {
+function inkOf(raw: string) {
+  let hex = raw.replace('#', '')
+  if (hex.length === 3) hex = hex.split('').map((char) => char + char).join('')
   const value = parseInt(hex, 16)
+  if (Number.isNaN(value)) return 'white'
   const luma = 0.299 * ((value >> 16) & 255) + 0.587 * ((value >> 8) & 255) + 0.114 * (value & 255)
   return luma > 150 ? 'black' : 'white'
 }
@@ -88,8 +105,8 @@ export default function ThemeConfigPage() {
     if (id === 'settings') {
       return (
         <View className="demo-cards">
-          <Card className="demo-card">
-            <CellGroup title="基础配置">
+          <Card className="demo-card" title="基础配置">
+            <CellGroup>
               {BASE_ROWS.map((row) => (
                 <Cell
                   key={row.token}
@@ -97,8 +114,8 @@ export default function ThemeConfigPage() {
                   value={
                     <Swatches
                       token={row.token}
-                      light={row.light}
-                      dark={row.dark}
+                      light={configValue('light', row.token)}
+                      dark={configValue('dark', row.token)}
                       lightName={row.lightName}
                       darkName={row.darkName}
                     />
@@ -109,25 +126,30 @@ export default function ThemeConfigPage() {
                 title="边框"
                 value={
                   <View>
-                    <Text className="demo-cell-value">rgba(0,0,0,.10)</Text>
-                    <Text className="demo-cell-value">rgba(255,255,255,.10)</Text>
+                    <Text className="demo-cell-value">{configValue('light', 'border')}</Text>
+                    <Text className="demo-cell-value">{configValue('dark', 'border')}</Text>
                   </View>
                 }
               />
             </CellGroup>
           </Card>
 
-          <Card className="demo-card">
-            <CellGroup title="颜色配置">
+          <Card className="demo-card" title="颜色配置">
+            <CellGroup>
               {COLOR_ROWS.map((row) => (
                 <Cell
                   key={row.token}
-                  title={row.name}
+                  title={
+                    <Text>
+                      {row.name}
+                      <Text className="demo-cell-title-note"> {row.note}</Text>
+                    </Text>
+                  }
                   value={
                     <Swatches
                       token={row.token}
-                      light={row.light}
-                      dark={row.dark}
+                      light={configValue('light', row.token)}
+                      dark={configValue('dark', row.token)}
                       lightName={row.lightName}
                       darkName={row.darkName}
                     />
@@ -137,10 +159,13 @@ export default function ThemeConfigPage() {
             </CellGroup>
           </Card>
 
-          <Card className="demo-card">
-            <CellGroup title="其他控件配置">
+          <Card className="demo-card" title="其他控件配置">
+            <CellGroup>
               {DEFAULT_ROWS.map((row) => (
                 <Cell key={row.name} title={row.name} label={row.label} value={row.value} />
+              ))}
+              {GROUP_STATS.map((group) => (
+                <Cell key={group.label} title={group.label} value={`${String(group.count)} 项可配`} />
               ))}
             </CellGroup>
           </Card>
@@ -152,8 +177,8 @@ export default function ThemeConfigPage() {
         <View className="demo-cards">
           <Card className="demo-card" title="配置文件" subtitle="覆盖只写要改的键，没写的继续吃默认值">
             <View className="demo-code">
-              {CONFIG_LINES.map((line) => (
-                <Text key={line} className="demo-code__line">{line}</Text>
+              {CONFIG_LINES.map((line, index) => (
+                <Text key={`${String(index)}-${line}`} className="demo-code__line">{line}</Text>
               ))}
             </View>
           </Card>

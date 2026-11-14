@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolveControlColor, CONTROL_COLORS } from '../dist/ui/form/control-color.js'
+import { resolveCssVars } from './helpers/kit-config.mjs'
 
 function read(relative) {
   return readFileSync(new URL(relative, import.meta.url), 'utf8')
@@ -174,7 +175,7 @@ test('方形开关每侧是正方形：四边同一个内边距，边长 = 1em +
   assert.doesNotMatch(side[1], /padding-(top|bottom|left|right)/, '不许拆成四边分别写，拆了必有一边掉队')
   assert.match(side[1], /min-width:\s*var\(--mptk-switch-cell\)/, '窄内容（数字 / 半角符号）要用格子边长兜成正方形')
   assert.match(side[1], /font-size:\s*var\(--mptk-switch-cell-content\)/, '字符字号必须独立于格子，sm 档才能只缩图标')
-  assert.match(side[1], /line-height:\s*1/, '内容盒要压成字符字号，否则单个字是竖长方形')
+  assert.match(resolveCssVars(side[1]), /line-height:\s*1/, '内容盒要压成字符字号，否则单个字是竖长方形')
   assert.doesNotMatch(side[1], /min-width:\s*\d+px/, '不许再写死固定宽')
 
   const block = /\.mptk-switch--block\s*\{([^}]*)\}/.exec(css)
@@ -315,7 +316,7 @@ test('不变色模式：底色恒为主色、内衬不收缩，只有滑块移�
   assert.match(track[1], /background-color:\s*var\(--mptk-control-active\)/, '不变色时底色恒为主色')
   const veil = /\.mptk-switch\.mptk-switch--keep-color \.mptk-switch__veil\s*\{([^}]*)\}/.exec(css)
   assert.ok(veil, '缺 keep-color 内衬规则')
-  assert.match(veil[1], /transform:\s*scale\(0\)/, '不变色时内衬始终收起')
+  assert.match(resolveCssVars(veil[1]), /transform:\s*scale\(0\)/, '不变色时内衬始终收起')
   assert.match(
     css,
     /\.mptk-switch\.mptk-switch--keep-color \.mptk-switch__track/,
@@ -355,19 +356,20 @@ test('切换是内衬往回收，轨道底色自己随状态变，不靠遮罩�
 
   const veil = /\.mptk-switch__veil\s*\{([^}]*)\}/.exec(css)
   assert.ok(veil, '缺关态内衬规则')
-  assert.match(veil[1], /top:\s*2px/, '内衬要比轨道内缩 2px，圆角处露出的是轨道自己的颜色')
-  assert.match(veil[1], /left:\s*2px/)
-  assert.match(veil[1], /width:\s*calc\(100% - 4px\)/, '内衬必须写 width')
-  assert.match(veil[1], /height:\s*calc\(100% - 4px\)/, '内衬必须写 height')
+  const settledVeil = resolveCssVars(veil[1])
+  assert.match(settledVeil, /top:\s*2px/, '内衬要比轨道内缩 2px，圆角处露出的是轨道自己的颜色')
+  assert.match(settledVeil, /left:\s*2px/)
+  assert.match(settledVeil, /width:\s*calc\(100% - 4px\)/, '内衬必须写 width')
+  assert.match(settledVeil, /height:\s*calc\(100% - 4px\)/, '内衬必须写 height')
   assert.match(veil[1], /background-color:\s*var\(--mptk-surface-base\)/, '内衬取页面底色，不取轨道色')
-  assert.match(veil[1], /transform:\s*scale\(1\)/)
+  assert.match(settledVeil, /transform:\s*scale\(1\)/)
   assert.match(veil[1], /transition-property:\s*transform/, '内衬的过渡只做缩放')
   assert.doesNotMatch(
     veil[1],
     /(right|bottom):/,
     '别用四条边定位：构建会把它们合并成 inset，Skyline 不认，内衬塌成 0×0 就没动画了',
   )
-  assert.match(css, /\.mptk-switch--on \.mptk-switch__veil\s*\{[^}]*transform:\s*scale\(0\)/, '选中时内衬收缩到 0')
+  assert.match(resolveCssVars(css), /\.mptk-switch--on \.mptk-switch__veil\s*\{[^}]*transform:\s*scale\(0\)/, '选中时内衬收缩到 0')
   assert.match(read('../dist/ui/form/switch/Switch.js'), /mptk-switch__veil/, '组件必须渲染内衬节点')
 })
 

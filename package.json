@@ -6,11 +6,15 @@
   "type": "module",
   "files": [
     "dist",
+    "plugin",
     "README.md"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "mptk-gen-config": "./dist/config/cli.mjs"
+  },
   "sideEffects": [
     "**/*.css"
   ],
@@ -29,6 +33,16 @@
       "types": "./dist/runtime/index.d.ts",
       "import": "./dist/runtime/index.js",
       "require": "./dist/runtime/index.cjs"
+    },
+    "./config": {
+      "types": "./dist/runtime/kit-config.d.ts",
+      "import": "./dist/runtime/kit-config.js",
+      "require": "./dist/runtime/kit-config.cjs"
+    },
+    "./plugin": {
+      "types": "./dist/plugin/index.d.ts",
+      "import": "./dist/plugin/index.mjs",
+      "require": "./dist/plugin/index.cjs"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
@@ -60,6 +74,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
+    "gen:config": "node scripts/gen-kit-config.mjs --lib && node scripts/gen-kit-config.mjs --host --config demo/kit.config.mjs --out demo/src",
     "icons": "node scripts/icons.mjs",
     "test": "node scripts/check.mjs && node --test tests/*.test.mjs",
     "guard": "node scripts/check.mjs --release"

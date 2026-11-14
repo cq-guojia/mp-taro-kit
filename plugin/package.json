@@ -1,0 +1,6 @@
+{
+  "name": "mp-taro-kit-plugin-entry",
+  "private": true,
+  "type": "commonjs",
+  "main": "./index.js"
+}

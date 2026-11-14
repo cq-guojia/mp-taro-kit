@@ -35,9 +35,14 @@ export interface CardStateInput {
   radius?: CardRadius
   size?: CardSize
   frame?: boolean
+  /** 不给就跟随 hasHeader：有头部默认画线，显式 false 才关。 */
   headerDivider?: boolean
   color?: CardColor
   hasCover?: boolean
+  /** 由 Card 渲染期从槽位派生：有标题 / 副标题 / 右侧操作就算有头部。 */
+  hasHeader?: boolean
+  /** 由 Card 渲染期从槽位派生：有底部操作区。 */
+  hasFooter?: boolean
   onClick?: () => void
   disabled?: boolean
   loading?: boolean
@@ -63,14 +68,20 @@ export function resolveCardState(input: CardStateInput): CardState {
   if (input.radius !== undefined) names.push(`mptk-card--radius-${input.radius}`)
   names.push(`mptk-card--size-${input.size ?? 'md'}`)
   if (input.frame === false) names.push('mptk-card--frameless')
-  if (input.headerDivider === true) names.push('mptk-card--header-divider')
+  /* 有头部就默认画线：标题区与内容区靠一条 1px 分开；显式 headerDivider={false} 才不画。 */
+  if (input.headerDivider ?? (input.hasHeader === true)) names.push('mptk-card--header-divider')
   if (input.hasCover === true) names.push('mptk-card--cover')
   if (colorClass) names.push(colorClass)
   if (clickable) names.push('mptk-card--clickable')
   if (busy) names.push('mptk-card--busy')
   if (input.disabled === true) names.push('mptk-card--disabled')
-  /* 内容是贴边组件：壳自己关掉上下 padding，不留空白给子级抵消。 */
-  if (input.hasEdgeContent === true) names.push('mptk-card--edge-content')
+  /* 内容是贴边组件：壳自己关掉留白，不留空白给子级抵消。
+     只在真正贴边的那一端归零——有头部就保留上留白，有底部就保留下留白。 */
+  if (input.hasEdgeContent === true) {
+    names.push('mptk-card--edge-content')
+    if (input.hasHeader !== true) names.push('mptk-card--edge-top')
+    if (input.hasFooter !== true) names.push('mptk-card--edge-bottom')
+  }
   if (input.className) names.push(input.className)
   return {
     className: names.join(' '),

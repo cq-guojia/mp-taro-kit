@@ -1,51 +1,36 @@
-// mp-taro-kit 样式唯一真源：页面基线、页面底色、明色值、暗色值全部只在这里写一次。
-// 主题出口用这些 mixin 组合，编译期展开成 dist/styles/theme-*.css；产物一律勿手改。
-// 组件只写 var(--mptk-*)，换肤靠宿主覆盖同名变量，组件不感知主题。
-
-// base 只管布局基线与非颜色变量，不含任何主题相关声明。
-// 页面底色是「由 WXSS 画，还是交给微信窗口层」的出口策略，独立成 surface mixin：
+// @mptk-inputs:42f65ab592fc
+// 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
+// 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
+//
+// 四个 mixin 由主题出口组合，编译期展开成 dist/styles/theme-*.css。
+// base 只管布局基线与非颜色变量；surface 是「由 WXSS 画，还是交给微信窗口层」的出口策略，
 // 运行时热切换出口不能 include 它，否则 page 会把明色值写死在祖先上，后代 .mptk-dark 无从覆盖。
+// light / dark 两套颜色键必须同名同数，生成器会在写出前校验。
+// component / structure 两组是组件原本写死的视觉取值与结构常量，也全是可配项。
+// 组件一律只写 var(--mptk-*)，换肤靠覆盖同名变量，组件不感知主题。
+
 @mixin base {
+  // @mptk-generated:base:start
   box-sizing: border-box;
   height: 100%;
-
-  /* 底部安全区不在这里让位：Skyline 下 page 的 padding 区域不绘制背景，会露出窗口底色。
-     改由页面根容器自己 `padding-bottom: env(safe-area-inset-bottom)` 并铺背景。 */
-
   --mptk-radius-xs: 4px;
   --mptk-radius-sm: 8px;
   --mptk-radius-md: 12px;
   --mptk-radius-lg: 16px;
   --mptk-radius-xl: 20px;
   --mptk-radius-pill: 999px;
-  /* 通栏 / 不圆角也是一个档位，演示站不手写 0。 */
   --mptk-radius-none: 0;
-
-  /* 控件圆角（Button / Segmented / 将来的 Input 共用）：要整体调控件圆角只改这一行，
-     组件一律引用它，不各自写档位；半圆形态由组件把类名切到 --mptk-radius-pill。
-     容器（卡片、弹窗、列表块）不引用它，直接用 --mptk-radius-* 档位。 */
   --mptk-control-radius: var(--mptk-radius-sm);
-
-  /* 卡片族：默认圆角与控件同档（md），分区间距只在这里定一次。
-     容器不引用 --mptk-control-radius；radius 枚举只是把下面这个键换到别的档位。 */
   --mptk-card-radius: var(--mptk-radius-md);
   --mptk-card-spacing: var(--mptk-space-3);
-
+  --mptk-space-0: 2px;
   --mptk-space-1: 4px;
   --mptk-space-2: 8px;
   --mptk-space-3: 12px;
   --mptk-space-4: 16px;
-
-  /* 控件高度三档，对齐 WeUI 2.6.x 的 --weui-BTN-HEIGHT-SMALL/MEDIUM/HEIGHT（32 / 40 / 48）。
-     承载文字的控件用 size="sm|md|lg" 选，调用点不自定义高度；真不够用才覆盖同名变量。
-     总高必须逐像素等于这一档，不许由 padding 与内容撑出来。 */
   --mptk-control-h-sm: 32px;
   --mptk-control-h-md: 40px;
   --mptk-control-h-lg: 48px;
-
-  /* 字号档位与《微信小程序设计指南》5.1 的常用字号一一对应：22 / 17 / 15 / 14 / 12。
-     组件按语义取档：xl 大标题、lg 正文与列表标题、md 次要正文、sm 辅助、xs 说明。
-     宿主不要再整体覆盖档位；需要强调时用组件已有的语义位，不新增字号。 */
   --mptk-font-xs: 12px;
   --mptk-font-sm: 14px;
   --mptk-font-md: 15px;
@@ -58,261 +43,266 @@
   --mptk-line-lg: 24px;
   --mptk-line-xl: 30px;
   --mptk-line-nav: 24px;
-
-  /* 展示级字号：首页 logo 这类展示面唯一一次写值；紧凑行高给单字形 / 图标压行。
-     演示站不手写 font-size / line-height，一律取上面的档位或这两个语义键。 */
   --mptk-font-display: 96px;
   --mptk-line-display: 1;
   --mptk-line-tight: 1;
   --mptk-opacity-busy: .6;
-
   --mptk-dur: .2s;
   --mptk-dur-fast: .12s;
   --mptk-dur-run: 500ms;
-  /* 等待态的底色呼吸周期：1.4s → 280ms → 560ms → 1120ms（每次实机观感翻一倍）。
-     谷值与颜色都不动。 */
   --mptk-dur-breathe: 1120ms;
   --mptk-ease: cubic-bezier(.4, 0, .2, 1);
+  --mptk-c-mask-opacity: .4;
+  --mptk-c-mask-z: 910;
+  --mptk-c-overlay-z: 900;
+  --mptk-c-popup-z: 920;
+  --mptk-c-overlay-host-z: 1000;
+  --mptk-c-navbar-z: 10;
+  --mptk-c-navbar-weight: 500;
+  --mptk-c-locked-opacity: .5;
+  --mptk-c-border-w: 1px;
+  --mptk-c-thumb-shadow: 0 2px 4px rgba(0, 0, 0, .2);
+  --mptk-c-switch-inset: 2px;
+  --mptk-c-switch-sm-offset: 2px;
+  --mptk-c-switch-icon-ratio: .44;
+  --mptk-c-switch-w-sm: 33px;
+  --mptk-c-switch-h-sm: 20px;
+  --mptk-c-switch-w-md: 42px;
+  --mptk-c-switch-h-md: 26px;
+  --mptk-c-switch-w-lg: 52px;
+  --mptk-c-switch-h-lg: 32px;
+  --mptk-c-seg-inset: 3px;
+  --mptk-c-seg-line-h: 2px;
+  --mptk-c-spinner-rotate-dur: .8s;
+  --mptk-c-spinner-chase-dur: 2.5s;
+  --mptk-c-spinner-dot-dur: 2s;
+  --mptk-c-spinner-delay-1: -1.1s;
+  --mptk-c-spinner-delay-2: -1s;
+  --mptk-c-spinner-delay-3: -.9s;
+  --mptk-c-spinner-delay-4: -.8s;
+  --mptk-c-spinner-delay-5: -.7s;
+  --mptk-c-spinner-delay-6: -.6s;
+  --mptk-c-loader-blink-dur: 1.2s;
+  --mptk-c-loader-dim: .25;
+  --mptk-c-loader-scale: scale(.8);
+  --mptk-c-spinner-scale: scale(.4);
+  --mptk-c-control-breathe-dim: .2;
+  --mptk-c-spinner-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='41.5' fill='none' stroke='%23fff' stroke-width='17'/%3E%3C/svg%3E");
+  --mptk-c-cell-arrow-size: 6px;
+  --mptk-c-switch-inset-2x: 4px;
+  --mptk-c-demo-swatch-size: 48px;
+  --mptk-c-demo-swatch-sm-size: 20px;
+  --mptk-c-demo-swatch-bar-h: 22px;
+  --mptk-c-demo-swatch-bar-w: 62px;
+  --mptk-c-demo-swatch-ink-black: #000000;
+  --mptk-c-demo-swatch-ink-white: #ffffff;
+  --mptk-c-demo-palette-cell-w: 60px;
+  --mptk-c-demo-ruler-bar-w: 96px;
+  --mptk-s-zero: 0;
+  --mptk-s-full: 100%;
+  --mptk-s-half: 50%;
+  --mptk-s-quarter: 25%;
+  --mptk-s-center: 50%;
+  --mptk-s-opacity-full: 1;
+  --mptk-s-scale-full: scale(1);
+  --mptk-s-rotate-full: rotate(360deg);
+  --mptk-s-radius-full: 100%;
+  --mptk-s-line-flat: 1;
+  --mptk-s-z-base: 0;
+  --mptk-s-z-raised: 1;
+  --mptk-s-z-top: 2;
+  --mptk-s-flex-grow: 1;
+  --mptk-s-flex-none: 0;
+  --mptk-s-transparent-white: rgba(255, 255, 255, 0);
+  --mptk-s-gradient-from: 180deg;
+  --mptk-s-gradient-center: 50% 50%;
+  --mptk-s-gradient-stop-0: 0deg;
+  --mptk-s-gradient-stop-1: 60deg;
+  --mptk-s-gradient-stop-2: 330deg;
+  --mptk-s-gradient-stop-3: 360deg;
+  --mptk-s-mask-repeat: no-repeat;
+  --mptk-s-mask-size: 100% 100%;
+  --mptk-s-ease-in-out: ease-in-out;
+  --mptk-s-linear: linear;
+  --mptk-s-infinite: infinite;
+  --mptk-s-both: both;
+  --mptk-s-flex-shrink: 1;
+  --mptk-s-flex-fill: 1 1 0;
+  --mptk-s-flex-auto: 0 0 auto;
+  --mptk-s-flex-grow-auto: 1 1 auto;
+  --mptk-s-flex-none-value: none;
+  --mptk-s-scale-zero: scale(0);
+  --mptk-s-transform-center: center;
+  --mptk-s-content-blank: ' ';
+  --mptk-s-margin-auto: auto;
+  --mptk-s-current-color: currentColor;
+  --mptk-s-white-space-nowrap: nowrap;
+  --mptk-s-transparent: transparent;
+  --mptk-s-third: 33.333%;
+  --mptk-s-rotate-45: rotate(45deg);
+  --mptk-s-rotate-135: rotate(135deg);
+  --mptk-s-rotate-neg-45: rotate(-45deg);
+  --mptk-s-rotate-neg-135: rotate(-135deg);
+  --mptk-s-kf-0: 0%;
+  --mptk-s-kf-40: 40%;
+  --mptk-s-kf-50: 50%;
+  --mptk-s-kf-80: 80%;
+  --mptk-s-kf-full: 100%;
+// @mptk-generated:base:end
 }
 
 // 页面底色声明：只在编译期三选一出口里 include。
-// 这条声明与它引用的变量必须落在同一个 page 选择器上（或能被媒体查询覆盖），底色才跟着明暗走。
+// 这条声明与它引用的变量必须落在同一个 page 选择器上，底色才跟着明暗走。
 @mixin surface {
+  // @mptk-generated:surface:start
   background-color: var(--mptk-surface-base);
+// @mptk-generated:surface:end
 }
 
 @mixin light {
-  // 基础色板：8 支色相 + 8 级中性面。每个值只在这里写一次，语义色、
-  // 控件主色轴与表面色全部引用同一组值，不产生第二份手写真值。
-  $blue: #3b5bdb;
-  $green: #22c55e;
-  $orange: #f59e0b;
-  $red: #ec1313;
-  $purple: #9333ea;
-  $cyan: #0e7490;
-  $pink: #db2777;
-  $teal: #0f766e;
-
-  $gray-1: #f7f8fa;
-  $gray-2: #f2f3f5;
-  $gray-3: #e9ecf1;
-  $gray-4: #dcdee0;
-  $gray-5: #c8c9cc;
-  $gray-6: #969799;
-  $gray-7: #767d87;
-  $gray-8: #3b434d;
-
-  /* 纯白与文字三档也在色板里占名字：面板、反色文字都引用它们，不写字面量。 */
-  $white: #fff;
-  $ink-1: #1f2328;
-  $ink-2: #5c6370;
-  $ink-3: #9aa1ab;
-
-  --mptk-fg: #{$ink-1};
-  --mptk-fg-2: #{$ink-2};
-  --mptk-fg-3: #{$gray-7};
-  --mptk-fg-4: #{$ink-3};
-
-  /* 明色下三级面都不是纯白：卡片仍为白，页面底走浅灰（小程序页面的常规观感是
-     「白卡片浮在灰底上」，不是整屏纯白），次级面比页面浅一档，下沉面与滑轨同档。
-     页面底色与官方窗口主题配置的 bgColor 保持一致，不许两处漂移。 */
-  --mptk-surface-1: #{$white};
-  --mptk-surface-2: #{$gray-1};
-  --mptk-surface-3: #{$gray-3};
-  --mptk-surface-base: #{$gray-2};
-
+  // @mptk-generated:light:start
+  --mptk-fg: #1f2328;
+  --mptk-fg-2: #5c6370;
+  --mptk-fg-3: #767d87;
+  --mptk-fg-4: #9aa1ab;
+  --mptk-surface-1: #fff;
+  --mptk-surface-2: #f7f8fa;
+  --mptk-surface-3: #e9ecf1;
+  --mptk-surface-base: #f2f3f5;
   --mptk-border-faint: rgba(0, 0, 0, .04);
   --mptk-border: rgba(0, 0, 0, .10);
   --mptk-border-strong: rgba(0, 0, 0, .12);
-
-  /* 组内分隔线比外框浅一档（取 .06，对齐 WeUI 的 .05 层）；宿主覆盖同名变量即可改回同色。 */
   --mptk-cell-divider: rgba(0, 0, 0, .06);
-
-  /* 卡片面：默认白，描边取外框档；宿主在业务级覆盖同名键即可整体换卡片配色。 */
   --mptk-card-bg: var(--mptk-surface-1);
   --mptk-card-border: var(--mptk-border);
-
-  /* 中性灰阶：编号表示层级，1 是最底层、8 是最上层文字；明暗两套方向相反。
-     组件取同一编号即可拿到当前主题下该层的色，不必按主题改类名。 */
-  --mptk-gray-1: #{$gray-1};
-  --mptk-gray-2: #{$gray-2};
-  --mptk-gray-3: #{$gray-3};
-  --mptk-gray-4: #{$gray-4};
-  --mptk-gray-5: #{$gray-5};
-  --mptk-gray-6: #{$gray-6};
-  --mptk-gray-7: #{$gray-7};
-  --mptk-gray-8: #{$gray-8};
-
-  /* 色相色板：base 是实面色，hover / active 是按压两档，soft 是同色系浅底。
-     明色下按压往深走，暗色下往亮走；小程序 WXSS 不保证支持 color-mix，
-     派生值一律落成具体色值，不在运行时现算。 */
-  --mptk-blue: #{$blue};
+  --mptk-gray-1: #f7f8fa;
+  --mptk-gray-2: #f2f3f5;
+  --mptk-gray-3: #e9ecf1;
+  --mptk-gray-4: #dcdee0;
+  --mptk-gray-5: #c8c9cc;
+  --mptk-gray-6: #969799;
+  --mptk-gray-7: #767d87;
+  --mptk-gray-8: #3b434d;
+  --mptk-blue: #3b5bdb;
   --mptk-blue-hover: #324cc0;
   --mptk-blue-active: #2a3fa3;
   --mptk-blue-soft: rgba(59, 91, 219, .08);
-  --mptk-green: #{$green};
+  --mptk-green: #22c55e;
   --mptk-green-hover: #1da84f;
   --mptk-green-active: #178b42;
   --mptk-green-soft: rgba(34, 197, 94, .08);
-  --mptk-orange: #{$orange};
+  --mptk-orange: #f59e0b;
   --mptk-orange-hover: #d08409;
   --mptk-orange-active: #ad6d08;
   --mptk-orange-soft: rgba(245, 158, 11, .08);
-  --mptk-red: #{$red};
+  --mptk-red: #ec1313;
   --mptk-red-hover: #c91010;
   --mptk-red-active: #a70d0d;
   --mptk-red-soft: rgba(236, 19, 19, .08);
-  --mptk-purple: #{$purple};
+  --mptk-purple: #9333ea;
   --mptk-purple-hover: #7d2bc7;
   --mptk-purple-active: #6824a5;
   --mptk-purple-soft: rgba(147, 51, 234, .08);
-  --mptk-cyan: #{$cyan};
+  --mptk-cyan: #0e7490;
   --mptk-cyan-hover: #0c627a;
   --mptk-cyan-active: #0a5266;
   --mptk-cyan-soft: rgba(14, 116, 144, .08);
-  --mptk-pink: #{$pink};
+  --mptk-pink: #db2777;
   --mptk-pink-hover: #ba2165;
   --mptk-pink-active: #9b1c54;
   --mptk-pink-soft: rgba(219, 39, 119, .08);
-  --mptk-teal: #{$teal};
+  --mptk-teal: #0f766e;
   --mptk-teal-hover: #0d645d;
   --mptk-teal-active: #0b534e;
   --mptk-teal-soft: rgba(15, 118, 110, .08);
-
-  /* 语义色与控件主色轴引用同一组色板值：宿主改业务色不该把开关染成自己的品牌色，
-     但库内两个名字拿到的是同一个蓝。内置色名由组件加类名切换，自定义色值由组件显式内联覆盖。 */
-  --mptk-business: #{$blue};
-  --mptk-success: #{$green};
-  --mptk-warning: #{$orange};
-  --mptk-danger: #{$red};
-
-  --mptk-control-blue: #{$blue};
-  --mptk-control-green: #{$green};
-  --mptk-control-orange: #{$orange};
-  --mptk-control-red: #{$red};
+  --mptk-business: #3b5bdb;
+  --mptk-success: #22c55e;
+  --mptk-warning: #f59e0b;
+  --mptk-danger: #ec1313;
+  --mptk-control-blue: #3b5bdb;
+  --mptk-control-green: #22c55e;
+  --mptk-control-orange: #f59e0b;
+  --mptk-control-red: #ec1313;
   --mptk-control-active: var(--mptk-control-blue);
-  --mptk-control-track: #{$gray-3};
+  --mptk-control-track: #e9ecf1;
   --mptk-control-thumb: #fff;
-  /* 等待态里白滑块要「灰一点白一点」：明色下内衬也是白的，只调透明度等于没动。
-     取中浅灰，仍压得住滑块上的深色文字。 */
-  --mptk-control-thumb-dim: #{$gray-5};
+  --mptk-control-thumb-dim: #c8c9cc;
   --mptk-control-on: #fff;
-  /* 滑块恒白，压在滑块上的文字 / 图标只能取深色，不能跟页面前景色走（暗色下前景是浅色）。 */
   --mptk-control-thumb-fg: #1f2328;
-
-  /* 自绘转圈：圆环与追逐点共用一支主色，明暗各给一套。
-     不跟随 currentColor，也不蹭宿主会定制的业务色。 */
-  --mptk-spinner-active: #{$blue};
+  --mptk-spinner-active: #3b5bdb;
+// @mptk-generated:light:end
 }
 
 @mixin dark {
-  // 暗色不是把明色反过来就完事：色相整体提亮，按压反而往亮走，浅底浓度也单独给。
-  // 层级编号与明色一一对应，组件取同一个编号即可。
-  $blue: #6b8afd;
-  $green: #34d399;
-  $orange: #fbbf24;
-  $red: #ff5c5c;
-  $purple: #c084fc;
-  $cyan: #22d3ee;
-  $pink: #f472b6;
-  $teal: #2dd4bf;
-
-  $gray-1: #15181c;
-  $gray-2: #1f2329;
-  $gray-3: #262b32;
-  $gray-4: #2d333b;
-  $gray-5: #3b434d;
-  $gray-6: #626a75;
-  $gray-7: #858d98;
-  $gray-8: #a9b0ba;
-
-  $white: #fff;
-  $ink-1: #e6e8eb;
-  $ink-2: #a9b0ba;
-  $ink-3: #858d98;
-
-  --mptk-fg: #{$ink-1};
-  --mptk-fg-2: #{$ink-2};
-  --mptk-fg-3: #{$gray-7};
-  --mptk-fg-4: #{$ink-3};
-
-  --mptk-surface-1: #{$gray-2};
-  --mptk-surface-2: #{$gray-3};
-  --mptk-surface-3: #{$gray-4};
-  --mptk-surface-base: #{$gray-1};
-
+  // @mptk-generated:dark:start
+  --mptk-fg: #e6e8eb;
+  --mptk-fg-2: #a9b0ba;
+  --mptk-fg-3: #858d98;
+  --mptk-fg-4: #858d98;
+  --mptk-surface-1: #1f2329;
+  --mptk-surface-2: #262b32;
+  --mptk-surface-3: #2d333b;
+  --mptk-surface-base: #15181c;
   --mptk-border-faint: rgba(255, 255, 255, .04);
   --mptk-border: rgba(255, 255, 255, .10);
   --mptk-border-strong: rgba(255, 255, 255, .14);
-
   --mptk-cell-divider: rgba(255, 255, 255, .06);
-
-  /* 与明色同名同数：卡片面取次级面，描边取暗色外框档。 */
   --mptk-card-bg: var(--mptk-surface-1);
   --mptk-card-border: var(--mptk-border);
-
-  --mptk-gray-1: #{$gray-1};
-  --mptk-gray-2: #{$gray-2};
-  --mptk-gray-3: #{$gray-3};
-  --mptk-gray-4: #{$gray-4};
-  --mptk-gray-5: #{$gray-5};
-  --mptk-gray-6: #{$gray-6};
-  --mptk-gray-7: #{$gray-7};
-  --mptk-gray-8: #{$gray-8};
-
-  --mptk-blue: #{$blue};
+  --mptk-gray-1: #15181c;
+  --mptk-gray-2: #1f2329;
+  --mptk-gray-3: #262b32;
+  --mptk-gray-4: #2d333b;
+  --mptk-gray-5: #3b434d;
+  --mptk-gray-6: #626a75;
+  --mptk-gray-7: #858d98;
+  --mptk-gray-8: #a9b0ba;
+  --mptk-blue: #6b8afd;
   --mptk-blue-hover: #8aa4fe;
   --mptk-blue-active: #a8bbff;
   --mptk-blue-soft: rgba(107, 138, 253, .12);
-  --mptk-green: #{$green};
+  --mptk-green: #34d399;
   --mptk-green-hover: #5fe0b1;
   --mptk-green-active: #8aeec8;
   --mptk-green-soft: rgba(52, 211, 153, .12);
-  --mptk-orange: #{$orange};
+  --mptk-orange: #fbbf24;
   --mptk-orange-hover: #fccc53;
   --mptk-orange-active: #fdd982;
   --mptk-orange-soft: rgba(251, 191, 36, .12);
-  --mptk-red: #{$red};
+  --mptk-red: #ff5c5c;
   --mptk-red-hover: #ff7d7d;
   --mptk-red-active: #ff9d9d;
   --mptk-red-soft: rgba(255, 92, 92, .12);
-  --mptk-purple: #{$purple};
+  --mptk-purple: #c084fc;
   --mptk-purple-hover: #d0a3fd;
   --mptk-purple-active: #e0c1fe;
   --mptk-purple-soft: rgba(192, 132, 252, .12);
-  --mptk-cyan: #{$cyan};
+  --mptk-cyan: #22d3ee;
   --mptk-cyan-hover: #55dff2;
   --mptk-cyan-active: #88eaf7;
   --mptk-cyan-soft: rgba(34, 211, 238, .12);
-  --mptk-pink: #{$pink};
+  --mptk-pink: #f472b6;
   --mptk-pink-hover: #f791c6;
   --mptk-pink-active: #faafd6;
   --mptk-pink-soft: rgba(244, 114, 182, .12);
-  --mptk-teal: #{$teal};
+  --mptk-teal: #2dd4bf;
   --mptk-teal-hover: #5adfcd;
   --mptk-teal-active: #88eadb;
   --mptk-teal-soft: rgba(45, 212, 191, .12);
-
-  --mptk-business: #{$blue};
-  --mptk-success: #{$green};
-  --mptk-warning: #{$orange};
-  --mptk-danger: #{$red};
-
-  --mptk-control-blue: #{$blue};
-  --mptk-control-green: #{$green};
-  --mptk-control-orange: #{$orange};
-  --mptk-control-red: #{$red};
+  --mptk-business: #6b8afd;
+  --mptk-success: #34d399;
+  --mptk-warning: #fbbf24;
+  --mptk-danger: #ff5c5c;
+  --mptk-control-blue: #6b8afd;
+  --mptk-control-green: #34d399;
+  --mptk-control-orange: #fbbf24;
+  --mptk-control-red: #ff5c5c;
   --mptk-control-active: var(--mptk-control-blue);
-  --mptk-control-track: #{$gray-4};
-  /* 滑块是"白按钮"，明暗同值：暗色下取 gray-5 会与深色轨道糊成一片，
-     滑块上的图标 / 文字也失去对比。 */
+  --mptk-control-track: #2d333b;
   --mptk-control-thumb: #fff;
-  /* 暗色下呼吸谷值也取偏浅的灰（gray-8）：既跟深色轨道分得开，
-     也保住滑块上深色文字的对比；取 gray-5 会把字糊掉。 */
-  --mptk-control-thumb-dim: #{$gray-8};
+  --mptk-control-thumb-dim: #a9b0ba;
   --mptk-control-on: #fff;
-  /* 滑块恒白，明暗同值：暗色下若跟 --mptk-fg 走浅色，白底上就看不见了。 */
   --mptk-control-thumb-fg: #1f2328;
-
-  --mptk-spinner-active: #{$blue};
+  --mptk-spinner-active: #6b8afd;
+// @mptk-generated:dark:end
 }

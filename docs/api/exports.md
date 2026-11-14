@@ -9,6 +9,8 @@
 | `mp-taro-kit` | `dist/index.d.ts` | `dist/index.js` | `dist/index.cjs` | 五个能力域的具名汇总出口 |
 | `mp-taro-kit/design` | `dist/design/index.d.ts` | `dist/design/index.js` | `dist/design/index.cjs` | 设计层常量：控件默认尺寸档 `CONTROL_SIZE_DEFAULT` |
 | `mp-taro-kit/runtime` | `dist/runtime/index.d.ts` | `dist/runtime/index.js` | `dist/runtime/index.cjs` | 单例、覆盖层栈、通知队列、loading 句柄 |
+| `mp-taro-kit/config` | `dist/runtime/kit-config.d.ts` | `dist/runtime/kit-config.js` | `dist/runtime/kit-config.cjs` | 统一配置契约：`KitConfig` / `defineKitConfig` / `setKitConfig` / `getKitConfig` / `DEFAULT_KIT_CONFIG`；见[统一配置](config.md) |
+| `mp-taro-kit/plugin` | `dist/plugin/index.d.ts` | `dist/plugin/index.mjs` | `dist/plugin/index.cjs` | Taro 4 构建插件，把配置生成挂进编译链；包根另有 `plugin/index.js` 物理入口供 `resolve.sync` 解析；见[统一配置](config.md) |
 | `mp-taro-kit/utils` | `dist/utils/index.d.ts` | `dist/utils/index.js` | `dist/utils/index.cjs` | 纯函数与 i18n 注册口 |
 | `mp-taro-kit/core` | `dist/core/index.d.ts` | `dist/core/index.js` | `dist/core/index.cjs` | `configure` 与注入式平台操作 |
 | `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件 |
@@ -38,9 +40,9 @@
 
 组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
 
-`styles/theme-*` 的字号档位固定为 12 / 14 / 15 / 17 / 22（另 `font-nav` 17），与《微信小程序设计指南》5.1 的常用字号一一对应；行高与字号成对。宿主不应整体覆盖档位，演示站自身也不覆盖。
+`styles/theme-*` 的字号与行高成对，档位值全部取自[统一配置](config.md)的 `base` 组；生成器会校验档位严格递增，宿主可在差异文件里逐档覆盖，没有「不许整体覆盖」的限制。演示站沿用库默认，不另立一套。
 
-控件高度档位固定为 32 / 40 / 48（`--mptk-control-h-sm` / `-md` / `-lg`，默认 40），与 WeUI 的按钮高度三档一致；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。真源同为 `src/design/_tokens.scss` 的 `base` mixin，`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于该值。不传 `size` 时取 `mp-taro-kit/design` 导出的 `CONTROL_SIZE_DEFAULT`（当前 `md`），Button / Switch / Segmented 与将来的输入类控件共用它。
+控件高度三档与默认档同样取自配置的 `base` / `runtime.controlSizeDefault`；承载文字的控件用 `size="sm|md|lg"` 选档，调用点不自定义高度。`tests/controls.test.mjs` 断言 Switch 与 Segmented 三档总高逐档等于生效值。不传 `size` 时取 `mp-taro-kit/design` 导出的 `CONTROL_SIZE_DEFAULT`（由生成器写成字面量），Button / Switch / Segmented 与将来的输入类控件共用它。
 
 控件主色轴默认指向 `--mptk-control-blue`，内置蓝 / 绿 / 橙 / 红四色；`Switch` 在组件样式里把默认值覆盖成绿（对齐微信原生开关），`Segmented` 仍用蓝；滑轨、滑块、选中文字各有独立颜色键。这组变量写在 `light` / `dark` mixin，与 `--mptk-business` 等语义色解耦：宿主定制业务色不会改变控件默认外观，明色下滑轨与滑块也不会双双为白。组件的 `color` 可传内置色名（走类名切变量）或任意 CSS 色值（走显式内联上色，不依赖 WXML 行内自定义属性）；`tests/controls.test.mjs` 核对四份主题产物都带全这组键，并断言组件不引用业务色。
 
@@ -84,14 +86,14 @@ props 表与用法见 [Switch 开关](switch.md)、[Segmented 分段选择](segm
 
 ### 样式基线（必需）
 
-本库的通用样式**只有一处落点**：`src/design/_tokens.scss` 里的 `base` / `surface` / `light` / `dark` 四个 mixin（页面基线、页面底色声明、明色值、暗色值各写一次）。`dist/styles/theme-*.css` 与 `dist/styles/tokens.css` 都是它的编译产物，勿手改。`ui/*/style` 只放控件自身样式，不放页面级规则；页面基线也不为它另开出口。
+本库的值**只有一处真源**：项目根 `kit.config.mjs`（见[统一配置](config.md)）。构建前生成器把 `base` / `surface` / `light` / `dark` 四组声明写进 `src/design/_tokens.scss` 的四个 mixin（哨兵注释定位），再由 Sass 编成 `dist/styles/theme-*.css` 与 `dist/styles/tokens.css`。这两层都是生成物，头上带输入指纹，勿手改；改皮肤改配置。`ui/*/style` 只放控件自身样式，不放页面级规则；页面基线也不为它另开出口。
 
 `base` 只承载布局基线与非颜色变量，**不含任何主题相关声明**：
 
 | 内容 | 作用 |
 |---|---|
 | `page { height: 100% }` | 页面满屏底框，接入方页面不必再写高度 |
-| `--mptk-*` 变量 | 组件样式取值来源，默认值唯一真源 |
+| `--mptk-*` 变量 | 组件样式取值来源，取值由 `kit.config.mjs` 在构建期写入 |
 | `surface` mixin | `page { background-color: var(--mptk-surface-base) }`，是否由 WXSS 画页面底色的出口策略 |
 
 **页面底色是出口策略，不是基线**：编译期三选一都 include `surface`，变量值与声明落在同一个 `page` 选择器上（或由媒体查询覆盖），底色自然跟着明暗走。运行时热切换出口**不** include `surface`——它的暗色值挂在后代 `.mptk-dark` 上，若把底色写死在 `page`，祖先就恒取明色值，后代无从覆盖，转场首帧露白。此时页面底色交给微信官方窗口主题配置（`app.json` 的 `darkmode` + `themeLocation` + `window.backgroundColor` 的 `@变量`），由框架在页面创建前解析。
@@ -122,7 +124,7 @@ import 'mp-taro-kit/styles/theme-light' // 固定明
 | 跟随系统 | `mp-taro-kit/styles/theme-auto` | 暗色值包在 `@media (prefers-color-scheme: dark)` 里 | 不要 |
 | 运行时热切换 | `mp-taro-kit/styles/theme-runtime` | 明色为默认，`.mptk-dark` / `.mptk-light` 只覆盖颜色键，由 `setThemeMode` 随时切，也可套在容器上局部反色 | 要，见下 |
 
-前三条是**编译期三选一**，一行 import 定死，不需要 JS、`faces` 注入或根容器标记。第四条是并存的另一种模式，**不改动前三条**：已接入宿主的一行 import 一个字不用改；`dist/styles/tokens.css` 仍是固定明的兼容副本。四份都由 `src/design/_tokens.scss` 的 mixin 编译，颜色值只写一次，组件仍只写 `var(--mptk-*)`。
+前三条是**编译期三选一**，一行 import 定死，不需要 JS、`faces` 注入或根容器标记。第四条是并存的另一种模式，**不改动前三条**：已接入宿主的一行 import 一个字不用改；`dist/styles/tokens.css` 仍是固定明的兼容副本。四份都由同一份配置生成的 `_tokens.scss` mixin 编译，颜色值只在配置里写一次，组件仍只写 `var(--mptk-*)`。
 
 编译期三选一的落点是全局 `page`，页面内容与 App 层的 `<OverlayHost />` 在同一棵变量树里，暗色一起生效；不想要明暗就引 `theme-light`，要定制配色再在自己样式里覆盖 `--mptk-*`（后引入者胜）。
 
@@ -263,3 +265,5 @@ setThemeMode('auto', {
 - 2026-11-14 01:24:34：design 出口补 CONTROL_SIZE_DEFAULT，控件默认档统一到这里
 - 2026-11-14 01:31:50：运行时出口补 .mptk-light：只覆盖颜色键，可套容器局部反色
 - 2026-11-14 12:12:20：控件默认档改 md（40）
+- 2026-11-14 23:43:34：补 config / plugin 出口，样式真源翻改为 kit.config.mjs
+- 2026-11-15 00:20:59：出口契约表改写真源

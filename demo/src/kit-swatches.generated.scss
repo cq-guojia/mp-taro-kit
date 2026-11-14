@@ -1,0 +1,214 @@
+// @mptk-inputs:78857645c544
+// 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
+// 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
+
+// 类名与取值都从 kit.config.mjs 的 light 组派生；新增色相 / 档位 / 灰阶无需改样式或页面。
+@mixin demo-swatches {
+  .demo-swatch--fg {
+    background-color: var(--mptk-fg);
+  }
+  .demo-swatch--fg-2 {
+    background-color: var(--mptk-fg-2);
+  }
+  .demo-swatch--fg-3 {
+    background-color: var(--mptk-fg-3);
+  }
+  .demo-swatch--fg-4 {
+    background-color: var(--mptk-fg-4);
+  }
+  .demo-swatch--surface-1 {
+    background-color: var(--mptk-surface-1);
+  }
+  .demo-swatch--surface-2 {
+    background-color: var(--mptk-surface-2);
+  }
+  .demo-swatch--surface-3 {
+    background-color: var(--mptk-surface-3);
+  }
+  .demo-swatch--surface-base {
+    background-color: var(--mptk-surface-base);
+  }
+  .demo-swatch--border-faint {
+    background-color: var(--mptk-border-faint);
+  }
+  .demo-swatch--border {
+    background-color: var(--mptk-border);
+  }
+  .demo-swatch--border-strong {
+    background-color: var(--mptk-border-strong);
+  }
+  .demo-swatch--cell-divider {
+    background-color: var(--mptk-cell-divider);
+  }
+  .demo-swatch--card-bg {
+    background-color: var(--mptk-card-bg);
+  }
+  .demo-swatch--card-border {
+    background-color: var(--mptk-card-border);
+  }
+  .demo-swatch--gray-1 {
+    background-color: var(--mptk-gray-1);
+  }
+  .demo-swatch--gray-2 {
+    background-color: var(--mptk-gray-2);
+  }
+  .demo-swatch--gray-3 {
+    background-color: var(--mptk-gray-3);
+  }
+  .demo-swatch--gray-4 {
+    background-color: var(--mptk-gray-4);
+  }
+  .demo-swatch--gray-5 {
+    background-color: var(--mptk-gray-5);
+  }
+  .demo-swatch--gray-6 {
+    background-color: var(--mptk-gray-6);
+  }
+  .demo-swatch--gray-7 {
+    background-color: var(--mptk-gray-7);
+  }
+  .demo-swatch--gray-8 {
+    background-color: var(--mptk-gray-8);
+  }
+  .demo-swatch--blue {
+    background-color: var(--mptk-blue);
+  }
+  .demo-swatch--blue-hover {
+    background-color: var(--mptk-blue-hover);
+  }
+  .demo-swatch--blue-active {
+    background-color: var(--mptk-blue-active);
+  }
+  .demo-swatch--blue-soft {
+    background-color: var(--mptk-blue-soft);
+  }
+  .demo-swatch--green {
+    background-color: var(--mptk-green);
+  }
+  .demo-swatch--green-hover {
+    background-color: var(--mptk-green-hover);
+  }
+  .demo-swatch--green-active {
+    background-color: var(--mptk-green-active);
+  }
+  .demo-swatch--green-soft {
+    background-color: var(--mptk-green-soft);
+  }
+  .demo-swatch--orange {
+    background-color: var(--mptk-orange);
+  }
+  .demo-swatch--orange-hover {
+    background-color: var(--mptk-orange-hover);
+  }
+  .demo-swatch--orange-active {
+    background-color: var(--mptk-orange-active);
+  }
+  .demo-swatch--orange-soft {
+    background-color: var(--mptk-orange-soft);
+  }
+  .demo-swatch--red {
+    background-color: var(--mptk-red);
+  }
+  .demo-swatch--red-hover {
+    background-color: var(--mptk-red-hover);
+  }
+  .demo-swatch--red-active {
+    background-color: var(--mptk-red-active);
+  }
+  .demo-swatch--red-soft {
+    background-color: var(--mptk-red-soft);
+  }
+  .demo-swatch--purple {
+    background-color: var(--mptk-purple);
+  }
+  .demo-swatch--purple-hover {
+    background-color: var(--mptk-purple-hover);
+  }
+  .demo-swatch--purple-active {
+    background-color: var(--mptk-purple-active);
+  }
+  .demo-swatch--purple-soft {
+    background-color: var(--mptk-purple-soft);
+  }
+  .demo-swatch--cyan {
+    background-color: var(--mptk-cyan);
+  }
+  .demo-swatch--cyan-hover {
+    background-color: var(--mptk-cyan-hover);
+  }
+  .demo-swatch--cyan-active {
+    background-color: var(--mptk-cyan-active);
+  }
+  .demo-swatch--cyan-soft {
+    background-color: var(--mptk-cyan-soft);
+  }
+  .demo-swatch--pink {
+    background-color: var(--mptk-pink);
+  }
+  .demo-swatch--pink-hover {
+    background-color: var(--mptk-pink-hover);
+  }
+  .demo-swatch--pink-active {
+    background-color: var(--mptk-pink-active);
+  }
+  .demo-swatch--pink-soft {
+    background-color: var(--mptk-pink-soft);
+  }
+  .demo-swatch--teal {
+    background-color: var(--mptk-teal);
+  }
+  .demo-swatch--teal-hover {
+    background-color: var(--mptk-teal-hover);
+  }
+  .demo-swatch--teal-active {
+    background-color: var(--mptk-teal-active);
+  }
+  .demo-swatch--teal-soft {
+    background-color: var(--mptk-teal-soft);
+  }
+  .demo-swatch--business {
+    background-color: var(--mptk-business);
+  }
+  .demo-swatch--success {
+    background-color: var(--mptk-success);
+  }
+  .demo-swatch--warning {
+    background-color: var(--mptk-warning);
+  }
+  .demo-swatch--danger {
+    background-color: var(--mptk-danger);
+  }
+  .demo-swatch--control-blue {
+    background-color: var(--mptk-control-blue);
+  }
+  .demo-swatch--control-green {
+    background-color: var(--mptk-control-green);
+  }
+  .demo-swatch--control-orange {
+    background-color: var(--mptk-control-orange);
+  }
+  .demo-swatch--control-red {
+    background-color: var(--mptk-control-red);
+  }
+  .demo-swatch--control-active {
+    background-color: var(--mptk-control-active);
+  }
+  .demo-swatch--control-track {
+    background-color: var(--mptk-control-track);
+  }
+  .demo-swatch--control-thumb {
+    background-color: var(--mptk-control-thumb);
+  }
+  .demo-swatch--control-thumb-dim {
+    background-color: var(--mptk-control-thumb-dim);
+  }
+  .demo-swatch--control-on {
+    background-color: var(--mptk-control-on);
+  }
+  .demo-swatch--control-thumb-fg {
+    background-color: var(--mptk-control-thumb-fg);
+  }
+  .demo-swatch--spinner-active {
+    background-color: var(--mptk-spinner-active);
+  }
+}

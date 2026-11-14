@@ -23,7 +23,9 @@ pnpm pack --dry-run
 pnpm --filter mp-taro-kit-demo build:weapp
 ```
 
-`pnpm run build` 清空并重建 `dist/`；`pnpm test` 先跑 `scripts/check.mjs` 的包清单自检，再由 Node test runner 跑 `tests/*.test.mjs`；`pnpm run guard` 走 `--release`，追加校验 `dist/` 非空与根入口三件套齐全。演示站构建消费同一个 `dist/`，必须排在 `build` 之后，产物落在 `demo/dist/`。
+`pnpm run build` 的第一步是 `gen:config --lib`：把 `kit.config.mjs` 算成 `_tokens.scss` / `_keyframes.scss` 与 `*.generated.ts`，再清空重建 `dist/`，做 TS 双遍编译、Sass 编译，并把生成器 CLI、纯函数依赖、默认表与 Taro 插件复制进发布产物；同一次构建也会刷新 `demo/src` 的宿主生成物（`app-theme.scss` / `theme.json` / `kit-config.generated.ts` / `kit-swatches.generated.scss`），保证全仓产物与配置一致。契约见[统一配置](../api/config.md)。
+
+`pnpm test` 先跑 `scripts/check.mjs` 的包清单自检（其中对 `--lib` / `--host` 各跑一次 `gen:config --check`：独立重算期望、输入指纹与变异测试），再由 Node test runner 跑 `tests/*.test.mjs`；`pnpm run guard` 走 `--release`，追加校验 `dist/` 非空、根入口三件套与统一配置发布产物齐全。演示站构建消费同一个 `dist/`，必须排在 `build` 之后，产物落在 `demo/dist/`。演示站的 `taro build` 由 `plugins: ['mp-taro-kit/plugin']` 自动触发生成，不需要额外命令。
 
 ## 测试
 
@@ -33,8 +35,9 @@ pnpm --filter mp-taro-kit-demo build:weapp
 | `tests/runtime.test.mjs` | thenable 判定、跨副本单例、覆盖层栈、通知队列、loading 句柄 |
 | `tests/core.test.mjs` | 注入校验、请求、路由、存储、小程序能力兜底 |
 | `tests/ui.test.mjs` | 挂载契约、命令式 API、ESM / CJS 双端、组件 `.d.ts` 真类型零诊断、样式不硬编码颜色、组件级出口与 Cell 状态机、演示站菜单与示例渲染分支、演示站不渲染代码 |
+| `tests/kit-config-chain.test.mjs` | 配置真源全量锚点、别名与合并、库 / 宿主两模式产物、变异敏感性、发布链三个出口、运行时契约，以及 Toast 按配置时长自动消失的最终生效行为 |
 
-四组共 45 组断言，读取 `dist/` 产物与 `demo/` 源码，无外部服务依赖。
+断言全部读取 `dist/` 产物、`kit.config.mjs` 与 `demo/` 源码，期望值取自配置而非写死默认值，无外部服务依赖。
 
 本仓库自检不覆盖 Skyline 与 WebView 的实机渲染：样式变量的 `page` 挂载、px 单位、简写属性内的 `var()`、跨副本是否出现两份模块实例，都必须在 `demo/` 宿主小程序里单独验证。只通过构建、类型检查与 Node 断言，不等于双端验证通过。
 
@@ -54,3 +57,5 @@ pnpm --filter mp-taro-kit-demo build:weapp
 - 2026-11-08 01:32:55：构建顺序补演示站 build:weapp 及其依赖 dist 的说明
 - 2026-11-11 22:16:11：自检覆盖补 Cell 断言，总数改为 44
 - 2026-11-11 22:30:25：断言总数 45，补演示站不渲染代码
+- 2026-11-14 23:43:34：补 gen:config 构建前置、配置链回归测试与门禁顺序
+- 2026-11-15 00:40:41：构建说明补 _keyframes.scss 与 kit-swatches.generated.scss

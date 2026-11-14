@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process'
 import { cp, mkdir, readdir, rm } from 'node:fs/promises'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -65,6 +66,22 @@ const base = {
   noEmitOnError: false,
 }
 
+// 编译链第一步：配置真源 → _tokens.scss / *.generated.ts，必须早于 TS emit 与 Sass 编译。
+// 只跑 --lib，绝不读宿主差异，否则 demo 的值会被编进对外发布的 dist。
+const gen = spawnSync(process.execPath, [path.join(root, 'scripts/gen-kit-config.mjs'), '--lib'], {
+  cwd: root,
+  encoding: 'utf8',
+})
+if (gen.status !== 0) fail(`gen:config --lib 失败：${gen.stderr || gen.stdout || '未知错误'}`)
+
+// 本仓库的 demo 也是一个消费方：同步生成它的差异产物，保证库构建后全仓产物与配置一致。
+// 这一步只写 demo/src，不参与 dist，宿主值不会污染发布包。
+const genHost = spawnSync(process.execPath, [
+  path.join(root, 'scripts/gen-kit-config.mjs'), '--host',
+  '--config', 'demo/kit.config.mjs', '--out', 'demo/src',
+], { cwd: root, encoding: 'utf8' })
+if (genHost.status !== 0) fail(`gen:config --host 失败：${genHost.stderr || genHost.stdout || '未知错误'}`)
+
 await rm(distDir, { recursive: true, force: true })
 await mkdir(distDir, { recursive: true })
 
@@ -127,6 +144,21 @@ for (const source of themeSources) {
   writeFileSync(path.join(stylesDir, path.basename(source).replace(/\.scss$/, '.css')), result.css)
 }
 await cp(path.join(stylesDir, 'theme-light.css'), path.join(stylesDir, 'tokens.css'))
+
+// 发布生成器：CLI 与它的纯函数依赖、库默认表都要进包，否则消费方侧 ERR_MODULE_NOT_FOUND。
+// cli.mjs 用 './lib/kit-config.mjs' 相对定位，复制时保持这一层目录结构。
+const configOut = path.join(distDir, 'config')
+await mkdir(path.join(configOut, 'lib'), { recursive: true })
+await cp(path.join(root, 'scripts/gen-kit-config.mjs'), path.join(configOut, 'cli.mjs'))
+await cp(path.join(root, 'scripts/lib/kit-config.mjs'), path.join(configOut, 'lib/kit-config.mjs'))
+await cp(path.join(root, 'kit.config.mjs'), path.join(configOut, 'defaults.mjs'))
+
+// Taro 插件：CJS 是唯一真源（@tarojs/service 用 require 加载），ESM 只是同步包装。
+const pluginOut = path.join(distDir, 'plugin')
+await mkdir(pluginOut, { recursive: true })
+await cp(path.join(root, 'scripts/plugin/index.cjs'), path.join(pluginOut, 'index.cjs'))
+await cp(path.join(root, 'scripts/plugin/index.d.ts'), path.join(pluginOut, 'index.d.ts'))
+write(path.join(pluginOut, 'index.mjs'), "import plugin from './index.cjs'\nexport default plugin\n")
 
 let artifacts = 0
 async function collect(dir) {

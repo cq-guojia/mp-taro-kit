@@ -9,6 +9,7 @@ import { SOURCES } from '../scripts/icons.sources.mjs'
 import { exportPathOf, pathOf } from '../scripts/lib/icons-pack.mjs'
 import * as ui from '../dist/ui/index.js'
 import * as cellState from '../dist/ui/display/cell/state.js'
+import { resolveCssVars, catalogModuleStub } from './helpers/kit-config.mjs'
 
 const require = createRequire(import.meta.url)
 const cjs = require('../dist/ui/index.cjs')
@@ -249,7 +250,7 @@ test('演示站菜单：ready 必指真实展示页，planned 不绑跳转，条
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   })
   const mod = { exports: {} }
-  new Function('exports', 'module', outputText)(mod.exports, mod)
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
   const { menu, catalogPages, appPages } = mod.exports
 
   assert.ok(Array.isArray(menu) && menu.length === 9, '菜单必须是固定九组')
@@ -308,6 +309,7 @@ test('cell 组件级出口与样式出口齐全，子域 barrel 仍导出', () =
     'mptk-cell-group--inset',
     'mptk-cell-group--flush',
     'mptk-cell--center',
+    'mptk-cell--top',
     'mptk-cell--clickable',
     'mptk-cell__divider',
     'mptk-cell__arrow--down',
@@ -345,6 +347,28 @@ test('cell 三轴状态：点击态由 onClick 派生、isLink 纯视觉、disab
   const shaped = cellState.resolveCellState({ center: true, size: 'large' })
   assert.match(shaped.className, /mptk-cell--center/)
   assert.match(shaped.className, /mptk-cell--large/)
+  const top = cellState.resolveCellState({ center: false })
+  assert.match(top.className, /mptk-cell--top/, 'center={false} 派生顶部对齐修饰类')
+  assert.doesNotMatch(top.className, /mptk-cell--center/)
+  assert.doesNotMatch(cellState.resolveCellState({}).className, /mptk-cell--top/, '不传 center 时不应顶部对齐')
+})
+
+test('cell 垂直对齐两态：根容器统一驱动，装饰位不各自写 align-self', () => {
+  const css = read('../dist/ui/display/cell/style/index.css')
+  const root = css.match(/(?:^|\n)\.mptk-cell\s*\{([^}]*)\}/m)
+  assert.ok(root, '缺 .mptk-cell 基础规则')
+  assert.match(root[1], /align-items:\s*center/, '默认必须垂直居中')
+  const top = css.match(/(?:^|\n)\.mptk-cell--top\s*\{([^}]*)\}/m)
+  assert.ok(top, '缺 .mptk-cell--top 规则')
+  assert.match(top[1], /align-items:\s*flex-start/, '顶部对齐必须真的改 align-items')
+  const center = css.match(/(?:^|\n)\.mptk-cell--center\s*\{([^}]*)\}/m)
+  assert.ok(center, '缺 .mptk-cell--center 规则')
+  assert.match(center[1], /align-items:\s*center/)
+  for (const name of ['mptk-cell__extra', 'mptk-cell__right-icon', 'mptk-cell__arrow']) {
+    const rule = css.match(new RegExp(`(?:^|\\n)\\.${name}[\\s,{][^{]*\\{([^}]*)\\}`))
+    assert.ok(rule, `缺 .${name} 规则`)
+    assert.doesNotMatch(rule[1], /align-self/, `${name} 不许写死 align-self，否则整行对齐会被局部覆盖`)
+  }
 })
 
 test('cell 分组形态：inset 不画外框，最后一格由位置关掉分隔线', () => {
@@ -384,7 +408,7 @@ const groupProps: CellGroupProps = { inset: true, dividerTone: tone, frame: fals
 export const element = (
   <CellGroup {...groupProps} title="分组" border={false}>
     <Cell {...cellProps} label="描述" value="内容" icon="图标" rightIcon="右图标" extra="额外" center border size={size} isLink arrowDirection={direction} disabled onClick={() => {}} className="x">自定义值</Cell>
-    <CellGroup title="第二组"><Cell title="独立" /></CellGroup>
+    <CellGroup title="第二组"><Cell title="独立" center={false} /></CellGroup>
   </CellGroup>
 );
 `
@@ -410,7 +434,7 @@ test('cell 菜单翻 ready，展示页覆盖 Vant Weapp 全部形态', () => {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   })
   const mod = { exports: {} }
-  new Function('exports', 'module', outputText)(mod.exports, mod)
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
   const { menu, catalogPages } = mod.exports
   const cell = menu.flatMap((group) => group.entries).find((entry) => entry.id === 'cell')
   assert.equal(cell.status, 'ready')
@@ -445,7 +469,7 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   })
   const mod = { exports: {} }
-  new Function('exports', 'module', outputText)(mod.exports, mod)
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
   const { menu, catalogPages } = mod.exports
   const entries = menu.flatMap((group) => group.entries)
   const pageIds = new Set(catalogPages.map((page) => page.id))
@@ -478,20 +502,20 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   const inset = css.match(/(?:^|\n)\.mptk-cell-group__body--inset\s*\{([^}]*)\}/m)
   assert.ok(inset, '缺卡片形态样式')
   assert.equal((inset[1].match(/border-(?:top|right|bottom|left)-color:\s*var\(--mptk-border\)/g) ?? []).length, 4, '卡片四边外框都要取 --mptk-border')
-  assert.equal((inset[1].match(/border-(?:top|right|bottom|left)-width:\s*1px/g) ?? []).length, 4, '卡片四边外框都要是 1px')
+  assert.equal((resolveCssVars(inset[1]).match(/border-(?:top|right|bottom|left)-width:\s*1px/g) ?? []).length, 4, '卡片四边外框都要是 1px')
   const divider = css.match(/(?:^|\n)\.mptk-cell__divider\s*\{([^}]*)\}/m)
   assert.ok(divider, '缺分隔线样式')
-  assert.match(divider[1], /height:\s*1px/, '分隔线宽度要与外框一致')
+  assert.match(resolveCssVars(divider[1]), /height:\s*1px/, '分隔线宽度要与外框一致')
   assert.match(divider[1], /background-color:\s*var\(--mptk-cell-divider\)/, '组内分隔线走语义变量')
   assert.match(divider[1], /left:\s*var\(--mptk-space-4\)/, '分隔线默认左右内缩，不通到底')
   assert.match(divider[1], /right:\s*var\(--mptk-space-4\)/)
   assert.match(css, /\.mptk-cell-group--divider-match\s*\{[^}]*--mptk-cell-divider:\s*var\(--mptk-border\)/, 'match 档要把内线切回外框色')
   assert.match(
-    css,
+    resolveCssVars(css),
     /\.mptk-cell-group--in-card\s+\.mptk-cell__divider\s*\{[^}]*left:\s*0[^}]*right:\s*0/,
     '卡片内已由组缩进，线回到 0 免得叠成两道',
   )
-  assert.match(css, /\.mptk-cell-group--frameless\s+\.mptk-cell-group__body--inset\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉四边描边')
+  assert.match(resolveCssVars(css), /\.mptk-cell-group--frameless\s+\.mptk-cell-group__body--inset\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉四边描边')
 
   for (const mode of ['light', 'dark']) {
     const theme = read(`../dist/styles/theme-${mode}.css`)
@@ -517,7 +541,7 @@ test('Cell 展示页按五组顺序铺开，分组标题只在组首出现', () 
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   })
   const mod = { exports: {} }
-  new Function('exports', 'module', outputText)(mod.exports, mod)
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
   const display = mod.exports.catalogPages.find((page) => page.id === 'display')
   const expected = [
     ['一 · 容器形态', ['cell-basic', 'cell-inset', 'cell-group-title']],
@@ -546,7 +570,7 @@ test('演示站只演示形态：不渲染代码，通栏示例页裸展示', ()
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   })
   const mod = { exports: {} }
-  new Function('exports', 'module', outputText)(mod.exports, mod)
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
   const display = mod.exports.catalogPages.find((page) => page.id === 'display')
   assert.equal(display.bare, true, '展示页必须裸展示，通栏才不会被演示卡片包住')
   const block = read('../demo/src/components/DemoBlock.tsx')

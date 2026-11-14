@@ -1,0 +1,8 @@
+// @mptk-inputs:42f65ab592fc
+// 请勿手改：由 scripts/gen-kit-config.mjs --lib 从 kit.config.mjs 生成。
+// 关键帧百分比是 CSS 选择器，不能写 var()；这里生成 Sass 变量供组件 #{} 插值。
+$mptk-kf-0: 0%;
+$mptk-kf-40: 40%;
+$mptk-kf-50: 50%;
+$mptk-kf-80: 80%;
+$mptk-kf-full: 100%;
