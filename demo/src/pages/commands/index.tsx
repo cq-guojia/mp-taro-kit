@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
+import { Button } from 'mp-taro-kit/ui/actions'
 import {
   alert,
   clearToasts,
@@ -10,6 +11,7 @@ import {
   showToast,
 } from 'mp-taro-kit/ui'
 
+import 'mp-taro-kit/ui/actions/style'
 import 'mp-taro-kit/ui/infra/style'
 import { DemoPage } from '../../components/DemoBlock'
 
@@ -24,29 +26,26 @@ export default function CommandsPage() {
       return (
         <View>
           <View className="demo-row">
-            <View
-              className="demo-trigger"
-              onClick={() => setToastId(showToast('命令式轻提示', 'success'))}
-            >
-              <Text>showToast</Text>
-            </View>
-            <View
-              className="demo-trigger"
+            <Button className="demo-item" onClick={() => setToastId(showToast('命令式轻提示', 'success'))}>
+              showToast
+            </Button>
+            <Button
+              className="demo-item"
               onClick={() => {
                 if (toastId !== null) hideToast(toastId)
               }}
             >
-              <Text>hideToast</Text>
-            </View>
-            <View
-              className="demo-trigger"
+              hideToast
+            </Button>
+            <Button
+              className="demo-item"
               onClick={() => {
                 clearToasts()
                 setToastId(null)
               }}
             >
-              <Text>clearToasts</Text>
-            </View>
+              clearToasts
+            </Button>
           </View>
           {toastId === null ? null : <Text className="demo-note">{`最近 id：${toastId}`}</Text>}
         </View>
@@ -56,16 +55,16 @@ export default function CommandsPage() {
       return (
         <View>
           <View className="demo-row">
-            <View
-              className="demo-trigger"
+            <Button
+              className="demo-item"
               onClick={() => {
                 void alert('解析即关闭，不返回用户选择', { title: '提示' }).then(() =>
                   setAlertResult('已关闭'),
                 )
               }}
             >
-              <Text>alert</Text>
-            </View>
+              alert
+            </Button>
           </View>
           {alertResult === '' ? null : <Text className="demo-note">{alertResult}</Text>}
         </View>
@@ -75,16 +74,16 @@ export default function CommandsPage() {
       return (
         <View>
           <View className="demo-row">
-            <View
-              className="demo-trigger"
+            <Button
+              className="demo-item"
               onClick={() => {
                 void confirm('确定要继续吗？', { title: '确认', confirmText: '继续' }).then((ok) =>
                   setConfirmResult(ok ? 'true' : 'false'),
                 )
               }}
             >
-              <Text>confirm</Text>
-            </View>
+              confirm
+            </Button>
           </View>
           {confirmResult === '' ? null : (
             <Text className="demo-note">{`Promise 解析：${confirmResult}`}</Text>
@@ -96,16 +95,16 @@ export default function CommandsPage() {
       return (
         <View>
           <View className="demo-row">
-            <View
-              className="demo-trigger"
+            <Button
+              className="demo-item"
               onClick={() => {
                 const handle = showLoading()
                 setLoadingResult(`句柄 ${handle}`)
                 setTimeout(() => hideLoading(handle), 1200)
               }}
             >
-              <Text>showLoading（1.2s 后关闭）</Text>
-            </View>
+              showLoading（1.2s 后关闭）
+            </Button>
           </View>
           {loadingResult === '' ? null : <Text className="demo-note">{loadingResult}</Text>}
         </View>

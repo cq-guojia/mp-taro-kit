@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { isOverlayHostMounted } from 'mp-taro-kit/ui'
+import { Button } from 'mp-taro-kit/ui/actions'
+import { Card } from 'mp-taro-kit/ui/card'
 import {
   SafeArea,
   useLoadingState,
@@ -8,6 +10,8 @@ import {
   useOverlayEntries,
 } from 'mp-taro-kit/ui/infra'
 
+import 'mp-taro-kit/ui/actions/style'
+import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/infra/style'
 import { DemoPage } from '../../components/DemoBlock'
 
@@ -32,17 +36,17 @@ export default function InfraPage() {
       return (
         <View>
           <View className="demo-row">
-            <View
-              className="demo-trigger"
+            <Button
+              className="demo-item"
               onClick={() => setPosition(position === 'top' ? 'bottom' : 'top')}
             >
-              <Text>{`切换 position（当前 ${position}）`}</Text>
-            </View>
+              {`切换 position（当前 ${position}）`}
+            </Button>
           </View>
           <SafeArea position={position}>
-            <View className="demo-cell">
+            <Card size="sm" radius="sm" frame={false} color="var(--mptk-surface-2)">
               <Text>安全区内的内容</Text>
-            </View>
+            </Card>
           </SafeArea>
         </View>
       )

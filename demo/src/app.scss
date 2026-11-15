@@ -51,12 +51,6 @@ page {
   padding-left: var(--mptk-space-4);
 }
 
-.demo-page__title {
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-xl);
-  line-height: var(--mptk-line-xl);
-}
-
 .demo-page__summary {
   color: var(--mptk-fg-2);
   font-size: var(--mptk-font-sm);
@@ -127,19 +121,11 @@ page {
   color: var(--mptk-business);
 }
 
+/* 示例块的壳交给 Card，这里只留块间距；通栏页不套 Card。 */
 .demo-block {
-  background-color: var(--mptk-surface-1);
-  border-top-width: var(--mptk-c-border-w);
-  border-top-style: solid;
-  border-top-color: var(--mptk-border-faint);
-  border-radius: var(--mptk-radius-md);
   margin-right: var(--mptk-space-4);
   margin-bottom: var(--mptk-space-3);
   margin-left: var(--mptk-space-4);
-  padding-top: var(--mptk-space-3);
-  padding-right: var(--mptk-space-3);
-  padding-bottom: var(--mptk-space-3);
-  padding-left: var(--mptk-space-3);
 }
 
 /* 裸展示页里非通栏内容（徽标、说明文字）自己补左右 16，与 Cell 内容对齐。 */
@@ -148,19 +134,11 @@ page {
   padding-left: var(--mptk-space-4);
 }
 
-/* 裸展示：不套演示卡片、不加左右内边距，整行直接铺到屏幕两侧。 */
+/* 通栏展示：不套演示卡片，整行直接铺到屏幕两侧。 */
 .demo-block--bare {
-  background-color: var(--mptk-s-transparent);
-  border-top-width: var(--mptk-s-zero);
-  border-radius: var(--mptk-radius-none);
-  margin-top: var(--mptk-s-zero);
   margin-right: var(--mptk-s-zero);
   margin-bottom: var(--mptk-s-zero);
   margin-left: var(--mptk-s-zero);
-  padding-top: var(--mptk-s-zero);
-  padding-right: var(--mptk-s-zero);
-  padding-bottom: var(--mptk-s-zero);
-  padding-left: var(--mptk-s-zero);
 }
 
 .demo-block__head {
@@ -198,11 +176,6 @@ page {
   line-height: var(--mptk-line-xs);
 }
 
-/* 块底留白由块自己（padding 或内容尾距）给，body 不再叠一道。 */
-.demo-block__body {
-  margin-bottom: var(--mptk-s-zero);
-}
-
 /* 演示内容之间必须留空隙，组件不许一个个贴在一起：
    横排用 .demo-row、纵向多段用 .demo-stack，里面的组件一律加 .demo-item 自带右、下外边距。
    不用 gap —— 老 WebView 内核不支持，Skyline 与 WebView 会出现两种结果。 */
@@ -229,15 +202,6 @@ page {
   font-size: var(--mptk-font-sm);
   line-height: var(--mptk-line-sm);
   margin-top: var(--mptk-space-2);
-}
-
-.demo-cell {
-  background-color: var(--mptk-surface-2);
-  border-radius: var(--mptk-radius-sm);
-  padding-top: var(--mptk-space-2);
-  padding-right: var(--mptk-space-3);
-  padding-bottom: var(--mptk-space-2);
-  padding-left: var(--mptk-space-3);
 }
 
 .demo-swatch {
@@ -331,16 +295,6 @@ page {
   display: block;
   font-size: var(--mptk-font-sm);
   line-height: var(--mptk-line-sm);
-}
-
-.demo-panel {
-  background-color: var(--mptk-surface-1);
-  border-radius: var(--mptk-radius-md);
-  color: var(--mptk-fg);
-  padding-top: var(--mptk-space-4);
-  padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-4);
-  padding-left: var(--mptk-space-4);
 }
 
 /* 字体图标样式由 Icon 组件出口带入，字号一律走文字档位。 */

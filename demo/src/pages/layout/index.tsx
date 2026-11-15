@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
+import { Button } from 'mp-taro-kit/ui/actions'
+import { Card } from 'mp-taro-kit/ui/card'
 import { Mask, Overlay, Popup } from 'mp-taro-kit/ui/layout'
 
+import 'mp-taro-kit/ui/actions/style'
+import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/layout/style'
 import { DemoPage } from '../../components/DemoBlock'
 
@@ -15,9 +19,9 @@ export default function LayoutPage() {
       return (
         <View>
           <View className="demo-row">
-            <View className="demo-trigger" onClick={() => setMaskVisible(true)}>
-              <Text>显示遮罩</Text>
-            </View>
+            <Button className="demo-item" onClick={() => setMaskVisible(true)}>
+              显示遮罩
+            </Button>
           </View>
           <Mask visible={maskVisible} onClose={() => setMaskVisible(false)} />
         </View>
@@ -27,14 +31,14 @@ export default function LayoutPage() {
       return (
         <View>
           <View className="demo-row">
-            <View className="demo-trigger" onClick={() => setOverlayVisible(!overlayVisible)}>
-              <Text>切换 visible</Text>
-            </View>
+            <Button className="demo-item" onClick={() => setOverlayVisible(!overlayVisible)}>
+              切换 visible
+            </Button>
           </View>
           <Overlay visible={overlayVisible}>
-            <View className="demo-panel">
+            <Card frame={false} size="lg">
               <Text>覆盖层内容由 children 注入</Text>
-            </View>
+            </Card>
           </Overlay>
         </View>
       )
@@ -43,14 +47,14 @@ export default function LayoutPage() {
       return (
         <View>
           <View className="demo-row">
-            <View className="demo-trigger" onClick={() => setPopupOpen(true)}>
-              <Text>打开弹出层</Text>
-            </View>
+            <Button className="demo-item" onClick={() => setPopupOpen(true)}>
+              打开弹出层
+            </Button>
           </View>
           <Popup open={popupOpen} position="bottom" onClose={() => setPopupOpen(false)}>
-            <View className="demo-panel">
+            <Card frame={false} size="lg">
               <Text>弹出层 = 遮罩 + 定位面板</Text>
-            </View>
+            </Card>
           </Popup>
         </View>
       )

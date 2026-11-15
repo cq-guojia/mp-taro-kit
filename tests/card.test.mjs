@@ -317,9 +317,10 @@ test('演示站圆角与字号全走抽象档位，不手写值', () => {
   const scss = read('../demo/src/app.scss')
   assert.doesNotMatch(scss, /font-size:\s*\d+px/, '演示站不许手写 font-size')
   assert.doesNotMatch(scss, /\bline-height:\s*1\s*;/, '演示站不许手写 line-height: 1')
-  assert.doesNotMatch(scss, /border-radius:\s*0\s*;/, '演示站不许手写 border-radius: 0')
+  for (const hit of scss.matchAll(/border-radius:\s*([^;]+);/g)) {
+    assert.match(hit[1], /var\(--mptk-radius-/, `演示站圆角必须取档位：${hit[1]}`)
+  }
   assert.match(scss, /font-size:\s*var\(--mptk-font-display\)/, '展示级字号要取档位')
-  assert.match(scss, /border-radius:\s*var\(--mptk-radius-none\)/, '零圆角也要取档位')
   const tokens = read('../src/design/_tokens.scss')
   assert.match(tokens, /--mptk-font-display:\s*96px/, '96px 只在 design 层写一次')
   assert.match(tokens, /--mptk-radius-none:\s*0/, '零圆角档位只在 design 层写一次')

@@ -1,6 +1,8 @@
 import { Fragment } from 'react'
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
+import { Card } from 'mp-taro-kit/ui/card'
+import 'mp-taro-kit/ui/card/style'
 import { catalogPages, type CatalogExample } from '../catalog'
 import { DemoShell } from './DemoShell'
 
@@ -10,7 +12,7 @@ function pageOf(id: string) {
   return page
 }
 
-/** 单个示例外壳：只留标题与一句话，效果直接铺出来；代码示例见 docs/api/cell.md。 */
+/** 单个示例外壳：卡片壳交给 Card，标题与说明走它的槽；通栏页不套壳。 */
 export function DemoBlock({
   example,
   bare = false,
@@ -20,16 +22,27 @@ export function DemoBlock({
   bare?: boolean
   children?: ReactNode
 }) {
+  if (bare) {
+    return (
+      <View className="demo-block demo-block--bare">
+        {example.title !== '' && (
+          <View className="demo-block__head demo-block__head--bare">
+            <Text className="demo-block__title">{example.title}</Text>
+            <Text className="demo-block__hint">{example.hint}</Text>
+          </View>
+        )}
+        <View className="demo-block__body">{children}</View>
+      </View>
+    )
+  }
   return (
-    <View className={bare ? 'demo-block demo-block--bare' : 'demo-block'}>
-      {example.title !== '' && (
-        <View className={bare ? 'demo-block__head demo-block__head--bare' : 'demo-block__head'}>
-          <Text className="demo-block__title">{example.title}</Text>
-          <Text className="demo-block__hint">{example.hint}</Text>
-        </View>
-      )}
-      <View className="demo-block__body">{children}</View>
-    </View>
+    <Card
+      className="demo-block"
+      title={example.title === '' ? undefined : example.title}
+      subtitle={example.hint === '' ? undefined : example.hint}
+    >
+      {children}
+    </Card>
   )
 }
 
