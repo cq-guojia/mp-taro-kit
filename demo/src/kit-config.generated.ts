@@ -1,4 +1,4 @@
-// @mptk-inputs:78c2a875fc03
+// @mptk-inputs:acd34227ac1d
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -120,6 +120,60 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "var(--mptk-space-3)",
       "unit": "",
       "note": "card-spacing",
+    },
+    {
+      "key": "--mptk-tag-radius",
+      "label": "tag-radius",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-radius-xs)",
+      "unit": "",
+      "note": "tag-radius",
+    },
+    {
+      "key": "--mptk-tag-px",
+      "label": "tag-px",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-space-2)",
+      "unit": "",
+      "note": "tag-px",
+    },
+    {
+      "key": "--mptk-tag-py",
+      "label": "tag-py",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-space-1)",
+      "unit": "",
+      "note": "tag-py",
+    },
+    {
+      "key": "--mptk-tag-font",
+      "label": "tag-font",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-font-xs)",
+      "unit": "",
+      "note": "tag-font",
+    },
+    {
+      "key": "--mptk-tag-line",
+      "label": "tag-line",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-line-xs)",
+      "unit": "",
+      "note": "tag-line",
+    },
+    {
+      "key": "--mptk-divider-content-gap",
+      "label": "divider-content-gap",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-space-3)",
+      "unit": "",
+      "note": "divider-content-gap",
     },
     {
       "key": "--mptk-space-0",
@@ -2073,6 +2127,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "25%",
       "unit": "",
       "note": "s-quarter",
+    },
+    {
+      "key": "--mptk-s-divider-stub",
+      "label": "s-divider-stub",
+      "group": "structure",
+      "groupLabel": "结构常量",
+      "value": "10%",
+      "unit": "",
+      "note": "s-divider-stub",
     },
     {
       "key": "--mptk-s-center",

@@ -3,11 +3,13 @@ import Taro from '@tarojs/taro'
 import { setThemeMode, type ThemeMode } from 'mp-taro-kit/runtime'
 import { useThemeSnapshot } from 'mp-taro-kit/ui/infra'
 import { Card } from 'mp-taro-kit/ui/card'
+import { Tag } from 'mp-taro-kit/ui/display'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
 
 import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/cell/style'
+import 'mp-taro-kit/ui/display/style'
 import 'mp-taro-kit/ui/form/segmented/style'
 import { menu, pagePathOf } from '../../catalog'
 import { DemoShell } from '../../components/DemoShell'
@@ -38,9 +40,9 @@ export default function IndexPage() {
         <Text className={`${DEMO_LOGO_CLASS} demo-hero__logo`} />
         <Text className="demo-hero__desc">基于 Taro + React 的小程序基础库</Text>
         <View className="demo-hero__meta">
-          <Text className="demo-badge demo-badge--env">{__MTPK_RENDERER__}</Text>
-          <Text className="demo-badge">{`v${__MTPK_VERSION__}`}</Text>
-          <Text className="demo-badge">{__MTPK_BUILD_ID__}</Text>
+          <Tag className="demo-item" plain round type="primary">{__MTPK_RENDERER__}</Tag>
+          <Tag className="demo-item" plain round>{`v${__MTPK_VERSION__}`}</Tag>
+          <Tag className="demo-item" plain round>{__MTPK_BUILD_ID__}</Tag>
         </View>
       </View>
       <View className="demo-cards">

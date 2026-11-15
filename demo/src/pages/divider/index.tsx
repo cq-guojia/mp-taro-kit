@@ -15,6 +15,15 @@ export default function DividerPage() {
         </View>
       )
     }
+    if (id === 'divider-content') {
+      return (
+        <View className="demo-stack">
+          <Divider className="demo-item" contentPosition="left">靠左</Divider>
+          <Divider className="demo-item">居中</Divider>
+          <Divider className="demo-item" contentPosition="right">靠右</Divider>
+        </View>
+      )
+    }
     return null
   }
 

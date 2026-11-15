@@ -1,5 +1,7 @@
 import { View, Text } from '@tarojs/components'
+import { Divider, Tag } from 'mp-taro-kit/ui/display'
 
+import 'mp-taro-kit/ui/display/style'
 import { DemoPage } from '../../components/DemoBlock'
 import { KIT_CONFIG_BY_KEY } from '../../kit-config.generated'
 
@@ -50,10 +52,12 @@ export default function SizingPage() {
           <Text className="demo-note">其余尺寸档位同在样式基线里，不随明暗变化（单位 px）：</Text>
           {SIZE_GROUPS.map((group) => (
             <View key={group.title} className="demo-spec">
-              <Text className="demo-spec__title">{group.title}</Text>
+              <Divider className="demo-spec__divider" contentPosition="left">
+                {group.title}
+              </Divider>
               <View className="demo-spec__items">
                 {group.items.map((item) => (
-                  <Text key={item} className="demo-spec__item">{item}</Text>
+                  <Tag key={item} className="demo-item">{item}</Tag>
                 ))}
               </View>
             </View>

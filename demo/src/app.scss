@@ -91,36 +91,6 @@ page {
   margin-top: var(--mptk-space-3);
 }
 
-.demo-badge {
-  border-top-width: var(--mptk-c-border-w);
-  border-top-style: solid;
-  border-top-color: var(--mptk-border);
-  border-bottom-width: var(--mptk-c-border-w);
-  border-bottom-style: solid;
-  border-bottom-color: var(--mptk-border);
-  border-left-width: var(--mptk-c-border-w);
-  border-left-style: solid;
-  border-left-color: var(--mptk-border);
-  border-right-width: var(--mptk-c-border-w);
-  border-right-style: solid;
-  border-right-color: var(--mptk-border);
-  border-radius: var(--mptk-radius-pill);
-  color: var(--mptk-fg-2);
-  font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
-  margin-right: var(--mptk-space-1);
-  margin-bottom: var(--mptk-space-2);
-  margin-left: var(--mptk-space-1);
-  padding-top: var(--mptk-space-1);
-  padding-right: var(--mptk-space-2);
-  padding-bottom: var(--mptk-space-1);
-  padding-left: var(--mptk-space-2);
-}
-
-.demo-badge--env {
-  color: var(--mptk-business);
-}
-
 /* 示例块的壳交给 Card，这里只留块间距；通栏页不套 Card。 */
 .demo-block {
   margin-right: var(--mptk-space-4);
@@ -156,12 +126,6 @@ page {
   padding-right: var(--mptk-space-4);
   padding-bottom: var(--mptk-space-2);
   padding-left: var(--mptk-space-4);
-}
-
-.demo-section__title {
-  color: var(--mptk-fg-2);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
 }
 
 .demo-block__title {
@@ -316,11 +280,7 @@ page {
   margin-bottom: var(--mptk-space-3);
 }
 
-.demo-icon-group__title {
-  color: var(--mptk-fg-2);
-  display: block;
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
+.demo-icon-group__divider {
   margin-bottom: var(--mptk-space-2);
 }
 
@@ -471,10 +431,8 @@ page {
   margin-top: var(--mptk-space-3);
 }
 
-.demo-spec__title {
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
+.demo-spec__divider {
+  margin-bottom: var(--mptk-space-1);
 }
 
 .demo-spec__items {
@@ -482,20 +440,6 @@ page {
   flex-direction: row;
   flex-wrap: wrap;
   margin-top: var(--mptk-space-1);
-}
-
-.demo-spec__item {
-  background-color: var(--mptk-surface-2);
-  border-radius: var(--mptk-radius-sm);
-  color: var(--mptk-fg-2);
-  font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
-  margin-right: var(--mptk-space-2);
-  margin-bottom: var(--mptk-space-2);
-  padding-top: var(--mptk-space-1);
-  padding-right: var(--mptk-space-2);
-  padding-bottom: var(--mptk-space-1);
-  padding-left: var(--mptk-space-2);
 }
 
 /* Card 页 cover 槽位的示例内容：只表达「这里可以放东西」，不写死圆角与字号。 */

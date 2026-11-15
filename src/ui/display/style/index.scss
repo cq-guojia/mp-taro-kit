@@ -4,6 +4,39 @@
   background-color: var(--mptk-border);
 }
 
+/* 有文字时改横向两段线，高度交给文字撑；短边比例走结构常量。 */
+.mptk-divider--text {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: auto;
+  background-color: var(--mptk-s-transparent);
+}
+
+.mptk-divider__line {
+  flex: 1;
+  height: var(--mptk-c-border-w);
+  background-color: var(--mptk-border);
+}
+
+.mptk-divider__text {
+  padding-right: var(--mptk-divider-content-gap);
+  padding-left: var(--mptk-divider-content-gap);
+  color: var(--mptk-fg-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
+.mptk-divider--content-left .mptk-divider__line:first-child {
+  flex: none;
+  width: var(--mptk-s-divider-stub);
+}
+
+.mptk-divider--content-right .mptk-divider__line:last-child {
+  flex: none;
+  width: var(--mptk-s-divider-stub);
+}
+
 .mptk-badge {
   position: relative;
 }
@@ -27,4 +60,62 @@
   color: var(--mptk-surface-1);
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
+}
+
+/* 圆角只走 --mptk-tag-radius，胶囊态再翻到 pill 档；颜色直接引语义色。 */
+.mptk-tag {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--mptk-tag-py) var(--mptk-tag-px);
+  border-radius: var(--mptk-tag-radius);
+  background-color: var(--mptk-gray-3);
+  color: var(--mptk-fg);
+  font-size: var(--mptk-tag-font);
+  line-height: var(--mptk-tag-line);
+}
+
+.mptk-tag--primary {
+  background-color: var(--mptk-business);
+  color: var(--mptk-surface-1);
+}
+
+.mptk-tag--success {
+  background-color: var(--mptk-success);
+  color: var(--mptk-surface-1);
+}
+
+.mptk-tag--warning {
+  background-color: var(--mptk-warning);
+  color: var(--mptk-surface-1);
+}
+
+.mptk-tag--danger {
+  background-color: var(--mptk-danger);
+  color: var(--mptk-surface-1);
+}
+
+.mptk-tag--plain {
+  background-color: var(--mptk-surface-1);
+  color: var(--mptk-fg-2);
+}
+
+.mptk-tag--plain.mptk-tag--primary {
+  color: var(--mptk-business);
+}
+
+.mptk-tag--plain.mptk-tag--success {
+  color: var(--mptk-success);
+}
+
+.mptk-tag--plain.mptk-tag--warning {
+  color: var(--mptk-warning);
+}
+
+.mptk-tag--plain.mptk-tag--danger {
+  color: var(--mptk-danger);
+}
+
+.mptk-tag--round {
+  border-radius: var(--mptk-radius-pill);
 }

@@ -2,7 +2,9 @@ import { Fragment } from 'react'
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { Card } from 'mp-taro-kit/ui/card'
+import { Divider } from 'mp-taro-kit/ui/display'
 import 'mp-taro-kit/ui/card/style'
+import 'mp-taro-kit/ui/display/style'
 import { catalogPages, type CatalogExample } from '../catalog'
 import { DemoShell } from './DemoShell'
 
@@ -67,9 +69,9 @@ export function DemoPage({
       {blocks.map(({ example, showSection }) => (
         <Fragment key={example.id}>
           {showSection && (
-            <View className="demo-section">
-              <Text className="demo-section__title">{example.section}</Text>
-            </View>
+            <Divider className="demo-section" contentPosition="left">
+              {example.section}
+            </Divider>
           )}
           <DemoBlock example={example} bare={page.bare === true}>
             {render(example.id)}

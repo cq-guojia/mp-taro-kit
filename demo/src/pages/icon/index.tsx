@@ -1,7 +1,9 @@
 import { View, Text } from '@tarojs/components'
+import { Divider } from 'mp-taro-kit/ui/display'
 import { Icon, type IconSize } from 'mp-taro-kit/ui/display/icon'
 import { iconNamesByPack } from 'mp-taro-kit/ui/icon/all'
 
+import 'mp-taro-kit/ui/display/style'
 import { DemoPage } from '../../components/DemoBlock'
 
 // 按命名空间分组：跨框架通用库在前，本框架自有库在后；demo 自有图标不对外展示。
@@ -43,7 +45,9 @@ export default function IconPage() {
           const names = iconNamesByPack[group.id] ?? []
           return (
             <View key={group.id} className="demo-icon-group">
-              <Text className="demo-icon-group__title">{group.title}</Text>
+              <Divider className="demo-icon-group__divider" contentPosition="left">
+                {group.title}
+              </Divider>
               {names.length === 0 ? (
                 <Text className="demo-icon-group__empty">当前为空包（平台占位）</Text>
               ) : (

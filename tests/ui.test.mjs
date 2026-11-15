@@ -488,7 +488,7 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   const displayPage = read('../demo/src/pages/display/index.tsx')
   assert.doesNotMatch(displayPage, /id === 'badge'|id === 'divider'/, 'Cell 展示页不许再渲染 Badge / Divider')
 
-  for (const [id, component] of [['badge', 'Badge'], ['divider', 'Divider']]) {
+  for (const [id, component] of [['badge', 'Badge'], ['divider', 'Divider'], ['tag', 'Tag']]) {
     const page = read(`../demo/src/pages/${id}/index.tsx`)
     assert.match(page, new RegExp(`<${component}[\\s>]`), `${id} 页缺 ${component}`)
     assert.match(page, new RegExp(`pageId="${id}"`), `${id} 页没接自己的 catalog 页`)
@@ -496,6 +496,11 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
     const entry = catalogPages.find((item) => item.id === id)
     assert.ok(entry.examples.some((example) => example.id === id), `${id} 页缺自己的示例块`)
   }
+
+  const dividerCss = read('../dist/ui/display/style/index.css')
+  assert.match(dividerCss, /\.mptk-divider--text\s*\{[^}]*background-color:\s*var\(--mptk-s-transparent\)/, '带文字的分隔线要横排')
+  assert.match(dividerCss, /\.mptk-divider__text\s*\{[^}]*padding-left:\s*var\(--mptk-divider-content-gap\)/, '文字间距走语义变量')
+  assert.match(read('../demo/src/pages/divider/index.tsx'), /contentPosition="left"/, 'divider 页缺带文字形态示例')
 
   const css = read('../dist/ui/display/cell/style/index.css')
   assert.doesNotMatch(css, /--mptk-border-faint/, '外框不许取 faint 档')
@@ -560,7 +565,7 @@ test('Cell 展示页按五组顺序铺开，分组标题只在组首出现', () 
   const cardGroups = [...new Set(card.examples.map((example) => example.section))]
   assert.deepEqual(cardGroups, ['一 · 容器形态', '二 · 外观设置', '三 · 槽位与状态'], 'Card 页也按三组铺开')
   const shell = read('../demo/src/components/DemoBlock.tsx')
-  assert.match(shell, /demo-section__title/, '页壳要渲染分组标题')
+  assert.match(shell, /Divider[^>]*contentPosition="left"/, '页壳要用带文字的分隔线渲染分组标题')
   assert.match(shell, /example\.section/, '分组标题要由 catalog 的 section 驱动')
 })
 

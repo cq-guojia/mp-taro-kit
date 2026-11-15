@@ -16,10 +16,12 @@ docs/                                               # 项目文档库入口
 │   ├── card.md                                     # Card 的竞品对比结论、槽位与设置契约、颜色双路、与 Cell 的组合
 │   ├── cell.md                                     # Cell / CellGroup 的 props、组内行为与九种用法代码
 │   ├── config.md                                   # 统一配置真源、生成链、Taro 插件一次性接入与全量可配项
+│   ├── divider.md                                  # 分隔线的纯线形态、带文字形态与 contentPosition 契约
 │   ├── exports.md                                  # exports 子路径形态、挂载与注入约定、peer 版本下限
 │   ├── icons.md                                    # 平台项目与命名规则、类名契约、多色行为与字体加载稳定性
 │   ├── segmented.md                                # Segmented 的 items 契约、两种指示器与异步切换
-│   └── switch.md                                   # Switch 的两种形状、三档尺寸与异步切换
+│   ├── switch.md                                   # Switch 的两种形状、三档尺寸与异步切换
+│   └── tag.md                                      # 标签的展示类圆角语义变量、type/plain/round 与 Badge 的边界
 ├── development/                                    # 本地开发、构建与验证约定
 │   └── build-and-test.md                           # 构建与自检顺序、工程约定，以及实机验证不在这套自检内的边界
 └── dependencies/                                   # 外部依赖的已核实行为与已知坑
@@ -56,3 +58,5 @@ docs/                                               # 项目文档库入口
 - 2026-11-14：Card 头部默认带分隔线、说明字号降到 xs；主题配置页三块统一用 Card 标题
 - 2026-11-14：Cell 默认垂直居中、`center={false}` 顶部对齐；主题配置页英文别名改走注释字号
 - 2026-11-14 23:43:34：索引补 api/config.md
+- 2026-11-15 14:18:54：索引补 api/tag.md
+- 2026-11-15 14:51:31：索引补 api/divider.md

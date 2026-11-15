@@ -70,6 +70,12 @@ export default {
     "--mptk-control-radius": "var(--mptk-radius-xs)",               // 控件默认圆角：引用 radius-xs，改 xs 即全局跟随
     "--mptk-card-radius": "var(--mptk-radius-md)",                  // 卡片默认圆角：引用 radius-md
     "--mptk-card-spacing": "var(--mptk-space-3)",                   // 卡片内边距：引用 space-3
+    "--mptk-tag-radius": "var(--mptk-radius-xs)",                   // 标签默认圆角：展示类语义变量，引用 radius-xs
+    "--mptk-tag-px": "var(--mptk-space-2)",                         // 标签左右内边距：引用 space-2
+    "--mptk-tag-py": "var(--mptk-space-1)",                         // 标签上下内边距：引用 space-1
+    "--mptk-tag-font": "var(--mptk-font-xs)",                       // 标签字号：引用 font-xs
+    "--mptk-tag-line": "var(--mptk-line-xs)",                       // 标签行高：引用 line-xs
+    "--mptk-divider-content-gap": "var(--mptk-space-3)",            // 分隔线文字左右间距：引用 space-3
     "--mptk-space-0": "2px",                                        // 间距 0 档：由小到大的统一留白节奏
     "--mptk-space-1": "4px",                                        // 间距 1 档：由小到大的统一留白节奏
     "--mptk-space-2": "8px",                                        // 间距 2 档：由小到大的统一留白节奏
@@ -303,6 +309,7 @@ export default {
     "--mptk-s-full": "100%",                                        // 满幅：宽高铺满容器
     "--mptk-s-half": "50%",                                         // 半幅：50% 尺寸或位移
     "--mptk-s-quarter": "25%",                                      // 四分之一：25% 尺寸或位移
+    "--mptk-s-divider-stub": "10%",                                 // 分隔线短边：带文字时靠边一侧线长
     "--mptk-s-center": "50%",                                       // 居中定位：top / left 各 50%
     "--mptk-s-opacity-full": "1",                                   // 完全不透明
     "--mptk-s-scale-full": "scale(1)",                              // 缩放原尺寸：transform 终态
