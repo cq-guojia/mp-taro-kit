@@ -1,6 +1,6 @@
 export { Divider, type DividerProps } from './Divider.js'
 export { Badge, type BadgeProps } from './Badge.js'
-export { Tag, type TagProps, type TagType } from './Tag.js'
+export { Tag, type TagProps, type TagType, type TagSize, type TagShape } from './Tag.js'
 export {
   Cell,
   CellGroup,

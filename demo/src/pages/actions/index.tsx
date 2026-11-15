@@ -15,9 +15,11 @@ export default function ActionsPage() {
         <View>
           <View className="demo-stack">
             <View className="demo-row">
+              <Button className="demo-item" size="xs" onClick={() => setClicked(true)}>迷你</Button>
               <Button className="demo-item" size="sm" onClick={() => setClicked(true)}>小</Button>
               <Button className="demo-item" size="md" onClick={() => setClicked(true)}>中</Button>
               <Button className="demo-item" size="lg" onClick={() => setClicked(true)}>大</Button>
+              <Button className="demo-item" size="xl" onClick={() => setClicked(true)}>特大</Button>
             </View>
             <View className="demo-row">
               <Button className="demo-item" radius="pill" onClick={() => setClicked(true)}>半圆</Button>

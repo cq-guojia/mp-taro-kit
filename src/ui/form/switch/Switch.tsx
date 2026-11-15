@@ -6,7 +6,7 @@ import { useAsyncChange } from '../useAsyncChange.js'
 import { Spinner } from '../../feedback/spinner/index.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*。 */
-export type SwitchSize = 'sm' | 'md' | 'lg'
+export type SwitchSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 /** round = 传统圆形滑块；block = 圆角方形，两侧可放文字或图标。 */
 export type SwitchShape = 'round' | 'block'

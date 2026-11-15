@@ -2,9 +2,12 @@ import { KIT_CONFIG_BY_KEY } from './kit-config.generated'
 
 /** 说明文案里的尺寸取值同样来自生成表，改配置时不会与展示漂移。 */
 const configValue = (key: string) => KIT_CONFIG_BY_KEY[key]?.value ?? ''
+/** 高度刻度六档：`xxs` 只有展示类标签填，可点控件从 `xs` 起。 */
+const HEIGHT_TIERS = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl']
+const CLICKABLE_TIERS = HEIGHT_TIERS.filter((tier) => tier !== 'xxs')
 const heightsOf = (prefix: string) =>
-  ['sm', 'md', 'lg'].map((tier) => `${configValue(`--mptk-${prefix}-w-${tier}`)}×${configValue(`--mptk-${prefix}-h-${tier}`)}`).join(' / ')
-const CONTROL_HEIGHTS = ['sm', 'md', 'lg'].map((tier) => configValue(`--mptk-control-h-${tier}`)).join(' / ')
+  CLICKABLE_TIERS.map((tier) => `${configValue(`--mptk-${prefix}-w-${tier}`)}×${configValue(`--mptk-${prefix}-h-${tier}`)}`).join(' / ')
+const CONTROL_HEIGHTS = HEIGHT_TIERS.map((tier) => configValue(`--mptk-control-h-${tier}`)).join(' / ')
 const DEFAULT_HEIGHT = configValue('--mptk-control-h-md')
 const SWITCH_TRACKS = heightsOf('c-switch')
 
@@ -104,12 +107,12 @@ export const pages: CatalogPage[] = [
     id: 'sizing',
     title: '尺寸',
     path: 'pages/sizing/index',
-    summary: '控件高度三档与字号、间距、圆角、动效的档位体系',
+    summary: '控件高度五档与字号、间距、圆角、动效的档位体系',
     examples: [
       {
         id: 'control-height',
         title: '控件高度',
-        hint: `${CONTROL_HEIGHTS} 三档，对齐 WeUI 按钮高度，默认 ${DEFAULT_HEIGHT}`,
+        hint: `${CONTROL_HEIGHTS} 五档，中三档对齐 WeUI 按钮高度，默认 ${DEFAULT_HEIGHT}`,
         usage: '',
         imports: ['mp-taro-kit/styles/theme-runtime'],
         renderNotes: '标尺吃 --mptk-control-h-*；Switch / Segmented 逐档吃同名 token，效果见表单页',
@@ -189,8 +192,8 @@ export const pages: CatalogPage[] = [
       {
         id: 'button-basic',
         title: '基础按钮',
-        hint: `Button：三档高度（${CONTROL_HEIGHTS}，默认 ${DEFAULT_HEIGHT}）与半圆形态（radius="pill"）`,
-        usage: '<Button size="md">中</Button> <Button radius="pill">半圆</Button>',
+        hint: `Button：五档高度（${CONTROL_HEIGHTS}，默认 ${DEFAULT_HEIGHT}）与半圆形态（radius="pill"）`,
+        usage: '<Button size="xs|sm|md|lg|xl">按钮</Button> <Button radius="pill">半圆</Button>',
         imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
         renderNotes: '总高逐像素等于 --mptk-control-h-* 档位，靠 height 不靠上下内边距；圆角走 --mptk-control-radius，pill 用 999px 而不是 50%',
       },
@@ -208,13 +211,13 @@ export const pages: CatalogPage[] = [
     id: 'form',
     title: '开关',
     path: 'pages/form/index',
-    summary: '开关：两种形状、三档尺寸、内置色板与异步等待',
+    summary: '开关：两种形状、五档尺寸、内置色板与异步等待',
     examples: [
       {
         id: 'switch-size',
         title: '尺寸',
-        hint: `圆形三档（轨道 ${SWITCH_TRACKS}）与方形三档（格子由内容盒加内边距推导），从左到右 sm → md → lg`,
-        usage: '<Switch size="sm|md|lg" /> 或 <Switch shape="block" size="sm|md|lg" />',
+        hint: `圆形五档（轨道 ${SWITCH_TRACKS}）与方形五档（格子由内容盒加内边距推导），从左到右 xs → xl`,
+        usage: '<Switch size="xs|sm|md|lg|xl" /> 或 <Switch shape="block" size="xs|sm|md|lg|xl" />',
         imports: ['mp-taro-kit/ui/form/switch', 'mp-taro-kit/ui/form/switch/style'],
         renderNotes: `根框总高恒等于 --mptk-control-h-*（${CONTROL_HEIGHTS}）；圆形轨道按微信原生 52:32 缩放，方形格子边长 = 内容盒 + 2 × 内边距、不吃圆形比例；双端实机未验证`,
       },
@@ -261,8 +264,8 @@ export const pages: CatalogPage[] = [
       {
         id: 'segmented-size',
         title: '尺寸',
-        hint: '三档总高 sm 32 / md 40 / lg 48，从上到下逐档放大；段宽默认 fit，按内容撑开',
-        usage: '<Segmented size="sm|md|lg" items={items} value={value} onChange={setValue} />',
+        hint: '五档总高 xs 24 / sm 32 / md 40 / lg 48 / xl 56，从上到下逐档放大；段宽默认 fit，按内容撑开',
+        usage: '<Segmented size="xs|sm|md|lg|xl" items={items} value={value} onChange={setValue} />',
         imports: ['mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style'],
         renderNotes: '总高恒等于 --mptk-control-h-*，容器不叠加上下内边距；滑块上下各让 3px，段最小宽度取同档控件高度；双端实机未验证',
       },
@@ -522,12 +525,20 @@ export const pages: CatalogPage[] = [
         renderNotes: '',
       },
       {
-        id: 'tag-round',
-        title: '胶囊',
-        hint: 'round：圆角翻到 pill 档；常规圆角走 --mptk-tag-radius',
-        usage: '',
+        id: 'tag-size',
+        title: '尺寸',
+        hint: 'xxs（16）/ xs（24，默认）/ sm（32）/ md（40）：与控件同名档必然等高，xxs 只对标签开放',
+        usage: '<Tag size="xxs|xs|sm|md">标签</Tag>',
         imports: ['mp-taro-kit/ui/display', 'mp-taro-kit/ui/display/style'],
-        renderNotes: '',
+        renderNotes: '高度由 min-height 吃同一套刻度 token，不靠上下内边距凑；改字号不会把高度带跑',
+      },
+      {
+        id: 'tag-shape',
+        title: '圆角形态',
+        hint: 'square 小圆角（默认）/ round 两端半圆 / mark 单侧半圆',
+        usage: '<Tag shape="round">胶囊</Tag> <Tag shape="mark">标记</Tag>',
+        imports: ['mp-taro-kit/ui/display', 'mp-taro-kit/ui/display/style'],
+        renderNotes: '圆角只走 --mptk-tag-radius 与 pill 档；mark 的左侧直角、右侧半圆四条边分开写',
       },
     ],
   },

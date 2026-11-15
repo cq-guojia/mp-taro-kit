@@ -8,6 +8,16 @@ export const GENERATED_HEADER = (what) =>
   `// 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（${what}）。\n` +
   `// 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。\n`
 
+/**
+ * 全库高度刻度：档名与物理高度一一对应，数组顺序即递增顺序。
+ * 可点控件（Button / Switch / Segmented）只开放 xxs 以上的五档，xxs 仅供展示类标签使用：
+ * 16px 低于最小可点目标，做按钮只能是个点不中的假档。
+ */
+export const CONTROL_SIZE_TIERS = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl']
+
+/** 可点控件能填的档：xxs 低于最小可点目标，只留给 Tags 这类展示元素。 */
+export const CLICKABLE_SIZE_TIERS = CONTROL_SIZE_TIERS.filter((tier) => tier !== 'xxs')
+
 export const SENTINEL = {
   base: ['// @mptk-generated:base:start', '// @mptk-generated:base:end'],
   surface: ['// @mptk-generated:surface:start', '// @mptk-generated:surface:end'],
@@ -122,7 +132,7 @@ export function validateConfig(config) {
   const tiers = [
     ['radius', ['--mptk-radius-xs', '--mptk-radius-sm', '--mptk-radius-md', '--mptk-radius-lg', '--mptk-radius-xl']],
     ['space', ['--mptk-space-0', '--mptk-space-1', '--mptk-space-2', '--mptk-space-3', '--mptk-space-4']],
-    ['control-h', ['--mptk-control-h-sm', '--mptk-control-h-md', '--mptk-control-h-lg']],
+    ['control-h', CONTROL_SIZE_TIERS.map((tier) => `--mptk-control-h-${tier}`)],
   ]
   for (const [name, list] of tiers) {
     const values = list.map((key) => pxOf(config.base?.[key]))
@@ -139,8 +149,8 @@ export function validateConfig(config) {
   if (!(Number(config.runtime?.toastDuration) > 0)) errors.push('runtime.toastDuration 必须 > 0')
   if (!(Number(config.runtime?.notifyLimit) > 0)) errors.push('runtime.notifyLimit 必须 > 0')
   if (!(Number(config.runtime?.core?.timeout) > 0)) errors.push('runtime.core.timeout 必须 > 0')
-  if (!['sm', 'md', 'lg'].includes(config.runtime?.controlSizeDefault)) {
-    errors.push('runtime.controlSizeDefault 必须是 sm/md/lg')
+  if (!CONTROL_SIZE_TIERS.includes(config.runtime?.controlSizeDefault)) {
+    errors.push(`runtime.controlSizeDefault 必须是 ${CONTROL_SIZE_TIERS.join('/')}`)
   }
   if (errors.length > 0) throw new Error(`配置校验失败：\n  - ${errors.join('\n  - ')}`)
   return config
@@ -215,7 +225,7 @@ function tsLiteral(value, indent = '  ') {
 /** design 层只读字面量，不 import runtime（保持五层依赖方向）。 */
 export function renderDesignGenerated(config) {
   return GENERATED_HEADER('design 层默认常量') +
-    `\nexport const CONTROL_SIZE_DEFAULT: 'sm' | 'md' | 'lg' = ${JSON.stringify(config.runtime.controlSizeDefault)}\n` +
+    `\nexport const CONTROL_SIZE_DEFAULT: ${CLICKABLE_SIZE_TIERS.map((tier) => `'${tier}'`).join(' | ')} = ${JSON.stringify(config.runtime.controlSizeDefault)}\n` +
     `\nexport const KIT_RUNTIME_DEFAULTS = ${tsLiteral({
       toastDuration: config.runtime.toastDuration,
       notifyLimit: config.runtime.notifyLimit,
@@ -231,7 +241,7 @@ export function renderRuntimeGenerated(config) {
     `  runtime: {\n` +
     `    toastDuration: number\n` +
     `    notifyLimit: number\n` +
-    `    controlSizeDefault: 'sm' | 'md' | 'lg'\n` +
+    `    controlSizeDefault: ${CLICKABLE_SIZE_TIERS.map((tier) => `'${tier}'`).join(' | ')}\n` +
     `    core: {\n` +
     `      baseURL: string\n` +
     `      timeout: number\n` +
@@ -262,8 +272,9 @@ const LABELS = {
   '--mptk-card-radius': '卡片圆角', '--mptk-card-spacing': '卡片分区间距',
   '--mptk-space-0': '间距 0', '--mptk-space-1': '间距 1', '--mptk-space-2': '间距 2',
   '--mptk-space-3': '间距 3', '--mptk-space-4': '间距 4',
-  '--mptk-control-h-sm': '控件高度 SM', '--mptk-control-h-md': '控件高度 MD',
-  '--mptk-control-h-lg': '控件高度 LG',
+  '--mptk-control-h-xxs': '高度 XXS', '--mptk-control-h-xs': '控件高度 XS', '--mptk-control-h-sm': '控件高度 SM',
+  '--mptk-control-h-md': '控件高度 MD', '--mptk-control-h-lg': '控件高度 LG',
+  '--mptk-control-h-xl': '控件高度 XL',
   '--mptk-font-xs': '字号 XS', '--mptk-font-sm': '字号 SM', '--mptk-font-md': '字号 MD',
   '--mptk-font-lg': '字号 LG', '--mptk-font-xl': '字号 XL', '--mptk-font-nav': '导航字号',
   '--mptk-line-xs': '行高 XS', '--mptk-line-sm': '行高 SM', '--mptk-line-md': '行高 MD',

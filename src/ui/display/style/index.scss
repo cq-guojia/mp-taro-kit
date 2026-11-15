@@ -62,17 +62,42 @@
   line-height: var(--mptk-line-xs);
 }
 
-/* 圆角只走 --mptk-tag-radius，胶囊态再翻到 pill 档；颜色直接引语义色。 */
+/* 高度由档位定死：min-height 吃同一套刻度 token，上下不再靠内边距凑 ——
+   同档标签与控件必然等高，改字号也不会把高度带跑。line-height 压成 1，靠 min-height 居中。 */
 .mptk-tag {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  padding: var(--mptk-tag-py) var(--mptk-tag-px);
+  min-height: var(--mptk-control-h-xs);
+  padding-right: var(--mptk-tag-px);
+  padding-left: var(--mptk-tag-px);
   border-radius: var(--mptk-tag-radius);
   background-color: var(--mptk-gray-3);
   color: var(--mptk-fg);
   font-size: var(--mptk-tag-font);
-  line-height: var(--mptk-tag-line);
+  line-height: var(--mptk-s-line-flat);
+}
+
+/* 16px 档只有标签填：12px 的字，左右各留 4px 才不显胖。 */
+.mptk-tag--xxs {
+  min-height: var(--mptk-control-h-xxs);
+  padding-right: var(--mptk-space-1);
+  padding-left: var(--mptk-space-1);
+  font-size: var(--mptk-font-xs);
+}
+
+.mptk-tag--sm {
+  min-height: var(--mptk-control-h-sm);
+  padding-right: var(--mptk-space-3);
+  padding-left: var(--mptk-space-3);
+  font-size: var(--mptk-font-sm);
+}
+
+.mptk-tag--md {
+  min-height: var(--mptk-control-h-md);
+  padding-right: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
+  font-size: var(--mptk-font-md);
 }
 
 .mptk-tag--primary {
@@ -116,6 +141,14 @@
   color: var(--mptk-danger);
 }
 
-.mptk-tag--round {
+.mptk-tag--shape-round {
   border-radius: var(--mptk-radius-pill);
+}
+
+/* 单侧半圆：左侧直角、右侧半圆。四条边分开写，不押简写里的 var()。 */
+.mptk-tag--shape-mark {
+  border-top-left-radius: var(--mptk-radius-none);
+  border-top-right-radius: var(--mptk-radius-pill);
+  border-bottom-right-radius: var(--mptk-radius-pill);
+  border-bottom-left-radius: var(--mptk-radius-none);
 }

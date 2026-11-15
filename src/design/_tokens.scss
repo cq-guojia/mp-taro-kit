@@ -1,4 +1,4 @@
-// @mptk-inputs:e2b7b030f0ad
+// @mptk-inputs:40f19d6ae1d5
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -25,18 +25,19 @@
   --mptk-card-spacing: var(--mptk-space-3);
   --mptk-tag-radius: var(--mptk-radius-xs);
   --mptk-tag-px: var(--mptk-space-2);
-  --mptk-tag-py: var(--mptk-space-1);
   --mptk-tag-font: var(--mptk-font-xs);
-  --mptk-tag-line: var(--mptk-line-xs);
   --mptk-divider-content-gap: var(--mptk-space-3);
   --mptk-space-0: 2px;
   --mptk-space-1: 4px;
   --mptk-space-2: 8px;
   --mptk-space-3: 12px;
   --mptk-space-4: 16px;
+  --mptk-control-h-xxs: 16px;
+  --mptk-control-h-xs: 24px;
   --mptk-control-h-sm: 32px;
   --mptk-control-h-md: 40px;
   --mptk-control-h-lg: 48px;
+  --mptk-control-h-xl: 56px;
   --mptk-font-xs: 12px;
   --mptk-font-sm: 14px;
   --mptk-font-md: 15px;
@@ -71,12 +72,16 @@
   --mptk-c-switch-inset: 2px;
   --mptk-c-switch-sm-offset: 2px;
   --mptk-c-switch-icon-ratio: .44;
+  --mptk-c-switch-w-xs: 26px;
+  --mptk-c-switch-h-xs: 16px;
   --mptk-c-switch-w-sm: 33px;
   --mptk-c-switch-h-sm: 20px;
   --mptk-c-switch-w-md: 42px;
   --mptk-c-switch-h-md: 26px;
   --mptk-c-switch-w-lg: 52px;
   --mptk-c-switch-h-lg: 32px;
+  --mptk-c-switch-w-xl: 62px;
+  --mptk-c-switch-h-xl: 38px;
   --mptk-c-seg-inset: 3px;
   --mptk-c-seg-line-h: 2px;
   --mptk-c-spinner-rotate-dur: .8s;

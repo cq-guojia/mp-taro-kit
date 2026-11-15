@@ -115,7 +115,7 @@ test('尺寸标尺逐档吃控件高度 token，档位数值与真源一致', ()
   const generated = read('../demo/src/kit-config.generated.ts')
   const tokens = tokensOf()
   assert.match(page, /from '\.\.\/\.\.\/kit-config\.generated'/, '尺寸页必须读生成表，不许写死档位数值')
-  for (const tier of ['sm', 'md', 'lg']) {
+  for (const tier of ['xxs', 'xs', 'sm', 'md', 'lg', 'xl']) {
     const key = `--mptk-control-h-${tier}`
     const px = tokens[key]
     assert.match(
@@ -183,7 +183,7 @@ test('控件默认尺寸只有一处定义，三个控件都引用它', () => {
   const design = read('../src/design/index.ts')
   const generated = read('../src/design/kit-config.generated.ts')
   // 期望取自配置真源，不再把 'md' 写死在测试里：改默认档时测试跟着配置走。
-  const tier = /["']?controlSizeDefault["']?\s*:\s*["'](sm|md|lg)["']/.exec(read('../kit.config.mjs'))?.[1]
+  const tier = /["']?controlSizeDefault["']?\s*:\s*["'](xs|sm|md|lg|xl)["']/.exec(read('../kit.config.mjs'))?.[1]
   assert.ok(tier, '配置真源缺 runtime.controlSizeDefault')
   assert.match(generated, new RegExp(`CONTROL_SIZE_DEFAULT[^=]*=\\s*"${tier}"`), '生成物没写对默认档')
   assert.match(design, /export \{[^}]*CONTROL_SIZE_DEFAULT[^}]*\} from '\.\/kit-config\.generated\.js'/, 'design 层只转发生成物')

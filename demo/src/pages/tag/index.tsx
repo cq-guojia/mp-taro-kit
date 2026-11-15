@@ -1,4 +1,4 @@
-import { View } from '@tarojs/components'
+import { Text, View } from '@tarojs/components'
 import { Tag } from 'mp-taro-kit/ui/display'
 
 import 'mp-taro-kit/ui/display/style'
@@ -36,12 +36,26 @@ export default function TagPage() {
         </View>
       )
     }
-    if (id === 'tag-round') {
+    if (id === 'tag-size') {
+      return (
+        <View>
+          <View className="demo-row">
+            <Tag className="demo-item" size="xxs">xxs 16</Tag>
+            <Tag className="demo-item" size="xs">xs 24</Tag>
+            <Tag className="demo-item" size="sm">sm 32</Tag>
+            <Tag className="demo-item" size="md">md 40</Tag>
+          </View>
+          <Text className="demo-note">同名档与控件等高：标签 xs 与 Button xs 都是 24</Text>
+        </View>
+      )
+    }
+    if (id === 'tag-shape') {
       return (
         <View className="demo-row">
-          <Tag className="demo-item" round>默认</Tag>
-          <Tag className="demo-item" round plain type="primary">胶囊</Tag>
-          <Tag className="demo-item" round type="danger">危险</Tag>
+          <Tag className="demo-item">小圆角</Tag>
+          <Tag className="demo-item" shape="round">两端半圆</Tag>
+          <Tag className="demo-item" shape="mark">单侧半圆</Tag>
+          <Tag className="demo-item" shape="round" plain type="primary">胶囊空心</Tag>
         </View>
       )
     }

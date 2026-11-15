@@ -7,7 +7,7 @@ import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*。 */
-export type SegmentedSize = 'sm' | 'md' | 'lg'
+export type SegmentedSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 /** thumb = 滑动块；line = 频道切换那种下划线。 */
 export type SegmentedIndicator = 'thumb' | 'line'

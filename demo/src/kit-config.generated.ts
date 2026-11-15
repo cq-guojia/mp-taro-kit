@@ -1,4 +1,4 @@
-// @mptk-inputs:240f61c88437
+// @mptk-inputs:a9d46fbf2a4b
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -140,15 +140,6 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "tag-px",
     },
     {
-      "key": "--mptk-tag-py",
-      "label": "tag-py",
-      "group": "base",
-      "groupLabel": "基础尺寸",
-      "value": "var(--mptk-space-1)",
-      "unit": "",
-      "note": "tag-py",
-    },
-    {
       "key": "--mptk-tag-font",
       "label": "tag-font",
       "group": "base",
@@ -156,15 +147,6 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "var(--mptk-font-xs)",
       "unit": "",
       "note": "tag-font",
-    },
-    {
-      "key": "--mptk-tag-line",
-      "label": "tag-line",
-      "group": "base",
-      "groupLabel": "基础尺寸",
-      "value": "var(--mptk-line-xs)",
-      "unit": "",
-      "note": "tag-line",
     },
     {
       "key": "--mptk-divider-content-gap",
@@ -221,6 +203,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "space-4",
     },
     {
+      "key": "--mptk-control-h-xxs",
+      "label": "高度 XXS",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "16px",
+      "unit": "px",
+      "note": "control-h-xxs",
+    },
+    {
+      "key": "--mptk-control-h-xs",
+      "label": "控件高度 XS",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "24px",
+      "unit": "px",
+      "note": "control-h-xs",
+    },
+    {
       "key": "--mptk-control-h-sm",
       "label": "控件高度 SM",
       "group": "base",
@@ -246,6 +246,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "48px",
       "unit": "px",
       "note": "control-h-lg",
+    },
+    {
+      "key": "--mptk-control-h-xl",
+      "label": "控件高度 XL",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "56px",
+      "unit": "px",
+      "note": "control-h-xl",
     },
     {
       "key": "--mptk-font-xs",
@@ -1814,6 +1823,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "c-switch-icon-ratio",
     },
     {
+      "key": "--mptk-c-switch-w-xs",
+      "label": "c-switch-w-xs",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "26px",
+      "unit": "px",
+      "note": "c-switch-w-xs",
+    },
+    {
+      "key": "--mptk-c-switch-h-xs",
+      "label": "c-switch-h-xs",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "16px",
+      "unit": "px",
+      "note": "c-switch-h-xs",
+    },
+    {
       "key": "--mptk-c-switch-w-sm",
       "label": "c-switch-w-sm",
       "group": "component",
@@ -1866,6 +1893,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "32px",
       "unit": "px",
       "note": "c-switch-h-lg",
+    },
+    {
+      "key": "--mptk-c-switch-w-xl",
+      "label": "c-switch-w-xl",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "62px",
+      "unit": "px",
+      "note": "c-switch-w-xl",
+    },
+    {
+      "key": "--mptk-c-switch-h-xl",
+      "label": "c-switch-h-xl",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "38px",
+      "unit": "px",
+      "note": "c-switch-h-xl",
     },
     {
       "key": "--mptk-c-seg-inset",

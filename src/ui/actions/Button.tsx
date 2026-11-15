@@ -5,7 +5,7 @@ import { isThenable, isSuccess } from '../../runtime/thenable.js'
 import { CONTROL_SIZE_DEFAULT } from '../../design/index.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*，与 Switch / Segmented / Input 同轴。 */
-export type ButtonSize = 'sm' | 'md' | 'lg'
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 /**
  * 圆角档：不传就用 `--mptk-control-radius`（库内控件统一圆角），

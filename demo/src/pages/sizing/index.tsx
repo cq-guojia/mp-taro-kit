@@ -9,7 +9,7 @@ import { KIT_CONFIG_BY_KEY } from '../../kit-config.generated'
 const configValue = (key: string) => KIT_CONFIG_BY_KEY[key]?.value ?? ''
 const pxOf = (key: string) => configValue(key).replace(/px$/, '')
 
-const HEIGHT_TIERS = ['sm', 'md', 'lg'].map((tier) => ({
+const HEIGHT_TIERS = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl'].map((tier) => ({
   tier,
   px: pxOf(`--mptk-control-h-${tier}`),
 }))
@@ -27,13 +27,13 @@ const SIZE_GROUPS = [
   { title: '圆角', items: RADIUS_TIERS.map((tier) => `${tier} ${pxOf(`--mptk-radius-${tier}`)}`) },
 ]
 
-/** 尺寸：控件高度三档，及其余不随明暗变化的档位。 */
+/** 尺寸：控件高度五档，及其余不随明暗变化的档位。 */
 export default function SizingPage() {
   const render = (id: string) => {
     if (id === 'control-height') {
       return (
         <View>
-          <Text className="demo-note">控件高度三档，对齐 WeUI 按钮高度；承载文字的控件用 size 选档，调用点不自定高度。</Text>
+          <Text className="demo-note">高度刻度六档：中三档对齐 WeUI 按钮高度，两端各延一档。xxs（16）只给展示类标签填，可点控件从 xs 起；标签与控件同名档必然等高。</Text>
           <View className="demo-rulers">
             {HEIGHT_TIERS.map((item) => (
               <View key={item.tier} className="demo-ruler">

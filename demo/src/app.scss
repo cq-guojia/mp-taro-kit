@@ -402,10 +402,19 @@ page {
   margin-right: var(--mptk-space-3);
 }
 
+/* 标尺是控件高度的示意条，圆角跟控件走同一个语义变量，不另选档位。 */
 .demo-ruler__bar {
   background-color: var(--mptk-control-active);
-  border-radius: var(--mptk-radius-sm);
+  border-radius: var(--mptk-control-radius);
   width: var(--mptk-c-demo-ruler-bar-w);
+}
+
+.demo-ruler__bar--xxs {
+  height: var(--mptk-control-h-xxs);
+}
+
+.demo-ruler__bar--xs {
+  height: var(--mptk-control-h-xs);
 }
 
 .demo-ruler__bar--sm {
@@ -418,6 +427,10 @@ page {
 
 .demo-ruler__bar--lg {
   height: var(--mptk-control-h-lg);
+}
+
+.demo-ruler__bar--xl {
+  height: var(--mptk-control-h-xl);
 }
 
 .demo-ruler__label {

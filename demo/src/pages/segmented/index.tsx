@@ -36,6 +36,14 @@ export default function SegmentedPage() {
     if (id === 'segmented-size') {
       return (
         <View className="demo-stack">
+          <Text className="demo-note">xs（总高 24）</Text>
+          <Segmented
+            className="demo-item"
+            items={FILTER_ITEMS}
+            value={filter}
+            size="xs"
+            onChange={(next) => { setFilter(next) }}
+          />
           <Text className="demo-note">sm（总高 32）</Text>
           <Segmented
             className="demo-item"
@@ -58,6 +66,14 @@ export default function SegmentedPage() {
             items={FILTER_ITEMS}
             value={filter}
             size="lg"
+            onChange={(next) => { setFilter(next) }}
+          />
+          <Text className="demo-note">xl（总高 56）</Text>
+          <Segmented
+            className="demo-item"
+            items={FILTER_ITEMS}
+            value={filter}
+            size="xl"
             onChange={(next) => { setFilter(next) }}
           />
         </View>

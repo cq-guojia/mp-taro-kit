@@ -1,5 +1,5 @@
 /* Switch：外观照微信原生 switch（Taro UI 的 AtSwitch 本体就是它）。
-   圆形形态三档只换 --mptk-switch-track-* 与根高，比例统一按官方的 52:32；
+   圆形形态五档只换 --mptk-switch-track-* 与根高，比例统一按官方的 52:32；
    方形形态不复用这个比例，格子边长由「1em 内容 + 四边同值内边距」推导（见 --block 段）。
    默认选中态用官方绿，滑块带投影 —— 明色关态的白滑块靠投影才有边界，否则看着是空的。
    颜色一律取控件主色轴，不蹭会被宿主定制的业务色变量。 */
@@ -13,6 +13,12 @@
   align-items: center;
   display: inline-flex;
   height: var(--mptk-control-h-md);
+}
+
+.mptk-switch--xs {
+  --mptk-switch-track-w: var(--mptk-c-switch-w-xs);
+  --mptk-switch-track-h: var(--mptk-c-switch-h-xs);
+  height: var(--mptk-control-h-xs);
 }
 
 .mptk-switch--sm {
@@ -31,6 +37,12 @@
   --mptk-switch-track-w: var(--mptk-c-switch-w-lg);
   --mptk-switch-track-h: var(--mptk-c-switch-h-lg);
   height: var(--mptk-control-h-lg);
+}
+
+.mptk-switch--xl {
+  --mptk-switch-track-w: var(--mptk-c-switch-w-xl);
+  --mptk-switch-track-h: var(--mptk-c-switch-h-xl);
+  height: var(--mptk-control-h-xl);
 }
 
 .mptk-switch--blue { --mptk-control-active: var(--mptk-control-blue); }
@@ -133,13 +145,27 @@
   --mptk-switch-cell-box: var(--mptk-font-sm);
 }
 
-/* 最小号的内边距只有 4px，图标若和内容盒同尺寸会把 12px 的滑块整块盖住（真机看着就是「图标太大」）。
+/* 小号内边距只有 4px，图标若和内容盒同尺寸会把 12px 的滑块整块盖住（真机看着就是「图标太大」）。
    内容字号比内容盒小一号（2px）：图标缩到 10px，格子仍按 12 + 8 = 20px 推导，正方形不变。
    写差值而不是绝对值，宿主改字号 token 时一起跟着走。 */
 .mptk-switch--block.mptk-switch--sm {
   --mptk-switch-cell-pad: var(--mptk-space-1);
   --mptk-switch-cell-box: var(--mptk-font-xs);
   --mptk-switch-cell-content: calc(var(--mptk-switch-cell-box) - 2px);
+}
+
+/* 最小档再收一档内边距（8px → 4px 的一半），格子 16px 仍小于 24px 的档位根高：
+   档位之间必须真的长不一样，否则 xs / sm 只是一条根高差异，格子里看不出档。 */
+.mptk-switch--block.mptk-switch--xs {
+  --mptk-switch-cell-pad: var(--mptk-space-0);
+  --mptk-switch-cell-box: var(--mptk-font-xs);
+  --mptk-switch-cell-content: calc(var(--mptk-switch-cell-box) - 2px);
+}
+
+/* 特大档把内边距放到 space-4，格子 15 + 32 = 47px，仍落在 56px 根高内。 */
+.mptk-switch--block.mptk-switch--xl {
+  --mptk-switch-cell-pad: var(--mptk-space-4);
+  --mptk-switch-cell-box: var(--mptk-font-md);
 }
 
 /* 方形轨道取最小档 xs（4px）：8px 在 32px 高的块上已经有药丸感，看着不够方。

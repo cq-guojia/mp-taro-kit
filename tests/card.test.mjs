@@ -407,7 +407,8 @@ test('演示站圆角与字号全走抽象档位，不手写值', () => {
   assert.doesNotMatch(scss, /font-size:\s*\d+px/, '演示站不许手写 font-size')
   assert.doesNotMatch(scss, /\bline-height:\s*1\s*;/, '演示站不许手写 line-height: 1')
   for (const hit of scss.matchAll(/border-radius:\s*([^;]+);/g)) {
-    assert.match(hit[1], /var\(--mptk-radius-/, `演示站圆角必须取档位：${hit[1]}`)
+    /* 档位，或指向档位的语义变量（控件默认圆角）：演示站示意条要与控件同形。 */
+    assert.match(hit[1], /var\(--mptk-(radius|control-radius)/, `演示站圆角必须取档位：${hit[1]}`)
   }
   assert.match(scss, /font-size:\s*var\(--mptk-font-display\)/, '展示级字号要取档位')
   const tokens = read('../src/design/_tokens.scss')

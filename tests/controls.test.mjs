@@ -12,9 +12,12 @@ function exists(relative) {
   return existsSync(new URL(relative, import.meta.url))
 }
 
-const TIERS = [['sm', 32], ['md', 40], ['lg', 48]]
+/* 高度刻度六档：中三档是 WeUI 的 32 / 40 / 48，两端各延一档 16 / 24 / 56。
+   xxs 只对展示类标签开放，可点控件从 xs 起（16px 低于最小可点目标）。 */
+const TIERS = [['xxs', 16], ['xs', 24], ['sm', 32], ['md', 40], ['lg', 48], ['xl', 56]]
+const CLICKABLE = TIERS.filter(([tier]) => tier !== 'xxs')
 
-test('控件高度只写一处，四份主题产物都是官方 WeUI 的 32 / 40 / 48', () => {
+test('高度刻度只写一处，四份主题产物是 16 / 24 / 32 / 40 / 48 / 56', () => {
   for (const mode of ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']) {
     const css = read(`../dist/styles/${mode}.css`)
     for (const [tier, px] of TIERS) {
@@ -33,14 +36,14 @@ test('控件高度只写一处，四份主题产物都是官方 WeUI 的 32 / 40
   }
 })
 
-test('Switch 与 Segmented 三档总高逐档等于 token，根规则不叠加上下内边距', () => {
+test('Switch 与 Segmented 五档总高逐档等于 token，根规则不叠加上下内边距', () => {
   for (const [dir, base] of [['switch', 'mptk-switch'], ['segmented', 'mptk-seg']]) {
     const css = read(`../dist/ui/form/${dir}/style/index.css`)
     const root = new RegExp(`\\.${base}\\s*\\{([^}]*)\\}`).exec(css)
     assert.ok(root, `${dir} 缺根规则`)
     assert.match(root[1], /height:\s*var\(--mptk-control-h-md\)/, `${dir} 默认档必须是 md（40）`)
     assert.doesNotMatch(css, /padding-(top|bottom):/, `${dir} 总高不许由上下内边距叠加`)
-    for (const [tier] of TIERS) {
+    for (const [tier] of CLICKABLE) {
       const rule = new RegExp(`\\.${base}--${tier}\\s*\\{([^}]*)\\}`).exec(css)
       assert.ok(rule, `${dir} 缺 ${tier} 档规则`)
       assert.match(rule[1], new RegExp(`height:\\s*var\\(--mptk-control-h-${tier}\\)`), `${dir} ${tier} 档没吃对应 token`)
@@ -74,14 +77,14 @@ test('控件圆角统一走语义变量，容器统一降一号', () => {
   assert.doesNotMatch(cell, /border-(top|bottom)-(left|right)-radius:\s*var\(--mptk-radius-md\)/, 'Cell 不许留在 md')
 })
 
-test('Button 三档总高逐档等于 token，靠 height 不靠上下内边距', () => {
+test('Button 五档总高逐档等于 token，靠 height 不靠上下内边距', () => {
   const css = read('../dist/ui/actions/style/index.css')
   const root = /\.mptk-btn\s*\{([^}]*)\}/.exec(css)
   assert.ok(root, '缺 .mptk-btn 根规则')
   assert.match(root[1], /box-sizing:\s*border-box/, '固定高度必须盒模型含边框')
   assert.match(root[1], /height:\s*var\(--mptk-control-h-md\)/, '默认档必须是 md（40）')
   assert.doesNotMatch(root[1], /padding-(top|bottom)/, '总高不许由上下内边距叠加')
-  for (const tier of ['sm', 'md', 'lg']) {
+  for (const [tier] of CLICKABLE) {
     const rule = new RegExp(`\\.mptk-btn--${tier}\\s*\\{([^}]*)\\}`).exec(css)
     assert.ok(rule, `缺 .mptk-btn--${tier}`)
     assert.match(rule[1], new RegExp(`height:\\s*var\\(--mptk-control-h-${tier}\\)`), `${tier} 档没吃对应 token`)
@@ -197,7 +200,7 @@ test('方形开关每侧是正方形：四边同一个内边距，边长 = 1em +
   assert.doesNotMatch(track[1], /--mptk-switch-track-h/, '方形态不许再吃圆形开关的 52:32 定高')
 })
 
-test('方形态三档只换内边距与字号两个 token，格子按档递增且不超档位根高', () => {
+test('方形态五档只换内边距与字号两个 token，格子按档递增且不超档位根高', () => {
   const css = read('../dist/ui/form/switch/style/index.css')
   const pick = (selector) => {
     const hit = new RegExp(`${selector.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`).exec(css)
@@ -205,9 +208,11 @@ test('方形态三档只换内边距与字号两个 token，格子按档递增�
     return hit[1]
   }
   const tiers = [
+    ['xs', '.mptk-switch--block.mptk-switch--xs', 'space-0', 'font-xs', 24],
     ['sm', '.mptk-switch--block.mptk-switch--sm', 'space-1', 'font-xs', 32],
     ['md', '.mptk-switch--block.mptk-switch--md', 'space-2', 'font-sm', 40],
     ['lg', '.mptk-switch--block', 'space-3', 'font-md', 48],
+    ['xl', '.mptk-switch--block.mptk-switch--xl', 'space-4', 'font-md', 56],
   ]
   const tokens = read('../dist/styles/theme-light.css')
   const px = (name) => {
@@ -225,19 +230,21 @@ test('方形态三档只换内边距与字号两个 token，格子按档递增�
     cells.push(cell)
   }
   assert.deepEqual(cells, [...cells].sort((a, b) => a - b), '格子必须随档递增')
-  assert.equal(new Set(cells).size, cells.length, '三档格子不许一样大，否则档位没区分')
+  assert.equal(new Set(cells).size, cells.length, '五档格子不许一样大，否则档位没区分')
 })
 
-test('最小号图标比内容盒小一号，格子不跟着缩', () => {
+test('最小两档的图标比内容盒小一号，格子不跟着缩', () => {
   const css = read('../dist/ui/form/switch/style/index.css')
-  const sm = /\.mptk-switch--block\.mptk-switch--sm\s*\{([^}]*)\}/.exec(css)
-  assert.ok(sm, '缺 sm 档覆盖')
-  assert.match(sm[1], /--mptk-switch-cell-box:\s*var\(--mptk-font-xs\)/, 'sm 内容盒取 font-xs')
-  assert.match(
-    sm[1],
-    /--mptk-switch-cell-content:\s*calc\(var\(--mptk-switch-cell-box\) - 2px\)/,
-    'sm 字符字号要比内容盒小一号，且写成差值（宿主改 token 时跟着走）',
-  )
+  for (const tier of ['xs', 'sm']) {
+    const rule = new RegExp(`\\.mptk-switch--block\\.mptk-switch--${tier}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(rule, `缺 ${tier} 档覆盖`)
+    assert.match(rule[1], /--mptk-switch-cell-box:\s*var\(--mptk-font-xs\)/, `${tier} 内容盒取 font-xs`)
+    assert.match(
+      rule[1],
+      /--mptk-switch-cell-content:\s*calc\(var\(--mptk-switch-cell-box\) - 2px\)/,
+      `${tier} 字符字号要比内容盒小一号，且写成差值（宿主改 token 时跟着走）`,
+    )
+  }
   const tokens = read('../dist/styles/theme-light.css')
   const px = (name) => Number(new RegExp(`--mptk-${name}:\\s*(\\d+)px`).exec(tokens)[1])
   const box = px('font-xs')
@@ -245,9 +252,11 @@ test('最小号图标比内容盒小一号，格子不跟着缩', () => {
   const content = box - 2
   assert.ok(content < box, '缩号后字符必须真的更小')
   assert.ok(box + pad * 2 > content + pad * 2, '格子由内容盒撑住：缩字号只缩内容，格子高度不变')
-  const md = /\.mptk-switch--block\.mptk-switch--md\s*\{([^}]*)\}/.exec(css)
-  assert.ok(md, '缺 md 档规则')
-  assert.doesNotMatch(md[1], /--mptk-switch-cell-content:/, 'md 档不许单独缩字符，字符字号默认跟随内容盒')
+  for (const tier of ['md', 'xl']) {
+    const rule = new RegExp(`\\.mptk-switch--block\\.mptk-switch--${tier}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(rule, `缺 ${tier} 档规则`)
+    assert.doesNotMatch(rule[1], /--mptk-switch-cell-content:/, `${tier} 档不许单独缩字符，字符字号默认跟随内容盒`)
+  }
   const lg = /\.mptk-switch--block\s*\{([^}]*)\}/.exec(css)
   assert.ok(lg, '缺 lg 档规则')
   assert.match(
@@ -434,5 +443,59 @@ test('组件契约类型在宿主真类型环境下可作为 JSX 使用', () => 
   const segmentedDecl = read('../dist/ui/form/segmented/Segmented.d.ts')
   for (const name of ['SegmentedProps', 'SegmentedItem', 'SegmentedIndicator', 'count', 'description', 'color', 'ControlColor']) {
     assert.ok(segmentedDecl.includes(name), `Segmented.d.ts 缺 ${name}`)
+  }
+})
+
+test('Tag 高度吃同一套刻度：xxs / xs / sm / md 逐档等于 token', () => {
+  const css = read('../dist/ui/display/style/index.css')
+  const root = /\.mptk-tag\s*\{([^}]*)\}/.exec(css)
+  assert.ok(root, '缺 .mptk-tag 根规则')
+  assert.match(root[1], /min-height:\s*var\(--mptk-control-h-xs\)/, '标签默认档必须是 xs（24）')
+  assert.match(root[1], /line-height:\s*var\(--mptk-s-line-flat\)/, '靠 min-height 定高，行高必须压平')
+  assert.doesNotMatch(root[1], /padding-(top|bottom)/, '标签高度不许由上下内边距叠加')
+  for (const tier of ['xxs', 'sm', 'md']) {
+    const rule = new RegExp(`\\.mptk-tag--${tier}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(rule, `缺 .mptk-tag--${tier}`)
+    assert.match(
+      rule[1],
+      new RegExp(`min-height:\\s*var\\(--mptk-control-h-${tier}\\)`),
+      `${tier} 档没吃对应刻度 token`,
+    )
+  }
+})
+
+test('Tag 圆角三态：square 走默认变量、round 走 pill、mark 左直角右半圆', () => {
+  const css = read('../dist/ui/display/style/index.css')
+  assert.match(
+    css,
+    /\.mptk-tag--shape-round\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
+    'round 必须翻到 pill 档',
+  )
+  const mark = /\.mptk-tag--shape-mark\s*\{([^}]*)\}/.exec(css)
+  assert.ok(mark, '缺 mark 形态')
+  assert.match(mark[1], /border-top-left-radius:\s*var\(--mptk-radius-none\)/, 'mark 左上直角')
+  assert.match(mark[1], /border-bottom-left-radius:\s*var\(--mptk-radius-none\)/, 'mark 左下直角')
+  assert.match(mark[1], /border-top-right-radius:\s*var\(--mptk-radius-pill\)/, 'mark 右上半圆')
+  assert.match(mark[1], /border-bottom-right-radius:\s*var\(--mptk-radius-pill\)/, 'mark 右下半圆')
+  assert.doesNotMatch(css, /\.mptk-tag--round\s*\{/, '旧 round 类名必须换成 shape 类')
+  assert.doesNotMatch(css, /border-radius:\s*50%/, '不许用 50% 画半圆')
+  assert.match(read('../dist/ui/display/Tag.js'), /mptk-tag--shape-/, 'Tag 要把 shape 翻成类名')
+})
+
+test('档名与物理高度一一对应：可点控件不开放 xxs，标签不开放 lg / xl', () => {
+  for (const file of [
+    '../dist/ui/actions/Button.d.ts',
+    '../dist/ui/form/switch/Switch.d.ts',
+    '../dist/ui/form/segmented/Segmented.d.ts',
+  ]) {
+    const size = /Size = ([^\n]+)/.exec(read(file))?.[1] ?? ''
+    assert.doesNotMatch(size, /xxs/, `${file} 不许开放 xxs：16px 低于最小可点目标`)
+  }
+  const tagSize = /TagSize = ([^\n]+)/.exec(read('../dist/ui/display/Tag.d.ts'))?.[1] ?? ''
+  for (const tier of ['xxs', 'xs', 'sm', 'md']) {
+    assert.match(tagSize, new RegExp(`'${tier}'`), `Tag 缺 ${tier} 档`)
+  }
+  for (const tier of ['lg', 'xl']) {
+    assert.doesNotMatch(tagSize, new RegExp(`'${tier}'`), `Tag 不该开放 ${tier}：标签没这么大场景`)
   }
 })

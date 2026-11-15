@@ -71,19 +71,20 @@ export default {
     "--mptk-card-radius": "var(--mptk-radius-md)",                  // 卡片默认圆角：引用 radius-md
     "--mptk-card-spacing": "var(--mptk-space-3)",                   // 卡片内边距：引用 space-3
     "--mptk-tag-radius": "var(--mptk-radius-xs)",                   // 标签默认圆角：展示类语义变量，引用 radius-xs
-    "--mptk-tag-px": "var(--mptk-space-2)",                         // 标签左右内边距：引用 space-2
-    "--mptk-tag-py": "var(--mptk-space-1)",                         // 标签上下内边距：引用 space-1
-    "--mptk-tag-font": "var(--mptk-font-xs)",                       // 标签字号：引用 font-xs
-    "--mptk-tag-line": "var(--mptk-line-xs)",                       // 标签行高：引用 line-xs
+    "--mptk-tag-px": "var(--mptk-space-2)",                         // 标签默认档（xs）左右内边距：引用 space-2
+    "--mptk-tag-font": "var(--mptk-font-xs)",                       // 标签默认档（xs）字号：引用 font-xs
     "--mptk-divider-content-gap": "var(--mptk-space-3)",            // 分隔线文字左右间距：引用 space-3
     "--mptk-space-0": "2px",                                        // 间距 0 档：由小到大的统一留白节奏
     "--mptk-space-1": "4px",                                        // 间距 1 档：由小到大的统一留白节奏
     "--mptk-space-2": "8px",                                        // 间距 2 档：由小到大的统一留白节奏
     "--mptk-space-3": "12px",                                       // 间距 3 档：由小到大的统一留白节奏
     "--mptk-space-4": "16px",                                       // 间距 4 档：由小到大的统一留白节奏
+    "--mptk-control-h-xxs": "16px",                                 // 高度刻度最小档：只给展示类标签填，可点控件不开放
+    "--mptk-control-h-xs": "24px",                                  // 控件高度最小档：迷你按钮 / 行内收尾操作
     "--mptk-control-h-sm": "32px",                                  // 控件高度小档：与 WeUI 按钮三档一致
     "--mptk-control-h-md": "40px",                                  // 控件高度中档：与 WeUI 按钮三档一致
     "--mptk-control-h-lg": "48px",                                  // 控件高度大档：与 WeUI 按钮三档一致
+    "--mptk-control-h-xl": "56px",                                  // 控件高度特大档：主行动 / 落地页按钮
     "--mptk-font-xs": "12px",                                       // 字号最小档：与 line-xs 成对
     "--mptk-font-sm": "14px",                                       // 字号小档：与 line-sm 成对
     "--mptk-font-md": "15px",                                       // 字号中档：与 line-md 成对
@@ -270,12 +271,16 @@ export default {
     "--mptk-c-switch-inset": "2px",                                 // Switch 滑块距轨道的内缩
     "--mptk-c-switch-sm-offset": "2px",                             // Switch sm 档滑块位移补偿
     "--mptk-c-switch-icon-ratio": ".44",                            // Switch 图标字号 / 轨道高比例
-    "--mptk-c-switch-w-sm": "33px",                                 // Switch 小档宽度：三档几何尺寸
-    "--mptk-c-switch-h-sm": "20px",                                 // Switch 小档高度：三档几何尺寸
-    "--mptk-c-switch-w-md": "42px",                                 // Switch 中档宽度：三档几何尺寸
-    "--mptk-c-switch-h-md": "26px",                                 // Switch 中档高度：三档几何尺寸
-    "--mptk-c-switch-w-lg": "52px",                                 // Switch 大档宽度：三档几何尺寸
-    "--mptk-c-switch-h-lg": "32px",                                 // Switch 大档高度：三档几何尺寸
+    "--mptk-c-switch-w-xs": "26px",                                 // Switch 最小档宽度：五档几何尺寸，统一 52:32
+    "--mptk-c-switch-h-xs": "16px",                                 // Switch 最小档高度：五档几何尺寸，统一 52:32
+    "--mptk-c-switch-w-sm": "33px",                                 // Switch 小档宽度：五档几何尺寸
+    "--mptk-c-switch-h-sm": "20px",                                 // Switch 小档高度：五档几何尺寸
+    "--mptk-c-switch-w-md": "42px",                                 // Switch 中档宽度：五档几何尺寸
+    "--mptk-c-switch-h-md": "26px",                                 // Switch 中档高度：五档几何尺寸
+    "--mptk-c-switch-w-lg": "52px",                                 // Switch 大档宽度：五档几何尺寸
+    "--mptk-c-switch-h-lg": "32px",                                 // Switch 大档高度：五档几何尺寸
+    "--mptk-c-switch-w-xl": "62px",                                 // Switch 特大档宽度：五档几何尺寸
+    "--mptk-c-switch-h-xl": "38px",                                 // Switch 特大档高度：五档几何尺寸
     "--mptk-c-seg-inset": "3px",                                    // Segmented 选中块内缩
     "--mptk-c-seg-line-h": "2px",                                   // Segmented 下划线高度
     "--mptk-c-spinner-rotate-dur": ".8s",                           // Spinner 整圈旋转周期

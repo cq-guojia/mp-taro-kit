@@ -28,14 +28,25 @@ export default function SwitchPage() {
     if (id === 'switch-size') {
       return (
         <View className="demo-stack">
-          <Text className="demo-note">圆形：sm（33×20）/ md（42×26）/ lg（52×32）</Text>
+          <Text className="demo-note">圆形：xs（26×16）/ sm（33×20）/ md（42×26）/ lg（52×32）/ xl（62×38）</Text>
           <View className="demo-row">
+            <Switch className="demo-item" checked={on} size="xs" onChange={(next) => { setOn(next) }} />
             <Switch className="demo-item" checked={on} size="sm" onChange={(next) => { setOn(next) }} />
             <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
             <Switch className="demo-item" checked={on} size="lg" onChange={(next) => { setOn(next) }} />
+            <Switch className="demo-item" checked={on} size="xl" onChange={(next) => { setOn(next) }} />
           </View>
-          <Text className="demo-note">方形：sm（格子 20）/ md（格子 30）/ lg（格子 39）</Text>
+          <Text className="demo-note">方形：xs（格子 16）/ sm（格子 20）/ md（格子 30）/ lg（格子 39）/ xl（格子 47）</Text>
           <View className="demo-row">
+            <Switch
+              className="demo-item"
+              checked={blockOn}
+              shape="block"
+              size="xs"
+              offContent="关"
+              onContent="开"
+              onChange={(next) => { setBlockOn(next) }}
+            />
             <Switch
               className="demo-item"
               checked={blockOn}
@@ -59,6 +70,15 @@ export default function SwitchPage() {
               checked={blockOn}
               shape="block"
               size="lg"
+              offContent="关"
+              onContent="开"
+              onChange={(next) => { setBlockOn(next) }}
+            />
+            <Switch
+              className="demo-item"
+              checked={blockOn}
+              shape="block"
+              size="xl"
               offContent="关"
               onContent="开"
               onChange={(next) => { setBlockOn(next) }}

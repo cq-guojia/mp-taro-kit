@@ -27,7 +27,7 @@
 | `base` | object | 半径 / 间距 / 控件高三组档位必须严格递增且为 `px` | 布局基线、尺寸档、字号行高、动效时长与非颜色 token。 |
 | `surface` | object | 只由编译期三选一出口 include | 页面底色声明；运行时热切换出口不能 include，否则 `page` 写死底色、后代 `.mptk-dark` 无从覆盖。 |
 | `light` / `dark` | object | 两套键同名同数 | 语义色与颜色 token。 |
-| `component` | object | 值必须是字符串 | 组件原本写死的视觉取值：遮罩与层级、描边宽、滑块投影、Switch 三档几何、Spinner / Loader 时长与幅度。 |
+| `component` | object | 值必须是字符串 | 组件原本写死的视觉取值：遮罩与层级、描边宽、滑块投影、Switch 五档几何、Spinner / Loader 时长与幅度。 |
 | `structure` | object | 值必须是字符串 | 纯几何 / 算法结构常量：`0`、`100%`、`50%`、`flex-grow`、旋转、缩放、渐变角度、关键帧百分比、缓动关键字。 |
 | `runtime` | object | `toastDuration` / `notifyLimit` / `core.timeout` 必须 > 0；`controlSizeDefault` ∈ `sm\|md\|lg` | Toast 自动消失时长、通知队列上限、默认尺寸档、core 五项默认。 |
 | `window` | object | 明暗各四个字段 | 微信官方窗口主题；`theme.json` 由它生成，与 `--mptk-surface-base` 同源。 |

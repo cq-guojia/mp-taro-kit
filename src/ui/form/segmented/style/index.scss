@@ -28,6 +28,18 @@
   overflow: hidden;
 }
 
+/* 最小档 24px：段内留白与字号同步收到最小档，否则 14px 的字在 24px 轨道里顶满。 */
+.mptk-seg--xs {
+  --mptk-seg-item-pad: var(--mptk-space-2);
+  --mptk-seg-item-min: var(--mptk-control-h-xs);
+  height: var(--mptk-control-h-xs);
+}
+
+.mptk-seg--xs .mptk-seg__item {
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
 .mptk-seg--sm {
   --mptk-seg-item-pad: var(--mptk-space-3);
   --mptk-seg-item-min: var(--mptk-control-h-sm);
@@ -41,6 +53,11 @@
 }
 
 .mptk-seg--lg { height: var(--mptk-control-h-lg); }
+
+.mptk-seg--xl {
+  --mptk-seg-item-min: var(--mptk-control-h-xl);
+  height: var(--mptk-control-h-xl);
+}
 
 .mptk-seg--blue { --mptk-control-active: var(--mptk-control-blue); }
 .mptk-seg--green { --mptk-control-active: var(--mptk-control-green); }

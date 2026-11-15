@@ -1,4 +1,4 @@
-/* 高度吃 --mptk-control-h-* 三档，与 Switch / Segmented / 将来的 Input 同一套轴；
+/* 高度吃 --mptk-control-h-* 五档，与 Switch / Segmented / 将来的 Input 同一套轴；
    总高逐像素等于档位值，不再由上下内边距撑（那样各控件永远差一截）。
    圆角走语义变量 --mptk-control-radius，`radius` 参数只翻成类名，谁都不写像素。 */
 .mptk-btn {
@@ -16,6 +16,16 @@
   line-height: var(--mptk-line-lg);
 }
 
+/* 最小档给行内收尾操作用：24px 高配 12px 字，左右留白同步收到 space-3，
+   否则 16px 的横向留白会把迷你按钮撑成横条。 */
+.mptk-btn--xs {
+  height: var(--mptk-control-h-xs);
+  padding-right: var(--mptk-space-3);
+  padding-left: var(--mptk-space-3);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
 .mptk-btn--sm {
   height: var(--mptk-control-h-sm);
   font-size: var(--mptk-font-sm);
@@ -30,6 +40,11 @@
 
 .mptk-btn--lg {
   height: var(--mptk-control-h-lg);
+}
+
+/* 特大档只加高：字已经是最上面的 font-lg，再放大会抢主标题。 */
+.mptk-btn--xl {
+  height: var(--mptk-control-h-xl);
 }
 
 .mptk-btn--radius-sm { border-radius: var(--mptk-radius-sm); }
