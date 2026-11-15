@@ -69,6 +69,14 @@ export default function DisplayPage() {
         </CellGroup>
       )
     }
+    if (id === 'cell-value-size') {
+      return (
+        <CellGroup>
+          <Cell title="默认（xs）" value="与描述信息同档" label="描述信息" />
+          <Cell title="valueSize=sm" value="与标题同档" label="描述信息" valueSize="sm" />
+        </CellGroup>
+      )
+    }
     if (id === 'cell-icon') {
       return (
         <CellGroup>

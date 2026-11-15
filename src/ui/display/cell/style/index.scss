@@ -160,13 +160,19 @@
   margin-top: var(--mptk-space-0);
 }
 
+/* 右侧值是说明性文字：默认与 label 同档（xs），valueSize="sm" 才回到标题档。 */
 .mptk-cell__value {
   color: var(--mptk-fg-2);
   flex-shrink: var(--mptk-s-flex-shrink);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
   margin-left: var(--mptk-space-2);
   text-align: right;
+}
+
+.mptk-cell__value--sm {
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
 }
 
 /* 自身内部的内容居中；在整行里的位置交给根容器的 align-items，不写 align-self。 */

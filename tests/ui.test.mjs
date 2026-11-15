@@ -313,6 +313,7 @@ test('cell 组件级出口与样式出口齐全，子域 barrel 仍导出', () =
     'mptk-cell--clickable',
     'mptk-cell__divider',
     'mptk-cell__arrow--down',
+    'mptk-cell__value--sm',
   ]) {
     assert.ok(css.includes(`.${name}`), `样式缺 .${name}`)
   }
@@ -351,6 +352,25 @@ test('cell 三轴状态：点击态由 onClick 派生、isLink 纯视觉、disab
   assert.match(top.className, /mptk-cell--top/, 'center={false} 派生顶部对齐修饰类')
   assert.doesNotMatch(top.className, /mptk-cell--center/)
   assert.doesNotMatch(cellState.resolveCellState({}).className, /mptk-cell--top/, '不传 center 时不应顶部对齐')
+  assert.equal(cellState.resolveCellState({}).valueClassName, 'mptk-cell__value', '右侧值默认不带修饰类（小档）')
+  assert.equal(cellState.resolveCellState({ valueSize: 'xs' }).valueClassName, 'mptk-cell__value')
+  assert.equal(
+    cellState.resolveCellState({ valueSize: 'sm' }).valueClassName,
+    'mptk-cell__value mptk-cell__value--sm',
+    'valueSize="sm" 才派生放大档',
+  )
+})
+
+test('cell 右侧值默认与 label 同档（xs），valueSize="sm" 回到标题档', () => {
+  const css = read('../dist/ui/display/cell/style/index.css')
+  const value = css.match(/(?:^|\n)\.mptk-cell__value\s*\{([^}]*)\}/m)
+  assert.ok(value, '缺 .mptk-cell__value 规则')
+  assert.match(value[1], /font-size:\s*var\(--mptk-font-xs\)/, '右侧值是说明性文字，默认取 xs')
+  assert.match(value[1], /line-height:\s*var\(--mptk-line-xs\)/, '行高同档')
+  const sm = css.match(/(?:^|\n)\.mptk-cell__value--sm\s*\{([^}]*)\}/m)
+  assert.ok(sm, '缺 .mptk-cell__value--sm 规则')
+  assert.match(sm[1], /font-size:\s*var\(--mptk-font-sm\)/, 'sm 档取标题字号')
+  assert.match(sm[1], /line-height:\s*var\(--mptk-line-sm\)/, 'sm 档行高同档')
 })
 
 test('cell 垂直对齐两态：根容器统一驱动，装饰位不各自写 align-self', () => {
@@ -445,6 +465,7 @@ test('cell 菜单翻 ready，展示页覆盖 Vant Weapp 全部形态', () => {
     'cell-inset',
     'cell-with-card',
     'cell-size',
+    'cell-value-size',
     'cell-icon',
     'cell-link',
     'cell-navigate',
@@ -551,7 +572,7 @@ test('Cell 展示页按五组顺序铺开，分组标题只在组首出现', () 
   const expected = [
     ['一 · 容器形态', ['cell-basic', 'cell-inset', 'cell-group-title']],
     ['二 · 组级外观设置', ['cell-divider-tone', 'cell-card-frame']],
-    ['三 · 单格内容与排布', ['cell-size', 'cell-icon', 'cell-slot', 'cell-center', 'cell-link']],
+    ['三 · 单格内容与排布', ['cell-size', 'cell-value-size', 'cell-icon', 'cell-slot', 'cell-center', 'cell-link']],
     ['四 · 交互与状态', ['cell-navigate', 'cell-state']],
     ['五 · 与 Card 组合', ['cell-with-card']],
   ]

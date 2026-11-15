@@ -1,6 +1,6 @@
 import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
-import { resolveCellState, type CellArrowDirection, type CellSize } from './state.js'
+import { resolveCellState, type CellArrowDirection, type CellSize, type CellValueSize } from './state.js'
 
 export interface CellProps {
   /** 左侧标题，可给任意内容。 */
@@ -22,6 +22,8 @@ export interface CellProps {
   /** 是否画下分隔线；组内最后一格由 CellGroup 自动关掉。 */
   border?: boolean
   size?: CellSize
+  /** 右侧值字号：默认 `xs`，与 label 同档；`sm` 与标题同档。 */
+  valueSize?: CellValueSize
   /** 纯视觉：只控制箭头，不开启点击反馈。 */
   isLink?: boolean
   arrowDirection?: CellArrowDirection
@@ -43,6 +45,7 @@ export function Cell({
   center,
   border,
   size,
+  valueSize,
   isLink = false,
   arrowDirection,
   disabled = false,
@@ -53,6 +56,7 @@ export function Cell({
     center,
     border,
     size,
+    valueSize,
     isLink,
     arrowDirection,
     disabled,
@@ -73,7 +77,7 @@ export function Cell({
         {title !== undefined && <View className="mptk-cell__title">{title}</View>}
         {label !== undefined && <View className="mptk-cell__label">{label}</View>}
       </View>
-      {content !== undefined && <View className="mptk-cell__value">{content}</View>}
+      {content !== undefined && <View className={state.valueClassName}>{content}</View>}
       {extra !== undefined && <View className="mptk-cell__extra">{extra}</View>}
       {rightIcon !== undefined ? (
         <View className="mptk-cell__right-icon">{rightIcon}</View>

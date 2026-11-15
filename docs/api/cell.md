@@ -34,6 +34,7 @@
 | center | boolean | 否 | 默认 `true` | 整行垂直对齐：默认居中；`false` 改为顶部对齐 |
 | border | boolean | 否 | 默认 `true` | 是否画下分隔线；组内最后一格由 `CellGroup` 自动关掉 |
 | size | `'normal' \| 'large'` | 否 | 默认 `'normal'` | 单元格大小 |
+| valueSize | `'xs' \| 'sm'` | 否 | 默认 `'xs'` | 右侧值字号：`xs` 与 `label` 同档（12/17），`sm` 与标题同档（14/20） |
 | isLink | boolean | 否 | 默认 `false` | 纯视觉：只渲染右侧箭头，不派生点击态 |
 | arrowDirection | `'right' \| 'left' \| 'up' \| 'down'` | 否 | 默认 `'right'` | 箭头方向 |
 | disabled | boolean | 否 | 默认 `false` | 短路 `onClick` 与按压反馈，并置灰 |
@@ -47,7 +48,7 @@
 | 类名 | 说明 |
 |---|---|
 | `mptk-cell` | 单元格根；修饰类 `--center` / `--top` / `--large` / `--disabled` / `--divider` |
-| `mptk-cell__icon` / `__main` / `__title` / `__label` / `__value` / `__extra` / `__right-icon` / `__arrow` / `__divider` | 单元格内部结构 |
+| `mptk-cell__icon` / `__main` / `__title` / `__label` / `__value` / `__extra` / `__right-icon` / `__arrow` / `__divider` | 单元格内部结构；`__value` 带修饰类 `--sm` |
 | `mptk-cell-group` | 分组根；修饰类 `--inset` / `--flush` / `--in-card`（装在 Card 里自动派生），以及两个设置派生的 `--divider-match` / `--frameless` |
 | `mptk-cell-group__title` / `__body` / `__border` | 分组标题、内容区与上下外框 |
 
@@ -57,7 +58,7 @@
 - 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，不暴露 `clickable` prop。
 - 分隔线与上下外框都是独立 1px 元素；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。外框（卡片四边与通栏形态的上下外框）取 `--mptk-border`；组内分隔线默认取 `--mptk-cell-divider`，比外框浅一档（明色 `rgba(0,0,0,.06)`、暗色 `rgba(255,255,255,.06)`），两者宽度同为 1px。默认值真源在 `kit.config.mjs` 的 `light` / `dark`。
 - 两个控件级设置都走 `CellGroup` 的 props，由 `state.ts` 派生修饰类，使用者不写样式：`dividerTone="match"` 把内线切到 `--mptk-border`（与外框同色）；`frame={false}` 去掉卡片四边描边。默认值分别是 `soft` / `true`，即浅线、有边框。
-- 主标题取 `--mptk-font-sm`（14/20）、说明取 `--mptk-font-xs`（12/17）、说明上间距取 `--mptk-space-0`（2px）：字号与 Vant Weapp 的 14/12 持平，行高档位各自跟随；上间距比 WeUI / Vant 的 3～4px 再紧一档。
+- 主标题取 `--mptk-font-sm`（14/20）、说明与右侧值取 `--mptk-font-xs`（12/17）、说明上间距取 `--mptk-space-0`（2px）：字号与 Vant Weapp 的 14/12 持平，行高档位各自跟随；上间距比 WeUI / Vant 的 3～4px 再紧一档。右侧值是说明性文字，默认跟 `label` 同档；确需与标题等大时给 `valueSize="sm"`，不要用 className 改字号。
 - 垂直对齐默认居中（WeUI `.weui-cell` 与 TDesign `align="middle"` 的默认口径），由 `mptk-cell` 根的 `align-items: center` 实现；`center={false}` 派生 `mptk-cell--top` 改为整行顶部对齐，适用于多行 `label` 时右侧值要贴标题首行。整行只有根容器管对齐，图标位 / 额外位 / 箭头不各自写 `align-self`，两态下都不会出现「值贴顶、箭头仍居中」的错位。显式 `center` 只追加 `--center` 标记，与默认视觉一致。迁移：旧版 `center` 默认 `false`（顶部对齐），升级后要保留旧观感必须显式写 `center={false}`。不提供 `bottom` 档：单元格场景没有对应形态，不为一个没有真实用法的取值扩枚举。
 - 上下外框按边给：`border="top"` 只画上、`"bottom"` 只画下、`"both"` 两条、`"none"` 都不画；布尔 `true` / `false` 分别等于 `both` / `none`。不给时跟随上下文——通栏画上下，装在 `Card` 里不画（卡片已经提供壳）。这条对「卡片内列表想自己封一条上下线」是必须的：`<Card><CellGroup border="both">` 就长出上下两条。
 - 分隔线默认左右各留 `var(--mptk-space-4)`，不通到底；装在 `Card` 里时改由组统一内收，线回到两端对齐内容，避免缩进叠成两道。这属固定形态，不给开关。
@@ -109,6 +110,14 @@ export const Inset = () => (
 
 // 单元格大小
 export const Large = () => <Cell title="单元格" value="内容" size="large" label="描述信息" />
+
+// 右侧值字号：默认与 label 同档，valueSize="sm" 与标题同档
+export const ValueSize = () => (
+  <CellGroup>
+    <Cell title="单元格" value="内容" label="描述信息" />
+    <Cell title="单元格" value="内容" label="描述信息" valueSize="sm" />
+  </CellGroup>
+)
 
 // 展示图标
 export const WithIcon = () => (
@@ -195,3 +204,4 @@ export const State = () => (
 - 2026-11-14：`border` 改为按边给（`none` / `top` / `bottom` / `both`，兼容布尔），装在 Card 里也能显式画出上下线
 - 2026-11-14：`center` 默认改 `true`（整行垂直居中），`center={false}` 派生 `--top` 顶部对齐；装饰位不再各自写 `align-self`
 - 2026-11-15 00:20:59：默认值真源改为 kit.config.mjs
+- 2026-11-15：右侧值字号默认改 `xs`（与 label 同档，原为 `sm`），新增 `valueSize="sm"` 回到标题档

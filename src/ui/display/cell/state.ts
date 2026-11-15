@@ -1,12 +1,15 @@
 /** Cell / CellGroup 的状态与类名解析：零 React / Taro 依赖，自检可直接调用真实逻辑。 */
 
 export type CellSize = 'normal' | 'large'
+/** 右侧值的字号档：`xs` 与 label 同档（默认），`sm` 与标题同档。 */
+export type CellValueSize = 'xs' | 'sm'
 export type CellArrowDirection = 'right' | 'left' | 'up' | 'down'
 
 export interface CellStateInput {
   center?: boolean
   border?: boolean
   size?: CellSize
+  valueSize?: CellValueSize
   /** 只管箭头是否渲染，不参与点击态与类名派生。 */
   isLink?: boolean
   arrowDirection?: CellArrowDirection
@@ -18,6 +21,7 @@ export interface CellStateInput {
 export interface CellState {
   className: string
   hoverClassName: string
+  valueClassName: string
   arrowClassName: string
   clickable: boolean
   divider: boolean
@@ -37,6 +41,7 @@ export function resolveCellState(input: CellStateInput): CellState {
   return {
     className: names.join(' '),
     hoverClassName: clickable ? 'mptk-cell--clickable' : 'none',
+    valueClassName: `mptk-cell__value${input.valueSize === 'sm' ? ' mptk-cell__value--sm' : ''}`,
     arrowClassName: `mptk-cell__arrow mptk-cell__arrow--${input.arrowDirection ?? 'right'}`,
     clickable,
     divider,

@@ -402,6 +402,15 @@ export const pages: CatalogPage[] = [
         renderNotes: '',
       },
       {
+        id: 'cell-value-size',
+        section: '三 · 单格内容与排布',
+        title: '右侧值字号',
+        hint: '默认 xs，与 label 同档；valueSize="sm" 回到与标题同档',
+        usage: '<Cell title="单元格" value="内容" /><Cell title="单元格" value="内容" valueSize="sm" />',
+        imports: ['mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style'],
+        renderNotes: '右侧值是说明性文字，默认比标题小一档；字号只取 --mptk-font-xs / --mptk-font-sm 档位',
+      },
+      {
         id: 'cell-icon',
         section: '三 · 单格内容与排布',
         title: '展示图标',
