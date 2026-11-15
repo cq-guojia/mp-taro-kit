@@ -161,6 +161,7 @@ test('主题配置页：色值、默认值与标准色相名都和真源一致',
   assert.match(page, /from 'mp-taro-kit\/ui\/display\/cell'/, '列表用现成的 Cell，不手搓')
   assert.match(page, /mptk-\$\{[^}]*mode[^}]*\}/, '必须展示明暗两条色块')
   assert.match(page, /CONTROL_SIZE_DEFAULT/, '默认尺寸取常量，不硬编码')
+  assert.match(page, /radiusTierOf\('control-radius'\)/, '默认圆角档从语义键反查，改配置时页面自己跟随')
   for (const hue of ['blue', 'green', 'orange', 'red']) {
     assert.match(page, new RegExp(`lightName: '${hue}'`), `语义色没标出标准色相名：${hue}`)
   }

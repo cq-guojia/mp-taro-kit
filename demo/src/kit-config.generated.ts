@@ -1,4 +1,4 @@
-// @mptk-inputs:78857645c544
+// @mptk-inputs:78c2a875fc03
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -99,7 +99,7 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "控件圆角",
       "group": "base",
       "groupLabel": "基础尺寸",
-      "value": "var(--mptk-radius-sm)",
+      "value": "var(--mptk-radius-xs)",
       "unit": "",
       "note": "control-radius",
     },

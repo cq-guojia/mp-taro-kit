@@ -32,11 +32,18 @@ function configValue(group: string, token: string) {
   return KIT_CONFIG_ROWS.find((row) => row.group === group && row.key === `--mptk-${token}`)?.value ?? ''
 }
 
+/** 语义圆角键的值是 var(--mptk-radius-xx)：反查档位名，页面不写死默认档。 */
+function radiusTierOf(semantic: string) {
+  const value = configValue('base', semantic)
+  const tier = /var\(--mptk-radius-(xs|sm|md|lg|xl|pill|none)\)/.exec(value)?.[1]
+  return tier ? `${tier}（${configValue('base', `radius-${tier}`)}）` : value
+}
+
 /** 只列「不传时有默认值」的项；必须传的一律不列。 */
 const DEFAULT_ROWS = [
-  { name: '控件尺寸', label: 'Button / Switch / Segmented', value: `${CONTROL_SIZE_DEFAULT}（${configValue('base', 'control-h-md')}）` },
-  { name: '控件圆角', label: 'Button / Segmented', value: `sm（${configValue('base', 'radius-sm')}）` },
-  { name: '卡片圆角', label: 'Card', value: `md（${configValue('base', 'radius-md')}）` },
+  { name: '控件尺寸', label: 'Button / Switch / Segmented', value: `${CONTROL_SIZE_DEFAULT}（${configValue('base', `control-h-${CONTROL_SIZE_DEFAULT}`)}）` },
+  { name: '控件圆角', label: 'Button / Segmented', value: radiusTierOf('control-radius') },
+  { name: '卡片圆角', label: 'Card', value: radiusTierOf('card-radius') },
   { name: '图标字号', label: 'Icon', value: '跟随所在文字' },
 ]
 

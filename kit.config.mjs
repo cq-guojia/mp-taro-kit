@@ -67,7 +67,7 @@ export default {
     "--mptk-radius-xl": "20px",                                     // 圆角特大档：按档位递增，控件与卡片统一引用
     "--mptk-radius-pill": "999px",                                  // 圆角胶囊档：Switch / Badge 两端全圆
     "--mptk-radius-none": "0",                                      // 圆角零档：直角，用于通栏与分隔元素
-    "--mptk-control-radius": "var(--mptk-radius-sm)",               // 控件默认圆角：引用 radius-sm，改 sm 即全局跟随
+    "--mptk-control-radius": "var(--mptk-radius-xs)",               // 控件默认圆角：引用 radius-xs，改 xs 即全局跟随
     "--mptk-card-radius": "var(--mptk-radius-md)",                  // 卡片默认圆角：引用 radius-md
     "--mptk-card-spacing": "var(--mptk-space-3)",                   // 卡片内边距：引用 space-3
     "--mptk-space-0": "2px",                                        // 间距 0 档：由小到大的统一留白节奏

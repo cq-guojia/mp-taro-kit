@@ -51,11 +51,12 @@ test('Switch 与 Segmented 三档总高逐档等于 token，根规则不叠加�
 })
 
 test('控件圆角统一走语义变量，容器统一降一号', () => {
+  /* 期望值由真源递归解析成最终像素，改默认档时测试自己跟随，不写死档位名。 */
+  const expected = resolveCssVars('--mptk-control-radius: var(--mptk-control-radius)')
   for (const mode of ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']) {
-    assert.match(
-      read(`../dist/styles/${mode}.css`),
-      /--mptk-control-radius:\s*var\(--mptk-radius-sm\)/,
-      `${mode} 缺控件圆角语义变量`,
+    assert.ok(
+      resolveCssVars(read(`../dist/styles/${mode}.css`)).includes(expected),
+      `${mode} 的控件圆角没跟随配置真源`,
     )
   }
   const btn = read('../dist/ui/actions/style/index.css')
