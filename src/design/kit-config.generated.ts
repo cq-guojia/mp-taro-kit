@@ -1,4 +1,4 @@
-// @mptk-inputs:40f19d6ae1d5
+// @mptk-inputs:23fa685bbe45
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（design 层默认常量）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 

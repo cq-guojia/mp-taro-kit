@@ -464,22 +464,61 @@ test('Tag 高度吃同一套刻度：xxs / xs / sm / md 逐档等于 token', () 
   }
 })
 
-test('Tag 圆角三态：square 走默认变量、round 走 pill、mark 左直角右半圆', () => {
+test('Tag 圆角档与全库同名同值，mark 接管四角', () => {
   const css = read('../dist/ui/display/style/index.css')
-  assert.match(
-    css,
-    /\.mptk-tag--shape-round\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
-    'round 必须翻到 pill 档',
-  )
-  const mark = /\.mptk-tag--shape-mark\s*\{([^}]*)\}/.exec(css)
+  for (const tier of ['xs', 'sm', 'md', 'lg', 'xl', 'pill']) {
+    assert.match(
+      css,
+      new RegExp(`\\.mptk-tag--radius-${tier}\\s*\\{[^}]*border-radius:\\s*var\\(--mptk-radius-${tier}\\)`),
+      `${tier} 档没吃同名圆角 token`,
+    )
+  }
+  const mark = /\.mptk-tag--mark\s*\{([^}]*)\}/.exec(css)
   assert.ok(mark, '缺 mark 形态')
   assert.match(mark[1], /border-top-left-radius:\s*var\(--mptk-radius-none\)/, 'mark 左上直角')
   assert.match(mark[1], /border-bottom-left-radius:\s*var\(--mptk-radius-none\)/, 'mark 左下直角')
   assert.match(mark[1], /border-top-right-radius:\s*var\(--mptk-radius-pill\)/, 'mark 右上半圆')
   assert.match(mark[1], /border-bottom-right-radius:\s*var\(--mptk-radius-pill\)/, 'mark 右下半圆')
-  assert.doesNotMatch(css, /\.mptk-tag--round\s*\{/, '旧 round 类名必须换成 shape 类')
   assert.doesNotMatch(css, /border-radius:\s*50%/, '不许用 50% 画半圆')
-  assert.match(read('../dist/ui/display/Tag.js'), /mptk-tag--shape-/, 'Tag 要把 shape 翻成类名')
+  assert.match(read('../dist/ui/display/Tag.js'), /mptk-tag--radius-/, 'Tag 要把 radius 翻成类名')
+  assert.match(read('../dist/ui/display/Tag.d.ts'), /TagRadius/, 'd.ts 缺 TagRadius')
+})
+
+test('Tag 三种底色形态：soft 的边比底深，底色取语义浅色档', () => {
+  const css = read('../dist/ui/display/style/index.css')
+  const soft = /\.mptk-tag--soft\s*\{([^}]*)\}/.exec(css)
+  assert.ok(soft, '缺 soft 形态')
+  assert.match(soft[1], /background-color:\s*var\(--mptk-default-soft\)/, 'soft 默认浅底')
+  assert.match(soft[1], /border:\s*var\(--mptk-c-border-w\) solid var\(--mptk-gray-5\)/, 'soft 需要有描边')
+  for (const tone of ['primary', 'success', 'warning', 'danger']) {
+    const rule = new RegExp(`\\.mptk-tag--soft\\.mptk-tag--${tone}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(rule, `缺 soft ${tone}`)
+    const token = tone === 'primary' ? 'business' : tone
+    assert.match(rule[1], new RegExp(`background-color:\\s*var\\(--mptk-${token}-soft\\)`), `${tone} 浅底取语义浅色档`)
+    assert.match(rule[1], new RegExp(`border-color:\\s*var\\(--mptk-${token}\\)`), `${tone} 描边取语义色本身`)
+    assert.match(rule[1], new RegExp(`color:\\s*var\\(--mptk-${token}\\)`), `${tone} 文字取语义色本身`)
+  }
+  assert.match(css, /\.mptk-tag--outline\s*\{[^}]*border:\s*var\(--mptk-c-border-w\) solid var\(--mptk-border\)/, 'outline 需要常规描边')
+  assert.doesNotMatch(css, /\.mptk-tag\s*\{[^}]*border:/, 'solid 默认不占描边，否则实心块看着小一圈')
+  assert.match(read('../dist/ui/display/Tag.d.ts'), /TagVariant/, 'd.ts 缺 TagVariant')
+})
+
+test('Tag 纯图标必然是正方形：宽高都锁成档位高度、不加左右内边距', () => {
+  const css = read('../dist/ui/display/style/index.css')
+  const base = /\.mptk-tag--icon-only\s*\{([^}]*)\}/.exec(css)
+  assert.ok(base, '缺 icon-only 规则')
+  assert.match(base[1], /width:\s*var\(--mptk-control-h-xs\)/, '默认档宽度等于档位高度')
+  assert.match(base[1], /height:\s*var\(--mptk-control-h-xs\)/, '默认档高度等于档位高度')
+  assert.match(base[1], /padding-(right|left):\s*0/, '纯图标不加左右内边距')
+  assert.match(base[1], /flex:\s*none/, '挡住父容器 stretch')
+  for (const tier of ['xxs', 'sm', 'md']) {
+    const rule = new RegExp(`\\.mptk-tag--icon-only\\.mptk-tag--${tier}\\s*\\{([^}]*)\\}`).exec(css)
+    assert.ok(rule, `缺 icon-only ${tier}`)
+    assert.match(rule[1], new RegExp(`width:\\s*var\\(--mptk-control-h-${tier}\\)`), `${tier} 宽不等于档位高度`)
+    assert.match(rule[1], new RegExp(`height:\\s*var\\(--mptk-control-h-${tier}\\)`), `${tier} 高不等于档位高度`)
+  }
+  const js = read('../dist/ui/display/Tag.js')
+  assert.match(js, /mptk-tag--icon-only/, 'Tag 要按「无文字 + 有图标」自动转纯图标')
 })
 
 test('档名与物理高度一一对应：可点控件不开放 xxs，标签不开放 lg / xl', () => {

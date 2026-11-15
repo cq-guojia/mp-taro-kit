@@ -100,6 +100,7 @@
   font-size: var(--mptk-font-md);
 }
 
+/* solid：实心底 + 反白字，默认形态，不占描边（描边会让实心块看着小一圈）。 */
 .mptk-tag--primary {
   background-color: var(--mptk-business);
   color: var(--mptk-surface-1);
@@ -120,35 +121,111 @@
   color: var(--mptk-surface-1);
 }
 
-.mptk-tag--plain {
-  background-color: var(--mptk-surface-1);
+/* soft / outline：边比底深一档，中间是浅色而不是纯色。底取语义色自带的浅色档，
+   明暗两套主题各自有值（明 8% / 暗 12%），不用宿主另配。 */
+.mptk-tag--soft {
+  background-color: var(--mptk-default-soft);
+  border: var(--mptk-c-border-w) solid var(--mptk-gray-5);
   color: var(--mptk-fg-2);
 }
 
-.mptk-tag--plain.mptk-tag--primary {
+.mptk-tag--outline {
+  background-color: var(--mptk-surface-1);
+  border: var(--mptk-c-border-w) solid var(--mptk-border);
+  color: var(--mptk-fg-2);
+}
+
+.mptk-tag--soft.mptk-tag--primary {
+  background-color: var(--mptk-business-soft);
+  border-color: var(--mptk-business);
   color: var(--mptk-business);
 }
 
-.mptk-tag--plain.mptk-tag--success {
+.mptk-tag--soft.mptk-tag--success {
+  background-color: var(--mptk-success-soft);
+  border-color: var(--mptk-success);
   color: var(--mptk-success);
 }
 
-.mptk-tag--plain.mptk-tag--warning {
+.mptk-tag--soft.mptk-tag--warning {
+  background-color: var(--mptk-warning-soft);
+  border-color: var(--mptk-warning);
   color: var(--mptk-warning);
 }
 
-.mptk-tag--plain.mptk-tag--danger {
+.mptk-tag--soft.mptk-tag--danger {
+  background-color: var(--mptk-danger-soft);
+  border-color: var(--mptk-danger);
   color: var(--mptk-danger);
 }
 
-.mptk-tag--shape-round {
-  border-radius: var(--mptk-radius-pill);
+.mptk-tag--outline.mptk-tag--primary {
+  border-color: var(--mptk-business);
+  color: var(--mptk-business);
 }
 
-/* 单侧半圆：左侧直角、右侧半圆。四条边分开写，不押简写里的 var()。 */
-.mptk-tag--shape-mark {
+.mptk-tag--outline.mptk-tag--success {
+  border-color: var(--mptk-success);
+  color: var(--mptk-success);
+}
+
+.mptk-tag--outline.mptk-tag--warning {
+  border-color: var(--mptk-warning);
+  color: var(--mptk-warning);
+}
+
+.mptk-tag--outline.mptk-tag--danger {
+  border-color: var(--mptk-danger);
+  color: var(--mptk-danger);
+}
+
+/* 圆角档与全库同名同值；不传时仍吃 --mptk-tag-radius（默认 xs）。 */
+.mptk-tag--radius-xs { border-radius: var(--mptk-radius-xs); }
+.mptk-tag--radius-sm { border-radius: var(--mptk-radius-sm); }
+.mptk-tag--radius-md { border-radius: var(--mptk-radius-md); }
+.mptk-tag--radius-lg { border-radius: var(--mptk-radius-lg); }
+.mptk-tag--radius-xl { border-radius: var(--mptk-radius-xl); }
+.mptk-tag--radius-pill { border-radius: var(--mptk-radius-pill); }
+
+/* 单侧半圆：左侧直角、右侧半圆，接管四角。四条边分开写，不押简写里的 var()。 */
+.mptk-tag--mark {
   border-top-left-radius: var(--mptk-radius-none);
   border-top-right-radius: var(--mptk-radius-pill);
   border-bottom-right-radius: var(--mptk-radius-pill);
   border-bottom-left-radius: var(--mptk-radius-none);
+}
+
+/* 图标与文字之间的留白只加在「图标后面还有东西」的一侧，纯图标标签不加。 */
+.mptk-tag__icon:not(:last-child) {
+  margin-right: var(--mptk-space-1);
+}
+
+.mptk-tag__text + .mptk-tag__icon {
+  margin-left: var(--mptk-space-1);
+}
+
+/* 纯图标标签：宽高都锁成同档高度、左右内边距归零，必然是正方形；
+   flex: none 挡住父容器 stretch 把它拉长。 */
+.mptk-tag--icon-only {
+  flex: none;
+  width: var(--mptk-control-h-xs);
+  height: var(--mptk-control-h-xs);
+  padding-right: 0;
+  padding-left: 0;
+  justify-content: center;
+}
+
+.mptk-tag--icon-only.mptk-tag--xxs {
+  width: var(--mptk-control-h-xxs);
+  height: var(--mptk-control-h-xxs);
+}
+
+.mptk-tag--icon-only.mptk-tag--sm {
+  width: var(--mptk-control-h-sm);
+  height: var(--mptk-control-h-sm);
+}
+
+.mptk-tag--icon-only.mptk-tag--md {
+  width: var(--mptk-control-h-md);
+  height: var(--mptk-control-h-md);
 }

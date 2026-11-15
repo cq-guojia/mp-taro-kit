@@ -21,7 +21,7 @@ docs/                                               # 项目文档库入口
 │   ├── icons.md                                    # 平台项目与命名规则、类名契约、多色行为与字体加载稳定性
 │   ├── segmented.md                                # Segmented 的 items 契约、两种指示器与异步切换
 │   ├── switch.md                                   # Switch 的两种形状、五档尺寸与异步切换
-│   └── tag.md                                      # 标签的高度刻度与 size/shape 双轴、展示类圆角与 Badge 的边界
+│   └── tag.md                                      # 标签的高度刻度、底色形态、圆角档与图标规则，以及与 Badge 的边界
 ├── development/                                    # 本地开发、构建与验证约定
 │   └── build-and-test.md                           # 构建与自检顺序、工程约定，以及实机验证不在这套自检内的边界
 └── dependencies/                                   # 外部依赖的已核实行为与已知坑

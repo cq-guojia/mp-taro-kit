@@ -1,8 +1,21 @@
 import { Text, View } from '@tarojs/components'
 import { Tag } from 'mp-taro-kit/ui/display'
+import type { TagSize, TagType } from 'mp-taro-kit/ui/display'
 
 import 'mp-taro-kit/ui/display/style'
+/* 带图标的标签要用到 common.base 包的字形，字体样式得由宿主显式引一次。 */
+import 'mp-taro-kit/ui/icon/common/base/style'
 import { DemoPage } from '../../components/DemoBlock'
+
+const TYPES: TagType[] = ['default', 'primary', 'success', 'warning', 'danger']
+const TYPE_LABELS: Record<TagType, string> = {
+  default: '默认',
+  primary: '业务',
+  success: '成功',
+  warning: '警告',
+  danger: '危险',
+}
+const SIZES: TagSize[] = ['xxs', 'xs', 'sm', 'md']
 
 export default function TagPage() {
   const render = (id: string) => {
@@ -14,48 +27,100 @@ export default function TagPage() {
         </View>
       )
     }
+    if (id === 'tag-matrix') {
+      return (
+        <View>
+          {TYPES.map((type) => (
+            <View key={type} className="demo-row">
+              {SIZES.map((size) => (
+                <Tag key={size} className="demo-item" type={type} size={size}>
+                  {size}
+                </Tag>
+              ))}
+            </View>
+          ))}
+          <Text className="demo-note">五行五色 × 四列四档（16 / 24 / 32 / 40）；同名档与控件等高</Text>
+        </View>
+      )
+    }
     if (id === 'tag-type') {
       return (
         <View className="demo-row">
-          <Tag className="demo-item">默认</Tag>
-          <Tag className="demo-item" type="primary">业务</Tag>
-          <Tag className="demo-item" type="success">成功</Tag>
-          <Tag className="demo-item" type="warning">警告</Tag>
-          <Tag className="demo-item" type="danger">危险</Tag>
+          {TYPES.map((type) => (
+            <Tag key={type} className="demo-item" type={type}>
+              {TYPE_LABELS[type]}
+            </Tag>
+          ))}
         </View>
       )
     }
-    if (id === 'tag-plain') {
-      return (
-        <View className="demo-row">
-          <Tag className="demo-item" plain>默认</Tag>
-          <Tag className="demo-item" plain type="primary">业务</Tag>
-          <Tag className="demo-item" plain type="success">成功</Tag>
-          <Tag className="demo-item" plain type="warning">警告</Tag>
-          <Tag className="demo-item" plain type="danger">危险</Tag>
-        </View>
-      )
-    }
-    if (id === 'tag-size') {
+    if (id === 'tag-variant') {
       return (
         <View>
+          <Text className="demo-note">solid 实心（默认）</Text>
           <View className="demo-row">
-            <Tag className="demo-item" size="xxs">xxs 16</Tag>
-            <Tag className="demo-item" size="xs">xs 24</Tag>
-            <Tag className="demo-item" size="sm">sm 32</Tag>
-            <Tag className="demo-item" size="md">md 40</Tag>
+            {TYPES.map((type) => (
+              <Tag key={type} className="demo-item" type={type}>
+                {TYPE_LABELS[type]}
+              </Tag>
+            ))}
           </View>
-          <Text className="demo-note">同名档与控件等高：标签 xs 与 Button xs 都是 24</Text>
+          <Text className="demo-note">soft 浅底 + 同色描边：边深、底浅</Text>
+          <View className="demo-row">
+            {TYPES.map((type) => (
+              <Tag key={type} className="demo-item" type={type} variant="soft">
+                {TYPE_LABELS[type]}
+              </Tag>
+            ))}
+          </View>
+          <Text className="demo-note">outline 一级面 + 同色描边</Text>
+          <View className="demo-row">
+            {TYPES.map((type) => (
+              <Tag key={type} className="demo-item" type={type} variant="outline">
+                {TYPE_LABELS[type]}
+              </Tag>
+            ))}
+          </View>
         </View>
       )
     }
-    if (id === 'tag-shape') {
+    if (id === 'tag-radius') {
       return (
-        <View className="demo-row">
-          <Tag className="demo-item">小圆角</Tag>
-          <Tag className="demo-item" shape="round">两端半圆</Tag>
-          <Tag className="demo-item" shape="mark">单侧半圆</Tag>
-          <Tag className="demo-item" shape="round" plain type="primary">胶囊空心</Tag>
+        <View>
+          <Text className="demo-note">圆角档：xs（默认与 --mptk-control-radius 同值）/ sm / md / lg / xl / pill</Text>
+          <View className="demo-row">
+            <Tag className="demo-item">默认</Tag>
+            <Tag className="demo-item" radius="sm">sm</Tag>
+            <Tag className="demo-item" radius="md">md</Tag>
+            <Tag className="demo-item" radius="lg">lg</Tag>
+            <Tag className="demo-item" radius="xl">xl</Tag>
+            <Tag className="demo-item" radius="pill">pill</Tag>
+          </View>
+          <Text className="demo-note">mark：单侧半圆，左直角、右半圆</Text>
+          <View className="demo-row">
+            <Tag className="demo-item" mark>标记</Tag>
+            <Tag className="demo-item" mark type="primary">业务</Tag>
+            <Tag className="demo-item" mark type="warning">警告</Tag>
+          </View>
+        </View>
+      )
+    }
+    if (id === 'tag-icon') {
+      return (
+        <View>
+          <Text className="demo-note">前置 / 后置图标</Text>
+          <View className="demo-row">
+            <Tag className="demo-item" icon="common.base:xihuan">喜欢</Tag>
+            <Tag className="demo-item" iconAfter="common.base:jia">加一个</Tag>
+            <Tag className="demo-item" icon="common.base:info" type="primary" variant="soft">说明</Tag>
+          </View>
+          <Text className="demo-note">纯图标：宽高锁成同档高度，必然是正方形（xxs / xs / sm / md）</Text>
+          <View className="demo-row">
+            <Tag className="demo-item" size="xxs" icon="common.base:xihuan" />
+            <Tag className="demo-item" size="xs" icon="common.base:xihuan" />
+            <Tag className="demo-item" size="sm" icon="common.base:xihuan" />
+            <Tag className="demo-item" size="md" icon="common.base:xihuan" />
+          </View>
         </View>
       )
     }

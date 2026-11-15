@@ -1,4 +1,4 @@
-// @mptk-inputs:40f19d6ae1d5
+// @mptk-inputs:23fa685bbe45
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -232,6 +232,11 @@
   --mptk-success: #22c55e;
   --mptk-warning: #f59e0b;
   --mptk-danger: #ec1313;
+  --mptk-business-soft: var(--mptk-blue-soft);
+  --mptk-success-soft: var(--mptk-green-soft);
+  --mptk-warning-soft: var(--mptk-orange-soft);
+  --mptk-danger-soft: var(--mptk-red-soft);
+  --mptk-default-soft: var(--mptk-gray-1);
   --mptk-control-blue: #3b5bdb;
   --mptk-control-green: #22c55e;
   --mptk-control-orange: #f59e0b;
@@ -307,6 +312,11 @@
   --mptk-success: #34d399;
   --mptk-warning: #fbbf24;
   --mptk-danger: #ff5c5c;
+  --mptk-business-soft: var(--mptk-blue-soft);
+  --mptk-success-soft: var(--mptk-green-soft);
+  --mptk-warning-soft: var(--mptk-orange-soft);
+  --mptk-danger-soft: var(--mptk-red-soft);
+  --mptk-default-soft: var(--mptk-gray-3);
   --mptk-control-blue: #6b8afd;
   --mptk-control-green: #34d399;
   --mptk-control-orange: #fbbf24;

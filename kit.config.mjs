@@ -172,6 +172,12 @@ export default {
     "--mptk-success": "@green",                                     // 成功语义色
     "--mptk-warning": "@orange",                                    // 警告语义色
     "--mptk-danger": "@red",                                        // 危险语义色
+    // 语义浅底：与语义色一一对应（宿主换品牌色时同步换这两条，别让底和字打架）
+    "--mptk-business-soft": "var(--mptk-blue-soft)",                // 业务浅底：跟随业务主色
+    "--mptk-success-soft": "var(--mptk-green-soft)",                // 成功浅底：跟随成功色
+    "--mptk-warning-soft": "var(--mptk-orange-soft)",               // 警告浅底：跟随警告色
+    "--mptk-danger-soft": "var(--mptk-red-soft)",                   // 危险浅底：跟随危险色
+    "--mptk-default-soft": "var(--mptk-gray-1)",                    // 中性浅底：明色取最浅灰
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -244,6 +250,11 @@ export default {
     "--mptk-success": "@green",                                     // 成功语义色
     "--mptk-warning": "@orange",                                    // 警告语义色
     "--mptk-danger": "@red",                                        // 危险语义色
+    "--mptk-business-soft": "var(--mptk-blue-soft)",                // 业务浅底：跟随业务主色
+    "--mptk-success-soft": "var(--mptk-green-soft)",                // 成功浅底：跟随成功色
+    "--mptk-warning-soft": "var(--mptk-orange-soft)",               // 警告浅底：跟随警告色
+    "--mptk-danger-soft": "var(--mptk-red-soft)",                   // 危险浅底：跟随危险色
+    "--mptk-default-soft": "var(--mptk-gray-3)",                    // 中性浅底：暗色取 3 级灰才看得见
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值

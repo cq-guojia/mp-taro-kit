@@ -269,4 +269,4 @@ setThemeMode('auto', {
 - 2026-11-15 00:20:59：出口契约表改写真源
 - 2026-11-15 15:46:45：Card 出口补 CardVariant
 - 2026-11-15：控件高度出口由三档改五档，size 取值同步为 xs|sm|md|lg|xl
-- 2026-11-15：刻度补 xxs（16）成六档；Tag 出口补 TagSize / TagShape，Tag 取 xxs|xs|sm|md 子集
+- 2026-11-15：刻度补 xxs（16）成六档；Tag 出口补 TagSize / TagRadius / TagVariant，Tag 取 xxs|xs|sm|md 子集

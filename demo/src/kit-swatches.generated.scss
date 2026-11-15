@@ -1,4 +1,4 @@
-// @mptk-inputs:a9d46fbf2a4b
+// @mptk-inputs:a7cc14ff6341
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -180,6 +180,21 @@
   }
   .demo-swatch--danger {
     background-color: var(--mptk-danger);
+  }
+  .demo-swatch--business-soft {
+    background-color: var(--mptk-business-soft);
+  }
+  .demo-swatch--success-soft {
+    background-color: var(--mptk-success-soft);
+  }
+  .demo-swatch--warning-soft {
+    background-color: var(--mptk-warning-soft);
+  }
+  .demo-swatch--danger-soft {
+    background-color: var(--mptk-danger-soft);
+  }
+  .demo-swatch--default-soft {
+    background-color: var(--mptk-default-soft);
   }
   .demo-swatch--control-blue {
     background-color: var(--mptk-control-blue);
