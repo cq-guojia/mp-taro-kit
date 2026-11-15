@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261115-1225-1e43-重做-button-组件全套能力": {"category": null, "created": "2026-11-15 12:25:43", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-15 12:25:43", "status": "doing", "tags": ["Button", "组件重做", "UI规范", "演示站"], "title": "重做 Button 组件全套能力", "updated": "2026-11-15 15:36:23", "worklog": "worklog/202611/15-1225-1e43-重做-button-组件全套能力.md"}
+    "20261115-1225-1e43-重做-button-组件全套能力": {"category": null, "created": "2026-11-15 12:25:43", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-15 12:25:43", "status": "doing", "tags": ["Button", "组件重做", "UI规范", "演示站"], "title": "重做 Button 组件全套能力", "updated": "2026-11-15 16:00:24", "worklog": "worklog/202611/15-1225-1e43-重做-button-组件全套能力.md"}
   },
   "version": "20261022000000"
 }
