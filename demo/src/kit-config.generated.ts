@@ -1,4 +1,4 @@
-// @mptk-inputs:a7cc14ff6341
+// @mptk-inputs:5aba8b5acd2f
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -203,11 +203,20 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "space-4",
     },
     {
+      "key": "--mptk-control-h-3xs",
+      "label": "高度 3XS",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "16px",
+      "unit": "px",
+      "note": "control-h-3xs",
+    },
+    {
       "key": "--mptk-control-h-xxs",
       "label": "高度 XXS",
       "group": "base",
       "groupLabel": "基础尺寸",
-      "value": "16px",
+      "value": "20px",
       "unit": "px",
       "note": "control-h-xxs",
     },
@@ -255,6 +264,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "56px",
       "unit": "px",
       "note": "control-h-xl",
+    },
+    {
+      "key": "--mptk-font-3xs",
+      "label": "字号 3XS",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "10px",
+      "unit": "px",
+      "note": "font-3xs",
     },
     {
       "key": "--mptk-font-xs",
@@ -309,6 +327,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "17px",
       "unit": "px",
       "note": "font-nav",
+    },
+    {
+      "key": "--mptk-line-3xs",
+      "label": "行高 3XS",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "14px",
+      "unit": "px",
+      "note": "line-3xs",
     },
     {
       "key": "--mptk-line-xs",
@@ -1022,6 +1049,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "default-soft",
     },
     {
+      "key": "--mptk-tag-bg",
+      "label": "tag-bg",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "#969799",
+      "unit": "color",
+      "note": "tag-bg",
+    },
+    {
+      "key": "--mptk-tag-fg",
+      "label": "tag-fg",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "#fff",
+      "unit": "color",
+      "note": "tag-fg",
+    },
+    {
       "key": "--mptk-control-blue",
       "label": "control-blue",
       "group": "light",
@@ -1697,6 +1742,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "default-soft",
     },
     {
+      "key": "--mptk-tag-bg",
+      "label": "tag-bg",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "#626a75",
+      "unit": "color",
+      "note": "tag-bg",
+    },
+    {
+      "key": "--mptk-tag-fg",
+      "label": "tag-fg",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "#fff",
+      "unit": "color",
+      "note": "tag-fg",
+    },
+    {
       "key": "--mptk-control-blue",
       "label": "control-blue",
       "group": "dark",
@@ -2190,15 +2253,6 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "20px",
       "unit": "px",
       "note": "c-demo-swatch-sm-size",
-    },
-    {
-      "key": "--mptk-c-demo-swatch-bar-h",
-      "label": "c-demo-swatch-bar-h",
-      "group": "component",
-      "groupLabel": "组件视觉值",
-      "value": "22px",
-      "unit": "px",
-      "note": "c-demo-swatch-bar-h",
     },
     {
       "key": "--mptk-c-demo-swatch-bar-w",

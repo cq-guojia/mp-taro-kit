@@ -3,8 +3,8 @@ import type { ReactNode } from 'react'
 import { Icon } from './icon/Icon.js'
 
 export type TagType = 'default' | 'primary' | 'success' | 'warning' | 'danger'
-/** 高度档：与控件同一条刻度，`xxs`(16) 只对标签开放（低于最小可点目标）。 */
-export type TagSize = 'xxs' | 'xs' | 'sm' | 'md'
+/** 高度档：与控件同一条刻度，`3xs`(16) / `xxs`(20) 只对标签开放（低于最小可点目标）。 */
+export type TagSize = '3xs' | 'xxs' | 'xs' | 'sm' | 'md'
 /** 圆角档：与全库圆角档同名同值，`pill` 即两端半圆。 */
 export type TagRadius = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'pill'
 /**

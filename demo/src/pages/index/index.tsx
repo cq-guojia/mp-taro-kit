@@ -40,9 +40,9 @@ export default function IndexPage() {
         <Text className={`${DEMO_LOGO_CLASS} demo-hero__logo`} />
         <Text className="demo-hero__desc">基于 Taro + React 的小程序基础库</Text>
         <View className="demo-hero__meta">
-          <Tag className="demo-item" plain round type="primary">{__MTPK_RENDERER__}</Tag>
-          <Tag className="demo-item" plain round>{`v${__MTPK_VERSION__}`}</Tag>
-          <Tag className="demo-item" plain round>{__MTPK_BUILD_ID__}</Tag>
+          <Tag className="demo-item" size="3xs" radius="pill" type="primary">{__MTPK_RENDERER__}</Tag>
+          <Tag className="demo-item" size="3xs" radius="pill">{`v${__MTPK_VERSION__}`}</Tag>
+          <Tag className="demo-item" size="3xs" radius="pill">{__MTPK_BUILD_ID__}</Tag>
         </View>
       </View>
       <View className="demo-cards">

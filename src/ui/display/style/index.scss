@@ -68,33 +68,47 @@
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  min-height: var(--mptk-control-h-xs);
+  /* 当前档高度：档位类各自覆盖，半圆端的左右留白靠它按半径推算。 */
+  --mptk-tag-h: var(--mptk-control-h-xs);
+  min-height: var(--mptk-tag-h);
   padding-right: var(--mptk-tag-px);
   padding-left: var(--mptk-tag-px);
   border-radius: var(--mptk-tag-radius);
-  background-color: var(--mptk-gray-3);
-  color: var(--mptk-fg);
+  background-color: var(--mptk-tag-bg);
+  color: var(--mptk-tag-fg);
   font-size: var(--mptk-tag-font);
   line-height: var(--mptk-s-line-flat);
 }
 
-/* 16px 档只有标签填：12px 的字，左右各留 4px 才不显胖。 */
+/* 16px 档只有标签填：字要降到 font-3xs（10px），12px 在这个高度里会顶满上下。 */
+.mptk-tag--3xs {
+  --mptk-tag-h: var(--mptk-control-h-3xs);
+  min-height: var(--mptk-tag-h);
+  padding-right: var(--mptk-space-1);
+  padding-left: var(--mptk-space-1);
+  font-size: var(--mptk-font-3xs);
+}
+
+/* 20px 档：12px 的字在 20px 里能留出上下 4px，左右同 16px 档。 */
 .mptk-tag--xxs {
-  min-height: var(--mptk-control-h-xxs);
+  --mptk-tag-h: var(--mptk-control-h-xxs);
+  min-height: var(--mptk-tag-h);
   padding-right: var(--mptk-space-1);
   padding-left: var(--mptk-space-1);
   font-size: var(--mptk-font-xs);
 }
 
 .mptk-tag--sm {
-  min-height: var(--mptk-control-h-sm);
+  --mptk-tag-h: var(--mptk-control-h-sm);
+  min-height: var(--mptk-tag-h);
   padding-right: var(--mptk-space-3);
   padding-left: var(--mptk-space-3);
   font-size: var(--mptk-font-sm);
 }
 
 .mptk-tag--md {
-  min-height: var(--mptk-control-h-md);
+  --mptk-tag-h: var(--mptk-control-h-md);
+  min-height: var(--mptk-tag-h);
   padding-right: var(--mptk-space-4);
   padding-left: var(--mptk-space-4);
   font-size: var(--mptk-font-md);
@@ -215,6 +229,11 @@
   justify-content: center;
 }
 
+.mptk-tag--icon-only.mptk-tag--3xs {
+  width: var(--mptk-control-h-3xs);
+  height: var(--mptk-control-h-3xs);
+}
+
 .mptk-tag--icon-only.mptk-tag--xxs {
   width: var(--mptk-control-h-xxs);
   height: var(--mptk-control-h-xxs);
@@ -228,4 +247,18 @@
 .mptk-tag--icon-only.mptk-tag--md {
   width: var(--mptk-control-h-md);
   height: var(--mptk-control-h-md);
+}
+
+/* 半圆端是弧不是直角：同样 8px 内边距，放在直角上正好，放在弧上就贴边了 ——
+   弧从直边往里收掉一个半径，字必须退到弧里侧才不显挤。
+   所以弧端一侧的留白改按半径取（高度的一半），直角侧仍吃档位自己的内边距。
+   纯图标标签是正方形、宽度锁死高度，不参与。 */
+.mptk-tag--radius-pill:not(.mptk-tag--icon-only):not(.mptk-tag--mark) {
+  padding-right: calc(var(--mptk-tag-h) / 2);
+  padding-left: calc(var(--mptk-tag-h) / 2);
+}
+
+/* mark 只有右端是半圆，左侧保持直角档位留白。 */
+.mptk-tag--mark:not(.mptk-tag--icon-only) {
+  padding-right: calc(var(--mptk-tag-h) / 2);
 }

@@ -37,7 +37,7 @@ demo/                                               # 仓库内的 Taro 小程�
         ├── index/index.tsx                         # 目录页：主题三态装 Card（title + subtitle + Segmented）；menu 用 CellGroup 铺固定分组
         ├── theme-config/index.tsx                  # 主题配置：三张 Card 用 title 做标题、列表是不带标题的 CellGroup，色条上写色板名字
         ├── design-foundation/index.tsx             # 设计基础：中性灰阶、色相与明暗两套，独立成页
-        ├── sizing/index.tsx                        # 尺寸：高度刻度六档与其余档位，独立成页
+        ├── sizing/index.tsx                        # 尺寸：高度刻度七档与其余档位，独立成页
         ├── infra/index.tsx                         # src/ui/infra/：OverlayHost、SafeArea、use-store
         ├── actions/index.tsx                       # src/ui/actions/：Button
         ├── form/index.tsx                          # src/ui/form/：Switch，一页只放一个组件

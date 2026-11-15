@@ -1,4 +1,4 @@
-// @mptk-inputs:23fa685bbe45
+// @mptk-inputs:2fba3450b86c
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -32,18 +32,21 @@
   --mptk-space-2: 8px;
   --mptk-space-3: 12px;
   --mptk-space-4: 16px;
-  --mptk-control-h-xxs: 16px;
+  --mptk-control-h-3xs: 16px;
+  --mptk-control-h-xxs: 20px;
   --mptk-control-h-xs: 24px;
   --mptk-control-h-sm: 32px;
   --mptk-control-h-md: 40px;
   --mptk-control-h-lg: 48px;
   --mptk-control-h-xl: 56px;
+  --mptk-font-3xs: 10px;
   --mptk-font-xs: 12px;
   --mptk-font-sm: 14px;
   --mptk-font-md: 15px;
   --mptk-font-lg: 17px;
   --mptk-font-xl: 22px;
   --mptk-font-nav: 17px;
+  --mptk-line-3xs: 14px;
   --mptk-line-xs: 17px;
   --mptk-line-sm: 20px;
   --mptk-line-md: 22px;
@@ -103,7 +106,6 @@
   --mptk-c-switch-inset-2x: 4px;
   --mptk-c-demo-swatch-size: 48px;
   --mptk-c-demo-swatch-sm-size: 20px;
-  --mptk-c-demo-swatch-bar-h: 22px;
   --mptk-c-demo-swatch-bar-w: 62px;
   --mptk-c-demo-swatch-ink-black: #000000;
   --mptk-c-demo-swatch-ink-white: #ffffff;
@@ -237,6 +239,8 @@
   --mptk-warning-soft: var(--mptk-orange-soft);
   --mptk-danger-soft: var(--mptk-red-soft);
   --mptk-default-soft: var(--mptk-gray-1);
+  --mptk-tag-bg: #969799;
+  --mptk-tag-fg: #fff;
   --mptk-control-blue: #3b5bdb;
   --mptk-control-green: #22c55e;
   --mptk-control-orange: #f59e0b;
@@ -317,6 +321,8 @@
   --mptk-warning-soft: var(--mptk-orange-soft);
   --mptk-danger-soft: var(--mptk-red-soft);
   --mptk-default-soft: var(--mptk-gray-3);
+  --mptk-tag-bg: #626a75;
+  --mptk-tag-fg: #fff;
   --mptk-control-blue: #6b8afd;
   --mptk-control-green: #34d399;
   --mptk-control-orange: #fbbf24;

@@ -26,18 +26,19 @@
 
 | 档 | 高度 | 字号 | 左右内边距 | 说明 |
 |---|---|---|---|---|
-| `xxs` | 16（`--mptk-control-h-xxs`） | `--mptk-font-xs`（12） | `--mptk-space-1`（4） | 只对标签开放；16px 低于最小可点目标，可点控件不开放此档 |
+| `3xs` | 16（`--mptk-control-h-3xs`） | `--mptk-font-3xs`（10） | `--mptk-space-1`（4） | 最小档；12px 字在 16px 高里会顶满上下，所以字降到 10 |
+| `xxs` | 20（`--mptk-control-h-xxs`） | `--mptk-font-xs`（12） | `--mptk-space-1`（4） | 16 与 24 之间的过渡档；同样只对标签开放 |
 | `xs`（默认） | 24（`--mptk-control-h-xs`） | `--mptk-tag-font`（12） | `--mptk-tag-px`（8） | 与按钮 / 开关 / 分段 `xs` 等高 |
 | `sm` | 32（`--mptk-control-h-sm`） | `--mptk-font-sm`（14） | `--mptk-space-3`（12） | 与控件 `sm` 等高 |
 | `md` | 40（`--mptk-control-h-md`） | `--mptk-font-md`（15） | `--mptk-space-4`（16） | 与控件 `md` 等高；标签很少有这么大场景，保留备用 |
 
-高度用 `min-height` 吃刻度 token、`line-height` 压到 `--mptk-s-line-flat`，靠 `align-items: center` 居中——**上下不再有内边距参与撑高**。所以改字号不会把高度带跑，同档标签与控件并排必然齐平。
+高度用 `min-height` 吃刻度 token、`line-height` 压到 `--mptk-s-line-flat`，靠 `align-items: center` 居中——**上下不再有内边距参与撑高**。所以改字号不会把高度带跑，同档标签与控件并排必然齐平。`3xs` / `xxs` 两档低于最小可点目标（24），只对标签开放，可点控件不开放。
 
 ## 底色形态
 
 | variant | 底 | 描边 | 字 |
 |---|---|---|---|
-| `solid`（默认） | 语义色本身 | 无（实心块加描边会看着小一圈） | `--mptk-surface-1` |
+| `solid`（默认） | 语义色本身 | 无（实心块加描边会看着小一圈） | 语义色 type 取 `--mptk-surface-1`；`default` 取 `--mptk-tag-fg`（明暗两套都是白） |
 | `soft` | 语义浅色档（`--mptk-business-soft` 等） | 语义色本身 | 语义色本身 |
 | `outline` | `--mptk-surface-1` | 语义色本身 | 语义色本身 |
 
@@ -62,12 +63,14 @@
 
 纯图标不接宽度参数：方向就是「宽度 = 档位高度」。想让图标块更大，换 `size` 档，不要给宽度。
 
+图标是字体图标，字形走宿主引入的图标包样式（`mp-taro-kit/ui/icon/<命名空间>/<库名>/style`，基础包也可用聚合入口 `mp-taro-kit/ui/icon/style`）；没引样式时标签仍然排版正确，只是字形不显示。
+
 ## 参数 / 输入
 
 | 参数 | 类型 | 必填 | 默认 | 说明 |
 |---|---|---|---|---|
 | `type` | `TagType` | 否 | `'default'` | `'default' \| 'primary' \| 'success' \| 'warning' \| 'danger'` |
-| `size` | `TagSize` | 否 | `'xs'` | `'xxs' \| 'xs' \| 'sm' \| 'md'` |
+| `size` | `TagSize` | 否 | `'xs'` | `'3xs' \| 'xxs' \| 'xs' \| 'sm' \| 'md'` |
 | `variant` | `TagVariant` | 否 | `'solid'` | `'solid' \| 'soft' \| 'outline'` |
 | `radius` | `TagRadius` | 否 | 取 `--mptk-tag-radius` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'pill'` |
 | `mark` | boolean | 否 | `false` | 单侧半圆，接管四角 |
@@ -85,17 +88,20 @@
 | `--mptk-tag-radius` | `var(--mptk-radius-xs)` | 不传 `radius` 时的圆角 |
 | `--mptk-tag-px` | `var(--mptk-space-2)` | 默认档（`xs`）左右内边距 |
 | `--mptk-tag-font` | `var(--mptk-font-xs)` | 默认档（`xs`）字号 |
+| `--mptk-tag-bg` | 明 `gray-6` / 暗 `gray-6` | 默认（`default` + `solid`）实心底；页面底色是 `gray-2`，浅灰档会和背景糊成一片，取到 6 级才有可辨的块面 |
+| `--mptk-tag-fg` | 明 `#fff` / 暗 `#fff` | 默认（`default` + `solid`）实心字；深底必须反白，不能沿用全局 `--mptk-fg`。改 `--mptk-tag-bg` 时这条要一起看，底浅了白字就压不住 |
 | `--mptk-c-border-w` | `1px` | `soft` / `outline` 的描边宽 |
 | `--mptk-business-soft` / `-success-soft` / `-warning-soft` / `-danger-soft` / `-default-soft` | 指向对应色板的浅色档 | `soft` 形态的底 |
 
-高度不再有专属变量：直接引用 `--mptk-control-h-xxs / -xs / -sm / -md`。原先的 `--mptk-tag-py` / `--mptk-tag-line` 已删除——它们只用来「凑高度」，正是要根除的写法。
+高度不再有专属变量：直接引用 `--mptk-control-h-3xs / -xxs / -xs / -sm / -md`。原先的 `--mptk-tag-py` / `--mptk-tag-line` 已删除——它们只用来「凑高度」，正是要根除的写法。`3xs` 档的字号取 `--mptk-font-3xs`（10px），是字号轴新加的最小档。
 
 ## 与 Badge 的边界
 
-Badge 只做数字与红点，需要文字底衬就用 Tag。演示站首页的环境 / 版本标签与尺寸页的档位 chip 都走 Tag。
+Badge 只做数字与红点，需要文字底衬就用 Tag。演示站里：首页顶部的渲染器 / 版本号 / 构建号取 `3xs` + `radius="pill"` 的实心形态（渲染器走 `primary`，版本号 / 构建号走默认灰）；主题配置页「基础配置」里那两条明暗色条就是 `xs` 档的 Tag（底色由宿主 className 覆盖成对应 token）；尺寸页的档位 chip 走默认 `xs`。
 
 ## 更新日志
 
 - 2026-11-15 14:18:54：新增 Tag 标签：展示类圆角语义变量 --mptk-tag-radius，type / plain / round 三种形态
 - 2026-11-15：加 `size`（xxs / xs / sm / md，吃全库高度刻度，默认 xs）；高度改由 `min-height` 定，删除 `--mptk-tag-py` / `--mptk-tag-line`
 - 2026-11-15：`shape` 三态改为 `radius` 档位轴 + `mark` 布尔；新增 `variant`（solid / soft / outline）与语义浅色档 `--mptk-*-soft`；新增 `icon` / `iconAfter`，纯图标标签强制正方形
+- 2026-11-15：16px 档改名 `3xs` 并把字号降到 `--mptk-font-3xs`（10px）；空出的 `xxs` 给新增的 20px 档，标签尺寸变为 3xs / xxs / xs / sm / md

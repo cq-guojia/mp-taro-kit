@@ -115,7 +115,7 @@ test('尺寸标尺逐档吃控件高度 token，档位数值与真源一致', ()
   const generated = read('../demo/src/kit-config.generated.ts')
   const tokens = tokensOf()
   assert.match(page, /from '\.\.\/\.\.\/kit-config\.generated'/, '尺寸页必须读生成表，不许写死档位数值')
-  for (const tier of ['xxs', 'xs', 'sm', 'md', 'lg', 'xl']) {
+  for (const tier of ['3xs', 'xxs', 'xs', 'sm', 'md', 'lg', 'xl']) {
     const key = `--mptk-control-h-${tier}`
     const px = tokens[key]
     assert.match(

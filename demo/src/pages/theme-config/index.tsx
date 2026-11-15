@@ -2,9 +2,11 @@ import { View, Text } from '@tarojs/components'
 import { Card } from 'mp-taro-kit/ui/card'
 import { CONTROL_SIZE_DEFAULT } from 'mp-taro-kit/design'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
+import { Tag } from 'mp-taro-kit/ui/display'
 
 import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/cell/style'
+import 'mp-taro-kit/ui/display/style'
 import { DemoPage } from '../../components/DemoBlock'
 import { KIT_CONFIG_ROWS } from '../../kit-config.generated'
 
@@ -96,12 +98,13 @@ function Swatches({
         { mode: 'light', value: light, label: lightName },
         { mode: 'dark', value: dark, label: darkName },
       ].map((item) => (
-        <View
+        <Tag
           key={item.mode}
-          className={`mptk-${item.mode} demo-swatch demo-swatch--bar demo-swatch--${token}`}
+          size="xs"
+          className={`mptk-${item.mode} demo-swatch--bar demo-swatch--${token}`}
         >
           <Text className={`demo-swatch__ink demo-swatch__ink--${inkOf(item.value)}`}>{item.label}</Text>
-        </View>
+        </Tag>
       ))}
     </View>
   )

@@ -33,7 +33,7 @@ export default function SizingPage() {
     if (id === 'control-height') {
       return (
         <View>
-          <Text className="demo-note">高度刻度六档：中三档对齐 WeUI 按钮高度，两端各延一档。xxs（16）只给展示类标签填，可点控件从 xs 起；标签与控件同名档必然等高。</Text>
+          <Text className="demo-note">高度刻度七档：中三档对齐 WeUI 按钮高度，两端逐档外扩。3xs（16）/ xxs（20）只给展示类标签填，可点控件从 xs 起；标签与控件同名档必然等高。</Text>
           <View className="demo-rulers">
             {HEIGHT_TIERS.map((item) => (
               <View key={item.tier} className="demo-ruler">

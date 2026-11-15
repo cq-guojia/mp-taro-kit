@@ -15,7 +15,7 @@
 | `value` | `T extends string` | 是 | 应命中某个 `item.value` | 宿主真值；等待期间的临时显示值不会写回它 |
 | `onChange` | `(next: T) => unknown` | 否 | 返回 thenable 时进入等待态 | 点某段调用，`next` 是该段的 `value` |
 | `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主；组件不做回弹，位置从未变过 |
-| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | 否 | 默认 `md` | 取 `--mptk-control-h-*`；刻度六档中的可点五档 24 / 32 / 40 / 48 / 56（`xxs` 只对 Tag 开放） |
+| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | 否 | 默认 `md` | 取 `--mptk-control-h-*`；刻度七档中的可点五档 24 / 32 / 40 / 48 / 56（`3xs` / `xxs` 只对 Tag 开放） |
 | `width` | `'fit' \| 'ratio' \| 'equal'` | 否 | 默认 `fit` | 段宽策略：按内容撑开 / 内容 + 剩余均摊 / 严格等分，见下 |
 | `indicator` | `'thumb' \| 'line'` | 否 | 默认 `thumb` | 滑动块或频道切换式下划线 |
 | `radius` | `'pill'` | 否 | 无 | 半圆形态：容器与滑动块一起切到 `--mptk-radius-pill` |

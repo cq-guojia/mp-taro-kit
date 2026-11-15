@@ -3,8 +3,8 @@ import { Tag } from 'mp-taro-kit/ui/display'
 import type { TagSize, TagType } from 'mp-taro-kit/ui/display'
 
 import 'mp-taro-kit/ui/display/style'
-/* 带图标的标签要用到 common.base 包的字形，字体样式得由宿主显式引一次。 */
-import 'mp-taro-kit/ui/icon/common/base/style'
+/* 带图标的标签要用到图标字形，字体样式得由宿主显式引一次（聚合入口转发到基础包）。 */
+import 'mp-taro-kit/ui/icon/style'
 import { DemoPage } from '../../components/DemoBlock'
 
 const TYPES: TagType[] = ['default', 'primary', 'success', 'warning', 'danger']
@@ -15,7 +15,7 @@ const TYPE_LABELS: Record<TagType, string> = {
   warning: '警告',
   danger: '危险',
 }
-const SIZES: TagSize[] = ['xxs', 'xs', 'sm', 'md']
+const SIZES: TagSize[] = ['3xs', 'xxs', 'xs', 'sm', 'md']
 
 export default function TagPage() {
   const render = (id: string) => {

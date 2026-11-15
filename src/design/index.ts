@@ -2,10 +2,10 @@
 // design 层不运行时 import runtime（保持五层依赖方向），只读同层的生成物。
 
 /**
- * 全库高度刻度：档名与物理高度一一对应，见 `--mptk-control-h-*`（16 / 24 / 32 / 40 / 48 / 56）。
- * 可点控件的枚举是它的子集（不含 `xxs`）；展示类标签从 `xxs` 起。
+ * 全库高度刻度：档名与物理高度一一对应，见 `--mptk-control-h-*`（16 / 20 / 24 / 32 / 40 / 48 / 56）。
+ * 可点控件的枚举是它的子集（不含 `3xs` / `xxs`）；展示类标签从 `3xs` 起。
  */
-export type ControlSizeTier = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+export type ControlSizeTier = '3xs' | 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 /**
  * 承载文字的控件默认尺寸档：不传 `size` 时用这一档（见 `--mptk-control-h-md`）。

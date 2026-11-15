@@ -191,12 +191,9 @@ page {
   width: var(--mptk-c-demo-swatch-sm-size);
 }
 
-/* 主题配置页的色条：正好放下 6 位色值，值写在条上。 */
+/* 主题配置页的色条就是一个 Tag：高度、圆角、字与内边距全由 Tag 的 xs 档给，
+   这里只留宽度（等宽才排得整齐）与左右留白。 */
 .demo-swatch--bar {
-  align-items: center;
-  border-radius: var(--mptk-radius-xs);
-  display: flex;
-  height: var(--mptk-c-demo-swatch-bar-h);
   justify-content: center;
   margin-right: var(--mptk-space-1);
   margin-bottom: var(--mptk-s-zero);
@@ -204,12 +201,16 @@ page {
   width: var(--mptk-c-demo-swatch-bar-w);
 }
 
-/* 名字写不下就裁掉，不换行；标注字比正文小一档，只示意不细读。 */
+/* Tag 自带灰底，色条要的是 token 底色；两类选择器压过组件单类，别再各写一份颜色。 */
+.mptk-tag.demo-swatch--bar {
+  background-color: var(--mptk-swatch);
+}
+
+/* 名字写不下就裁掉，不换行。 */
 .demo-swatch__ink {
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
   overflow: hidden;
-  transform: var(--mptk-c-loader-scale);
   white-space: var(--mptk-s-white-space-nowrap);
 }
 
@@ -407,6 +408,10 @@ page {
   background-color: var(--mptk-control-active);
   border-radius: var(--mptk-control-radius);
   width: var(--mptk-c-demo-ruler-bar-w);
+}
+
+.demo-ruler__bar--3xs {
+  height: var(--mptk-control-h-3xs);
 }
 
 .demo-ruler__bar--xxs {

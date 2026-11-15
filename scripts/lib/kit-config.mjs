@@ -13,10 +13,10 @@ export const GENERATED_HEADER = (what) =>
  * 可点控件（Button / Switch / Segmented）只开放 xxs 以上的五档，xxs 仅供展示类标签使用：
  * 16px 低于最小可点目标，做按钮只能是个点不中的假档。
  */
-export const CONTROL_SIZE_TIERS = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl']
+export const CONTROL_SIZE_TIERS = ['3xs', 'xxs', 'xs', 'sm', 'md', 'lg', 'xl']
 
-/** 可点控件能填的档：xxs 低于最小可点目标，只留给 Tags 这类展示元素。 */
-export const CLICKABLE_SIZE_TIERS = CONTROL_SIZE_TIERS.filter((tier) => tier !== 'xxs')
+/** 可点控件能填的档：3xs / xxs 都低于最小可点目标，只留给 Tag 这类展示元素。 */
+export const CLICKABLE_SIZE_TIERS = CONTROL_SIZE_TIERS.filter((tier) => tier !== '3xs' && tier !== 'xxs')
 
 export const SENTINEL = {
   base: ['// @mptk-generated:base:start', '// @mptk-generated:base:end'],
@@ -272,12 +272,13 @@ const LABELS = {
   '--mptk-card-radius': '卡片圆角', '--mptk-card-spacing': '卡片分区间距',
   '--mptk-space-0': '间距 0', '--mptk-space-1': '间距 1', '--mptk-space-2': '间距 2',
   '--mptk-space-3': '间距 3', '--mptk-space-4': '间距 4',
-  '--mptk-control-h-xxs': '高度 XXS', '--mptk-control-h-xs': '控件高度 XS', '--mptk-control-h-sm': '控件高度 SM',
+  '--mptk-control-h-3xs': '高度 3XS', '--mptk-control-h-xxs': '高度 XXS',
+  '--mptk-control-h-xs': '控件高度 XS', '--mptk-control-h-sm': '控件高度 SM',
   '--mptk-control-h-md': '控件高度 MD', '--mptk-control-h-lg': '控件高度 LG',
   '--mptk-control-h-xl': '控件高度 XL',
-  '--mptk-font-xs': '字号 XS', '--mptk-font-sm': '字号 SM', '--mptk-font-md': '字号 MD',
+  '--mptk-font-3xs': '字号 3XS', '--mptk-font-xs': '字号 XS', '--mptk-font-sm': '字号 SM', '--mptk-font-md': '字号 MD',
   '--mptk-font-lg': '字号 LG', '--mptk-font-xl': '字号 XL', '--mptk-font-nav': '导航字号',
-  '--mptk-line-xs': '行高 XS', '--mptk-line-sm': '行高 SM', '--mptk-line-md': '行高 MD',
+  '--mptk-line-3xs': '行高 3XS', '--mptk-line-xs': '行高 XS', '--mptk-line-sm': '行高 SM', '--mptk-line-md': '行高 MD',
   '--mptk-line-lg': '行高 LG', '--mptk-line-xl': '行高 XL', '--mptk-line-nav': '导航行高',
   '--mptk-fg': '主要文字', '--mptk-fg-2': '次要文字', '--mptk-fg-3': '弱化文字', '--mptk-fg-4': '禁用文字',
   '--mptk-surface-1': '卡片面', '--mptk-surface-2': '次级面', '--mptk-surface-3': '下沉面',
@@ -339,7 +340,7 @@ export function renderHostSwatchesScss(config) {
     '\n// 类名与取值都从 kit.config.mjs 的 light 组派生；新增色相 / 档位 / 灰阶无需改样式或页面。\n' +
     '@mixin demo-swatches {\n' +
     names.map((name) =>
-      `  .demo-swatch--${name} {\n    background-color: var(--mptk-${name});\n  }\n`).join('') +
+      `  .demo-swatch--${name} {\n    --mptk-swatch: var(--mptk-${name});\n    background-color: var(--mptk-${name});\n  }\n`).join('') +
     '}\n'
 }
 

@@ -12,12 +12,12 @@ function exists(relative) {
   return existsSync(new URL(relative, import.meta.url))
 }
 
-/* 高度刻度六档：中三档是 WeUI 的 32 / 40 / 48，两端各延一档 16 / 24 / 56。
-   xxs 只对展示类标签开放，可点控件从 xs 起（16px 低于最小可点目标）。 */
-const TIERS = [['xxs', 16], ['xs', 24], ['sm', 32], ['md', 40], ['lg', 48], ['xl', 56]]
-const CLICKABLE = TIERS.filter(([tier]) => tier !== 'xxs')
+/* 高度刻度七档：中三档是 WeUI 的 32 / 40 / 48，两端逐档外扩 16 / 20 / 24 / 56。
+   3xs / xxs 只对展示类标签开放，可点控件从 xs 起（低于最小可点目标）。 */
+const TIERS = [['3xs', 16], ['xxs', 20], ['xs', 24], ['sm', 32], ['md', 40], ['lg', 48], ['xl', 56]]
+const CLICKABLE = TIERS.filter(([tier]) => tier !== '3xs' && tier !== 'xxs')
 
-test('高度刻度只写一处，四份主题产物是 16 / 24 / 32 / 40 / 48 / 56', () => {
+test('高度刻度只写一处，四份主题产物是 16 / 20 / 24 / 32 / 40 / 48 / 56', () => {
   for (const mode of ['theme-light', 'theme-dark', 'theme-auto', 'theme-runtime']) {
     const css = read(`../dist/styles/${mode}.css`)
     for (const [tier, px] of TIERS) {
@@ -446,21 +446,29 @@ test('组件契约类型在宿主真类型环境下可作为 JSX 使用', () => 
   }
 })
 
-test('Tag 高度吃同一套刻度：xxs / xs / sm / md 逐档等于 token', () => {
+test('Tag 高度吃同一套刻度：3xs / xxs / xs / sm / md 逐档等于 token', () => {
   const css = read('../dist/ui/display/style/index.css')
   const root = /\.mptk-tag\s*\{([^}]*)\}/.exec(css)
   assert.ok(root, '缺 .mptk-tag 根规则')
-  assert.match(root[1], /min-height:\s*var\(--mptk-control-h-xs\)/, '标签默认档必须是 xs（24）')
+  assert.match(root[1], /--mptk-tag-h:\s*var\(--mptk-control-h-xs\)/, '标签默认档必须是 xs（24）')
+  assert.match(root[1], /min-height:\s*var\(--mptk-tag-h\)/, '高度统一从 --mptk-tag-h 出，别再各处直接引刻度')
   assert.match(root[1], /line-height:\s*var\(--mptk-s-line-flat\)/, '靠 min-height 定高，行高必须压平')
   assert.doesNotMatch(root[1], /padding-(top|bottom)/, '标签高度不许由上下内边距叠加')
-  for (const tier of ['xxs', 'sm', 'md']) {
+  /* 16px 档的字必须再降一档，否则 12px 的字在 16px 里顶满上下。 */
+  assert.match(
+    /\.mptk-tag--3xs\s*\{([^}]*)\}/.exec(css)?.[1] ?? '',
+    /font-size:\s*var\(--mptk-font-3xs\)/,
+    '3xs 档要用 font-3xs（10px）',
+  )
+  for (const tier of ['3xs', 'xxs', 'sm', 'md']) {
     const rule = new RegExp(`\\.mptk-tag--${tier}\\s*\\{([^}]*)\\}`).exec(css)
     assert.ok(rule, `缺 .mptk-tag--${tier}`)
     assert.match(
       rule[1],
-      new RegExp(`min-height:\\s*var\\(--mptk-control-h-${tier}\\)`),
+      new RegExp(`--mptk-tag-h:\\s*var\\(--mptk-control-h-${tier}\\)`),
       `${tier} 档没吃对应刻度 token`,
     )
+    assert.match(rule[1], /min-height:\s*var\(--mptk-tag-h\)/, `${tier} 档高度要跟着 --mptk-tag-h 走`)
   }
 })
 
@@ -484,12 +492,46 @@ test('Tag 圆角档与全库同名同值，mark 接管四角', () => {
   assert.match(read('../dist/ui/display/Tag.d.ts'), /TagRadius/, 'd.ts 缺 TagRadius')
 })
 
+test('半圆端按半径退让左右留白：弧端取高度一半，直角侧不动，纯图标正方形不参与', () => {
+  const css = read('../dist/ui/display/style/index.css')
+  const pill = /\.mptk-tag--radius-pill:not\([^{]*\)\s*\{([^}]*)\}/.exec(css)
+  assert.ok(pill, 'pill 形态缺弧端留白规则')
+  assert.match(pill[1], /padding-right:\s*calc\(var\(--mptk-tag-h\)\s*\/\s*2\)/, 'pill 右端是半圆，要按半径退让')
+  assert.match(pill[1], /padding-left:\s*calc\(var\(--mptk-tag-h\)\s*\/\s*2\)/, 'pill 左端是半圆，要按半径退让')
+  assert.match(pill[0], /:not\(\.mptk-tag--icon-only\)/, '纯图标标签是正方形，不能被弧端留白撑宽')
+  assert.match(pill[0], /:not\(\.mptk-tag--mark\)/, 'mark 只有右端是弧，左端不能按半径退让')
+
+  const mark = /\.mptk-tag--mark:not\([^{]*\)\s*\{([^}]*)\}/.exec(css)
+  assert.ok(mark, 'mark 形态缺弧端留白规则')
+  assert.match(mark[1], /padding-right:\s*calc\(var\(--mptk-tag-h\)\s*\/\s*2\)/, 'mark 右端是半圆，要按半径退让')
+  assert.doesNotMatch(mark[1], /padding-left/, 'mark 左侧是直角，留白仍归档位自己定')
+
+  const sizes = /\{[^}]*--mptk-tag-h:\s*(var\(--mptk-control-h-[\w-]+\))[^}]*\}/.exec(css)
+  assert.ok(sizes, '档位类要把自己的高度写进 --mptk-tag-h，弧端留白才能跟着档位走')
+})
+
+test('默认标签实心：深灰底 + 反白字，与页面底色分得开', () => {
+  const css = read('../dist/ui/display/style/index.css')
+  const root = /\.mptk-tag\s*\{([^}]*)\}/.exec(css)
+  assert.ok(root, '缺 .mptk-tag 根规则')
+  assert.match(root[1], /background-color:\s*var\(--mptk-tag-bg\)/, '默认底色必须走语义变量，不能硬引灰阶')
+  assert.match(root[1], /color:\s*var\(--mptk-tag-fg\)/, '实心深底必须反白，不能跟着全局 --mptk-fg 走')
+  assert.doesNotMatch(root[1], /color:\s*var\(--mptk-fg\)/, '根规则的文字色不许是全局正文色，深底上会变成深底黑字')
+  const light = read('../dist/styles/theme-light.css')
+  const dark = read('../dist/styles/theme-dark.css')
+  assert.match(light, /--mptk-tag-bg:\s*#969799/, '明色取 gray-6：页面底是 gray-2，浅灰档在浅底上分不出块')
+  assert.match(dark, /--mptk-tag-bg:\s*#626a75/, '暗色取 gray-6：页面底是 gray-2，浅灰档同侧会陷进背景')
+  assert.match(light, /--mptk-tag-fg:\s*#fff/, '明色反白字')
+  assert.match(dark, /--mptk-tag-fg:\s*#fff/, '暗色反白字')
+})
+
 test('Tag 三种底色形态：soft 的边比底深，底色取语义浅色档', () => {
   const css = read('../dist/ui/display/style/index.css')
   const soft = /\.mptk-tag--soft\s*\{([^}]*)\}/.exec(css)
   assert.ok(soft, '缺 soft 形态')
   assert.match(soft[1], /background-color:\s*var\(--mptk-default-soft\)/, 'soft 默认浅底')
   assert.match(soft[1], /border:\s*var\(--mptk-c-border-w\) solid var\(--mptk-gray-5\)/, 'soft 需要有描边')
+  assert.doesNotMatch(soft[1], /color:\s*var\(--mptk-tag-fg\)/, 'soft 是浅底，反白字用不上，必须沿用正文色')
   for (const tone of ['primary', 'success', 'warning', 'danger']) {
     const rule = new RegExp(`\\.mptk-tag--soft\\.mptk-tag--${tone}\\s*\\{([^}]*)\\}`).exec(css)
     assert.ok(rule, `缺 soft ${tone}`)
@@ -511,7 +553,7 @@ test('Tag 纯图标必然是正方形：宽高都锁成档位高度、不加左�
   assert.match(base[1], /height:\s*var\(--mptk-control-h-xs\)/, '默认档高度等于档位高度')
   assert.match(base[1], /padding-(right|left):\s*0/, '纯图标不加左右内边距')
   assert.match(base[1], /flex:\s*none/, '挡住父容器 stretch')
-  for (const tier of ['xxs', 'sm', 'md']) {
+  for (const tier of ['3xs', 'xxs', 'sm', 'md']) {
     const rule = new RegExp(`\\.mptk-tag--icon-only\\.mptk-tag--${tier}\\s*\\{([^}]*)\\}`).exec(css)
     assert.ok(rule, `缺 icon-only ${tier}`)
     assert.match(rule[1], new RegExp(`width:\\s*var\\(--mptk-control-h-${tier}\\)`), `${tier} 宽不等于档位高度`)
@@ -528,10 +570,10 @@ test('档名与物理高度一一对应：可点控件不开放 xxs，标签不�
     '../dist/ui/form/segmented/Segmented.d.ts',
   ]) {
     const size = /Size = ([^\n]+)/.exec(read(file))?.[1] ?? ''
-    assert.doesNotMatch(size, /xxs/, `${file} 不许开放 xxs：16px 低于最小可点目标`)
+    assert.doesNotMatch(size, /'(3xs|xxs)'/, `${file} 不许开放 3xs / xxs：低于最小可点目标`)
   }
   const tagSize = /TagSize = ([^\n]+)/.exec(read('../dist/ui/display/Tag.d.ts'))?.[1] ?? ''
-  for (const tier of ['xxs', 'xs', 'sm', 'md']) {
+  for (const tier of ['3xs', 'xxs', 'xs', 'sm', 'md']) {
     assert.match(tagSize, new RegExp(`'${tier}'`), `Tag 缺 ${tier} 档`)
   }
   for (const tier of ['lg', 'xl']) {

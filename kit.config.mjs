@@ -79,18 +79,21 @@ export default {
     "--mptk-space-2": "8px",                                        // 间距 2 档：由小到大的统一留白节奏
     "--mptk-space-3": "12px",                                       // 间距 3 档：由小到大的统一留白节奏
     "--mptk-space-4": "16px",                                       // 间距 4 档：由小到大的统一留白节奏
-    "--mptk-control-h-xxs": "16px",                                 // 高度刻度最小档：只给展示类标签填，可点控件不开放
+    "--mptk-control-h-3xs": "16px",                                 // 高度刻度最小档：只给展示类标签填，可点控件不开放
+    "--mptk-control-h-xxs": "20px",                                 // 高度刻度次小档：只给展示类标签填，可点控件不开放
     "--mptk-control-h-xs": "24px",                                  // 控件高度最小档：迷你按钮 / 行内收尾操作
     "--mptk-control-h-sm": "32px",                                  // 控件高度小档：与 WeUI 按钮三档一致
     "--mptk-control-h-md": "40px",                                  // 控件高度中档：与 WeUI 按钮三档一致
     "--mptk-control-h-lg": "48px",                                  // 控件高度大档：与 WeUI 按钮三档一致
     "--mptk-control-h-xl": "56px",                                  // 控件高度特大档：主行动 / 落地页按钮
+    "--mptk-font-3xs": "10px",                                      // 字号超小档：与 line-3xs 成对，只用于 16px 高的迷你标签
     "--mptk-font-xs": "12px",                                       // 字号最小档：与 line-xs 成对
     "--mptk-font-sm": "14px",                                       // 字号小档：与 line-sm 成对
     "--mptk-font-md": "15px",                                       // 字号中档：与 line-md 成对
     "--mptk-font-lg": "17px",                                       // 字号大档：与 line-lg 成对
     "--mptk-font-xl": "22px",                                       // 字号特大档：与 line-xl 成对
     "--mptk-font-nav": "17px",                                      // 字号导航档：与 line-nav 成对
+    "--mptk-line-3xs": "14px",                                      // 行高超小档：与 font-3xs 成对
     "--mptk-line-xs": "17px",                                       // 行高最小档：与 font-xs 成对
     "--mptk-line-sm": "20px",                                       // 行高小档：与 font-sm 成对
     "--mptk-line-md": "22px",                                       // 行高中档：与 font-md 成对
@@ -178,6 +181,8 @@ export default {
     "--mptk-warning-soft": "var(--mptk-orange-soft)",               // 警告浅底：跟随警告色
     "--mptk-danger-soft": "var(--mptk-red-soft)",                   // 危险浅底：跟随危险色
     "--mptk-default-soft": "var(--mptk-gray-1)",                    // 中性浅底：明色取最浅灰
+    "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：和其他 type 的 solid 一样是深底，页面底是 gray-2，6 级才分得开
+    "--mptk-tag-fg": "@white",                                      // 默认标签实心字：深底必须反白，不能跟着全局 --mptk-fg 走
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -255,6 +260,8 @@ export default {
     "--mptk-warning-soft": "var(--mptk-orange-soft)",               // 警告浅底：跟随警告色
     "--mptk-danger-soft": "var(--mptk-red-soft)",                   // 危险浅底：跟随危险色
     "--mptk-default-soft": "var(--mptk-gray-3)",                    // 中性浅底：暗色取 3 级灰才看得见
+    "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：暗底上要亮到 6 级才有边界，浅一档就陷进背景
+    "--mptk-tag-fg": "@white",                                      // 默认标签实心字：与明色同口径，深底反白
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -314,7 +321,6 @@ export default {
     "--mptk-c-switch-inset-2x": "4px",                              // Switch 滑块双侧内缩合计：calc 尺寸用
     "--mptk-c-demo-swatch-size": "48px",                            // 演示站色板大色块边长
     "--mptk-c-demo-swatch-sm-size": "20px",                         // 演示站色板小色块边长
-    "--mptk-c-demo-swatch-bar-h": "22px",                           // 演示站色板条高度
     "--mptk-c-demo-swatch-bar-w": "62px",                           // 演示站色板条宽度
     "--mptk-c-demo-swatch-ink-black": "#000000",                    // 演示站色板黑样字色
     "--mptk-c-demo-swatch-ink-white": "#ffffff",                    // 演示站色板白样字色

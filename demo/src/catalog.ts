@@ -2,9 +2,9 @@ import { KIT_CONFIG_BY_KEY } from './kit-config.generated'
 
 /** 说明文案里的尺寸取值同样来自生成表，改配置时不会与展示漂移。 */
 const configValue = (key: string) => KIT_CONFIG_BY_KEY[key]?.value ?? ''
-/** 高度刻度六档：`xxs` 只有展示类标签填，可点控件从 `xs` 起。 */
-const HEIGHT_TIERS = ['xxs', 'xs', 'sm', 'md', 'lg', 'xl']
-const CLICKABLE_TIERS = HEIGHT_TIERS.filter((tier) => tier !== 'xxs')
+/** 高度刻度七档：`3xs` / `xxs` 只有展示类标签填，可点控件从 `xs` 起。 */
+const HEIGHT_TIERS = ['3xs', 'xxs', 'xs', 'sm', 'md', 'lg', 'xl']
+const CLICKABLE_TIERS = HEIGHT_TIERS.filter((tier) => tier !== '3xs' && tier !== 'xxs')
 const heightsOf = (prefix: string) =>
   CLICKABLE_TIERS.map((tier) => `${configValue(`--mptk-${prefix}-w-${tier}`)}×${configValue(`--mptk-${prefix}-h-${tier}`)}`).join(' / ')
 const CONTROL_HEIGHTS = HEIGHT_TIERS.map((tier) => configValue(`--mptk-control-h-${tier}`)).join(' / ')
@@ -112,7 +112,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'control-height',
         title: '控件高度',
-        hint: `${CONTROL_HEIGHTS} 五档，中三档对齐 WeUI 按钮高度，默认 ${DEFAULT_HEIGHT}`,
+        hint: `${CONTROL_HEIGHTS} 七档，中三档对齐 WeUI 按钮高度，默认 ${DEFAULT_HEIGHT}`,
         usage: '',
         imports: ['mp-taro-kit/styles/theme-runtime'],
         renderNotes: '标尺吃 --mptk-control-h-*；Switch / Segmented 逐档吃同名 token，效果见表单页',
@@ -545,7 +545,7 @@ export const pages: CatalogPage[] = [
         title: '图标',
         hint: 'icon 前置 / iconAfter 后置 / 只给图标即纯图标标签，宽高锁成同档高度、必然正方形',
         usage: '<Tag icon="common.base:xihuan">喜欢</Tag> <Tag icon="common.base:xihuan" />',
-        imports: ['mp-taro-kit/ui/display', 'mp-taro-kit/ui/display/style', 'mp-taro-kit/ui/icon/common/base/style'],
+        imports: ['mp-taro-kit/ui/display', 'mp-taro-kit/ui/display/style', 'mp-taro-kit/ui/icon/style'],
         renderNotes: '纯图标不给宽度：宽度锁成档位高度，flex: none 挡住父容器拉伸',
       },
     ],

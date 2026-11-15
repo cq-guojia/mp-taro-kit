@@ -42,7 +42,7 @@
 
 `styles/theme-*` 的字号与行高成对，档位值全部取自[统一配置](config.md)的 `base` 组；生成器会校验档位严格递增，宿主可在差异文件里逐档覆盖，没有「不许整体覆盖」的限制。演示站沿用库默认，不另立一套。
 
-高度刻度六档（16 / 24 / 32 / 40 / 48 / 56）与默认档同样取自配置的 `base` / `runtime.controlSizeDefault`；可点控件用 `size="xs|sm|md|lg|xl"` 选档（不开放 `xxs`），Tag 用 `size="xxs|xs|sm|md"`，同名档同高，调用点不自定义高度。`tests/controls.test.mjs` 断言 Switch 与 Segmented 可点五档总高逐档等于生效值，并锁住「可点控件不含 xxs / 标签不含 lg、xl」这条子集契约。不传 `size` 时取 `mp-taro-kit/design` 导出的 `CONTROL_SIZE_DEFAULT`（由生成器写成字面量），Button / Switch / Segmented 与将来的输入类控件共用它。
+高度刻度七档（16 / 20 / 24 / 32 / 40 / 48 / 56）与默认档同样取自配置的 `base` / `runtime.controlSizeDefault`；可点控件用 `size="xs|sm|md|lg|xl"` 选档（不开放 `3xs` / `xxs`），Tag 用 `size="3xs|xxs|xs|sm|md"`，同名档同高，调用点不自定义高度。`tests/controls.test.mjs` 断言 Switch 与 Segmented 可点五档总高逐档等于生效值，并锁住「可点控件不含 3xs / xxs、标签不含 lg / xl」这条子集契约。不传 `size` 时取 `mp-taro-kit/design` 导出的 `CONTROL_SIZE_DEFAULT`（由生成器写成字面量），Button / Switch / Segmented 与将来的输入类控件共用它。
 
 控件主色轴默认指向 `--mptk-control-blue`，内置蓝 / 绿 / 橙 / 红四色；`Switch` 在组件样式里把默认值覆盖成绿（对齐微信原生开关），`Segmented` 仍用蓝；滑轨、滑块、选中文字各有独立颜色键。这组变量写在 `light` / `dark` mixin，与 `--mptk-business` 等语义色解耦：宿主定制业务色不会改变控件默认外观，明色下滑轨与滑块也不会双双为白。组件的 `color` 可传内置色名（走类名切变量）或任意 CSS 色值（走显式内联上色，不依赖 WXML 行内自定义属性）；`tests/controls.test.mjs` 核对四份主题产物都带全这组键，并断言组件不引用业务色。
 
@@ -270,3 +270,4 @@ setThemeMode('auto', {
 - 2026-11-15 15:46:45：Card 出口补 CardVariant
 - 2026-11-15：控件高度出口由三档改五档，size 取值同步为 xs|sm|md|lg|xl
 - 2026-11-15：刻度补 xxs（16）成六档；Tag 出口补 TagSize / TagRadius / TagVariant，Tag 取 xxs|xs|sm|md 子集
+- 2026-11-15：16 档改名 3xs、空出的 xxs 给新增的 20px 档，刻度成七档；Tag 的 size 变为 3xs|xxs|xs|sm|md
