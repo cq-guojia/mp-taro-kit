@@ -18,12 +18,12 @@
      下划线左右各缩 one step。 */
   --mptk-seg-inset: var(--mptk-c-seg-inset);
   --mptk-seg-line-inset: var(--mptk-space-3);
-  --mptk-seg-item-pad: var(--mptk-space-4);
-  --mptk-seg-item-min: var(--mptk-control-h-md);
+  --mptk-seg-item-pad: var(--mptk-space-3);
+  --mptk-seg-item-min: var(--mptk-control-h-sm);
   position: relative;
   display: flex;
   width: var(--mptk-s-full);
-  height: var(--mptk-control-h-md);
+  height: var(--mptk-control-h-sm);
   border-radius: var(--mptk-control-radius);
   overflow: hidden;
 }

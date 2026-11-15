@@ -1,4 +1,4 @@
-// @mptk-inputs:5aba8b5acd2f
+// @mptk-inputs:c0b85eeadb9d
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -1067,6 +1067,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "tag-fg",
     },
     {
+      "key": "--mptk-fg-on-accent",
+      "label": "fg-on-accent",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "#fff",
+      "unit": "color",
+      "note": "fg-on-accent",
+    },
+    {
       "key": "--mptk-control-blue",
       "label": "control-blue",
       "group": "light",
@@ -1760,6 +1769,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "tag-fg",
     },
     {
+      "key": "--mptk-fg-on-accent",
+      "label": "fg-on-accent",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "#fff",
+      "unit": "color",
+      "note": "fg-on-accent",
+    },
+    {
       "key": "--mptk-control-blue",
       "label": "control-blue",
       "group": "dark",
@@ -1929,6 +1947,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": ".5",
       "unit": "",
       "note": "c-locked-opacity",
+    },
+    {
+      "key": "--mptk-c-btn-pressed-opacity",
+      "label": "c-btn-pressed-opacity",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": ".86",
+      "unit": "",
+      "note": "c-btn-pressed-opacity",
     },
     {
       "key": "--mptk-c-border-w",
@@ -2781,7 +2808,7 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "运行时默认 · controlSizeDefault",
       "group": "runtime",
       "groupLabel": "运行时默认",
-      "value": "md",
+      "value": "sm",
       "unit": "",
       "note": "controlSizeDefault",
     },

@@ -1,61 +1,217 @@
-/* 高度吃 --mptk-control-h-* 五档，与 Switch / Segmented / 将来的 Input 同一套轴；
-   总高逐像素等于档位值，不再由上下内边距撑（那样各控件永远差一截）。
-   圆角走语义变量 --mptk-control-radius，`radius` 参数只翻成类名，谁都不写像素。 */
+@use 'sass:list';
+@use '../../feedback/spinner/style/index' as spinner;
+
+/* Button：一条高度刻度 + 四轴正交（语义色 / 底色形态 / 尺寸 / 圆角）。
+   全库只有这一份按钮皮肤 —— 使用点不许再就地写按钮样式。
+
+   根规则只有结构与默认档；每档只覆盖局部变量：
+     --mptk-btn-bg / -fg / -border   形态档填
+     --mptk-btn-h / -px / -font / -line  尺寸档填
+   自定义品牌色由组件以行内样式直接覆盖 bg / fg / border（见 button-color.ts），
+   档位类不感知颜色来源，也不新增皮肤。
+
+   loading 的圈复用全库自绘 Spinner：这里只把 --mptk-spinner-active 指向 currentColor，
+   深底白字与浅底彩字都不用另配颜色。 */
+
+$button-tones: (
+  primary: (var(--mptk-business), var(--mptk-business-soft)),
+  success: (var(--mptk-success), var(--mptk-success-soft)),
+  warning: (var(--mptk-warning), var(--mptk-warning-soft)),
+  danger: (var(--mptk-danger), var(--mptk-danger-soft)),
+);
+
 .mptk-btn {
+  --mptk-btn-h: var(--mptk-control-h-sm);
+  --mptk-btn-px: var(--mptk-space-3);
+  --mptk-btn-font: var(--mptk-font-sm);
+  --mptk-btn-line: var(--mptk-line-sm);
+  --mptk-btn-bg: var(--mptk-business);
+  --mptk-btn-fg: var(--mptk-fg-on-accent);
+  --mptk-btn-border: transparent;
   box-sizing: border-box;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: var(--mptk-control-h-md);
-  padding-right: var(--mptk-space-4);
-  padding-left: var(--mptk-space-4);
-  background-color: var(--mptk-business);
+  position: relative;
+  height: var(--mptk-control-h-sm);
+  padding-right: var(--mptk-btn-px);
+  padding-left: var(--mptk-btn-px);
+  border: var(--mptk-c-border-w) solid var(--mptk-btn-border);
   border-radius: var(--mptk-control-radius);
-  color: var(--mptk-surface-1);
-  font-size: var(--mptk-font-lg);
-  line-height: var(--mptk-line-lg);
+  background-color: var(--mptk-btn-bg);
+  color: var(--mptk-btn-fg);
+  font-size: var(--mptk-btn-font);
+  line-height: var(--mptk-btn-line);
+  white-space: var(--mptk-s-white-space-nowrap);
 }
 
-/* 最小档给行内收尾操作用：24px 高配 12px 字，左右留白同步收到 space-3，
-   否则 16px 的横向留白会把迷你按钮撑成横条。 */
+/* 尺寸档：总高逐像素等于刻度 token，最小与次小档左右收一档，否则迷你钮被内距撑成横条。
+   sm 是默认档（32 / 14，WeUI mini 口径）。字号不吃 --mptk-font-md（15）：40 高的按钮腾讯
+   （WeUI medium）也用 14，15 是这张表里字/高最胖的一档，视觉上会像老年机。 */
+
 .mptk-btn--xs {
+  --mptk-btn-h: var(--mptk-control-h-xs);
+  --mptk-btn-px: var(--mptk-space-3);
+  --mptk-btn-font: var(--mptk-font-xs);
+  --mptk-btn-line: var(--mptk-line-xs);
   height: var(--mptk-control-h-xs);
-  padding-right: var(--mptk-space-3);
-  padding-left: var(--mptk-space-3);
-  font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
 }
 
 .mptk-btn--sm {
+  --mptk-btn-h: var(--mptk-control-h-sm);
+  --mptk-btn-px: var(--mptk-space-3);
+  --mptk-btn-font: var(--mptk-font-sm);
+  --mptk-btn-line: var(--mptk-line-sm);
   height: var(--mptk-control-h-sm);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
 }
 
 .mptk-btn--md {
+  --mptk-btn-h: var(--mptk-control-h-md);
+  --mptk-btn-px: var(--mptk-space-4);
   height: var(--mptk-control-h-md);
-  font-size: var(--mptk-font-md);
-  line-height: var(--mptk-line-md);
 }
 
 .mptk-btn--lg {
+  --mptk-btn-h: var(--mptk-control-h-lg);
+  --mptk-btn-font: var(--mptk-font-lg);
+  --mptk-btn-line: var(--mptk-line-lg);
   height: var(--mptk-control-h-lg);
 }
 
-/* 特大档只加高：字已经是最上面的 font-lg，再放大会抢主标题。 */
+/* 特大档只加高：字已经是最上面那档，再放大会抢主标题。 */
+
 .mptk-btn--xl {
+  --mptk-btn-h: var(--mptk-control-h-xl);
+  --mptk-btn-font: var(--mptk-font-lg);
+  --mptk-btn-line: var(--mptk-line-lg);
   height: var(--mptk-control-h-xl);
 }
 
+.mptk-btn--radius-xs { border-radius: var(--mptk-radius-xs); }
 .mptk-btn--radius-sm { border-radius: var(--mptk-radius-sm); }
 .mptk-btn--radius-md { border-radius: var(--mptk-radius-md); }
 .mptk-btn--radius-lg { border-radius: var(--mptk-radius-lg); }
+.mptk-btn--radius-xl { border-radius: var(--mptk-radius-xl); }
 .mptk-btn--radius-pill { border-radius: var(--mptk-radius-pill); }
 
-.mptk-btn--disabled {
-  background-color: var(--mptk-fg-4);
+/* 形态档：实心只填底 + 反白字；其余三档的「边」都要跟着语义色走。
+   soft 的中间色取语义色自带的浅色阶（明 8% / 暗 12%），不在这里算透明度 —— 那是宿主配色的事。 */
+
+.mptk-btn--default {
+  --mptk-btn-bg: var(--mptk-surface-3);
+  --mptk-btn-fg: var(--mptk-fg);
 }
 
-.mptk-btn--loading {
-  background-color: var(--mptk-fg-3);
+.mptk-btn--default.mptk-btn--soft {
+  --mptk-btn-bg: var(--mptk-default-soft);
+  --mptk-btn-fg: var(--mptk-fg-2);
+  --mptk-btn-border: var(--mptk-gray-5);
+}
+
+.mptk-btn--default.mptk-btn--outline {
+  --mptk-btn-bg: var(--mptk-surface-1);
+  --mptk-btn-fg: var(--mptk-fg-2);
+  --mptk-btn-border: var(--mptk-border);
+}
+
+.mptk-btn--default.mptk-btn--ghost {
+  --mptk-btn-bg: transparent;
+  --mptk-btn-fg: var(--mptk-fg-2);
+}
+
+@each $tone, $pair in $button-tones {
+  .mptk-btn--#{$tone} {
+    --mptk-btn-bg: #{list.nth($pair, 1)};
+    --mptk-btn-fg: var(--mptk-fg-on-accent);
+    --mptk-btn-border: transparent;
+  }
+
+  .mptk-btn--#{$tone}.mptk-btn--soft {
+    --mptk-btn-bg: #{list.nth($pair, 2)};
+    --mptk-btn-fg: #{list.nth($pair, 1)};
+    --mptk-btn-border: #{list.nth($pair, 1)};
+  }
+
+  .mptk-btn--#{$tone}.mptk-btn--outline {
+    --mptk-btn-bg: var(--mptk-surface-1);
+    --mptk-btn-fg: #{list.nth($pair, 1)};
+    --mptk-btn-border: #{list.nth($pair, 1)};
+  }
+
+  .mptk-btn--#{$tone}.mptk-btn--ghost {
+    --mptk-btn-bg: transparent;
+    --mptk-btn-fg: #{list.nth($pair, 1)};
+    --mptk-btn-border: transparent;
+  }
+}
+
+/* 图标与文字：间距取 space-1，图标自身不写字号 —— 字体图标继承按钮字号，1em 与文字等大。
+   纯图标钮里图标是唯一子元素，:not(:last-child) 让它不带右侧间距。 */
+
+/* line-height 必须压到 1：按钮根规则带着 22px 行高，字体图标的字形在这么高的行盒里
+   会贴着上半部分，纯图标钮看起来就是「图标靠上」。压平后盒子高 = 字号，靠 flex 居中。 */
+
+.mptk-btn__icon {
+  line-height: var(--mptk-s-line-flat);
+}
+
+.mptk-btn__icon:not(:last-child) {
+  margin-right: var(--mptk-space-1);
+}
+
+.mptk-btn__icon-after {
+  margin-left: var(--mptk-space-1);
+}
+
+/* 纯图标：宽高都锁成同档高度、左右内边距归零，必然是正方形；flex: none 挡住父容器拉伸。 */
+
+.mptk-btn--icon-only {
+  width: var(--mptk-btn-h);
+  padding-right: 0;
+  padding-left: 0;
+  flex: none;
+}
+
+.mptk-btn--block {
+  display: flex;
+  width: var(--mptk-s-full);
+}
+
+/* loading：圈色取按钮字色。
+   ⚠️ 不能写成 `--mptk-spinner-active: currentColor` —— 变量里存的是关键字而不是真色，
+   Skyline 下 conic-gradient 拿到它画不出弧，圈直接消失；而 --mptk-btn-fg 是档位类写好的真色。
+   自定义 color 时组件会把算出来的字色内联给 Spinner，覆盖这一支。 */
+
+.mptk-btn__spinner {
+  --mptk-spinner-active: var(--mptk-btn-fg);
+}
+
+/* circle 模式：文字隐形占位保持宽度，圈盖在它上面 —— 按钮尺寸一点都不动。
+   居中**不能**用 transform：Spinner 自己带旋转动画，动画帧的 transform 会盖掉静态位移，
+   圈会跑到右下角并且看着在漂。改成铺满按钮的定位层 + flex 居中，圈自己的动画不受影响。 */
+
+.mptk-btn--spin-circle .mptk-btn__label {
+  visibility: hidden;
+}
+
+.mptk-btn__spin-layer {
+  position: absolute;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 按压态走 Taro 的 hoverClass（小程序没有 :hover）：只降透明度，不按色值混算，
+   这样任意品牌色都不用各配一套按下色。 */
+
+.mptk-btn--pressed {
+  opacity: var(--mptk-c-btn-pressed-opacity);
+}
+
+.mptk-btn--disabled {
+  opacity: var(--mptk-c-locked-opacity);
 }

@@ -8,7 +8,9 @@ const CLICKABLE_TIERS = HEIGHT_TIERS.filter((tier) => tier !== '3xs' && tier !==
 const heightsOf = (prefix: string) =>
   CLICKABLE_TIERS.map((tier) => `${configValue(`--mptk-${prefix}-w-${tier}`)}×${configValue(`--mptk-${prefix}-h-${tier}`)}`).join(' / ')
 const CONTROL_HEIGHTS = HEIGHT_TIERS.map((tier) => configValue(`--mptk-control-h-${tier}`)).join(' / ')
-const DEFAULT_HEIGHT = configValue('--mptk-control-h-md')
+/** 默认档取自生成表的运行时项，改 kit.config 时文案跟着走。 */
+const DEFAULT_TIER = KIT_CONFIG_BY_KEY['runtime.controlSizeDefault']?.value ?? 'sm'
+const DEFAULT_HEIGHT = configValue(`--mptk-control-h-${DEFAULT_TIER}`)
 const SWITCH_TRACKS = heightsOf('c-switch')
 
 export type CatalogExample = {
@@ -190,20 +192,60 @@ export const pages: CatalogPage[] = [
     summary: '触发动作的控件',
     examples: [
       {
-        id: 'button-basic',
-        title: '基础按钮',
-        hint: `Button：五档高度（${CONTROL_HEIGHTS}，默认 ${DEFAULT_HEIGHT}）与半圆形态（radius="pill"）`,
-        usage: '<Button size="xs|sm|md|lg|xl">按钮</Button> <Button radius="pill">半圆</Button>',
+        id: 'button-size',
+        title: '尺寸',
+        hint: `五档高度（${CONTROL_HEIGHTS}，默认 ${DEFAULT_HEIGHT}），总高逐像素等于刻度 token`,
+        usage: '<Button size="xs|sm|md|lg|xl">按钮</Button>',
         imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
-        renderNotes: '总高逐像素等于 --mptk-control-h-* 档位，靠 height 不靠上下内边距；圆角走 --mptk-control-radius，pill 用 999px 而不是 50%',
+        renderNotes: '高度靠 height 定，不靠上下内边距；同档与 Tag / Switch / Segmented 等高',
+      },
+      {
+        id: 'button-radius',
+        title: '圆角',
+        hint: '六档圆角：不传吃控件默认圆角，pill 是两端半圆',
+        usage: '<Button radius="xs|sm|md|lg|xl|pill">按钮</Button>',
+        imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
+        renderNotes: 'pill 用 --mptk-radius-pill（999px），不是 50% —— 长方形上 50% 会变椭圆',
+      },
+      {
+        id: 'button-variant',
+        title: '底色形态',
+        hint: '四档语义色 × 四种形态：solid 只有背景，soft 中间浅、边与字同色，outline 白底描边，ghost 无底无边',
+        usage: '<Button type="primary|success|warning|danger" variant="solid|soft|outline|ghost">按钮</Button>',
+        imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
+        renderNotes: 'soft 的中间色取语义色自带的浅色阶（明 8% / 暗 12%），不在组件里算透明度',
+      },
+      {
+        id: 'button-color',
+        title: '品牌色',
+        hint: 'color 传任意品牌色：四形态各自派生，浅色上自动压深字，深色上压白字',
+        usage: '<Button color="#7c3aed" variant="soft">按钮</Button>',
+        imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
+        renderNotes: 'hex / rgb() 能完整派生 soft 的浅底；var() 与色名只覆盖边与字，浅底退回灰面',
+      },
+      {
+        id: 'button-icon',
+        title: '图标与纯图标',
+        hint: '前置 / 后置图标，以及只给图标不给文字时的正方形按钮',
+        usage: '<Button icon="common.base:xihuan">按钮</Button> <Button icon="common.base:xihuan" />',
+        imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
+        renderNotes: '没 children 只给 icon 就是纯图标钮，宽高同档锁成正方形，不另立组件',
+      },
+      {
+        id: 'button-loading',
+        title: '加载',
+        hint: '有图标时圈顶替图标位；没图标时按宽度自动选：不定宽只显示圈，定宽或明确指定才在前面插圈',
+        usage: '<Button onClick={async () => {...}}>按钮</Button> <Button loadingMode="inline" width={200}>按钮</Button>',
+        imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
+        renderNotes: 'onClick 返回 Promise 即自动 loading 并防连点；circle 模式文字隐形占位，按钮宽度一点不动',
       },
       {
         id: 'button-state',
-        title: '按钮状态',
-        hint: 'Button：禁用 / 加载 / 危险',
-        usage: '',
+        title: '状态与宽度',
+        hint: '禁用、异步失败回调、整行撑满与固定宽',
+        usage: '<Button disabled>禁用</Button> <Button block>整行</Button> <Button width={200}>定宽</Button>',
         imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
-        renderNotes: '',
+        renderNotes: '禁用只降透明度，不把品牌色涂灰；block 撑满父宽，width 给数字按 px',
       },
     ],
   },

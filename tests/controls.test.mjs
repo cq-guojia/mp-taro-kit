@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolveControlColor, CONTROL_COLORS } from '../dist/ui/form/control-color.js'
+import { resolveButtonColor } from '../dist/ui/actions/button-color.js'
 import { resolveCssVars } from './helpers/kit-config.mjs'
 
 function read(relative) {
@@ -41,7 +42,7 @@ test('Switch 与 Segmented 五档总高逐档等于 token，根规则不叠加�
     const css = read(`../dist/ui/form/${dir}/style/index.css`)
     const root = new RegExp(`\\.${base}\\s*\\{([^}]*)\\}`).exec(css)
     assert.ok(root, `${dir} 缺根规则`)
-    assert.match(root[1], /height:\s*var\(--mptk-control-h-md\)/, `${dir} 默认档必须是 md（40）`)
+    assert.match(root[1], /height:\s*var\(--mptk-control-h-sm\)/, `${dir} 默认档必须是 sm（32）`)
     assert.doesNotMatch(css, /padding-(top|bottom):/, `${dir} 总高不许由上下内边距叠加`)
     for (const [tier] of CLICKABLE) {
       const rule = new RegExp(`\\.${base}--${tier}\\s*\\{([^}]*)\\}`).exec(css)
@@ -82,7 +83,7 @@ test('Button 五档总高逐档等于 token，靠 height 不靠上下内边距',
   const root = /\.mptk-btn\s*\{([^}]*)\}/.exec(css)
   assert.ok(root, '缺 .mptk-btn 根规则')
   assert.match(root[1], /box-sizing:\s*border-box/, '固定高度必须盒模型含边框')
-  assert.match(root[1], /height:\s*var\(--mptk-control-h-md\)/, '默认档必须是 md（40）')
+  assert.match(root[1], /height:\s*var\(--mptk-control-h-sm\)/, '默认档必须是 sm（32）')
   assert.doesNotMatch(root[1], /padding-(top|bottom)/, '总高不许由上下内边距叠加')
   for (const [tier] of CLICKABLE) {
     const rule = new RegExp(`\\.mptk-btn--${tier}\\s*\\{([^}]*)\\}`).exec(css)
@@ -578,5 +579,101 @@ test('档名与物理高度一一对应：可点控件不开放 xxs，标签不�
   }
   for (const tier of ['lg', 'xl']) {
     assert.doesNotMatch(tagSize, new RegExp(`'${tier}'`), `Tag 不该开放 ${tier}：标签没这么大场景`)
+  }
+})
+
+test('Button 四轴：形态档只填局部变量，纯图标锁成正方形，转圈跟随字色', () => {
+  const css = read('../dist/ui/actions/style/index.css')
+  for (const tone of ['default', 'primary', 'success', 'warning', 'danger']) {
+    for (const variant of ['soft', 'outline', 'ghost']) {
+      const rule = new RegExp(`\\.mptk-btn--${tone}\\.mptk-btn--${variant}\\s*\\{([^}]*)\\}`).exec(css)
+      assert.ok(rule, `缺 ${tone} × ${variant} 形态档`)
+      assert.match(rule[1], /--mptk-btn-(bg|fg|border):/, `${tone} × ${variant} 没落到局部变量`)
+    }
+  }
+  assert.match(css, /\.mptk-btn--icon-only\s*\{[^}]*width:\s*var\(--mptk-btn-h\)/, '纯图标宽必须锁成同档高度')
+  assert.match(css, /\.mptk-btn--spin-circle \.mptk-btn__label\s*\{[^}]*visibility:\s*hidden/, 'circle 模式靠隐形文字占位')
+  assert.match(
+    css,
+    /\.mptk-btn__spinner\s*\{[^}]*--mptk-spinner-active:\s*var\(--mptk-btn-fg\)/,
+    '转圈要取按钮字色，且不能停在 currentColor 关键字上（Skyline 下 conic-gradient 画不出它）',
+  )
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/, 'Button 不许硬编码颜色')
+  const js = read('../dist/ui/actions/Button.js')
+  assert.match(js, /loadingMode/, 'Button 要接 loadingMode')
+  assert.match(js, /mptk-btn--icon-only/, 'Button 要按「无文字 + 有图标」自动转纯图标')
+  assert.match(read('../dist/ui/actions/Button.d.ts'), /ButtonLoadingMode/, 'd.ts 缺 ButtonLoadingMode')
+})
+
+test('Button 品牌色派生：深底压白字、浅底压深字，soft 用分量算浅底', () => {
+  assert.deepEqual(resolveButtonColor('solid', '#3b5bdb'), {
+    backgroundColor: '#3b5bdb',
+    borderColor: '#3b5bdb',
+    color: 'var(--mptk-fg-on-accent)',
+  })
+  assert.equal(resolveButtonColor('solid', '#f5c518').color, 'var(--mptk-fg)', '浅品牌色必须压深字')
+  assert.equal(resolveButtonColor('soft', 'rgb(124, 58, 237)').backgroundColor, 'rgba(124, 58, 237, 0.16)')
+  assert.equal(
+    resolveButtonColor('soft', 'var(--brand)').backgroundColor,
+    'var(--mptk-surface-2)',
+    '解析不了的色值，浅底退回灰面',
+  )
+  assert.deepEqual(resolveButtonColor('outline', '#7c3aed'), {
+    backgroundColor: 'var(--mptk-surface-1)',
+    borderColor: '#7c3aed',
+    color: '#7c3aed',
+  })
+  assert.deepEqual(resolveButtonColor('ghost', '#7c3aed'), { color: '#7c3aed' })
+  assert.equal(resolveButtonColor('solid', undefined), undefined, '不传色值就该交给档位类')
+})
+
+test('关键帧里不许出现 var()：WXSS 编译期固化成静态表，带 var() 的声明会整条丢失', () => {
+  for (const file of ['../dist/ui/feedback/spinner/style/index.css', '../dist/ui/feedback/style/index.css']) {
+    const css = read(file)
+    const blocks = []
+    const heads = /@keyframes\s+[\w-]+\s*\{/g
+    let hit = heads.exec(css)
+    while (hit !== null) {
+      let depth = 0
+      let index = hit.index + hit[0].length - 1
+      const start = index
+      for (; index < css.length; index += 1) {
+        if (css[index] === '{') depth += 1
+        else if (css[index] === '}') {
+          depth -= 1
+          if (depth === 0) break
+        }
+      }
+      blocks.push(css.slice(start, index + 1))
+      heads.lastIndex = index
+      hit = heads.exec(css)
+    }
+    assert.ok(blocks.length > 0, `${file} 没找到任何关键帧`)
+    for (const block of blocks) {
+      assert.doesNotMatch(block, /var\(/, `${file} 的关键帧里出现 var()，动画会在 Skyline 下静默失效`)
+    }
+  }
+})
+
+test('强调底上的字一律反白：实心块不许把 surface-1（面）当字色', () => {
+  for (const file of ['../dist/ui/display/style/index.css', '../dist/ui/actions/style/index.css']) {
+    const css = read(file)
+    assert.doesNotMatch(
+      css,
+      /(?<!background-)color:\s*var\(--mptk-surface-1\)/,
+      `${file} 把「面」当字色了：明色是白、暗色是深灰，蓝底会变成黑字`,
+    )
+    assert.match(
+      css,
+      /(?:--mptk-btn-fg|color):\s*var\(--mptk-fg-on-accent\)/,
+      `${file} 实心块没走反白字键`,
+    )
+  }
+  for (const mode of ['light', 'dark']) {
+    assert.match(
+      read(`../dist/styles/theme-${mode}.css`),
+      /--mptk-fg-on-accent:\s*#fff/,
+      `${mode} 主题缺反白字键或缺回白值`,
+    )
   }
 })

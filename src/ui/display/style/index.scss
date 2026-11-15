@@ -57,7 +57,7 @@
   right: var(--mptk-s-zero);
   border-radius: var(--mptk-radius-pill);
   background-color: var(--mptk-danger);
-  color: var(--mptk-surface-1);
+  color: var(--mptk-fg-on-accent);
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
 }
@@ -117,22 +117,22 @@
 /* solid：实心底 + 反白字，默认形态，不占描边（描边会让实心块看着小一圈）。 */
 .mptk-tag--primary {
   background-color: var(--mptk-business);
-  color: var(--mptk-surface-1);
+  color: var(--mptk-fg-on-accent);
 }
 
 .mptk-tag--success {
   background-color: var(--mptk-success);
-  color: var(--mptk-surface-1);
+  color: var(--mptk-fg-on-accent);
 }
 
 .mptk-tag--warning {
   background-color: var(--mptk-warning);
-  color: var(--mptk-surface-1);
+  color: var(--mptk-fg-on-accent);
 }
 
 .mptk-tag--danger {
   background-color: var(--mptk-danger);
-  color: var(--mptk-surface-1);
+  color: var(--mptk-fg-on-accent);
 }
 
 /* soft / outline：边比底深一档，中间是浅色而不是纯色。底取语义色自带的浅色档，

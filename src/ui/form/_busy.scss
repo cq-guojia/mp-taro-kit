@@ -11,12 +11,17 @@
      再淡也还是一片白。改用真实的灰↔白换色，不再动 opacity。
      灰值取 --mptk-control-thumb-dim，明暗各给一支偏浅的灰，
      压在滑块上的深色文字/图标（--mptk-control-thumb-fg）两档都还读得清。 */
+/* @keyframes 里不能写 var()：WXSS 编译期把关键帧固化成静态表，带 var() 的声明整条丢弃。
+   数值一律字面量（与 kit.config 同名项一一对应，tests/controls.test.mjs 断言防漂移）。 */
 @keyframes mptk-control-breathe {
   #{kf.$mptk-kf-0},
-  #{kf.$mptk-kf-full} { opacity: var(--mptk-s-opacity-full); }
-  #{kf.$mptk-kf-50} { opacity: var(--mptk-c-control-breathe-dim); }
+  #{kf.$mptk-kf-full} { opacity: 1; }
+  #{kf.$mptk-kf-50} { opacity: .2; }
 }
 
+/* ⚠️ 这一支只能保持 var()：滑块底色是每实例算出来的（--mptk-control-thumb，跟着组件的 color 走），
+   无法字面量化。Skyline 下这条呼吸不会动（WebView 下正常）；Switch 的等待态另有 Spinner 转圈兜底，
+   所以不补第二套动画。 */
 @keyframes mptk-thumb-breathe {
   #{kf.$mptk-kf-0},
   #{kf.$mptk-kf-full} { background-color: var(--mptk-control-thumb); }

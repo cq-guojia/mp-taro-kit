@@ -7,8 +7,11 @@ export type SpinnerVariant = 'circular' | 'chase'
 export interface SpinnerProps {
   /** 形态，默认 `circular`。 */
   variant?: SpinnerVariant
-  /** 边长（px），默认 24。几何按边长等比缩放，一套吃所有尺寸档。 */
-  size?: number
+  /**
+   * 边长，默认 24。数字按 px；字符串原样使用 —— 传 `1em` 就与所在文字（或字体图标）同尺寸，
+   * 换字号档时圈自动跟上，不用维护第二份 px 表。
+   */
+  size?: number | string
   /** 主色；不给则由主题给（`--mptk-spinner-active`）。 */
   color?: string
   /** 追加 class，只允许补布局，不许覆盖外观。 */
@@ -28,7 +31,8 @@ const CHASE_DOTS = 6
  */
 export function Spinner({ variant = 'circular', size, color, className }: SpinnerProps) {
   const side = size ?? 24
-  const box: CSSProperties = { width: `${String(side)}px`, height: `${String(side)}px` }
+  const length = typeof side === 'number' ? `${String(side)}px` : side
+  const box: CSSProperties = { width: length, height: length }
   if (color !== undefined) box.color = color
   const names = ['mptk-spinner', `mptk-spinner--${variant}`, className].filter(Boolean).join(' ')
 

@@ -14,7 +14,7 @@
 | `checked` | boolean | 是 | 无 | 宿主真值；组件从不自己改它，等待期间位置也不动 |
 | `onChange` | `(next: boolean) => unknown` | 否 | 返回 thenable 时进入等待态 | 点一下调用，`next` 是想变成的值 |
 | `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主；组件不做回弹，位置从未变过 |
-| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | 否 | 默认 `md` | 取 `--mptk-control-h-*`；刻度七档中的可点五档 24 / 32 / 40 / 48 / 56（`3xs` / `xxs` 只对 Tag 开放） |
+| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | 否 | 默认 `sm` | 取 `--mptk-control-h-*`；刻度七档中的可点五档 24 / 32 / 40 / 48 / 56（`3xs` / `xxs` 只对 Tag 开放） |
 | `shape` | `'round' \| 'block'` | 否 | 默认 `round` | 圆形滑块或圆角方形滑块 |
 | `color` | `ControlColor` | 否 | 默认绿 | 内置色名 `blue` / `green` / `orange` / `red`，或任意 CSS 色值 |
 | `offContent` | ReactNode | 否 | 无 | 关态内容：`block` 放在轨道左侧，`round` 放在滑块里 |
@@ -155,3 +155,4 @@ function NoticeSwitch() {
 - 2026-11-14 12:12:20：默认档改 md（40）
 - 2026-11-15 00:20:59：尺寸真源改为 kit.config.mjs
 - 2026-11-15：控件高度轴补 `xs`（24）/ `xl`（56）两档：新增轨道几何 26×16 / 62×38，方形格子补 16 / 47 两档
+- 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）

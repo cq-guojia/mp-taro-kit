@@ -38,7 +38,7 @@
 
 | variant | 底 | 描边 | 字 |
 |---|---|---|---|
-| `solid`（默认） | 语义色本身 | 无（实心块加描边会看着小一圈） | 语义色 type 取 `--mptk-surface-1`；`default` 取 `--mptk-tag-fg`（明暗两套都是白） |
+| `solid`（默认） | 语义色本身 | 无（实心块加描边会看着小一圈） | 一律取 `--mptk-fg-on-accent`（明暗两套都是白）；`default` 另取 `--mptk-tag-fg` |
 | `soft` | 语义浅色档（`--mptk-business-soft` 等） | 语义色本身 | 语义色本身 |
 | `outline` | `--mptk-surface-1` | 语义色本身 | 语义色本身 |
 
@@ -105,3 +105,4 @@ Badge 只做数字与红点，需要文字底衬就用 Tag。演示站里：首�
 - 2026-11-15：加 `size`（xxs / xs / sm / md，吃全库高度刻度，默认 xs）；高度改由 `min-height` 定，删除 `--mptk-tag-py` / `--mptk-tag-line`
 - 2026-11-15：`shape` 三态改为 `radius` 档位轴 + `mark` 布尔；新增 `variant`（solid / soft / outline）与语义浅色档 `--mptk-*-soft`；新增 `icon` / `iconAfter`，纯图标标签强制正方形
 - 2026-11-15：16px 档改名 `3xs` 并把字号降到 `--mptk-font-3xs`（10px）；空出的 `xxs` 给新增的 20px 档，标签尺寸变为 3xs / xxs / xs / sm / md
+- 2026-11-15 17:05:00：实心语义块的字色统一走新增的 `--mptk-fg-on-accent`（明暗都是白），不再借用 `--mptk-surface-1`

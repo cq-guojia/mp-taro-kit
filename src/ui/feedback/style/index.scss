@@ -59,21 +59,26 @@
 
 /* 三块圆角短条依次脉动（透明度 + 缩放），延迟由组件按序号注入。 */
 .mptk-fb-loader__block {
-  animation: mptk-fb-loader-blink var(--mptk-c-loader-blink-dur) var(--mptk-s-ease-in-out) var(--mptk-s-infinite);
+  animation-name: mptk-fb-loader-blink;
+  animation-duration: var(--mptk-c-loader-blink-dur);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
   background-color: var(--mptk-s-current-color);
   transform-origin: var(--mptk-s-transform-center);
 }
 
+/* @keyframes 里不能写 var()（WXSS 编译期固化关键帧，带 var() 的声明整条丢弃），
+   所以数值一律字面量，与 kit.config 同名项一一对应，由 tests/controls.test.mjs 断言防漂移。 */
 @keyframes mptk-fb-loader-blink {
   #{kf.$mptk-kf-0},
   #{kf.$mptk-kf-80},
   #{kf.$mptk-kf-full} {
-    opacity: var(--mptk-c-loader-dim);
-    transform: var(--mptk-c-loader-scale);
+    opacity: .25;
+    transform: scale(.8);
   }
   #{kf.$mptk-kf-40} {
-    opacity: var(--mptk-s-opacity-full);
-    transform: var(--mptk-s-scale-full);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

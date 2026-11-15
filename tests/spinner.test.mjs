@@ -61,7 +61,7 @@ test('两种形态都照抄开源实现：circular 走圆锥渐变 + 环形遮�
   const css = resolveCssVars(read(SPINNER_CSS))
 
   // circular —— TDesign t-loading theme="circular"：父级匀速转，子元素画渐变弧
-  assert.match(css, /\.mptk-spinner--circular\s*\{[^}]*animation:\s*mptk-spinner-rotate/)
+  assert.match(css, /\.mptk-spinner--circular\s*\{[^}]*animation-name:\s*mptk-spinner-rotate/)
   assert.match(css, /\.mptk-spinner__ring\s*\{[^}]*conic-gradient/, '圆环用 conic-gradient 画弧')
   assert.match(css, /\.mptk-spinner__ring\s*\{[^}]*border-radius:\s*100%/, '圆环本体必须是正圆')
   assert.match(css, /mask-image:\s*url\(/, 'Skyline 的 mask 只认 url()，必须有环形遮罩')
@@ -69,7 +69,7 @@ test('两种形态都照抄开源实现：circular 走圆锥渐变 + 环形遮�
   assert.match(css, /stroke-width='17'/, '环宽对齐 TDesign：farthest-corner 下环带约占直径 17%')
 
   // chase —— SpinKit sk-chase：六根 100% 覆盖层各自错峰，点在 ::before 上
-  assert.match(css, /\.mptk-spinner--chase\s*\{[^}]*animation:\s*mptk-spinner-chase/)
+  assert.match(css, /\.mptk-spinner--chase\s*\{[^}]*animation-name:\s*mptk-spinner-chase/)
   assert.match(
     css,
     /\.mptk-spinner__chase-dot::before\s*\{[^}]*background-color:\s*currentColor/,

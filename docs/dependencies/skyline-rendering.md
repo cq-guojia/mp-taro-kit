@@ -19,6 +19,7 @@
 - **单边 `border` 上色会让 `border-radius` 整个失效**（微信开放社区置顶帖，官方回复「单边 border + border-radius 暂时还不支持」）：`border: 2px solid gray` 配 `border-top-color: blue` 再配 `border-radius: 50%`，Skyline 下画出来是旋转的方框，圆角改百分比或超大值都救不回来。本库自绘转圈因此不给单边边框上色：`circular` 用 `conic-gradient` 画弧 + 环形遮罩挖空（`mask` 只写 `url()`，Skyline 不认渐变遮罩），`chase` 用六点追逐；`tests/spinner.test.mjs` 断言产物里不出现 `border-top-color`。
 - 演示站构建存在 `.swc` 转换缓存：只改 `demo/src/components/*` 这类被多页共享的模块时，共享 chunk 可能沿用旧转换结果，现象是页面布局没变。处理方式是删 `demo/.swc` 后重建 `pnpm --filter mp-taro-kit-demo build:weapp`。
 - **开发者工具里「靠内容收缩取宽」的盒子会整块变空白。** 现象：`display: inline-flex` 这类按内容定宽的盒子，内部放一个 `flex: 1 1 0` 的 `scroll-view` 时，开发者工具把宽度算成 0 —— 组件只剩一块空白占位，一个像素都不画；同页里显式 `width: 100%` 的同款组件正常，真机也正常。判断方法：同页同组件、只差宽度来源，收缩取宽的那几个空白、定宽的那些正常，即可确认。修法是让宽度由根节点给出（`display: flex; width: 100%`），把底色与圆角下移到内层 track，不再让内容反过来决定祖先宽度 —— `Segmented` 的 `fit` 模式即按此改。
+- **`@keyframes` 里不能写 `var()`。** WXSS 在编译期就把关键帧固化成静态表，带 `var()` 的声明会被整条丢掉：动画既不报错也不生效，元素静静停在初始态（转圈看上去就是一圈不动的弧，很容易被当成「颜色配错了」）。所有 `@keyframes` 内的数值一律写字面量，取值与 `kit.config.mjs` 同名项一一对应，由 `tests/controls.test.mjs` 的「关键帧里不许出现 var()」断言防漂移；`animation` 简写同样拆成长写（`animation-name` / `-duration` / `-timing-function` / `-iteration-count`），只让 `duration` 保留 `var()`（普通属性值不受此限）。唯一保留 `var()` 的是 `mptk-thumb-breathe`：滑块底色是每实例算出来的，无法字面量化，Skyline 下这条呼吸不动，由 Switch 的转圈兜底。
 - Skyline 页面不显示滚动条属正常表现，不能用「没有滚动条」判断页面是否可滚。
 
 ## 更新日志
@@ -35,3 +36,4 @@
 - 2026-11-12 18:22:34：转圈改为自绘 8 点圆点环，绕开 Skyline 单边边框让圆角失效
 - 2026-11-12 20:42:06：转圈改为 TDesign circular 圆环与 SpinKit 六点追逐两形态，默认圆环
 - 2026-11-13 09:08:43：补开发者工具下收缩取宽塌成 0 宽的坑与判据
+- 2026-11-15 16:20:00：补 `@keyframes` 里写 `var()` 会让动画静默失效，全部关键帧改字面量并加断言

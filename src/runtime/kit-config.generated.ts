@@ -1,4 +1,4 @@
-// @mptk-inputs:2fba3450b86c
+// @mptk-inputs:081e9f242bee
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（runtime 层默认表）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -24,7 +24,7 @@ export const DEFAULT_KIT_CONFIG: KitConfigDefaults = {
     "runtime": {
       "toastDuration": 2000,
       "notifyLimit": 3,
-      "controlSizeDefault": "md",
+      "controlSizeDefault": "sm",
       "core": {
         "baseURL": "",
         "timeout": 10000,

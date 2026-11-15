@@ -15,7 +15,7 @@
 | `value` | `T extends string` | 是 | 应命中某个 `item.value` | 宿主真值；等待期间的临时显示值不会写回它 |
 | `onChange` | `(next: T) => unknown` | 否 | 返回 thenable 时进入等待态 | 点某段调用，`next` 是该段的 `value` |
 | `onFailed` | `() => void` | 否 | 无 | 等待失败时通知宿主；组件不做回弹，位置从未变过 |
-| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | 否 | 默认 `md` | 取 `--mptk-control-h-*`；刻度七档中的可点五档 24 / 32 / 40 / 48 / 56（`3xs` / `xxs` 只对 Tag 开放） |
+| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | 否 | 默认 `sm` | 取 `--mptk-control-h-*`；刻度七档中的可点五档 24 / 32 / 40 / 48 / 56（`3xs` / `xxs` 只对 Tag 开放） |
 | `width` | `'fit' \| 'ratio' \| 'equal'` | 否 | 默认 `fit` | 段宽策略：按内容撑开 / 内容 + 剩余均摊 / 严格等分，见下 |
 | `indicator` | `'thumb' \| 'line'` | 否 | 默认 `thumb` | 滑动块或频道切换式下划线 |
 | `radius` | `'pill'` | 否 | 无 | 半圆形态：容器与滑动块一起切到 `--mptk-radius-pill` |
@@ -134,3 +134,4 @@ function FilterBar() {
 - 2026-11-13 12:03:11：呼吸周期再放慢一倍到 1120ms，灰值与幅度不动
 - 2026-11-14 12:12:20：默认档改 md（40）
 - 2026-11-15：控件高度轴补 `xs`（24）/ `xl`（56），`xs` 档段内留白与段文字同步收档
+- 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）

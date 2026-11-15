@@ -183,6 +183,7 @@ export default {
     "--mptk-default-soft": "var(--mptk-gray-1)",                    // 中性浅底：明色取最浅灰
     "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：和其他 type 的 solid 一样是深底，页面底是 gray-2，6 级才分得开
     "--mptk-tag-fg": "@white",                                      // 默认标签实心字：深底必须反白，不能跟着全局 --mptk-fg 走
+    "--mptk-fg-on-accent": "@white",                                // 强调底上的字：语义色实心块一律反白，明暗同口径（surface-1 是「面」，暗色下会变成深灰）
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -262,6 +263,7 @@ export default {
     "--mptk-default-soft": "var(--mptk-gray-3)",                    // 中性浅底：暗色取 3 级灰才看得见
     "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：暗底上要亮到 6 级才有边界，浅一档就陷进背景
     "--mptk-tag-fg": "@white",                                      // 默认标签实心字：与明色同口径，深底反白
+    "--mptk-fg-on-accent": "@white",                                // 强调底上的字：与明色同口径，实心块反白
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -284,6 +286,7 @@ export default {
     "--mptk-c-navbar-z": "10",                                      // 层级：导航栏
     "--mptk-c-navbar-weight": "500",                                // 导航栏标题字重
     "--mptk-c-locked-opacity": ".5",                                // 锁定态（disabled / busy）不透明度
+    "--mptk-c-btn-pressed-opacity": ".86",                           // 按钮按压态不透明度：小程序没有 :hover，靠 hoverClass 降一点
     "--mptk-c-border-w": "1px",                                     // 通用描边宽度
     "--mptk-c-thumb-shadow": "0 2px 4px rgba(0, 0, 0, .2)",         // Switch / Segmented 滑块投影
     "--mptk-c-switch-inset": "2px",                                 // Switch 滑块距轨道的内缩
@@ -385,7 +388,7 @@ export default {
   runtime: {                                                        // 运行时行为默认值：Toast / 通知队列 / 默认档位 / core
     "toastDuration": 2000,                                          // Toast 自动消失毫秒数；0 表示常驻不自动关
     "notifyLimit": 3,                                               // 通知队列同时最多显示条数，超出顶掉最旧一条
-    "controlSizeDefault": "md",                                     // 未传 size 时 Button / Switch / Segmented 的默认档
+    "controlSizeDefault": "sm",                                     // 未传 size 时 Button / Switch / Segmented 的默认档：32 / 14，与 WeUI mini 对齐
     "core": {                                                       // core 请求与存储默认值：由 configure() 读取
       "baseURL": "",                                                // core 请求基址：留空则由调用方传完整 URL
       "timeout": 10000,                                             // core 请求超时毫秒数

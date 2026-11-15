@@ -7,12 +7,13 @@
 @use '../../busy' as busy;
 
 .mptk-switch {
-  --mptk-switch-track-w: var(--mptk-c-switch-w-lg);
-  --mptk-switch-track-h: var(--mptk-c-switch-h-lg);
+  /* 兜底写成默认档（sm）：万一漏了档位类，轨道与根高也是配对的，不会出现 lg 轨道配 sm 高度。 */
+  --mptk-switch-track-w: var(--mptk-c-switch-w-sm);
+  --mptk-switch-track-h: var(--mptk-c-switch-h-sm);
   --mptk-control-active: var(--mptk-control-green);
   align-items: center;
   display: inline-flex;
-  height: var(--mptk-control-h-md);
+  height: var(--mptk-control-h-sm);
 }
 
 .mptk-switch--xs {
