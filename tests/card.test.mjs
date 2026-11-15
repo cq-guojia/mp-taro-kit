@@ -53,7 +53,7 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   assert.doesNotMatch(css, /--mp-/, '不许出现旧前缀')
   assert.match(css, /border-top-left-radius:\s*var\(--mptk-card-radius\)/, '四角圆角走语义键')
 
-  for (const radius of ['xs', 'sm', 'md', 'lg', 'xl']) {
+  for (const radius of ['none', 'xs', 'sm', 'md', 'lg', 'xl']) {
     assert.match(
       css,
       new RegExp(`\\.mptk-card--radius-${radius}\\s*\\{[^}]*--mptk-card-radius:\\s*var\\(--mptk-radius-${radius}\\)`),
@@ -63,7 +63,26 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   for (const size of ['sm', 'md', 'lg']) {
     assert.ok(css.includes(`.mptk-card--size-${size}`), `缺 size=${size} 修饰类`)
   }
-  assert.match(resolveCssVars(css), /\.mptk-card--frameless\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉描边')
+
+  /* 形态一轴四种组合：面与边各自开合，不再靠 frame 布尔开关拼。 */
+  assert.equal(
+    resolveCssVars(declOf(ruleOf(css, '.mptk-card--filled'), 'border-top-width')),
+    '0',
+    'filled 只有面，四边描边要归零',
+  )
+  assert.equal(
+    declOf(ruleOf(css, '.mptk-card--filled'), 'background-color'),
+    '',
+    'filled 不该自己画面，底色仍由 --mptk-card-bg 决定',
+  )
+  const outline = ruleOf(css, '.mptk-card--outline')
+  assert.equal(declOf(outline, 'background-color'), 'transparent', 'outline 只有边，底要透给页面')
+  assert.equal(declOf(outline, 'border-top-color'), 'var(--mptk-card-accent)', 'outline 的边色取 accent，色值才有处落')
+  const plain = ruleOf(css, '.mptk-card--plain')
+  assert.equal(declOf(plain, 'background-color'), 'transparent', 'plain 没有面')
+  assert.equal(resolveCssVars(declOf(plain, 'border-top-width')), '0', 'plain 也没有边')
+  assert.doesNotMatch(css, /mptk-card--frameless/, 'frame 布尔开关已由 variant 取代，不留双口径')
+
   assert.doesNotMatch(css, /mptk-card--flush/, 'Card 不该再暴露 flush 形态参数')
   const cellCss = read('../dist/ui/display/cell/style/index.css')
   assert.match(resolveCssVars(cellCss), /background-color:\s*transparent/, '卡片内组与行底色要透明')
@@ -71,14 +90,31 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   assert.match(css, /\.mptk-card--edge-top\s*\{/, '贴边归零要按端提供，规则归 Card')
   assert.match(css, /\.mptk-card--edge-bottom\s*\{/, '贴边归零要按端提供，规则归 Card')
   assert.match(resolveCssVars(css), /\.mptk-card--cover\s*\{[^}]*padding-top:\s*0/, '有封面时顶部不留白')
-  assert.match(css, /\.mptk-card--blue\s*\{[^}]*--mptk-card-bg:\s*var\(--mptk-blue-soft\)/, '内置色走已有的淡色面')
+
+  /* 色名两处落点：底色走软色，边色走同色相实色；两条路都只换变量。 */
+  const blue = ruleOf(css, '.mptk-card--blue')
+  assert.equal(declOf(blue, '--mptk-card-bg'), 'var(--mptk-blue-soft)', '内置色走已有的淡色面')
+  assert.equal(declOf(blue, '--mptk-card-accent'), 'var(--mptk-blue)', '只有边的形态要拿到同色相实色')
+
   assert.match(css, /\.mptk-card--header-divider\s+\.mptk-card__header/, '头部分隔线要有规则')
+  const footerRule = ruleOf(css, '.mptk-card--footer-divider .mptk-card__footer')
+  assert.equal(declOf(footerRule, 'border-top-color'), 'var(--mptk-border-faint)', '底部分隔线与头部同档同色')
+  assert.equal(declOf(footerRule, 'padding-top'), 'var(--mptk-space-2)', '线到内容一档小间距，与头部对称')
+
   const heading = ruleOf(css, '.mptk-card__title')
   assert.equal(declOf(heading, 'font-size'), 'var(--mptk-font-lg)', '标题取字号档 lg')
   const subtitle = ruleOf(css, '.mptk-card__subtitle')
   assert.equal(declOf(subtitle, 'font-size'), 'var(--mptk-font-xs)', '说明比正文低一档，取字号档 xs')
   assert.equal(declOf(subtitle, 'line-height'), 'var(--mptk-line-xs)', '说明行高同档')
-  assert.match(css, /\.mptk-card--pressed\s*\{[^}]*background-color:\s*var\(--mptk-surface-2\)/, '按压态要有反馈')
+
+  /* 按压态必须叠在自有底色之上：自定义色值走内联 backgroundColor，换底色会被内联样式压住。 */
+  const pressed = ruleOf(css, '.mptk-card--pressed')
+  assert.match(
+    declOf(pressed, 'background-image'),
+    /^linear-gradient\(var\(--mptk-card-press\), var\(--mptk-card-press\)\)$/,
+    '按压反馈要叠半透明层，不能换 background-color',
+  )
+  assert.equal(declOf(pressed, 'background-color'), '', '按压不改底色，否则自定义色值的反馈会失效')
 
   const tokens = read('../src/design/_tokens.scss')
   assert.match(tokens, /--mptk-card-radius:\s*var\(--mptk-radius-md\)/, '默认圆角与控件同档（md）')
@@ -88,32 +124,43 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
     assert.match(theme, /--mptk-card-bg:\s*var\(--mptk-surface-1\)/, `${mode} 缺卡片面色键`)
     assert.match(theme, /--mptk-card-border:\s*var\(--mptk-border\)/, `${mode} 缺卡片描边键`)
   }
+  const darkPress = read('../dist/styles/theme-dark.css').match(/--mptk-card-press:\s*([^;]+);/)
+  assert.ok(darkPress && /rgba\(255, 255, 255/.test(darkPress[1]), '暗色下按压层改为提亮')
 })
 
-test('Card 状态：枚举派生、颜色双路、点击与等待态', () => {
+test('Card 状态：形态派生、颜色双路、点击与等待态', () => {
   const base = cardState.resolveCardState({})
+  assert.match(base.className, /mptk-card--surface/, '默认形态是面 + 边')
   assert.match(base.className, /mptk-card--size-md/, '默认 md 档')
   assert.doesNotMatch(base.className, /mptk-card--radius-/, '不给 radius 就走默认语义键')
   assert.equal(base.clickable, false)
   assert.equal(base.hoverClassName, 'none')
   assert.equal(base.busy, false)
-  assert.equal(base.inlineColor, undefined)
+  assert.equal(base.inlineStyle, undefined)
+
+  for (const variant of ['surface', 'filled', 'outline', 'plain']) {
+    assert.match(
+      cardState.resolveCardState({ variant }).className,
+      new RegExp(`mptk-card--${variant}(?:\\s|$)`),
+      `形态 ${variant} 必须派生自己的类`,
+    )
+  }
 
   const shaped = cardState.resolveCardState({
-    radius: 'xl', size: 'lg', frame: false, headerDivider: true,
+    variant: 'filled', radius: 'none', size: 'lg', headerDivider: true, footerDivider: true,
     color: 'blue', hasCover: true, onClick: () => {}, loading: true,
   })
   for (const name of [
-    'mptk-card--radius-xl', 'mptk-card--size-lg', 'mptk-card--frameless',
-    'mptk-card--header-divider', 'mptk-card--cover', 'mptk-card--blue', 'mptk-card--busy',
-    'mptk-card--clickable',
+    'mptk-card--filled', 'mptk-card--radius-none', 'mptk-card--size-lg',
+    'mptk-card--header-divider', 'mptk-card--footer-divider', 'mptk-card--cover',
+    'mptk-card--blue', 'mptk-card--busy', 'mptk-card--clickable',
   ]) {
     assert.ok(shaped.className.includes(name), `派生类缺 ${name}`)
   }
   assert.equal(shaped.clickable, true)
   assert.equal(shaped.hoverClassName, 'mptk-card--pressed')
   assert.equal(shaped.busy, true)
-  assert.equal(shaped.inlineColor, undefined, '内置色名不产生内联色值')
+  assert.equal(shaped.inlineStyle, undefined, '内置色名不产生内联样式')
 
   assert.deepEqual(cardState.resolveCardColor('teal'), {
     className: 'mptk-card--teal', inlineColor: undefined,
@@ -122,6 +169,31 @@ test('Card 状态：枚举派生、颜色双路、点击与等待态', () => {
     className: '', inlineColor: '#f0e6ff',
   }, '自定义色值必须走内联，口子不能关')
   assert.deepEqual(cardState.resolveCardColor(undefined), { className: '', inlineColor: undefined })
+
+  /* 色值落到该形态真正可见的通道：有面染底、只有边染线、plain 无处可落。 */
+  assert.deepEqual(
+    cardState.resolveCardState({ color: '#f0e6ff' }).inlineStyle,
+    { backgroundColor: '#f0e6ff' },
+  )
+  assert.deepEqual(
+    cardState.resolveCardState({ variant: 'filled', color: '#f0e6ff' }).inlineStyle,
+    { backgroundColor: '#f0e6ff' },
+  )
+  assert.deepEqual(
+    cardState.resolveCardState({ variant: 'outline', color: '#f0e6ff' }).inlineStyle,
+    { borderColor: '#f0e6ff' },
+    'only-edge 形态的色值落到边线上',
+  )
+  assert.equal(
+    cardState.resolveCardState({ variant: 'plain', color: '#f0e6ff' }).inlineStyle,
+    undefined,
+    'plain 没有面也没有边，不装作生效',
+  )
+  assert.doesNotMatch(
+    cardState.resolveCardState({ variant: 'plain', color: 'blue' }).className,
+    /mptk-card--blue/,
+    'plain 的内置色名同样不派生',
+  )
 
   assert.match(
     cardState.resolveCardState({ hasHeader: true }).className,
@@ -138,12 +210,28 @@ test('Card 状态：枚举派生、颜色双路、点击与等待态', () => {
     /mptk-card--header-divider/,
     '没有头部就不画线',
   )
+  assert.match(
+    cardState.resolveCardState({ hasFooter: true }).className,
+    /mptk-card--footer-divider/,
+    '有底部同口径：默认画线',
+  )
+  assert.doesNotMatch(
+    cardState.resolveCardState({ hasFooter: true, footerDivider: false }).className,
+    /mptk-card--footer-divider/,
+    '底部线同样显式 false 才关',
+  )
+  assert.doesNotMatch(
+    cardState.resolveCardState({ headerDivider: false, hasFooter: true }).className,
+    /mptk-card--header-divider/,
+    '两个分区线互不牵连',
+  )
 
   const disabled = cardState.resolveCardState({ onClick: () => {}, disabled: true })
   assert.equal(disabled.clickable, false, 'disabled 要短路回调')
   assert.match(disabled.className, /mptk-card--disabled/)
 
-  assert.deepEqual(cardState.CARD_RADII, ['xs', 'sm', 'md', 'lg', 'xl'])
+  assert.deepEqual(cardState.CARD_VARIANTS, ['surface', 'filled', 'outline', 'plain'])
+  assert.deepEqual(cardState.CARD_RADII, ['none', 'xs', 'sm', 'md', 'lg', 'xl'])
   assert.deepEqual(cardState.CARD_SIZES, ['sm', 'md', 'lg'])
   assert.ok(cardState.CARD_COLORS.includes('neutral'))
   assert.equal(cardState.CARD_COLORS.length, 9, 'neutral + 8 支色相')
@@ -287,12 +375,13 @@ test('Card 契约在宿主真类型环境下可作为 JSX 组件使用', () => {
   const probe = resolve(root, 'src/__probe-card.tsx')
   const entry = JSON.stringify(resolve(root, 'dist/ui/card/index'))
   const source = `import { Card } from ${entry};
-import type { CardProps, CardRadius, CardSize, CardColor, BuiltinCardColor } from ${entry};
-const radius: CardRadius = 'xl';
+import type { CardProps, CardVariant, CardRadius, CardSize, CardColor, BuiltinCardColor } from ${entry};
+const variant: CardVariant = 'outline';
+const radius: CardRadius = 'none';
 const size: CardSize = 'lg';
 const builtin: BuiltinCardColor = 'teal';
 const custom: CardColor = '#f0e6ff';
-const props: CardProps = { radius, size, color: custom, frame: false, headerDivider: true, onClick: () => {} };
+const props: CardProps = { variant, radius, size, color: custom, headerDivider: true, footerDivider: false, onClick: () => {} };
 export const element = (
   <Card {...props} cover="封面" title="标题" subtitle="描述" extra="更多" footer="底部" color={builtin} loading loadingContent="加载中">主体</Card>
 );
@@ -343,8 +432,10 @@ test('Card 菜单指向自己的展示页，业务占位让出通用容器名', 
     assert.ok(source.includes(`id === '${example.id}'`), `Card 页缺 ${example.id} 的渲染分支`)
   }
   assert.match(source, /color="#f0e6ff"/, '自定义色值口子要有演示')
+  assert.match(source, /variant="outline" color="teal"/, '只有边的形态也要能染边，不能只演示有面的形态')
+  assert.match(source, /radius=\{radius\}/, '圆角档位要逐档铺开')
+  assert.ok(source.includes("'none'"), 'radius 枚举要含直角档')
   assert.doesNotMatch(source, /ui\/display\/cell/, 'Card 页不许向下引用 Cell 子域')
-  assert.doesNotMatch(source, /<Card\s+flush|<Card\s+variant/, '组合不许让消费方传形态参数')
   assert.ok(
     page.examples.every((example) => example.imports.every((path) => !path.includes('display/cell'))),
     'Card 页示例不许把 Cell 列进 imports',
@@ -368,6 +459,6 @@ test('Cell 展示页演示与 Card 的零参数组合，CellGroup 兼容形态�
   assert.doesNotMatch(combo.usage, /flush|variant/, '组合示例不许带形态参数')
   const page = read('../demo/src/pages/display/index.tsx')
   assert.match(page, /<Card[\s>]/, '组合示例要真的渲染')
-  assert.doesNotMatch(page, /<Card flush>/, '组合示例不许再传 flush')
+  assert.doesNotMatch(page, /<Card flush>|<Card variant/, '组合示例不许再传形态参数')
   assert.match(page, /<CellGroup inset>/, '旧 inset 兼容形态不能悄悄消失')
 })

@@ -40,7 +40,7 @@ export default function NavigationPage() {
             </Button>
           </View>
           <Drawer open={drawerOpen} side={side} onClose={() => setDrawerOpen(false)}>
-            <Card frame={false} size="lg">
+            <Card variant="filled" size="lg">
               <Text>抽屉内容由 children 注入</Text>
             </Card>
           </Drawer>
@@ -56,7 +56,7 @@ export default function NavigationPage() {
             </Button>
           </View>
           <Dropdown open={dropdownOpen} onClose={() => setDropdownOpen(false)}>
-            <Card frame={false} size="lg">
+            <Card variant="filled" size="lg">
               <Text>下拉面板内容由 children 注入</Text>
             </Card>
           </Dropdown>

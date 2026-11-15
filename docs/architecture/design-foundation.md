@@ -24,7 +24,7 @@
 
 边框三档 `--mptk-border-faint` / `--mptk-border` / `--mptk-border-strong` 之外，`--mptk-cell-divider` 是 Cell 组内分隔线的语义键，默认比外框的 `--mptk-border` 浅一档（明暗各 `.06`）。控件级切换由 `CellGroup` 的 `dividerTone` 等 props 派生修饰类完成，宿主也可在业务级主题定制时覆盖同名变量；组件只引用变量、不写兜底。新增颜色键仍须明暗同名同数。
 
-`--mptk-card-bg` / `--mptk-card-border` 是卡片面与描边的语义键，`light` / `dark` 同名同数；`--mptk-card-radius`（默认指向 `--mptk-radius-md`，与控件圆角同档）与 `--mptk-card-spacing` 是不随明暗变化的基线量，只写在 `base`。`--mptk-card-spacing` 只决定普通内容的留白：内容是贴边组件时由 `Card` 派生 `--edge-content` 直接归零，不再把这支变量交给子级抵消。容器不引用 `--mptk-control-radius`：那支是给 Button / Segmented 的控件圆角。`Card` 的 `radius` / `size` / `color` 都是枚举或色值输入，组件派生修饰类换档，宿主不查变量名单、不写样式，见 [Card 卡片](../api/card.md)。
+`--mptk-card-bg` / `--mptk-card-border` 是卡片面与描边的语义键，`--mptk-card-press` 是按压叠加层的半透明色（明色压暗、暗色提亮），三者 `light` / `dark` 同名同数；`--mptk-card-radius`（默认指向 `--mptk-radius-md`，与控件圆角同档）与 `--mptk-card-spacing` 是不随明暗变化的基线量，只写在 `base`。`--mptk-card-spacing` 只决定普通内容的留白：内容是贴边组件时由 `Card` 派生 `--edge-content` 直接归零，不再把这支变量交给子级抵消。容器不引用 `--mptk-control-radius`：那支是给 Button / Segmented 的控件圆角。`Card` 的 `variant` / `radius` / `size` 是枚举、`color` 接受色名或任意 CSS 色值，组件派生修饰类换档，宿主不查变量名单、不写样式，见 [Card 卡片](../api/card.md)。
 
 ### 3.2 色相
 
@@ -119,3 +119,4 @@
 - 2026-11-14：尺寸表补图标一行：图标档位就是字号档，删掉独立的图标像素表
 - 2026-11-15 00:20:59：设计基础真源与取值纪律改写
 - 2026-11-15 00:40:41：补展示清单只写一次的约束：色板由配置生成，页面与 Sass 不各写一份
+- 2026-11-15 15:46:45：补 --mptk-card-press 与 Card 的 variant 形态轴

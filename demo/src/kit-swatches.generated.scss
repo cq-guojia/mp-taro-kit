@@ -1,4 +1,4 @@
-// @mptk-inputs:acd34227ac1d
+// @mptk-inputs:240f61c88437
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -45,6 +45,9 @@
   }
   .demo-swatch--card-border {
     background-color: var(--mptk-card-border);
+  }
+  .demo-swatch--card-press {
+    background-color: var(--mptk-card-press);
   }
   .demo-swatch--gray-1 {
     background-color: var(--mptk-gray-1);

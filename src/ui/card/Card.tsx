@@ -2,7 +2,13 @@ import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { CardSurfaceContext, CARD_SURFACE_INSIDE } from '../infra/card-context.js'
 import { hasCardEdgeContent } from './edge.js'
-import { resolveCardState, type CardColor, type CardRadius, type CardSize } from './state.js'
+import {
+  resolveCardState,
+  type CardColor,
+  type CardRadius,
+  type CardSize,
+  type CardVariant,
+} from './state.js'
 
 export interface CardProps {
   /** 顶部封面 / 媒体区；不给就不渲染这一块。 */
@@ -17,15 +23,17 @@ export interface CardProps {
   footer?: ReactNode
   /** 主体内容；槽位全部可选，什么都不给就是一块纯壳。 */
   children?: ReactNode
+  /** 形态：surface 面 + 边（默认）/ filled 只有面 / outline 只有边 / plain 都没有。 */
+  variant?: CardVariant
   /** 圆角枚举；不给走 --mptk-card-radius（容器级默认档）。 */
   radius?: CardRadius
   /** 内容密度枚举，只换分区间距；默认 md。 */
   size?: CardSize
-  /** 四边描边；默认有，false 得到无边框卡片。 */
-  frame?: boolean
   /** 头部与主体之间的分隔线；不给则跟随头部：有头部默认画，传 false 关掉。 */
   headerDivider?: boolean
-  /** 内置色名或任意 CSS 色值；不给走 --mptk-card-bg。 */
+  /** 主体与底部之间的分隔线；不给则跟随底部：有 footer 默认画，传 false 关掉。 */
+  footerDivider?: boolean
+  /** 内置色名或任意 CSS 色值；有面时染底，只有边时染线，纯排版形态不参与。 */
   color?: CardColor
   /** 给了才派生按压态，disabled 短路；跳转由宿主注入，本库不接路由。 */
   onClick?: () => void
@@ -41,6 +49,7 @@ function filled(node: ReactNode): boolean {
 }
 
 /** 卡片族第一种样式：带圆角的通用内容壳。分区按需渲染，不给的槽位不产生节点。
+    形态由 variant 一轴决定（面 / 边的四种组合），色值由 color 落到该形态真正可见的通道。
     同时向后代声明「你在卡片里」，CellGroup 收到后自己收敛外框与留白，消费方零参数。 */
 export function Card({
   cover,
@@ -49,10 +58,11 @@ export function Card({
   extra,
   footer,
   children,
+  variant,
   radius,
   size,
-  frame,
   headerDivider,
+  footerDivider,
   color,
   onClick,
   disabled,
@@ -62,20 +72,20 @@ export function Card({
 }: CardProps) {
   const hasHeader = filled(title) || filled(subtitle) || filled(extra)
   const hasCover = filled(cover)
+  const hasFooter = filled(footer)
   const body = loading === true && filled(loadingContent) ? loadingContent : children
   const state = resolveCardState({
-    radius, size, frame, headerDivider, color, hasCover, hasHeader, onClick, disabled, loading, className,
-    hasFooter: filled(footer),
+    variant, radius, size, headerDivider, footerDivider, color,
+    hasCover, hasHeader, hasFooter, onClick, disabled, loading, className,
     hasEdgeContent: hasCardEdgeContent(body),
   })
-  const cardStyle = state.inlineColor !== undefined ? { backgroundColor: state.inlineColor } : undefined
 
   return (
     <CardSurfaceContext.Provider value={CARD_SURFACE_INSIDE}>
       <View
         className={state.className}
         hoverClass={state.hoverClassName}
-        style={cardStyle}
+        style={state.inlineStyle}
         onClick={state.clickable ? onClick : undefined}
       >
         {hasCover ? <View className="mptk-card__cover">{cover}</View> : null}
@@ -89,7 +99,7 @@ export function Card({
           </View>
         ) : null}
         <View className="mptk-card__body">{body}</View>
-        {filled(footer) ? <View className="mptk-card__footer">{footer}</View> : null}
+        {hasFooter ? <View className="mptk-card__footer">{footer}</View> : null}
       </View>
     </CardSurfaceContext.Provider>
   )

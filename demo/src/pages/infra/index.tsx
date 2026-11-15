@@ -44,7 +44,7 @@ export default function InfraPage() {
             </Button>
           </View>
           <SafeArea position={position}>
-            <Card size="sm" radius="sm" frame={false} color="var(--mptk-surface-2)">
+            <Card size="sm" radius="sm" variant="filled" color="var(--mptk-surface-2)">
               <Text>安全区内的内容</Text>
             </Card>
           </SafeArea>

@@ -272,7 +272,7 @@ const LABELS = {
   '--mptk-surface-1': '卡片面', '--mptk-surface-2': '次级面', '--mptk-surface-3': '下沉面',
   '--mptk-surface-base': '页面底色', '--mptk-border': '边框', '--mptk-border-faint': '浅边框',
   '--mptk-border-strong': '重边框', '--mptk-cell-divider': '组内分隔线',
-  '--mptk-card-bg': '卡片底色', '--mptk-card-border': '卡片描边',
+  '--mptk-card-bg': '卡片底色', '--mptk-card-border': '卡片描边', '--mptk-card-press': '卡片按压层',
   '--mptk-business': '业务色', '--mptk-success': '成功色', '--mptk-warning': '警告色',
   '--mptk-danger': '错误色', '--mptk-spinner-active': '等待主色',
   '--mptk-opacity-busy': '等待态透明度', '--mptk-dur': '标准动效时长',

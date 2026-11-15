@@ -1,4 +1,4 @@
-/* Card：卡片族唯一的壳。圆角、描边、面、分区间距全取 --mptk-*。
+/* Card：卡片族唯一的壳。形态、圆角、描边、面、分区间距全取 --mptk-*。
    宿主只经 props 枚举切档，不写样式、不必查变量名单。 */
 
 .mptk-card {
@@ -28,9 +28,39 @@
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
+  /* 无色时的边色：默认跟卡片描边走；色名只在「只有边」的形态上改这一支。 */
+  --mptk-card-accent: var(--mptk-card-border);
 }
 
-/* radius 枚举：修饰类只把语义键换到另一档，取值仍只在 design 层写一次。 */
+/* variant 轴：面与边的四种组合。surface 就是基线的「面 + 边」，不另写规则。
+   filled 有面没边：整底卡片，靠底色与留白成块，不再画一圈线。 */
+.mptk-card--filled {
+  border-top-width: var(--mptk-s-zero);
+  border-right-width: var(--mptk-s-zero);
+  border-bottom-width: var(--mptk-s-zero);
+  border-left-width: var(--mptk-s-zero);
+}
+
+/* outline 有边没面：底透给页面，边框仍画；色名 / 色值染的就是这条边。 */
+.mptk-card--outline {
+  background-color: transparent;
+  border-top-color: var(--mptk-card-accent);
+  border-right-color: var(--mptk-card-accent);
+  border-bottom-color: var(--mptk-card-accent);
+  border-left-color: var(--mptk-card-accent);
+}
+
+/* plain 没面没边：只保留分区间距与圆角裁切的排版容器，颜色无处可落。 */
+.mptk-card--plain {
+  background-color: transparent;
+  border-top-width: var(--mptk-s-zero);
+  border-right-width: var(--mptk-s-zero);
+  border-bottom-width: var(--mptk-s-zero);
+  border-left-width: var(--mptk-s-zero);
+}
+
+/* radius 枚举：修饰类只把语义键换到另一档，取值仍只在配置层写一次。 */
+.mptk-card--radius-none { --mptk-card-radius: var(--mptk-radius-none); }
 .mptk-card--radius-xs { --mptk-card-radius: var(--mptk-radius-xs); }
 .mptk-card--radius-sm { --mptk-card-radius: var(--mptk-radius-sm); }
 .mptk-card--radius-md { --mptk-card-radius: var(--mptk-radius-md); }
@@ -42,27 +72,25 @@
 .mptk-card--size-md { --mptk-card-spacing: var(--mptk-space-3); }
 .mptk-card--size-lg { --mptk-card-spacing: var(--mptk-space-4); }
 
-/* frame={false}：无边框卡片，仍保留圆角与底色。 */
-.mptk-card--frameless {
-  border-top-width: var(--mptk-s-zero);
-  border-right-width: var(--mptk-s-zero);
-  border-bottom-width: var(--mptk-s-zero);
-  border-left-width: var(--mptk-s-zero);
+/* 内置色名一律映射到已有的淡色面，色名只换变量、不新增色值；neutral 回到中性面。
+   accent 是同一支色相的实色，只在 outline 形态上作为边色出现。 */
+.mptk-card--neutral { --mptk-card-bg: var(--mptk-surface-1); }
+.mptk-card--blue { --mptk-card-bg: var(--mptk-blue-soft); --mptk-card-accent: var(--mptk-blue); }
+.mptk-card--green { --mptk-card-bg: var(--mptk-green-soft); --mptk-card-accent: var(--mptk-green); }
+.mptk-card--orange { --mptk-card-bg: var(--mptk-orange-soft); --mptk-card-accent: var(--mptk-orange); }
+.mptk-card--red { --mptk-card-bg: var(--mptk-red-soft); --mptk-card-accent: var(--mptk-red); }
+.mptk-card--purple { --mptk-card-bg: var(--mptk-purple-soft); --mptk-card-accent: var(--mptk-purple); }
+.mptk-card--cyan { --mptk-card-bg: var(--mptk-cyan-soft); --mptk-card-accent: var(--mptk-cyan); }
+.mptk-card--pink { --mptk-card-bg: var(--mptk-pink-soft); --mptk-card-accent: var(--mptk-pink); }
+.mptk-card--teal { --mptk-card-bg: var(--mptk-teal-soft); --mptk-card-accent: var(--mptk-teal); }
+
+/* 按压态由 onClick 派生；disabled 不挂反馈。
+   用一层半透明底叠在自身上，而不是换 background-color：
+   自定义色值走内联 backgroundColor，类名换底色会被内联样式压住、按压时看不到任何反馈。 */
+.mptk-card--pressed {
+  background-image: linear-gradient(var(--mptk-card-press), var(--mptk-card-press));
 }
 
-/* 内置色名一律映射到已有的淡色面，不新增色值；neutral 回到中性面。 */
-.mptk-card--neutral { --mptk-card-bg: var(--mptk-surface-1); }
-.mptk-card--blue { --mptk-card-bg: var(--mptk-blue-soft); }
-.mptk-card--green { --mptk-card-bg: var(--mptk-green-soft); }
-.mptk-card--orange { --mptk-card-bg: var(--mptk-orange-soft); }
-.mptk-card--red { --mptk-card-bg: var(--mptk-red-soft); }
-.mptk-card--purple { --mptk-card-bg: var(--mptk-purple-soft); }
-.mptk-card--cyan { --mptk-card-bg: var(--mptk-cyan-soft); }
-.mptk-card--pink { --mptk-card-bg: var(--mptk-pink-soft); }
-.mptk-card--teal { --mptk-card-bg: var(--mptk-teal-soft); }
-
-/* 按压态由 onClick 派生；disabled 不挂反馈。 */
-.mptk-card--pressed { background-color: var(--mptk-surface-2); }
 .mptk-card--disabled { color: var(--mptk-fg-4); }
 .mptk-card--busy { opacity: var(--mptk-opacity-busy); }
 
@@ -156,4 +184,12 @@
   margin-top: var(--mptk-card-spacing);
   padding-right: var(--mptk-card-spacing);
   padding-left: var(--mptk-card-spacing);
+}
+
+/* 底部分区线与头部同口径：留白在线的外侧，线与内容之间一档 --mptk-space-2。 */
+.mptk-card--footer-divider .mptk-card__footer {
+  border-top-width: var(--mptk-c-border-w);
+  border-top-style: solid;
+  border-top-color: var(--mptk-border-faint);
+  padding-top: var(--mptk-space-2);
 }

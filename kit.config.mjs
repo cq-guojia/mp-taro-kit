@@ -126,6 +126,7 @@ export default {
     "--mptk-cell-divider": "rgba(0, 0, 0, .06)",                    // Cell 分隔线：默认比外框浅，宿主可覆盖成同色
     "--mptk-card-bg": "var(--mptk-surface-1)",                      // 卡片底色：引用 surface-1
     "--mptk-card-border": "var(--mptk-border)",                     // 卡片描边：引用 border
+    "--mptk-card-press": "rgba(0, 0, 0, .06)",                      // 卡片按压层：叠在自有底色之上，自定义色值也能看到反馈
     "--mptk-gray-1": "@gray-1",                                     // 语义灰 1 级：组件可直接引用的中性色
     "--mptk-gray-2": "@gray-2",                                     // 语义灰 2 级：组件可直接引用的中性色
     "--mptk-gray-3": "@gray-3",                                     // 语义灰 3 级：组件可直接引用的中性色
@@ -197,6 +198,7 @@ export default {
     "--mptk-cell-divider": "rgba(255, 255, 255, .06)",              // Cell 分隔线：默认比外框浅，宿主可覆盖成同色
     "--mptk-card-bg": "var(--mptk-surface-1)",                      // 卡片底色：引用 surface-1
     "--mptk-card-border": "var(--mptk-border)",                     // 卡片描边：引用 border
+    "--mptk-card-press": "rgba(255, 255, 255, .08)",                // 卡片按压层：暗色下改为提亮，明暗同一支键
     "--mptk-gray-1": "@gray-1",                                     // 语义灰 1 级：组件可直接引用的中性色
     "--mptk-gray-2": "@gray-2",                                     // 语义灰 2 级：组件可直接引用的中性色
     "--mptk-gray-3": "@gray-3",                                     // 语义灰 3 级：组件可直接引用的中性色

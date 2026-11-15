@@ -1,4 +1,4 @@
-// @mptk-inputs:acd34227ac1d
+// @mptk-inputs:240f61c88437
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -561,6 +561,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "var(--mptk-border)",
       "unit": "",
       "note": "card-border",
+    },
+    {
+      "key": "--mptk-card-press",
+      "label": "卡片按压层",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "rgba(0, 0, 0, .06)",
+      "unit": "color",
+      "note": "card-press",
     },
     {
       "key": "--mptk-gray-1",
@@ -1182,6 +1191,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "var(--mptk-border)",
       "unit": "",
       "note": "card-border",
+    },
+    {
+      "key": "--mptk-card-press",
+      "label": "卡片按压层",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "rgba(255, 255, 255, .08)",
+      "unit": "color",
+      "note": "card-press",
     },
     {
       "key": "--mptk-gray-1",

@@ -12,12 +12,12 @@ export default function BadgePage() {
       return (
         <View className="demo-row">
           <Badge count={3}>
-            <Card size="sm" radius="sm" frame={false} color="var(--mptk-surface-2)">
+            <Card size="sm" radius="sm" variant="filled" color="var(--mptk-surface-2)">
               <Text>消息</Text>
             </Card>
           </Badge>
           <Badge dot>
-            <Card size="sm" radius="sm" frame={false} color="var(--mptk-surface-2)">
+            <Card size="sm" radius="sm" variant="filled" color="var(--mptk-surface-2)">
               <Text>更新</Text>
             </Card>
           </Badge>

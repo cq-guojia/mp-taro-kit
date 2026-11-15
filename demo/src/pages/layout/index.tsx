@@ -36,7 +36,7 @@ export default function LayoutPage() {
             </Button>
           </View>
           <Overlay visible={overlayVisible}>
-            <Card frame={false} size="lg">
+            <Card variant="filled" size="lg">
               <Text>覆盖层内容由 children 注入</Text>
             </Card>
           </Overlay>
@@ -52,7 +52,7 @@ export default function LayoutPage() {
             </Button>
           </View>
           <Popup open={popupOpen} position="bottom" onClose={() => setPopupOpen(false)}>
-            <Card frame={false} size="lg">
+            <Card variant="filled" size="lg">
               <Text>弹出层 = 遮罩 + 定位面板</Text>
             </Card>
           </Popup>

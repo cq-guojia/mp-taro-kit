@@ -32,7 +32,7 @@
 
 第一个按此落地的组件单元是 `mp-taro-kit/ui/display/cell`（`Cell` + `CellGroup`）与 `mp-taro-kit/ui/display/cell/style`；`mp-taro-kit/ui/display` 只转发它们，不再作为推荐引用口。
 
-`mp-taro-kit/ui/card` + `/style` 是通用卡片容器的组件级单元，导出 `Card` 与 `CardRadius` / `CardSize` / `CardColor` 等枚举类型，见 [Card 卡片](card.md)。卡片族后续成员并列放在同一子域下、各给自己的细路径，共用壳的类名与 `--mptk-card-*` 变量；`ui` 顶层仍不 re-export 组件。
+`mp-taro-kit/ui/card` + `/style` 是通用卡片容器的组件级单元，导出 `Card` 与 `CardVariant` / `CardRadius` / `CardSize` / `CardColor` 等枚举类型，见 [Card 卡片](card.md)。卡片族后续成员并列放在同一子域下、各给自己的细路径，共用壳的类名与 `--mptk-card-*` 变量；`ui` 顶层仍不 re-export 组件。
 
 `Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
 
@@ -267,3 +267,4 @@ setThemeMode('auto', {
 - 2026-11-14 12:12:20：控件默认档改 md（40）
 - 2026-11-14 23:43:34：补 config / plugin 出口，样式真源翻改为 kit.config.mjs
 - 2026-11-15 00:20:59：出口契约表改写真源
+- 2026-11-15 15:46:45：Card 出口补 CardVariant

@@ -3,6 +3,7 @@ export type { CardProps } from './Card.js'
 export {
   resolveCardState,
   resolveCardColor,
+  CARD_VARIANTS,
   CARD_RADII,
   CARD_SIZES,
   CARD_COLORS,
@@ -11,6 +12,8 @@ export type {
   CardState,
   CardStateInput,
   CardColorParts,
+  CardInlineStyle,
+  CardVariant,
   CardRadius,
   CardSize,
   CardColor,
