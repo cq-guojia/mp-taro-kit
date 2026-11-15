@@ -182,7 +182,7 @@ export default {
     "--mptk-danger-soft": "var(--mptk-red-soft)",                   // 危险浅底：跟随危险色
     "--mptk-default-soft": "var(--mptk-gray-1)",                    // 中性浅底：明色取最浅灰
     "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：和其他 type 的 solid 一样是深底，页面底是 gray-2，6 级才分得开
-    "--mptk-tag-fg": "@white",                                      // 默认标签实心字：深底必须反白，不能跟着全局 --mptk-fg 走
+    "--mptk-tag-fg": "var(--mptk-fg-on-accent)",                    // 默认标签实心字：引用反白字键，值只维护一处
     "--mptk-fg-on-accent": "@white",                                // 强调底上的字：语义色实心块一律反白，明暗同口径（surface-1 是「面」，暗色下会变成深灰）
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
@@ -262,7 +262,7 @@ export default {
     "--mptk-danger-soft": "var(--mptk-red-soft)",                   // 危险浅底：跟随危险色
     "--mptk-default-soft": "var(--mptk-gray-3)",                    // 中性浅底：暗色取 3 级灰才看得见
     "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：暗底上要亮到 6 级才有边界，浅一档就陷进背景
-    "--mptk-tag-fg": "@white",                                      // 默认标签实心字：与明色同口径，深底反白
+    "--mptk-tag-fg": "var(--mptk-fg-on-accent)",                    // 默认标签实心字：与明色同口径，引用反白字键
     "--mptk-fg-on-accent": "@white",                                // 强调底上的字：与明色同口径，实心块反白
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值

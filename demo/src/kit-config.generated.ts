@@ -1,4 +1,4 @@
-// @mptk-inputs:c0b85eeadb9d
+// @mptk-inputs:6f9ad897a56d
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -1062,8 +1062,8 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "tag-fg",
       "group": "light",
       "groupLabel": "明色",
-      "value": "#fff",
-      "unit": "color",
+      "value": "var(--mptk-fg-on-accent)",
+      "unit": "",
       "note": "tag-fg",
     },
     {
@@ -1764,8 +1764,8 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "tag-fg",
       "group": "dark",
       "groupLabel": "暗色",
-      "value": "#fff",
-      "unit": "color",
+      "value": "var(--mptk-fg-on-accent)",
+      "unit": "",
       "note": "tag-fg",
     },
     {

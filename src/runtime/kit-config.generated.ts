@@ -1,4 +1,4 @@
-// @mptk-inputs:081e9f242bee
+// @mptk-inputs:c855f29f1937
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（runtime 层默认表）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 

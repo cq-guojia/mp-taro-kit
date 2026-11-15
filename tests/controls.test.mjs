@@ -1,6 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { resolveControlColor, CONTROL_COLORS } from '../dist/ui/form/control-color.js'
 import { resolveButtonColor } from '../dist/ui/actions/button-color.js'
 import { resolveCssVars } from './helpers/kit-config.mjs'
@@ -522,8 +524,12 @@ test('默认标签实心：深灰底 + 反白字，与页面底色分得开', ()
   const dark = read('../dist/styles/theme-dark.css')
   assert.match(light, /--mptk-tag-bg:\s*#969799/, '明色取 gray-6：页面底是 gray-2，浅灰档在浅底上分不出块')
   assert.match(dark, /--mptk-tag-bg:\s*#626a75/, '暗色取 gray-6：页面底是 gray-2，浅灰档同侧会陷进背景')
-  assert.match(light, /--mptk-tag-fg:\s*#fff/, '明色反白字')
-  assert.match(dark, /--mptk-tag-fg:\s*#fff/, '暗色反白字')
+  /* tag-fg 只是引用反白键，断言要看解析后的最终值，不能把 var() 当结论。 */
+  assert.match(resolveCssVars(light, 'light'), /--mptk-tag-fg:\s*#fff/, '明色反白字')
+  assert.match(resolveCssVars(dark, 'dark'), /--mptk-tag-fg:\s*#fff/, '暗色反白字')
+  for (const [mode, css] of [['明色', light], ['暗色', dark]]) {
+    assert.doesNotMatch(css, /--mptk-tag-fg:\s*#[0-9a-f]{3,8}/i, `${mode} tag-fg 不许另写一份字面量：反白字只维护一处`)
+  }
 })
 
 test('Tag 三种底色形态：soft 的边比底深，底色取语义浅色档', () => {
@@ -655,16 +661,35 @@ test('关键帧里不许出现 var()：WXSS 编译期固化成静态表，带 va
   }
 })
 
-test('强调底上的字一律反白：实心块不许把 surface-1（面）当字色', () => {
+test('字色只许取字色类键：面 / 底 / 浅底 / 边框一律不得用于 color', () => {
+  const roots = fileURLToPath(new URL('../dist/ui', import.meta.url))
+  const files = []
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) walk(full)
+      else if (entry.name.endsWith('.css')) files.push(full)
+    }
+  }
+  walk(roots)
+  assert.ok(files.length > 10, `扫到的样式产物太少（${String(files.length)} 个），遍历本身有问题`)
+
+  // 「面」色的明暗语义相反（surface-1 明是白、暗是 #1f2329），当字色用必错，且只在暗色暴露。
+  const forbidden = /^(?:surface-|gray-|border(?:$|-)|.*-bg$|.*-soft$|.*-track$|.*-dim$|.*-divider$)/
+  const hits = []
+  for (const file of files) {
+    const css = readFileSync(file, 'utf8')
+    for (const hit of css.matchAll(/(?<![-\w])color:\s*var\(--mptk-([a-z0-9-]+)\)/g)) {
+      if (forbidden.test(hit[1])) hits.push(`${file.slice(file.indexOf('dist/'))} → --mptk-${hit[1]}`)
+    }
+  }
+  assert.deepEqual(hits, [], `字色引用了面/底类键：${hits.join('；')}`)
+})
+
+test('强调底上的字走 fg-on-accent：明暗两套都是白', () => {
   for (const file of ['../dist/ui/display/style/index.css', '../dist/ui/actions/style/index.css']) {
-    const css = read(file)
-    assert.doesNotMatch(
-      css,
-      /(?<!background-)color:\s*var\(--mptk-surface-1\)/,
-      `${file} 把「面」当字色了：明色是白、暗色是深灰，蓝底会变成黑字`,
-    )
     assert.match(
-      css,
+      read(file),
       /(?:--mptk-btn-fg|color):\s*var\(--mptk-fg-on-accent\)/,
       `${file} 实心块没走反白字键`,
     )
