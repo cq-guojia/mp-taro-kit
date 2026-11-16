@@ -63,8 +63,11 @@ demo/                                               # 仓库内的 Taro 小程�
 - `pnpm-workspace.yaml` 的 `publicHoistPattern` 必须提升 `@tarojs/plugin-platform-weapp`：主库 `dist` 位于工作区根，Taro 把其中的 `@tarojs/components` 重写成该插件的裸包名，不提升则跨目录解析失败。
 - 展示页与库侧路径仍一一对应：一页承载一个子域（`foundation` / `commands` 各承载一组能力域），路由由 `pages` 派生；新增能力域先在本树定位，再改 `demo/src/catalog.ts` 与 `demo/app.config.ts` 的 `pages`。
 - 同一子域里已实现的多个组件各占一页，不混排：`form` 只放 Switch，`segmented` 只放 Segmented，`display` 只放 Cell / CellGroup，Badge 与 Divider 各自成页；`card` 是独立子域、通用卡片容器单独成页，业务向商品卡片占位改名 `ProductCard` 让出通用名；菜单条目通过 `pageId` 各自指向自己的页，点进去只看到这一件内容。`tests/ui.test.mjs` 断言 `ready` 条目指向真实展示页，并断言 Cell / Badge / Divider 三条菜单各指自己、Cell 页示例不混入别的内容。多对一仍是全站其余菜单的既有结构，不在本条约束内。
-- 演示内容之间必须留空隙，组件不许一个个贴在一起：横排用 `.demo-row`、纵向多段用 `.demo-stack`，其中的组件一律带 `.demo-item`（自带右、下外边距，取值 `--mptk-space-3`）。不用 `gap` —— 老 WebView 内核不支持，Skyline 与 WebView 会呈现两种结果。
-- **纵向节奏只有四层，每层只负责自己那一道**：页 `padding-top: --mptk-space-4`（16，底部由最后一个块的尾距承担，页不再加 padding-bottom）→ 页头 `margin-bottom: --mptk-space-4`（16）→ 块与块 `--mptk-space-3`（12）→ 卡片与卡片 `--mptk-space-3`（12）。裸块（`bare`，无底色）不贡献垂直留白（`padding-top/bottom: 0`、`margin: 0`），块间距由内容最后一项的尾距承担，因此「卡片之间」和「块与块」是同一个 12。`.demo-block__body` 不再带 `margin-bottom`，块底留白只由块自己给。禁止在块上再叠一层 margin「看起来保险」——三层相加会得到 28 / 56 这种没人能解释的数。**卡片体内不叠尾距**：卡片壳已有四边内边距，块内最后一项的 `.demo-item` 右 / 下外边距由 `.demo-block:not(.demo-block--bare)` 归零，否则只有一排按钮的块下方会比上方厚一整档（12 内边距 + 12 尾距）；裸块不加这条，它正是靠尾距撑块间距。
+- 演示内容之间必须留空隙，组件不许一个个贴在一起：横排用 `.demo-row`、纵向多段用 `.demo-stack`，其中的组件一律带 `.demo-item`（只带右侧外边距，取值 `--mptk-space-3`）。不用 `gap` —— 老 WebView 内核不支持，Skyline 与 WebView 会呈现两种结果。
+- **纵向节奏只有四层，每层只负责自己那一道**：页 `padding-top: --mptk-space-4`（16，页不再加 padding-bottom）→ 页头 `margin-bottom: --mptk-space-4`（16）→ 块与块 `--mptk-space-3`（12）→ 卡片与卡片 `--mptk-space-3`（12）。裸块（`bare`，无底色）不贡献垂直留白（`padding-top/bottom: 0`、`margin: 0`），块间距由块自己的 `margin-bottom` 给，因此「卡片之间」和「块与块」是同一个 12。块内留白由 Card 壳自己的内边距给，不在内容项上叠第二份。禁止在块上再叠一层 margin「看起来保险」——三层相加会得到 28 / 56 这种没人能解释的数。**间距只有一个来源，结构与留白分离**：`.demo-item` 只带右距、不带垂直外边距；纵向间距一律由容器 `.demo-stack` 的相邻兄弟 `margin-top` 给（写成 `> view/text/scroll-view/button:not(:first-child)`，不能用通配符）。多按钮组在页面里显式拆成多个 `.demo-row`、再用 stack 串成多行，`wrap` 只作窄屏兜底。块底因此只剩 Card 自己的内边距，不叠第二份 —— demo 不覆盖 Card 的 `padding-bottom`。
+
+五类写法禁用：**gap**（老 WebView 内核不支持，两端不一致）、**负外边距**（Skyline 丢弃，间距随浮层显隐反复跳）、**`:last-child` 收尾**（浮层挂载就失效）、**通配符选择器**（wxss 整条丢弃，`> * + *`、`+ *` 都实测过）、**calc 乘法**（WebView 支持不一致）。裸块没有卡片壳，不受影响。
+
 - 一页内示例较多时按 `section` 分组：`CatalogExample.section` 是页内分组标题，`DemoPage` 只在分组首块前插一个标题，未标 `section` 的页行为不变。分组判据按「使用者看效果的顺序」，不按库侧目录：Cell 页固定五组「容器形态 → 组级外观设置 → 单格内容与排布 → 交互与状态 → 与 Card 组合」，由大到小、由静态到交互；同类设置集中，新增设置追加到本组末尾、不插回形态组。Card 页固定三组「容器形态 → 外观设置 → 槽位与状态」，同样由大到小、由静态到交互。`tests/ui.test.mjs` 与 `tests/card.test.mjs` 断言两页的组顺序与分组连续，其他未标 `section` 的页不受影响。
 - **组合示例按引用方向归属，只向上引用、不向下引用**：通用容器不知道自己会被谁装，`Card` 页只列自身能力与宿主手搓的内容（`Text` / `View` + 自身槽位），不列举具体子组件的组合；`Cell` 与 `Card` 的组合归引用方 `Cell` 页展示，并放在该页自身能力之后。展示顺序固定为「先看默认值 → 再看可枚举档位 → 再看设置开关 → 再看槽位与内容 → 再看交互状态 → 最后看与其他组件的组合」。`tests/card.test.mjs` 断言 Card 页源码与示例 `imports` 都不出现 `ui/display/cell`；`tests/ui.test.mjs` 断言组合示例归 Cell 页末组。
 - 有尺寸轴的组件，页面第一块固定是「尺寸」示例：逐档铺开（sm / md / lg 各一条）并标出档位与取值，其余示例不再兼差当尺寸表。除这一块之外，演示一律走默认档（不传 `size`，即 `sm`），不写死 `md` / `lg`：同一形态有多个实例、或一页有多个形态时口径一致，尺寸混用会被读成形态差异，形态之间也就没法横向比较；宿主看到的就是不配参数时的样子。`tests/ui.test.mjs` 按示例块断言这条。
@@ -132,3 +135,8 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
 - 2026-11-16：遮罩页目录 `mask` → `overlay`（组件 `Mask` 改名 `Overlay`，删掉重名的内部定位容器）
 - 2026-11-16：卡片体内最后一项的 `.demo-item` 尾距归零，修掉块底部比顶部厚一档的双份留白
+- 2026-11-16 13:48:23：卡片内行距与块尾距分开：末行用等量负外边距抵掉，末项不清下外边距防错位
+- 2026-11-16 14:03:01：块尾抵距不再用 :last-child（浮层挂载会让它失效），改成相邻兄弟选择器补回；写明 wxss 不支持通配符与 text 需 display: block
+- 2026-11-16 14:16:36：块尾规则限定到 __content 直接子，不穿透浮层；calc 乘法改减法
+- 2026-11-16 14:21:29：块底留白改成卡片壳 padding-bottom 归零、内容末项自带一档；禁用负外边距等四类写法
+- 2026-11-16 14:28:41：间距结构化为 stack 相邻兄弟给、item 不叠垂直外边距；显式分行，五类失效写法禁用

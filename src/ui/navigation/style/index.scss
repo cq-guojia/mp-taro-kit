@@ -8,7 +8,7 @@
 
 .mptk-drawer__panel {
   position: fixed;
-  top: var(--mptk-s-zero);
+  top: calc(0px - env(safe-area-inset-top));
   bottom: var(--mptk-s-zero);
   display: flex;
   flex-direction: column;
@@ -67,7 +67,7 @@
   transition-property: transform, opacity;
   transition-duration: var(--mptk-c-motion-duration);
   transition-timing-function: var(--mptk-ease);
-  transform: translateY(-8px);
+  transform: translateY(calc(0px - var(--mptk-space-2)));
   opacity: 0;
 }
 

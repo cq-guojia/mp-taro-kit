@@ -102,7 +102,7 @@
 - 贴边时 body 的左右留白归零，左右间距改由贴边内容自己给（`CellGroup` 取 `var(--mptk-card-spacing)`，与卡片标题、底部操作区同一档），保证内容与分隔线离卡片边只有一道距离、且左边界与标题对齐。
 - 贴边列表的首行自带一份上留白，所以头部到 body 的 `margin-bottom` 同时归零：否则「分割线 → 第一行」会变成「行与行」的两倍。
 - 圆角默认取 `--mptk-card-radius`（指向 `--mptk-radius-md`，与控件同档 12px）；`radius` 枚举只是把同名键换到另一档，**取值仍只在 `kit.config.mjs` 写一次**。`none` 给通栏与直角场景，`pill` 不开放给卡片，留给 Badge / Switch。
-- 点击态由 `onClick` 派生，按压反馈走 `hoverClass`；反馈是**一层半透明叠加**（`--mptk-card-press`，明色压暗、暗色提亮）叠在根节点自己的底上，而不是换 `background-color`：自定义色值走内联 `backgroundColor`，换底色会被内联样式压住、按压时什么都看不到。四种形态共用这一层，`plain` / `outline` 没有底也能看到反馈。
+- 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，抬手后 **70ms** 恢复（`PRESS_STAY_TIME`，不吃 Taro `View` 的 400ms 默认）；反馈是**一层半透明叠加**（`--mptk-card-press`，明色压暗、暗色提亮）叠在根节点自己的底上，而不是换 `background-color`：自定义色值走内联 `backgroundColor`，换底色会被内联样式压住、按压时什么都看不到。四种形态共用这一层，`plain` / `outline` 没有底也能看到反馈。
 - `disabled` 短路回调；`loading` 不短路点击，由宿主决定是否同时给 `disabled`。
 - 内容密度、字号、圆角、间距一律取 `var(--mptk-*)`，组件不写颜色值、不写兜底；`--mptk-card-bg` / `--mptk-card-border` / `--mptk-card-press` 在 `light` / `dark` 同名同数，宿主可在业务级主题定制时覆盖。
 - 样式必须显式引入 `mp-taro-kit/ui/card/style`，基线来自 `mp-taro-kit/styles/theme-*`。
@@ -194,3 +194,4 @@ export const WithSlots = () => (
 - 2026-11-14：头部默认带分隔线（`headerDivider` 不给就跟随头部）；说明字号降到 `--mptk-font-xs`
 - 2026-11-15 00:20:59：取值真源改为 kit.config.mjs
 - 2026-11-15：形态扩成一支 `variant`（`surface` / `filled` / `outline` / `plain`），取代 `frame` 布尔开关；`radius` 补 `none`；补 `footerDivider` 且与 `headerDivider` 同口径默认跟随；色值按形态落通道（有面染底、只有边染线、`plain` 不参与）；按压反馈改为半透明叠加层（新增 `--mptk-card-press`），自定义色值与四种形态都能看到反馈
+- 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME）

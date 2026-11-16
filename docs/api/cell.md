@@ -55,7 +55,7 @@
 行为约定：
 
 - 组内最后一格的 `border` 由 `CellGroup` 按位置注入为 `false`，不依赖结构伪类；独立使用的 `Cell` 由自身 `border` 决定。
-- 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，不暴露 `clickable` prop。
+- 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，抬手后 70ms 恢复（`PRESS_STAY_TIME`，不吃 Taro `View` 的 400ms 默认），不暴露 `clickable` prop。
 - 分隔线与上下外框都是独立 1px 元素；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。外框（卡片四边与通栏形态的上下外框）取 `--mptk-border`；组内分隔线默认取 `--mptk-cell-divider`，比外框浅一档（明色 `rgba(0,0,0,.06)`、暗色 `rgba(255,255,255,.06)`），两者宽度同为 1px。默认值真源在 `kit.config.mjs` 的 `light` / `dark`。
 - 两个控件级设置都走 `CellGroup` 的 props，由 `state.ts` 派生修饰类，使用者不写样式：`dividerTone="match"` 把内线切到 `--mptk-border`（与外框同色）；`frame={false}` 去掉卡片四边描边。默认值分别是 `soft` / `true`，即浅线、有边框。
 - 主标题取 `--mptk-font-sm`（14/20）、说明与右侧值取 `--mptk-font-xs`（12/17）、说明上间距取 `--mptk-space-0`（2px）：字号与 Vant Weapp 的 14/12 持平，行高档位各自跟随；上间距比 WeUI / Vant 的 3～4px 再紧一档。右侧值是说明性文字，默认跟 `label` 同档；确需与标题等大时给 `valueSize="sm"`，不要用 className 改字号。
@@ -205,3 +205,4 @@ export const State = () => (
 - 2026-11-14：`center` 默认改 `true`（整行垂直居中），`center={false}` 派生 `--top` 顶部对齐；装饰位不再各自写 `align-self`
 - 2026-11-15 00:20:59：默认值真源改为 kit.config.mjs
 - 2026-11-15：右侧值字号默认改 `xs`（与 label 同档，原为 `sm`），新增 `valueSize="sm"` 回到标题档
+- 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME）

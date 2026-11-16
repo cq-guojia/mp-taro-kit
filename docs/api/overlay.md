@@ -97,7 +97,7 @@
 ## 行为契约
 
 - **进出场**：组件挂载即渲染，关闭时先置收起态、播完 `duration` 再卸载；`duration: 0` 立即卸载（低端机 / 减少动效）。遮罩淡入淡出，贴底 / 贴顶面板位移进出，居中面板只淡入。
-- **安全区**：贴底面板 `padding-bottom`、贴顶面板 `padding-top`、抽屉 `padding-bottom` 各加一段 `env(safe-area-inset-*)`，没有横条的设备算 0。不给开关：底部横条必须让，否则内容被压住。
+- **安全区**：贴底面板 `padding-bottom`、贴顶面板 `padding-top`、抽屉 `padding-bottom` 各加一段 `env(safe-area-inset-*)`，没有横条的设备算 0。三个贴顶层（遮罩、Popup 的 top 档、抽屉面板）的 `top` 取 `calc(0px - env(safe-area-inset-top))`：Skyline 下 fixed 的 0 落在页面内容区起点，写 0 会让状态栏那一条露白。不给开关：底部横条必须让，否则内容被压住。
 - **内滚**：Popup 面板 `max-height: var(--mptk-c-popup-max-h)`，内容区是 `scroll-view`（`flex: 1 1 auto; min-height: 0`），长内容在面板内部滚，不顶出屏幕。
 - **滚动穿透**：遮罩挂 `catchMove`。**边界**：Skyline 下页面滚动由消费方自己的 `scroll-view` 承担，遮罩拦不住那个容器的原生滚动 —— 需要完全锁死时，消费方要在浮层打开期间把 `scroll-y` 关掉。这条写在这里，不做假的承诺。
 - **命令式 Dialog**：自带遮罩，`closable={false}`，点空白不关，关闭只走按钮。
@@ -113,3 +113,4 @@
 
 - 2026-11-16：新建。遮罩收成一份（原先 layout / navigation / 命令式三处各写一份，且底色取 `--mptk-fg`，暗色下变白蒙版）；五处散装 z 收成一条层级链；补进出场动画、底部安全区、面板限高内滚；`closable` 与 `onClick` 分离；浓度与底色全部进配置
 - 2026-11-16：遮罩命名收成一个。组件 `Mask` → `Overlay`，token `--mptk-c-mask-*` → `--mptk-c-overlay-*`，类名 `.mptk-mask*` → `.mptk-overlay*`，层级 `--mptk-c-layer-mask` → `--mptk-c-layer-overlay`，浮层的遮罩开关 `mask` → `overlay`；删掉与遮罩重名、且无使用方的纯定位容器 `Overlay`（`.mptk-overlay`）；演示页 `pages/mask` → `pages/overlay`
+- 2026-11-16 14:16:36：三个贴顶层的 top 向上让出状态栏安全区，修 Skyline 下 fixed 0 起算露白

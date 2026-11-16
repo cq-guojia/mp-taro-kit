@@ -145,10 +145,14 @@ test('控件主色与业务色解耦：默认蓝、色板齐全；明色滑轨�
   }
 })
 
-test('两端不贴边：Segmented 滑动块左右各留 3px，Switch 方形滑块四边同一个留边', () => {
+test('两端不贴边：Segmented 滑动块左右各让一个内缩 token，Switch 方形滑块四边同一个留边', () => {
   const segJs = read('../dist/ui/form/segmented/Segmented.js')
-  assert.match(segJs, /calc\(.*- 6px\)/, '滑动块宽度要减掉左右边距')
-  assert.match(segJs, /calc\(.*\+ 3px\)/, '滑动块起点要让出左边距')
+  assert.match(
+    segJs,
+    /calc\(\$\{span\.width\} - var\(--mptk-seg-inset\) - var\(--mptk-seg-inset\)\)/,
+    '滑动块宽度要按两次相减扣掉左右内缩，不能写死 6px',
+  )
+  assert.match(segJs, /calc\(\$\{span\.left\} \+ var\(--mptk-seg-inset\)\)/, '滑动块起点要让出左边距，不能写死 3px')
   const switchCss = read('../dist/ui/form/switch/style/index.css')
   const block = /\.mptk-switch--block \.mptk-switch__thumb\s*\{([^}]*)\}/.exec(switchCss)
   assert.ok(block, '缺方形滑块规则')

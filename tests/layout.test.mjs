@@ -204,6 +204,11 @@ test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
     /\.mptk-drawer__panel\s*\{[^}]*padding-bottom:\s*calc\([^;]*env\(safe-area-inset-bottom\)\)/,
     '抽屉没避让底部安全区',
   )
+
+  // Skyline 下 fixed 的 top:0 落在页面内容区起点，状态栏那一条会露白。
+  assert.match(read(LAYOUT_CSS), /\.mptk-overlay\s*\{[^}]*top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, '遮罩没盖到状态栏')
+  assert.match(read(LAYOUT_CSS), /\.mptk-popup__panel--top\s*\{[^}]*top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, '贴顶面板没盖到状态栏')
+  assert.match(read(NAV_CSS), /\.mptk-drawer__panel\s*\{[^}]*top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, '抽屉没盖到状态栏')
 })
 
 test('居中档补上位移补偿，抽屉给出宽度（不然滑入滑出算不出来）', () => {

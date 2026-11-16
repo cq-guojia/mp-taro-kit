@@ -40,12 +40,21 @@ export default function ActionsPage() {
       return (
         <View>
           <Text className="demo-note">五档高度：xs / sm（默认）/ md / lg / xl，总高逐像素等于刻度 token</Text>
-          <View className="demo-row">
-            {SIZES.map((size) => (
-              <Button key={size} className="demo-item" size={size}>
-                {size}
-              </Button>
-            ))}
+          <View className="demo-stack">
+            <View className="demo-row">
+              {SIZES.slice(0, 3).map((size) => (
+                <Button key={size} className="demo-item" size={size}>
+                  {size}
+                </Button>
+              ))}
+            </View>
+            <View className="demo-row">
+              {SIZES.slice(3).map((size) => (
+                <Button key={size} className="demo-item" size={size}>
+                  {size}
+                </Button>
+              ))}
+            </View>
           </View>
         </View>
       )
@@ -54,24 +63,42 @@ export default function ActionsPage() {
       return (
         <View>
           <Text className="demo-note">不传（控件默认圆角）/ xs / sm / md / lg / xl / pill</Text>
-          <View className="demo-row">
-            <Button className="demo-item">默认</Button>
-            {RADII.map((radius) => (
-              <Button key={radius} className="demo-item" radius={radius}>
-                {radius}
-              </Button>
-            ))}
+          <View className="demo-stack">
+            <View className="demo-row">
+              <Button className="demo-item">默认</Button>
+              {RADII.slice(0, 3).map((radius) => (
+                <Button key={radius} className="demo-item" radius={radius}>
+                  {radius}
+                </Button>
+              ))}
+            </View>
+            <View className="demo-row">
+              {RADII.slice(3).map((radius) => (
+                <Button key={radius} className="demo-item" radius={radius}>
+                  {radius}
+                </Button>
+              ))}
+            </View>
           </View>
           <Text className="demo-note">浅底形态下同一组圆角：边与浅底一起跟着变</Text>
-          <View className="demo-row">
-            <Button className="demo-item" variant="soft">
-              默认
-            </Button>
-            {RADII.map((radius) => (
-              <Button key={radius} className="demo-item" radius={radius} variant="soft">
-                {radius}
+          <View className="demo-stack">
+            <View className="demo-row">
+              <Button className="demo-item" variant="soft">
+                默认
               </Button>
-            ))}
+              {RADII.slice(0, 3).map((radius) => (
+                <Button key={radius} className="demo-item" radius={radius} variant="soft">
+                  {radius}
+                </Button>
+              ))}
+            </View>
+            <View className="demo-row">
+              {RADII.slice(3).map((radius) => (
+                <Button key={radius} className="demo-item" radius={radius} variant="soft">
+                  {radius}
+                </Button>
+              ))}
+            </View>
           </View>
         </View>
       )

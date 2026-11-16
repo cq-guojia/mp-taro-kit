@@ -13,8 +13,8 @@
 @use '../../busy' as busy;
 
 .mptk-seg {
-  /* 指示器内缩：滑块四边各让 3px（细分视觉值，不是间距档）。上下两条读这里的变量，
-     左右两条由组件内联写成 3px / 6px —— 两边同值，改的时候一起改。
+  /* 指示器内缩：滑块四边各让一个内缩 token（细分视觉值，不是间距档）。上下两条读这里的
+     变量，左右两条在组件内联里读同一个 --mptk-seg-inset，不再各写一份数值。
      下划线左右各缩 one step。 */
   --mptk-seg-inset: var(--mptk-c-seg-inset);
   --mptk-seg-line-inset: var(--mptk-space-3);

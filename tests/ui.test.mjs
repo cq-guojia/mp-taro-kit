@@ -608,10 +608,16 @@ test('演示站只演示形态：不渲染代码，通栏示例页裸展示', ()
   assert.doesNotMatch(block, /example\.usage|example\.imports/, '演示站不得再渲染代码')
 })
 
-test('演示站组件之间必须留空隙：每个组件都带 demo-item，且不用 gap', () => {
+test('演示站组件之间只留一道间距：横排右距 + 纵向容器相邻距，不用 gap', () => {
   const scss = read('../demo/src/app.scss')
   assert.match(scss, /\.demo-item\s*\{[^}]*margin-right:\s*var\(--mptk-space-3\)/, '缺 demo-item 右侧间距')
-  assert.match(scss, /\.demo-item\s*\{[^}]*margin-bottom:\s*var\(--mptk-space-3\)/, '缺 demo-item 下方间距')
+  assert.match(
+    scss,
+    /\.demo-stack > view:not\(:first-child\)/,
+    '纵向间距没交给 stack，或写成 wxss 会丢的通配符',
+  )
+  assert.doesNotMatch(scss.replace(/\/\*[\s\S]*?\*\//g, ''), /\.demo-stack > \*/, 'wxss 会丢掉通配符选择器')
+  assert.doesNotMatch(scss, /\.demo-item\s*\{[^}]*margin-bottom:/, '内容项自带垂直外边距会和卡片内边距叠成两份')
   assert.doesNotMatch(scss, /\bgap:/, '不用 gap：老 WebView 内核不支持，两端会不一致')
 
   for (const [file, component] of [
@@ -652,4 +658,47 @@ test('演示站除尺寸示例外一律用 md 档摆，形态之间口径一致'
     }
     assert.equal(sizeBlocks, 1, `${file} 必须有且只有一个尺寸示例（逐档铺开的那块）`)
   }
+})
+
+test('按压反馈不吃 Taro 的 400ms 默认：带 hoverClass 的组件都显式给 hoverStayTime', () => {
+  for (const file of [
+    '../src/ui/actions/Button.tsx',
+    '../src/ui/card/Card.tsx',
+    '../src/ui/display/cell/Cell.tsx',
+  ]) {
+    const src = read(file)
+    assert.match(src, /hoverStayTime=\{PRESS_STAY_TIME\}/, `${file} 没给 hoverStayTime：抬手后按压态会挂 400ms`)
+    assert.match(src, /PRESS_STAY_TIME/, `${file} 没接统一常量`)
+  }
+  const constant = Number(/PRESS_STAY_TIME = (\d+)/.exec(read('../src/ui/infra/press.ts'))?.[1])
+  assert.ok(constant > 0 && constant <= 100, `PRESS_STAY_TIME 应贴近原生 70ms，现在是 ${String(constant)}`)
+})
+
+test('演示卡片的块底只留壳内边距一份，不叠内容尾距', () => {
+  const scss = read('../demo/src/app.scss')
+  assert.doesNotMatch(
+    scss,
+    /\.demo-block:not\(\.demo-block--bare\)\s*\{[^}]*padding-bottom/,
+    'demo 不该覆盖 Card 的内边距，块底交给库自己的壳',
+  )
+  assert.doesNotMatch(scss, /\.demo-item\s*\{[^}]*margin-bottom:/, '内容项自带尾距会和 Card padding 叠成两份')
+  assert.doesNotMatch(scss, /\.demo-note\s*\{[^}]*margin-bottom:/, '说明文字的尾距会和 Card padding 叠成两份')
+  assert.match(scss, /\.demo-note\s*\{[^}]*display: block/, '说明文字是 inline 时垂直 margin 不生效')
+
+  // 这几种写法都试过，全部会在 Skyline / 小程序 wxss 下失效或跳变，别再回来。
+  const rules = scss.replace(/\/\*[\s\S]*?\*\//g, '')
+  assert.doesNotMatch(rules, /calc\(0px - var\(--mptk-space-3\)\)/, '负外边距会被 Skyline 丢弃，间距反复跳')
+  assert.doesNotMatch(rules, /calc\(var\(--mptk-space-3\) \* -1\)/, '禁用 calc 乘法：WebView 内核支持不一致')
+  assert.doesNotMatch(rules, /\.demo-row:last-child/, '浮层挂载会让行容器失去 last-child')
+  assert.doesNotMatch(rules, /\.demo-row \+ \*/, '小程序 wxss 不支持通配符选择器')
+})
+
+test('细分视觉值也走 token：下拉位移与 Segmented 内缩不写死数值', () => {
+  const nav = read('../src/ui/navigation/style/index.scss')
+  assert.doesNotMatch(nav, /translateY\(-8px\)/, '下拉起始位移写死 8px，改间距档时不会跟随')
+  assert.match(nav, /translateY\(calc\(0px - var\(--mptk-space-2\)\)\)/, '下拉位移没走 --mptk-space-2')
+
+  const seg = read('../src/ui/form/segmented/Segmented.tsx')
+  assert.doesNotMatch(seg, /\+\s*3px|-\s*6px/, 'Segmented 滑块内缩写死 3px / 6px，与 SCSS 各存一份')
+  assert.match(seg, /calc\(\$\{span\.width\} - var\(--mptk-seg-inset\) - var\(--mptk-seg-inset\)\)/, 'Segmented 宽度没读内缩 token')
 })

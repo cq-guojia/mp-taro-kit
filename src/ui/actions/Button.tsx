@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { isThenable, isSuccess } from '../../runtime/thenable.js'
 import { CONTROL_SIZE_DEFAULT } from '../../design/index.js'
 import { Icon } from '../display/icon/Icon.js'
+import { PRESS_STAY_TIME } from '../infra/press.js'
 import { Spinner } from '../feedback/spinner/Spinner.js'
 import { resolveButtonColor, type ButtonType, type ButtonVariant } from './button-color.js'
 
@@ -152,6 +153,7 @@ export function Button({
       className={names.filter(Boolean).join(' ')}
       style={rootStyle}
       hoverClass={disabled || loading ? 'none' : 'mptk-btn--pressed'}
+      hoverStayTime={PRESS_STAY_TIME}
       onClick={handleClick}
     >
       {loading ? (

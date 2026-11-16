@@ -1,6 +1,7 @@
 import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { CardSurfaceContext, CARD_SURFACE_INSIDE } from '../infra/card-context.js'
+import { PRESS_STAY_TIME } from '../infra/press.js'
 import { hasCardEdgeContent } from './edge.js'
 import {
   resolveCardState,
@@ -85,6 +86,7 @@ export function Card({
       <View
         className={state.className}
         hoverClass={state.hoverClassName}
+        hoverStayTime={PRESS_STAY_TIME}
         style={state.inlineStyle}
         onClick={state.clickable ? onClick : undefined}
       >

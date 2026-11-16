@@ -33,6 +33,8 @@ export default function SwitchPage() {
             <Switch className="demo-item" checked={on} size="xs" onChange={(next) => { setOn(next) }} />
             <Switch className="demo-item" checked={on} size="sm" onChange={(next) => { setOn(next) }} />
             <Switch className="demo-item" checked={on} size="md" onChange={(next) => { setOn(next) }} />
+          </View>
+          <View className="demo-row">
             <Switch className="demo-item" checked={on} size="lg" onChange={(next) => { setOn(next) }} />
             <Switch className="demo-item" checked={on} size="xl" onChange={(next) => { setOn(next) }} />
           </View>

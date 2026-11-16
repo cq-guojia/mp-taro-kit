@@ -6,7 +6,8 @@
 .mptk-overlay {
   --mptk-overlay-alpha: var(--mptk-c-overlay-opacity);
   position: fixed;
-  top: var(--mptk-s-zero);
+  /* Skyline 下 fixed 的 0 落在页面内容区起点，状态栏那一条露白：向上让出一个顶部安全区。 */
+  top: calc(0px - env(safe-area-inset-top));
   right: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
@@ -82,7 +83,7 @@
 }
 
 .mptk-popup__panel--top {
-  top: var(--mptk-s-zero);
+  top: calc(0px - env(safe-area-inset-top));
   padding-top: calc(var(--mptk-space-4) + env(safe-area-inset-top));
   transform: translateY(-100%);
   opacity: 0;

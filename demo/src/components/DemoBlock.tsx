@@ -43,7 +43,7 @@ export function DemoBlock({
       title={example.title === '' ? undefined : example.title}
       subtitle={example.hint === '' ? undefined : example.hint}
     >
-      {children}
+      <View className="demo-block__content">{children}</View>
     </Card>
   )
 }

@@ -140,11 +140,11 @@ export function Segmented<T extends string = string>({
       ? { left: `${String(activeIndex * percent)}%`, width: `${String(percent)}%` }
       : { left: `${String(activeCell.left)}px`, width: `${String(activeCell.width)}px` }
 
-  /* 滑块左右各让 3px：宽度扣左右两份（6px）、起点加左边一份，选到首段或末段都不贴边。
-     3px 是细分视觉值，与样式里的 --mptk-seg-inset 同值（那边只管上下两条边）。 */
+  /* 滑块左右各让一个内缩 token：宽度扣两份、起点加一份，选到首段或末段都不贴边。
+     与样式里上下两条边读同一个 --mptk-seg-inset，不再各写一份 3px / 6px。 */
   const thumbStyle: CSSProperties = {
-    left: `calc(${span.left} + 3px)`,
-    width: `calc(${span.width} - 6px)`,
+    left: `calc(${span.left} + var(--mptk-seg-inset))`,
+    width: `calc(${span.width} - var(--mptk-seg-inset) - var(--mptk-seg-inset))`,
     ...(inlineColor === undefined ? {} : { backgroundColor: inlineColor }),
   }
   /* 下划线左右各缩一个间距档，取值走 CSS 变量；宽度按两次相减写，calc 里不用乘法。 */

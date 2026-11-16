@@ -136,6 +136,8 @@
 | `--mptk-c-locked-opacity` | `.5` | `disabled` 的透明度 |
 | `--mptk-c-btn-pressed-opacity` | `.86` | 按压态透明度（走 Taro `hoverClass`，小程序没有 `:hover`） |
 
+按压态在手指抬起后 **70ms** 恢复（`src/ui/infra/press.ts` 的 `PRESS_STAY_TIME`）。不吃 Taro `View` 的默认值：那是 400ms，浮层秒开的场景下按钮会在遮罩之上继续挂一段按压色，看起来像「过一会儿才变色」。
+
 禁用**只降透明度、不把品牌色涂灰** —— 涂灰会让自定义 `color` 的按钮在禁用时变成另一种颜色，与品牌不一致。
 
 ## 更新日志
@@ -147,3 +149,4 @@
 - 2026-11-15：新增 `--mptk-c-btn-pressed-opacity` 配置项
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
 - 2026-11-15 17:05:00：实心语义块的字色统一走新增的 `--mptk-fg-on-accent`（明暗都是白），不再借用 `--mptk-surface-1`
+- 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME），不吃 Taro View 的 400ms 默认

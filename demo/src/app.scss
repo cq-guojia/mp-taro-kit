@@ -140,8 +140,9 @@ page {
   line-height: var(--mptk-line-xs);
 }
 
-/* 演示内容之间必须留空隙，组件不许一个个贴在一起：
-   横排用 .demo-row、纵向多段用 .demo-stack，里面的组件一律加 .demo-item 自带右、下外边距。
+/* 演示内容的间距只有一个来源：纵向容器 .demo-stack 用相邻兄弟给间距。
+   多按钮组在页面里显式拆成多个 row，再用 stack 串成多行；wrap 只作兜底，避免窄屏溢出。
+   内容项自己不带垂直外边距，于是块底只剩卡片壳的内边距，行距与块尾距不会叠成两份。
    不用 gap —— 老 WebView 内核不支持，Skyline 与 WebView 会出现两种结果。 */
 .demo-row {
   display: flex;
@@ -156,22 +157,26 @@ page {
   align-items: flex-start;
 }
 
-.demo-item {
-  margin-right: var(--mptk-space-3);
-  margin-bottom: var(--mptk-space-3);
+/* 不能用 `> * + *`：wxss 不支持通配符，整条会被编译丢掉；显式列出子元素标签。 */
+.demo-stack > view:not(:first-child),
+.demo-stack > text:not(:first-child),
+.demo-stack > scroll-view:not(:first-child),
+.demo-stack > button:not(:first-child) {
+  margin-top: var(--mptk-space-3);
 }
 
-/* 卡片体内的尾距归零：卡片壳自己已有四边内边距，最后一项再带一份 .demo-item 的
-   右 / 下外边距就是双份留白 —— 只有一排按钮的块，下方会厚出整整一档。
-   裸块反过来靠这层尾距撑块间距（裸块自身不留 padding），所以只清非裸块。 */
-.demo-block:not(.demo-block--bare) .demo-row > .demo-item:last-child,
-.demo-block:not(.demo-block--bare) .demo-stack > .demo-item:last-child {
+.demo-item {
+  margin-right: var(--mptk-space-3);
+}
+
+.demo-item:last-child {
   margin-right: var(--mptk-s-zero);
-  margin-bottom: var(--mptk-s-zero);
 }
 
 .demo-note {
   color: var(--mptk-fg-2);
+  /* 小程序的 text 默认 inline，垂直 margin 不生效，补成块级才吃得到上面的间距。 */
+  display: block;
   font-size: var(--mptk-font-sm);
   line-height: var(--mptk-line-sm);
   margin-top: var(--mptk-space-2);

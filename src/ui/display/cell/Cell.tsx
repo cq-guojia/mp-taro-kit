@@ -1,5 +1,6 @@
 import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
+import { PRESS_STAY_TIME } from '../../infra/press.js'
 import { resolveCellState, type CellArrowDirection, type CellSize, type CellValueSize } from './state.js'
 
 export interface CellProps {
@@ -70,6 +71,7 @@ export function Cell({
     <View
       className={state.className}
       hoverClass={state.hoverClassName}
+      hoverStayTime={PRESS_STAY_TIME}
       onClick={state.clickable ? onClick : undefined}
     >
       {icon !== undefined && <View className="mptk-cell__icon">{icon}</View>}
