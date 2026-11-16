@@ -23,9 +23,12 @@
   transition-timing-function: var(--mptk-ease);
 }
 
+/* 顶部让位：注入生效时由 JS 写成内联 px（探出量 + 目标位置），这里是未注入时的兜底。
+   面板 top 是 -env(safe-area-inset-top)，内容被一起抬高，所以兜底要 2 倍 env() 再叠导航栏高。 */
 .mptk-drawer__body {
   flex: 1 1 auto;
   min-height: 0;
+  padding-top: calc(env(safe-area-inset-top) * 2 + var(--mptk-c-navbar-h));
 }
 
 .mptk-drawer__panel--left {

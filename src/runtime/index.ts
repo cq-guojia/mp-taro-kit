@@ -28,3 +28,12 @@ export {
   type ThemeFaces,
   type ThemeStore,
 } from './theme.js'
+export {
+  safeAreaState,
+  configureSafeArea,
+  getSafeAreaSnapshot,
+  resetSafeAreaForTests,
+  type SafeAreaFaces,
+  type SafeAreaSnapshot,
+  type SafeAreaStore,
+} from './safe-area.js'

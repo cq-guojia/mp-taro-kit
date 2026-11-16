@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { resolveCssVars } from './helpers/kit-config.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -173,6 +173,214 @@ test('关掉不立即卸载：五个浮层都走 presence，并且有进出场�
   )
 })
 
+test('面板自带 panel 层，遮罩压不住它（否则点了没反应）', () => {
+  const css = resolveCssVars(read(LAYOUT_CSS))
+  const panel = /\.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)[1]
+  const overlay = /\.mptk-overlay\s*\{([^}]*)\}/.exec(css)[1]
+  const panelZ = declOf(panel, 'z-index')
+  const overlayZ = declOf(overlay, 'z-index')
+  assert.ok(panelZ, '面板没自带 z-index，会被遮罩盖住')
+  const layer = Number(/\d+/.exec(panelZ)[0])
+  const maskLayer = Number(/\d+/.exec(overlayZ)[0])
+  assert.ok(layer > maskLayer, '面板层级必须高于遮罩，否则面板藏在遮罩底下点不到')
+  assert.match(read('src/ui/layout/style/index.scss'), /\.mptk-popup__panel\s*\{[^}]*z-index:\s*var\(--mptk-c-layer-panel\)/, '面板层级必须读 token，不写死数字')
+})
+
+test('五档位置齐全：上/中/下/左/右各有起点与展开态', () => {
+  const css = read(LAYOUT_CSS)
+  for (const pos of ['top', 'center', 'bottom', 'left', 'right']) {
+    assert.match(css, new RegExp(`\\.mptk-popup__panel--${pos}\\s*\\{`), `缺 ${pos} 档样式`)
+    assert.match(css, new RegExp(`\\.mptk-popup--open \\.mptk-popup__panel--${pos}\\s*\\{`), `${pos} 档缺展开态`)
+  }
+  const src = read('src/ui/layout/Popup.tsx')
+  assert.match(src, /PopupPosition = 'top' \| 'center' \| 'bottom' \| 'left' \| 'right'/, '位置类型没补左右')
+  for (const side of ['left', 'right']) {
+    const sideRule = new RegExp(`\\.mptk-popup__panel--${side}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
+    assert.equal(declOf(sideRule, 'width'), 'var(--mptk-c-drawer-w)', `${side} 档没宽度，translateX 没有百分比参照`)
+    assert.match(sideRule, /top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, `${side} 档不是全高抽屉，顶部没盖到状态栏`)
+    assert.match(sideRule, /bottom:\s*var\(--mptk-s-zero\)/, `${side} 档不是全高抽屉，底部没到屏幕边`)
+    assert.equal(declOf(sideRule, 'max-height'), '100%', `${side} 档被 80vh 限高，底下会留一截`)
+  }
+  const centerRule = /\.mptk-popup__panel--center\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.equal(declOf(centerRule, 'width'), 'var(--mptk-c-popup-center-w)', '居中档必须有默认宽，不能通栏 100%')
+  assert.equal(declOf(centerRule, 'margin-left'), 'auto', '居中档缺 margin auto，默认宽不会居中')
+})
+
+test('圆角默认：居中四角全圆，贴边平角；round 开启才圆贴边内侧两角', () => {
+  const css = read(LAYOUT_CSS)
+  const base = /\.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.doesNotMatch(base, /border-(top|bottom)-(left|right)-radius/, '基础类不许写圆角，圆角按档归属')
+
+  const centerRule = /\.mptk-popup__panel--center\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  for (const corner of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
+    assert.match(centerRule, new RegExp(`border-${corner}-radius:\\s*var\\(--mptk-c-popup-radius\\)`), `居中档默认缺 ${corner} 圆角`)
+  }
+
+  const rule = (name) =>
+    new RegExp(`\\.mptk-popup--round \\.mptk-popup__panel--${name}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
+  const token = 'var(--mptk-c-popup-radius)'
+  assert.match(rule('bottom'), new RegExp(`border-top-left-radius:\\s*${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '贴底该只圆上两角')
+  assert.match(rule('bottom'), new RegExp(`border-top-right-radius:\\s*${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '贴底该只圆上两角')
+  assert.doesNotMatch(rule('bottom'), /border-bottom-(left|right)-radius/, '贴底两角必须直角')
+  assert.match(rule('top'), /border-bottom-left-radius:/, '贴顶该只圆下两角')
+  assert.doesNotMatch(rule('top'), /border-top-(left|right)-radius/, '贴顶两角必须直角')
+  assert.match(rule('left'), /border-top-right-radius:/, '贴左该只圆右两角')
+  assert.doesNotMatch(rule('left'), /border-(top|bottom)-left-radius/, '贴左两角必须直角')
+  assert.match(rule('right'), /border-top-left-radius:/, '贴右该只圆左两角')
+  assert.doesNotMatch(rule('right'), /border-(top|bottom)-right-radius/, '贴右两角必须直角')
+  assert.doesNotMatch(
+    css,
+    /\.mptk-popup--round \.mptk-popup__panel--center\s*\{/,
+    '居中档默认已带圆角，不需要再靠 round 补',
+  )
+})
+
+test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env() 不可靠），公式对齐 NavBar', async () => {
+  const css = read(LAYOUT_CSS)
+  const src = read('src/ui/layout/Popup.tsx')
+  const insetSrc = read('src/ui/layout/safe-inset.ts')
+  const runtime = read('src/runtime/safe-area.ts')
+  const theme = resolveCssVars(read('dist/styles/theme-light.css'))
+  assert.equal(
+    /--mptk-c-navbar-h:\s*([^;]+);/.exec(theme)?.[1],
+    '44px',
+    '导航栏基准高度要对齐微信默认 44px',
+  )
+
+  // 三档必须保留：用户可只让状态栏，也可状态栏+导航栏一块让。
+  assert.match(insetSrc, /TopInsetLevel = 'none' \| 'status-bar' \| 'nav-bar'/, '让位三档不许删')
+  assert.match(
+    src,
+    /insetTop \?\? \(isTopAnchored\(position\) \? 'nav-bar' : 'none'\)/,
+    'top/left/right 默认让出导航栏，bottom/center 默认不让',
+  )
+  assert.match(src, /getSafeAreaSnapshot\(\)/, 'Popup 必须读 runtime 注入的真值')
+  assert.match(src, /top: `\$\{-inset\.overhang\}px`/, '面板上探高度必须与兜底同一基准')
+  assert.match(
+    src,
+    /paddingTop: `\$\{inset\.bodyPaddingTop\}px`/,
+    '内容让位必须是「探出量 + 目标位置」，只写目标位置会少让一个状态栏',
+  )
+
+  // 几何行为：给一组真机值（状态栏 54、胶囊 top 58 / height 32），落点必须正好落在目标位置。
+  const { resolveTopInset, isTopAnchored } = await import(
+    pathToFileURL(join(root, 'dist/ui/layout/safe-inset.js')).href
+  )
+  const device = { statusBar: 54, navbar: 40, top: 94, configured: true }
+  const landing = (level) => {
+    const result = resolveTopInset(level, device)
+    return result.bodyPaddingTop - result.overhang
+  }
+  assert.deepEqual(
+    resolveTopInset('status-bar', device),
+    { overhang: 54, bodyPaddingTop: 108 },
+    'status-bar 档：探出 54 再补回 54',
+  )
+  assert.deepEqual(
+    resolveTopInset('nav-bar', device),
+    { overhang: 54, bodyPaddingTop: 148 },
+    'nav-bar 档：探出 54 再补回 54 + 40',
+  )
+  assert.equal(landing('status-bar'), 54, '状态栏档内容落点必须等于状态栏高度')
+  assert.equal(landing('nav-bar'), 94, '导航栏档内容落点必须等于状态栏 + 导航栏')
+  assert.deepEqual(resolveTopInset('none', device), { overhang: 0, bodyPaddingTop: 0 }, 'none 档不让')
+  assert.deepEqual(
+    resolveTopInset('nav-bar', { statusBar: 0, navbar: 0, top: 0, configured: false }),
+    { overhang: 0, bodyPaddingTop: 0 },
+    '未注入时不许在这里猜，交 CSS env() 兜底',
+  )
+  assert.equal(
+    isTopAnchored('top') && isTopAnchored('left') && isTopAnchored('right'),
+    true,
+    '贴顶锚定的三档要探出',
+  )
+  assert.equal(isTopAnchored('bottom') || isTopAnchored('center'), false, '贴底 / 居中不探出')
+
+  // 真值公式必须与 NavBar 同口径：内容高 = 胶囊高 + 上下对称留白，不许把胶囊高也乘 2。
+  assert.match(
+    runtime,
+    /menu\.height \+ Math\.max\(menu\.top - statusBar, 0\) \* 2/,
+    'nav-bar 让位高度必须等于 NavBar 的 contentHeight 算法',
+  )
+  assert.doesNotMatch(
+    runtime,
+    /\(menu\.top - statusBar \+ menu\.height\) \* 2/,
+    '不许把胶囊高度也塞进乘 2：那正是之前真机让位偏多的原因',
+  )
+  assert.doesNotMatch(runtime, /@tarojs\/taro/, 'runtime 不许 import Taro，平台能力靠宿主注入')
+
+  // demo 是 custom 导航栏，入口必须注入真值。
+  assert.match(
+    read('demo/src/app.tsx'),
+    /configureSafeArea\(\{[\s\S]*statusBarHeight: windowInfo\.statusBarHeight \?\? 0/,
+    'demo 入口必须注入状态栏真值',
+  )
+
+  // CSS 两档兜底仍在（未注入真值时用），且必须把面板探出的那一段一起算进去。
+  assert.match(
+    css,
+    /\.mptk-popup--inset-status-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \* 2\)/,
+    '只让状态栏的兜底必须是 2 倍 env()：一份补面板探出，一份是状态栏本身',
+  )
+  assert.match(
+    css,
+    /\.mptk-popup--inset-nav-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \* 2 \+ var\(--mptk-c-navbar-h\)\)/,
+    '状态栏+导航栏的兜底同样要 2 倍 env()，再加导航栏高',
+  )
+  assert.doesNotMatch(
+    /\.mptk-popup__panel--top\s*\{([^}]*)\}/.exec(css)?.[1] ?? '',
+    /padding-top/,
+    'top 档面板不许再写 padding-top 让位，避免与 body 注入叠加',
+  )
+})
+
+test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
+  const css = read(NAV_CSS)
+  const src = read('src/ui/navigation/Drawer.tsx')
+  assert.match(src, /resolveTopInset\('nav-bar', getSafeAreaSnapshot\(\)\)/, '抽屉读同一份真值，让到导航栏下')
+  assert.match(src, /top: `\$\{-inset\.overhang\}px`/, '抽屉面板同样上探，底色才盖到屏顶')
+  assert.match(
+    css,
+    /\.mptk-drawer__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \* 2 \+ var\(--mptk-c-navbar-h\)\)/,
+    '抽屉内容要补回探出量并避开胶囊',
+  )
+})
+
+test('关闭按钮：图标库的叉 + 三种底形 + 四角位置', () => {
+  const src = read('src/ui/layout/Popup.tsx')
+  assert.match(src, /common\.base:guanbi/, '关闭按钮必须取图标库的叉图标')
+  assert.match(src, /<Icon name="common\.base:guanbi" size="xs" \/>/, '叉图标用小一号 xs，别用 sm')
+  assert.equal(
+    /--mptk-popup-close-size:\s*var\((--mptk-[\w-]+)\)/.exec(read(LAYOUT_CSS))?.[1],
+    '--mptk-control-h-sm',
+    '关闭按钮尺寸必须回原 sm 档，不靠放大热区换命中；点得着靠 DOM 顺序',
+  )
+  assert.match(src, /closeShape = 'plain'/, '关闭按钮底形默认只有叉')
+  assert.match(src, /closePosition = 'top-right'/, '关闭按钮位置默认右上')
+  assert.ok(
+    src.indexOf('mptk-popup__close') > src.indexOf('<ScrollView scrollY className="mptk-popup__body">'),
+    '关闭按钮必须排在 scroll-view 后面：Skyline 下原生 scroll-view 绘制在后，放前面会盖住叉导致点不到',
+  )
+
+  const css = read(LAYOUT_CSS)
+  for (const shape of ['plain', 'circle', 'rounded']) {
+    assert.match(css, new RegExp(`\\.mptk-popup__close--${shape}\\s*\\{`), `缺 ${shape} 底形样式`)
+  }
+  for (const pos of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
+    assert.match(css, new RegExp(`\\.mptk-popup__close--${pos}\\s*\\{`), `缺 ${pos} 位置样式`)
+  }
+  assert.match(
+    css,
+    /\.mptk-popup__close--circle\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
+    '纯圆底必须是正圆',
+  )
+  assert.match(
+    css,
+    /\.mptk-popup__close--rounded\s*\{[^}]*border-radius:\s*var\(--mptk-radius-md\)/,
+    '圆角方底必须走圆角档',
+  )
+})
+
 test('进出场时长只有一个真源：JS 毫秒值与配置 token 必须同值', () => {
   const source = read('src/ui/layout/presence.ts')
   const constant = Number(/MOTION_DURATION = (\d+)/.exec(source)?.[1])
@@ -198,10 +406,31 @@ test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
     'var(--mptk-c-popup-max-h)',
     '面板没限高，长内容会顶出屏幕',
   )
+  assert.equal(
+    declOf(/\.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)[1], 'min-height'),
+    'var(--mptk-c-popup-min-h)',
+    '面板没最小高度，内容少时会塌成一小溜',
+  )
+  assert.equal(
+    /--mptk-c-popup-sheet-h:\s*([^;]+);/.exec(read('dist/styles/theme-light.css'))?.[1],
+    '35vh',
+    '贴顶/贴底档确定高度要取 35vh（原 70vh 太长）',
+  )
+  for (const pos of ['top', 'bottom']) {
+    assert.equal(
+      declOf(new RegExp(`\\.mptk-popup__panel--${pos}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '', 'height'),
+      'var(--mptk-c-popup-sheet-h)',
+      `${pos} 档没有确定 height，Skyline 下 scroll-view 滚不起来、会被内容撑满屏`,
+    )
+  }
   const body = /\.mptk-popup__body\s*\{([^}]*)\}/.exec(css)
   assert.ok(body, '缺弹层内容区规则')
   assert.equal(declOf(body[1], 'min-height'), '0', '内容区不给 min-height: 0，flex 压不进限高')
-  assert.match(read('src/ui/layout/Popup.tsx'), /<ScrollView scrollY className="mptk-popup__body">/, '内容区没换 scroll-view')
+  assert.match(
+    read('src/ui/layout/Popup.tsx'),
+    /<ScrollView scrollY className="mptk-popup__body" style=\{bodyStyle\}>/,
+    '内容区没换 scroll-view，或没注入让位真值',
+  )
 
   assert.match(
     css,
@@ -240,12 +469,37 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层的戏归�
   assert.doesNotMatch(overlayPage, /<Popup|<Drawer|<Dialog/, '遮罩页不许出现使用者：遮罩不知道谁在用')
   assert.doesNotMatch(overlayPage, /showToast|Open|open=\{/, '遮罩页只演示压暗与点击，不演别人的行为')
   assert.match(overlayPage, /<Overlay\b/, '遮罩页缺遮罩本体')
-  assert.match(overlayPage, /'默认'/, '遮罩四个按钮里默认档要排在最前')
+  assert.match(overlayPage, /'默认'/, '遮罩四档里默认档要排在最前')
+  assert.match(
+    overlayPage,
+    /title=\{item\.label\}\s+value=\{item\.note\}/,
+    '遮罩的备注文字要放 Cell 右侧 value（默认 xs + fg-2，左主右次），不是标题下方的 label',
+  )
 
-  for (const id of ['layers', 'scroll']) {
+  // 遮罩 / 弹出层两页统一走 Vant 风格：CellGroup 列表点整行，不再堆一排 Button。
+  for (const [page, file] of [
+    [overlayPage, '遮罩页'],
+    [popupPage, '弹出层页'],
+  ]) {
+    assert.match(page, /<CellGroup[\s>]/, `${file} 缺 CellGroup`)
+    assert.match(page, /<Cell[\s>]/, `${file} 缺 Cell 列表项`)
+    assert.doesNotMatch(page, /<Button\b/, `${file} 不该再用一排按钮，改用 Cell 列表`)
+  }
+
+  for (const id of ['layers', 'scroll', 'close', 'inset']) {
     assert.match(popupPage, new RegExp(`id === '${id}'`), `弹出层页缺 ${id} 示例`)
     assert.match(catalog, new RegExp(`id: '${id}'`), `目录缺 ${id} 条目`)
   }
+  assert.match(popupPage, /closeShape=\{closeShape\}/, '关闭按钮示例要真的切底形')
+  assert.match(popupPage, /insetTop=\{insetTop\}/, '顶部让位示例要真的切 insetTop')
+  assert.match(popupPage, /只让状态栏/, '顶部让位示例必须保留「只让状态栏」档')
+  assert.match(popupPage, /状态栏 \+ 导航栏/, '顶部让位示例必须保留「状态栏 + 导航栏」档')
+  assert.doesNotMatch(popupPage, /closePosition=/, '关闭按钮默认就在右上角，demo 不再堆四个位置按钮')
+  assert.doesNotMatch(
+    popupPage,
+    /insetTop=\{insetTop\}[\s\S]{0,80}closeable/,
+    '顶部让位示例默认不带关闭按钮：顶部弹层没人点右上角叉',
+  )
   assert.match(popupPage, /showToast\(/, '叠加顺序示例要真的弹一条 Toast')
   assert.match(popupPage, /length: 30/, '内滚示例要给足一屏放不下的内容')
 

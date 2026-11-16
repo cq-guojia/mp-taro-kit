@@ -157,6 +157,22 @@ setThemeMode('auto', {
 
 `themeConfig` 与 `app.json` 的 `@bgColor` 同源，色值不写第二份。开关里再调同一个 API 即全站热切换，不用刷新、不用通知任何页面：`setThemeMode('dark')`，取值 `'light' | 'dark' | 'auto'`。
 
+**顶部安全区真值**在 app 入口注入一次（`configureSafeArea`）。页面 `navigationStyle: 'custom'` 时 `fixed` 从屏幕顶起，而 `env()` 只给得出状态栏高度、给不出胶囊下沿，贴顶浮层必须用平台真值让位：
+
+```ts
+import Taro from '@tarojs/taro'
+import { configureSafeArea } from 'mp-taro-kit/runtime'
+
+const windowInfo = Taro.getWindowInfo()
+const menuButton = Taro.getMenuButtonBoundingClientRect()
+configureSafeArea({
+  statusBarHeight: windowInfo.statusBarHeight ?? 0,
+  menuButton: { top: menuButton.top, height: menuButton.height },
+})
+```
+
+runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawer 读快照，把「面板上探量 + 目标位置」内联成内容区 `padding-top`。未注入时不猜，走 CSS `calc(env() * 2)` 兜底。详见[遮罩与浮层 API](overlay.md)。
+
 **必须同时做官方窗口主题配置**，否则 `page` 没有底色、转场首帧露白。`app.json`：
 
 ```json

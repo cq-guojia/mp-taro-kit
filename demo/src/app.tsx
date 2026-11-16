@@ -7,7 +7,7 @@ import type {
   PlatformRequestOptions,
   PlatformResponse,
 } from 'mp-taro-kit/core'
-import { setThemeMode } from 'mp-taro-kit/runtime'
+import { configureSafeArea, setThemeMode } from 'mp-taro-kit/runtime'
 import { OverlayHost } from 'mp-taro-kit/ui/infra'
 import themeConfig from './theme.json'
 
@@ -75,6 +75,16 @@ function applyWindowBackground(dark: boolean) {
     backgroundColorBottom: backgroundColor,
   })
 }
+
+// 顶部安全区真值在 app 入口注入一次：demo 页面都是 navigationStyle: 'custom'，
+// fixed 从屏幕顶起，且 Skyline 下 env(safe-area-inset-top) 取不到值，只能靠平台 API。
+// 取值口径与 NavBar 完全一致：状态栏高度 + 胶囊几何。
+const windowInfo = Taro.getWindowInfo()
+const menuButton = Taro.getMenuButtonBoundingClientRect()
+configureSafeArea({
+  statusBarHeight: windowInfo.statusBarHeight ?? 0,
+  menuButton: { top: menuButton.top, height: menuButton.height },
+})
 
 // 主题在 app 入口配置一次：平台能力全部由宿主注入，库侧 runtime 保持零平台依赖。
 // auto 跟随系统主题；开关里调 setThemeMode('light' | 'dark' | 'auto') 即可热切换。

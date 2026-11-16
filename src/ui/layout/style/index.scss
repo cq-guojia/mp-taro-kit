@@ -46,17 +46,14 @@
 
 .mptk-popup__panel {
   position: fixed;
-  left: var(--mptk-s-zero);
-  right: var(--mptk-s-zero);
+  /* 面板必须自带 panel 层：否则在 .mptk-popup 的层叠上下文里层级为 auto，会被遮罩盖住。 */
+  z-index: var(--mptk-c-layer-panel);
   display: flex;
   flex-direction: column;
+  min-height: var(--mptk-c-popup-min-h);
   max-height: var(--mptk-c-popup-max-h);
   overflow: hidden;
   background-color: var(--mptk-surface-1);
-  border-top-left-radius: var(--mptk-radius-md);
-  border-top-right-radius: var(--mptk-radius-md);
-  border-bottom-left-radius: var(--mptk-radius-md);
-  border-bottom-right-radius: var(--mptk-radius-md);
   padding-top: var(--mptk-space-4);
   padding-right: var(--mptk-space-4);
   padding-bottom: var(--mptk-space-4);
@@ -72,9 +69,25 @@
   min-height: 0;
 }
 
-/* 贴底 / 贴顶要避让安全区：env() 在没有横条的设备上算 0。 */
+/* 顶部让位：注入生效时由 JS 写成内联 px（= 探出量 + 目标位置），下面两条是**未注入时的兜底**。
+   兜底也要把探出量算进去：贴顶面板的 top 是 -env(safe-area-inset-top)，内容被一起抬高，
+   所以 padding 至少是 2 倍 env()；只写一份 env() 会整块少让一个状态栏高度
+   （真机表现：nav-bar 档看着像只让了状态栏、status-bar 档直接到顶）。 */
+.mptk-popup--inset-status-bar .mptk-popup__body {
+  padding-top: calc(env(safe-area-inset-top) * 2);
+}
+
+.mptk-popup--inset-nav-bar .mptk-popup__body {
+  padding-top: calc(env(safe-area-inset-top) * 2 + var(--mptk-c-navbar-h));
+}
+
+/* 贴底：通栏，从底边升起；贴底两角留直角以对齐屏幕边缘。
+   必须给确定 height：Skyline 的 scroll-view 只有拿到确定高才会滚，光靠 max-height 会被内容撑满屏。 */
 .mptk-popup__panel--bottom {
   bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  height: var(--mptk-c-popup-sheet-h);
   padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
   transform: translateY(100%);
   opacity: 0;
@@ -85,9 +98,14 @@
   opacity: 1;
 }
 
+/* 贴顶：通栏，盖到状态栏；贴顶两角留直角。同样给确定高，原因见贴底档。
+   top 负值只让底色盖住状态栏（视觉）；面板自身不写安全区 padding 让位——
+   内容让位走 body 的 padding-top，且那个值里已经包含了这里探出去的高度（见 safe-inset.ts）。 */
 .mptk-popup__panel--top {
   top: calc(0px - env(safe-area-inset-top));
-  padding-top: calc(var(--mptk-space-4) + env(safe-area-inset-top));
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  height: var(--mptk-c-popup-sheet-h);
   transform: translateY(-100%);
   opacity: 0;
 }
@@ -97,13 +115,129 @@
   opacity: 1;
 }
 
-/* 居中档：top 50% 必须配 -50% 位移，否则面板顶边压在中线上。 */
+/* 居中：默认宽取 token，最大不超屏；左右 0 配 margin auto 才真的居中。
+   Vant 用 fit-content，Skyline 不支持，所以给默认宽而不是撑满整屏。
+   居中档默认带圆角（四角全圆），这与贴边档默认平角相反。 */
 .mptk-popup__panel--center {
   top: var(--mptk-s-center);
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  width: var(--mptk-c-popup-center-w);
+  max-width: calc(100vw - var(--mptk-space-4) - var(--mptk-space-4));
+  margin-right: auto;
+  margin-left: auto;
+  border-top-left-radius: var(--mptk-c-popup-radius);
+  border-top-right-radius: var(--mptk-c-popup-radius);
+  border-bottom-left-radius: var(--mptk-c-popup-radius);
+  border-bottom-right-radius: var(--mptk-c-popup-radius);
   transform: translateY(-50%);
   opacity: 0;
 }
 
 .mptk-popup--open .mptk-popup__panel--center {
   opacity: 1;
+}
+
+/* 侧滑：全高抽屉，横向进出；宽度取抽屉 token，左右各自写全不共用选择器。 */
+.mptk-popup__panel--left {
+  top: calc(0px - env(safe-area-inset-top));
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
+  width: var(--mptk-c-drawer-w);
+  /* 抽屉必须全高，不能吃基础类的 80vh 限高，否则底下留一截。 */
+  max-height: 100%;
+  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.mptk-popup--open .mptk-popup__panel--left {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.mptk-popup__panel--right {
+  top: calc(0px - env(safe-area-inset-top));
+  bottom: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  width: var(--mptk-c-drawer-w);
+  max-height: 100%;
+  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.mptk-popup--open .mptk-popup__panel--right {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* 圆角：居中档默认四角全圆（写在自己档位里）；贴边档默认平角，round 开启才圆内侧两角。
+   尺寸统一读 --mptk-c-popup-radius，改一处全库跟随。 */
+.mptk-popup--round .mptk-popup__panel--bottom {
+  border-top-left-radius: var(--mptk-c-popup-radius);
+  border-top-right-radius: var(--mptk-c-popup-radius);
+}
+
+.mptk-popup--round .mptk-popup__panel--top {
+  border-bottom-left-radius: var(--mptk-c-popup-radius);
+  border-bottom-right-radius: var(--mptk-c-popup-radius);
+}
+
+.mptk-popup--round .mptk-popup__panel--left {
+  border-top-right-radius: var(--mptk-c-popup-radius);
+  border-bottom-right-radius: var(--mptk-c-popup-radius);
+}
+
+.mptk-popup--round .mptk-popup__panel--right {
+  border-top-left-radius: var(--mptk-c-popup-radius);
+  border-bottom-left-radius: var(--mptk-c-popup-radius);
+}
+
+/* 关闭按钮：叉走图标库；plain 只有叉，circle / rounded 带浮出底。 */
+.mptk-popup__close {
+  /* 按钮尺寸回到原 sm 档，不靠放大热区换命中；点得着由 Popup.tsx 的 DOM 顺序保证。 */
+  --mptk-popup-close-size: var(--mptk-control-h-sm);
+  position: absolute;
+  z-index: var(--mptk-c-layer-popover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--mptk-popup-close-size);
+  height: var(--mptk-popup-close-size);
+  color: var(--mptk-fg-2);
+}
+
+.mptk-popup__close--plain {
+  background-color: var(--mptk-s-transparent);
+}
+
+.mptk-popup__close--circle {
+  border-radius: var(--mptk-radius-pill);
+  background-color: var(--mptk-surface-2);
+}
+
+.mptk-popup__close--rounded {
+  border-radius: var(--mptk-radius-md);
+  background-color: var(--mptk-surface-2);
+}
+
+.mptk-popup__close--top-left {
+  top: var(--mptk-space-2);
+  left: var(--mptk-space-2);
+}
+
+.mptk-popup__close--top-right {
+  top: var(--mptk-space-2);
+  right: var(--mptk-space-2);
+}
+
+.mptk-popup__close--bottom-left {
+  bottom: var(--mptk-space-2);
+  left: var(--mptk-space-2);
+}
+
+.mptk-popup__close--bottom-right {
+  bottom: var(--mptk-space-2);
+  right: var(--mptk-space-2);
 }

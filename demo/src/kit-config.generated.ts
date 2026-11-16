@@ -1,4 +1,4 @@
-// @mptk-inputs:8afda5fee941
+// @mptk-inputs:6180c5c6c0f6
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -1922,6 +1922,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "c-overlay-opacity-thick",
     },
     {
+      "key": "--mptk-c-navbar-h",
+      "label": "c-navbar-h",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "44px",
+      "unit": "px",
+      "note": "c-navbar-h",
+    },
+    {
       "key": "--mptk-c-layer-navbar",
       "label": "c-layer-navbar",
       "group": "component",
@@ -1985,11 +1994,47 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "c-popup-max-h",
     },
     {
+      "key": "--mptk-c-popup-sheet-h",
+      "label": "c-popup-sheet-h",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "35vh",
+      "unit": "",
+      "note": "c-popup-sheet-h",
+    },
+    {
+      "key": "--mptk-c-popup-center-w",
+      "label": "c-popup-center-w",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "280px",
+      "unit": "px",
+      "note": "c-popup-center-w",
+    },
+    {
+      "key": "--mptk-c-popup-min-h",
+      "label": "c-popup-min-h",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "200px",
+      "unit": "px",
+      "note": "c-popup-min-h",
+    },
+    {
+      "key": "--mptk-c-popup-radius",
+      "label": "c-popup-radius",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "var(--mptk-radius-md)",
+      "unit": "",
+      "note": "c-popup-radius",
+    },
+    {
       "key": "--mptk-c-drawer-w",
       "label": "c-drawer-w",
       "group": "component",
       "groupLabel": "组件视觉值",
-      "value": "280px",
+      "value": "240px",
       "unit": "px",
       "note": "c-drawer-w",
     },

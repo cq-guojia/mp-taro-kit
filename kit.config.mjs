@@ -285,6 +285,7 @@ export default {
     "--mptk-c-overlay-opacity": ".55",                              // 遮罩浓度：默认（对齐 Vant / antd 的 .55~.6）
     "--mptk-c-overlay-opacity-thick": ".75",                        // 遮罩浓度：厚
     /* 浮层层级：一条链从下往上，组件只读不传；同档多实例按挂载顺序依次 +1。 */
+    "--mptk-c-navbar-h": "44px",                                    // 导航栏内容区高度：对齐微信默认导航栏 44px（状态栏另取 env(safe-area-inset-top)）
     "--mptk-c-layer-navbar": "10",                                  // 层级：导航栏
     "--mptk-c-layer-overlay": "900",                                // 层级：遮罩
     "--mptk-c-layer-panel": "910",                                  // 层级：面板 / Dialog 面板
@@ -292,7 +293,11 @@ export default {
     "--mptk-c-layer-host": "1000",                                  // 层级：命令式 API 挂载点，保证总在最上
     "--mptk-c-motion-duration": "300ms",                            // 浮层进出场时长，带单位；0s 表示不做动画（JS 侧 MOTION_DURATION 仍是数值 300）
     "--mptk-c-popup-max-h": "80vh",                                 // 弹出层面板上限高：超出后面板内部滚动，不顶出屏幕
-    "--mptk-c-drawer-w": "280px",                                   // 抽屉宽度：滑入滑出按自身宽度算，不给宽度动不起来
+    "--mptk-c-popup-sheet-h": "35vh",                               // 贴顶/贴底档确定高度：Skyline 下 scroll-view 要确定高才能滚，只给 max-height 会被内容撑满屏；取 35vh 不让面板过长
+    "--mptk-c-popup-center-w": "280px",                             // 居中档默认宽：Vant Dialog 320px / antd-mobile RN 286px，取 280px（375 屏约 75%），最大不超屏
+    "--mptk-c-popup-min-h": "200px",                                // 面板最小高度：内容少时不塌成一小溜
+    "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
+    "--mptk-c-drawer-w": "240px",                                   // 抽屉宽度：滑入滑出按自身宽度算；240px 在 375 屏约 64%，比 280px 窄一档
     "--mptk-c-navbar-weight": "500",                                // 导航栏标题字重
     "--mptk-c-locked-opacity": ".5",                                // 锁定态（disabled / busy）不透明度
     "--mptk-c-btn-pressed-opacity": ".86",                           // 按钮按压态不透明度：小程序没有 :hover，靠 hoverClass 降一点
