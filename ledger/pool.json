@@ -1,5 +1,10 @@
 {
   "tasks": {
+    "20261116-0247-0eef-补全弹出层面板形态": {"category": null, "created": "2026-11-16 02:47:16", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["浮层", "弹窗", "组件重做"], "title": "补全弹出层面板形态", "updated": "2026-11-16 02:47:16", "worklog": "worklog/202611/16-0247-0eef-补全弹出层面板形态.md"},
+    "20261116-0247-6d1b-统一浮层底座": {"category": null, "created": "2026-11-16 02:47:16", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["浮层", "遮罩", "动画", "组件重构"], "title": "统一浮层底座", "updated": "2026-11-16 02:47:16", "worklog": "worklog/202611/16-0247-6d1b-统一浮层底座.md"},
+    "20261116-0247-75c1-新增自动回底": {"category": null, "created": "2026-11-16 02:47:16", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["自动回底", "滚动", "新组件"], "title": "新增自动回底", "updated": "2026-11-16 02:47:16", "worklog": "worklog/202611/16-0247-75c1-新增自动回底.md"},
+    "20261116-0247-98c5-新增锚定浮窗": {"category": null, "created": "2026-11-16 02:47:16", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["浮窗", "锚定定位", "新组件"], "title": "新增锚定浮窗", "updated": "2026-11-16 02:47:16", "worklog": "worklog/202611/16-0247-98c5-新增锚定浮窗.md"},
+    "20261116-0247-b1ac-新增常驻浮动按钮": {"category": null, "created": "2026-11-16 02:47:16", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["浮动按钮", "新组件", "浮层"], "title": "新增常驻浮动按钮", "updated": "2026-11-16 02:47:16", "worklog": "worklog/202611/16-0247-b1ac-新增常驻浮动按钮.md"}
   },
   "version": "20261022000000"
 }
