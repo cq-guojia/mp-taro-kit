@@ -290,7 +290,7 @@ export default {
     "--mptk-c-layer-panel": "910",                                  // 层级：面板 / Dialog 面板
     "--mptk-c-layer-popover": "920",                                // 层级：锚定浮窗 / 下拉面板
     "--mptk-c-layer-host": "1000",                                  // 层级：命令式 API 挂载点，保证总在最上
-    "--mptk-c-motion-duration": "300",                              // 浮层进出场时长（ms）；0 表示不做动画
+    "--mptk-c-motion-duration": "300ms",                            // 浮层进出场时长，带单位；0s 表示不做动画（JS 侧 MOTION_DURATION 仍是数值 300）
     "--mptk-c-popup-max-h": "80vh",                                 // 弹出层面板上限高：超出后面板内部滚动，不顶出屏幕
     "--mptk-c-drawer-w": "280px",                                   // 抽屉宽度：滑入滑出按自身宽度算，不给宽度动不起来
     "--mptk-c-navbar-weight": "500",                                // 导航栏标题字重

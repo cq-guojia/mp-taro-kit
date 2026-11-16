@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 /**
- * 进出场时长默认值，与 kit.config.mjs 的 --mptk-c-motion-duration 同值。
- * 配置改成别的数时，这里要同步改；tests/layout.test.mjs 断言两者一致。
+ * 进出场时长默认值（毫秒），与 kit.config.mjs 的 --mptk-c-motion-duration 同数值。
+ * 配置是带单位的 CSS 时长（300ms），这里是 setTimeout 用的数字；两处要同步改，tests/layout.test.mjs 断言数值一致。
  */
 export const MOTION_DURATION = 300
 

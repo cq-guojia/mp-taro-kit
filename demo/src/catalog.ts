@@ -133,16 +133,8 @@ export const pages: CatalogPage[] = [
     id: 'infra',
     title: '基础设施',
     path: 'pages/infra/index',
-    summary: '挂载基座、安全区与跨副本状态',
+    summary: '安全区与跨副本状态',
     examples: [
-      {
-        id: 'overlay-host',
-        title: '挂载点',
-        hint: 'OverlayHost：页面基座挂一次',
-        usage: '',
-        imports: ['mp-taro-kit/ui/infra', 'mp-taro-kit/ui/infra/style'],
-        renderNotes: '',
-      },
       {
         id: 'safe-area',
         title: '安全区',
@@ -745,7 +737,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'toast-command',
         title: '轻提示',
-        hint: 'showToast / hideToast / clearToasts',
+        hint: 'showToast / hideToast / clearToasts；前置：宿主基座挂一次 <OverlayHost />，未挂直接抛错',
         usage: '',
         imports: ['mp-taro-kit/ui', 'mp-taro-kit/ui/infra'],
         renderNotes: '',
@@ -888,7 +880,6 @@ export const menu: MenuGroup[] = [
       { id: 'overlay', label: 'Overlay 遮罩', status: 'ready', pageId: 'overlay' },
       { id: 'space', label: 'Space 间距', status: 'planned' },
       { id: 'style', label: 'Style 内置样式', status: 'ready', pageId: 'foundation' },
-      { id: 'overlay-host', label: 'OverlayHost 挂载点', status: 'ready', pageId: 'infra' },
       { id: 'safe-area', label: 'SafeArea 安全区', status: 'ready', pageId: 'infra' },
     ],
   },

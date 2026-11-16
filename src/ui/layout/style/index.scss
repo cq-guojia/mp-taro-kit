@@ -14,6 +14,8 @@
   z-index: var(--mptk-c-layer-overlay);
   background-color: var(--mptk-c-overlay-color);
   opacity: 0;
+  /* 退场期节点还在 DOM 里播淡出；让出命中测试，否则透明遮罩会吞掉底下按钮的点击（antd Mask 同款做法）。 */
+  pointer-events: none;
   transition-property: opacity;
   transition-duration: var(--mptk-c-motion-duration);
   transition-timing-function: var(--mptk-ease);
@@ -31,9 +33,10 @@
   --mptk-overlay-alpha: var(--mptk-c-overlay-opacity-thick);
 }
 
-/* 展开态才给浓度：opacity 同时承担进出场过渡，0 → 浓度这一跳就是淡入。 */
+/* 展开态才给浓度与交互：opacity 同时承担进出场过渡，0 → 浓度这一跳就是淡入。 */
 .mptk-overlay--open {
   opacity: var(--mptk-overlay-alpha);
+  pointer-events: auto;
 }
 
 .mptk-popup {

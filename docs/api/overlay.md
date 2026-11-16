@@ -90,7 +90,7 @@
 | `--mptk-c-overlay-opacity-thin` | `.35` | 浓度：薄 |
 | `--mptk-c-overlay-opacity` | `.55` | 浓度：默认（对齐 Vant / antd 的 .55~.6） |
 | `--mptk-c-overlay-opacity-thick` | `.75` | 浓度：厚 |
-| `--mptk-c-motion-duration` | `300` | 浮层进出场时长；与 JS 的 `MOTION_DURATION` 必须同值，测试断言 |
+| `--mptk-c-motion-duration` | `300ms` | 浮层进出场时长，必须带 CSS 单位（裸数字会被丢弃、动画失效）；数值与 JS 的 `MOTION_DURATION`（300，毫秒）一致，测试断言 |
 | `--mptk-c-popup-max-h` | `80vh` | 面板限高，超出后内容区自己滚 |
 | `--mptk-c-drawer-w` | `280px` | 抽屉宽度；滑入滑出按自身宽度算 |
 

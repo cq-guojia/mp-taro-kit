@@ -1,4 +1,4 @@
-// @mptk-inputs:2fc7eadc8414
+// @mptk-inputs:8afda5fee941
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -1971,8 +1971,8 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "c-motion-duration",
       "group": "component",
       "groupLabel": "组件视觉值",
-      "value": "300",
-      "unit": "",
+      "value": "300ms",
+      "unit": "ms",
       "note": "c-motion-duration",
     },
     {

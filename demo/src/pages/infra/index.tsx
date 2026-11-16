@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import { isOverlayHostMounted } from 'mp-taro-kit/ui'
 import { Button } from 'mp-taro-kit/ui/actions'
 import { Card } from 'mp-taro-kit/ui/card'
 import {
@@ -22,16 +21,6 @@ export default function InfraPage() {
   const overlays = useOverlayEntries()
 
   const render = (id: string) => {
-    if (id === 'overlay-host') {
-      return (
-        <View>
-          <Text className="demo-note">
-            {`已挂载：<OverlayHost /> = ${isOverlayHostMounted() ? 'true' : 'false'}`}
-          </Text>
-          <Text className="demo-note">由 app.tsx 全局挂一次；命令式 API 依赖它。</Text>
-        </View>
-      )
-    }
     if (id === 'safe-area') {
       return (
         <View>

@@ -173,13 +173,22 @@ test('关掉不立即卸载：五个浮层都走 presence，并且有进出场�
   )
 })
 
-test('进出场时长只有一个真源：JS 常量与配置 token 必须同值', () => {
+test('进出场时长只有一个真源：JS 毫秒值与配置 token 必须同值', () => {
   const source = read('src/ui/layout/presence.ts')
   const constant = Number(/MOTION_DURATION = (\d+)/.exec(source)?.[1])
   assert.ok(Number.isFinite(constant), 'presence.ts 缺 MOTION_DURATION 常量')
   const css = resolveCssVars(read('dist/styles/theme-light.css'))
-  const token = Number(/--mptk-c-motion-duration:\s*(\d+);/.exec(css)?.[1])
-  assert.equal(constant, token, 'JS 卸载延时与 CSS 过渡时长对不上，动画会被截断或多挂一会儿')
+  const raw = /--mptk-c-motion-duration:\s*([^;]+);/.exec(css)?.[1]
+  assert.match(raw ?? '', /^\d+ms$/, `CSS 时长必须带 ms 单位，裸数字会被当无效声明丢弃、动画失效；实际 ${String(raw)}`)
+  assert.equal(constant, Number.parseInt(raw, 10), 'JS 卸载延时与 CSS 过渡时长对不上，动画会被截断或多挂一会儿')
+})
+
+test('遮罩退场期让出命中测试：底层不接收点击，展开态才恢复', () => {
+  const css = read(LAYOUT_CSS)
+  const baseRule = /\.mptk-overlay\s*\{([^}]+)\}/.exec(css)?.[1] ?? ''
+  const openRule = /\.mptk-overlay--open\s*\{([^}]+)\}/.exec(css)?.[1] ?? ''
+  assert.equal(declOf(baseRule, 'pointer-events'), 'none', '遮罩底层必须 pointer-events:none，否则退场期透明节点吞掉底下按钮点击')
+  assert.equal(declOf(openRule, 'pointer-events'), 'auto', '展开态必须恢复 pointer-events:auto，否则遮罩自身点不动、关不掉')
 })
 
 test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
