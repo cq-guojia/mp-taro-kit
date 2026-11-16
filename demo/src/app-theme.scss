@@ -1,4 +1,4 @@
-// @mptk-inputs:6f9ad897a56d
+// @mptk-inputs:2fc7eadc8414
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（站点主题覆盖层）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -6,7 +6,7 @@ page {
   // 这里展示的是「可覆盖项清单」：取消注释即生效，值仍由生成器写入，不在样式里手写。
   // 可配项示例（完整清单见 src/kit-config.generated.ts）：
   //   --mptk-surface-base / --mptk-radius-md / --mptk-business / --mptk-font-md
-  //   --mptk-c-mask-opacity / --mptk-c-spinner-rotate-dur / --mptk-s-full
+  //   --mptk-c-overlay-opacity / --mptk-c-spinner-rotate-dur / --mptk-s-full
   // 只写要改的键到项目根 kit.config.mjs，值由生成器写回这里。
   --mptk-c-spinner-rotate-dur: .9s;
 }

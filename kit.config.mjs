@@ -278,12 +278,21 @@ export default {
   },
 
   component: {                                                      // 组件视觉取值：组件样式只读 var()，不在此处以外写死
-    "--mptk-c-mask-opacity": ".4",                                  // 遮罩不透明度
-    "--mptk-c-mask-z": "910",                                       // 层级：全局遮罩
-    "--mptk-c-overlay-z": "900",                                    // 层级：浮层容器
-    "--mptk-c-popup-z": "920",                                      // 层级：弹出层
-    "--mptk-c-overlay-host-z": "1000",                              // 层级：命令式 API 挂载点，保证总在最上
-    "--mptk-c-navbar-z": "10",                                      // 层级：导航栏
+    /* 遮罩层：颜色与三档浓度分开配。底色不取 --mptk-fg——那是字色，暗色下会变成浅灰蒙版。 */
+    "--mptk-c-overlay-color": "#000",                               // 遮罩底色：深色档（纯黑，不跟随主题）
+    "--mptk-c-overlay-color-light": "@white",                       // 遮罩底色：浅色档
+    "--mptk-c-overlay-opacity-thin": ".35",                         // 遮罩浓度：薄
+    "--mptk-c-overlay-opacity": ".55",                              // 遮罩浓度：默认（对齐 Vant / antd 的 .55~.6）
+    "--mptk-c-overlay-opacity-thick": ".75",                        // 遮罩浓度：厚
+    /* 浮层层级：一条链从下往上，组件只读不传；同档多实例按挂载顺序依次 +1。 */
+    "--mptk-c-layer-navbar": "10",                                  // 层级：导航栏
+    "--mptk-c-layer-overlay": "900",                                // 层级：遮罩
+    "--mptk-c-layer-panel": "910",                                  // 层级：面板 / Dialog 面板
+    "--mptk-c-layer-popover": "920",                                // 层级：锚定浮窗 / 下拉面板
+    "--mptk-c-layer-host": "1000",                                  // 层级：命令式 API 挂载点，保证总在最上
+    "--mptk-c-motion-duration": "300",                              // 浮层进出场时长（ms）；0 表示不做动画
+    "--mptk-c-popup-max-h": "80vh",                                 // 弹出层面板上限高：超出后面板内部滚动，不顶出屏幕
+    "--mptk-c-drawer-w": "280px",                                   // 抽屉宽度：滑入滑出按自身宽度算，不给宽度动不起来
     "--mptk-c-navbar-weight": "500",                                // 导航栏标题字重
     "--mptk-c-locked-opacity": ".5",                                // 锁定态（disabled / busy）不透明度
     "--mptk-c-btn-pressed-opacity": ".86",                           // 按钮按压态不透明度：小程序没有 :hover，靠 hoverClass 降一点

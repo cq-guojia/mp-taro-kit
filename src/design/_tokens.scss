@@ -1,4 +1,4 @@
-// @mptk-inputs:c855f29f1937
+// @mptk-inputs:80443b6fbe48
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -62,12 +62,19 @@
   --mptk-dur-run: 500ms;
   --mptk-dur-breathe: 1120ms;
   --mptk-ease: cubic-bezier(.4, 0, .2, 1);
-  --mptk-c-mask-opacity: .4;
-  --mptk-c-mask-z: 910;
-  --mptk-c-overlay-z: 900;
-  --mptk-c-popup-z: 920;
-  --mptk-c-overlay-host-z: 1000;
-  --mptk-c-navbar-z: 10;
+  --mptk-c-overlay-color: #000;
+  --mptk-c-overlay-color-light: #fff;
+  --mptk-c-overlay-opacity-thin: .35;
+  --mptk-c-overlay-opacity: .55;
+  --mptk-c-overlay-opacity-thick: .75;
+  --mptk-c-layer-navbar: 10;
+  --mptk-c-layer-overlay: 900;
+  --mptk-c-layer-panel: 910;
+  --mptk-c-layer-popover: 920;
+  --mptk-c-layer-host: 1000;
+  --mptk-c-motion-duration: 300;
+  --mptk-c-popup-max-h: 80vh;
+  --mptk-c-drawer-w: 280px;
   --mptk-c-navbar-weight: 500;
   --mptk-c-locked-opacity: .5;
   --mptk-c-btn-pressed-opacity: .86;

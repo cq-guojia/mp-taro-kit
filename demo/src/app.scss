@@ -36,7 +36,7 @@ page {
 
 /* 页面不再统一加左右内边距：普通示例块自己留 16，裸展示的组件才能真正通到底。 */
 /* 演示站纵向节奏只由四层决定，每层只管自己那一道，不再互相叠加：
-   页 16（顶部给、底部由最后一个块的尾距承担）→ 页头 16 → 块间距 16 → 卡/项间距 16 或 12。
+   页 16（顶部给、底部由最后一个块的尾距承担）→ 页头 16 → 块间距 12 → 卡内项间距 12。
    裸块（bare，无底色）不长垂直留白，块间距由内容最后一项的尾距承担。 */
 .demo-page {
   padding-top: var(--mptk-space-4);
@@ -159,6 +159,15 @@ page {
 .demo-item {
   margin-right: var(--mptk-space-3);
   margin-bottom: var(--mptk-space-3);
+}
+
+/* 卡片体内的尾距归零：卡片壳自己已有四边内边距，最后一项再带一份 .demo-item 的
+   右 / 下外边距就是双份留白 —— 只有一排按钮的块，下方会厚出整整一档。
+   裸块反过来靠这层尾距撑块间距（裸块自身不留 padding），所以只清非裸块。 */
+.demo-block:not(.demo-block--bare) .demo-row > .demo-item:last-child,
+.demo-block:not(.demo-block--bare) .demo-stack > .demo-item:last-child {
+  margin-right: var(--mptk-s-zero);
+  margin-bottom: var(--mptk-s-zero);
 }
 
 .demo-note {

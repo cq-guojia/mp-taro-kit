@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { View, Text } from '@tarojs/components'
 import { uiState } from '../state.js'
 import { markOverlayHostMounted, markOverlayHostUnmounted } from '../commands.js'
+import { Overlay } from '../layout/Overlay.js'
 import { useLoadingState, useNotices, useOverlayEntries } from './use-store.js'
 import { useThemeDark } from './use-theme.js'
 
@@ -51,6 +52,8 @@ export function OverlayHost({ className }: OverlayHostProps) {
 
       {overlays.map((entry) => (
         <View key={entry.id} className="mptk-dialog">
+          {/* 确认类弹窗点空白不关闭：遮罩只负责压暗，关闭走按钮。 */}
+          <Overlay closable={false} lockScroll={false} />
           <View className="mptk-dialog__panel">
             {entry.payload.title === undefined ? null : (
               <View className="mptk-dialog__title">

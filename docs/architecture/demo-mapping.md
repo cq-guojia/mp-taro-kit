@@ -33,7 +33,7 @@ demo/                                               # 仓库内的 Taro 小程�
     │   ├── DemoBlock.tsx                           # 单个示例外壳；另导出 DemoPage 页壳，按 catalog 铺块并把正文交给 DemoShell
     │   ├── DemoNav.tsx                             # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
     │   └── DemoShell.tsx                           # 页面外壳：固定视口高度的 View + scroll-view；导航栏在滚动区外
-    └── pages/                                      # 演示站页面：1 个索引页 + 17 个展示页
+    └── pages/                                      # 演示站页面：1 个索引页 + 18 个展示页
         ├── index/index.tsx                         # 目录页：主题三态装 Card（title + subtitle + Segmented）；menu 用 CellGroup 铺固定分组
         ├── theme-config/index.tsx                  # 主题配置：三张 Card 用 title 做标题、列表是不带标题的 CellGroup，色条上写色板名字
         ├── design-foundation/index.tsx             # 设计基础：中性灰阶、色相与明暗两套，独立成页
@@ -49,7 +49,8 @@ demo/                                               # 仓库内的 Taro 小程�
         ├── divider/index.tsx                       # src/ui/display/：Divider，独立成页
         ├── card/index.tsx                          # src/ui/card/：Card 通用卡片容器，只列自身能力与宿主手搓内容
         ├── navigation/index.tsx                    # src/ui/navigation/：NavBar、Drawer、Dropdown
-        ├── layout/index.tsx                        # src/ui/layout/：Mask、Overlay、Popup
+        ├── overlay/index.tsx                       # src/ui/layout/：Overlay 一份遮罩，只演自己，不演使用者
+        ├── popup/index.tsx                         # src/ui/layout/：Popup 弹出层、叠加顺序、长内容内滚
         ├── foundation/index.tsx                    # design + runtime + utils + core 四域合并：换肤、单例、工具、configure 注入
         └── commands/index.tsx                      # ui/commands.ts + state.ts + infra/OverlayHost：命令式 API
 ```
@@ -63,7 +64,7 @@ demo/                                               # 仓库内的 Taro 小程�
 - 展示页与库侧路径仍一一对应：一页承载一个子域（`foundation` / `commands` 各承载一组能力域），路由由 `pages` 派生；新增能力域先在本树定位，再改 `demo/src/catalog.ts` 与 `demo/app.config.ts` 的 `pages`。
 - 同一子域里已实现的多个组件各占一页，不混排：`form` 只放 Switch，`segmented` 只放 Segmented，`display` 只放 Cell / CellGroup，Badge 与 Divider 各自成页；`card` 是独立子域、通用卡片容器单独成页，业务向商品卡片占位改名 `ProductCard` 让出通用名；菜单条目通过 `pageId` 各自指向自己的页，点进去只看到这一件内容。`tests/ui.test.mjs` 断言 `ready` 条目指向真实展示页，并断言 Cell / Badge / Divider 三条菜单各指自己、Cell 页示例不混入别的内容。多对一仍是全站其余菜单的既有结构，不在本条约束内。
 - 演示内容之间必须留空隙，组件不许一个个贴在一起：横排用 `.demo-row`、纵向多段用 `.demo-stack`，其中的组件一律带 `.demo-item`（自带右、下外边距，取值 `--mptk-space-3`）。不用 `gap` —— 老 WebView 内核不支持，Skyline 与 WebView 会呈现两种结果。
-- **纵向节奏只有四层，每层只负责自己那一道**：页 `padding-top: --mptk-space-4`（底部由最后一个块的尾距承担，页不再加 padding-bottom）→ 页头 `margin-bottom: --mptk-space-4` → 块与块 `--mptk-space-4` → 卡片与卡片 `--mptk-space-4`。裸块（`bare`，无底色）不贡献垂直留白（`padding-top/bottom: 0`、`margin: 0`），块间距由内容最后一项的尾距承担，因此「卡片之间」和「块与块」是同一个 16。`.demo-block__body` 不再带 `margin-bottom`，块底留白只由块自己给。禁止在块上再叠一层 margin「看起来保险」——三层相加会得到 28 / 56 这种没人能解释的数。
+- **纵向节奏只有四层，每层只负责自己那一道**：页 `padding-top: --mptk-space-4`（16，底部由最后一个块的尾距承担，页不再加 padding-bottom）→ 页头 `margin-bottom: --mptk-space-4`（16）→ 块与块 `--mptk-space-3`（12）→ 卡片与卡片 `--mptk-space-3`（12）。裸块（`bare`，无底色）不贡献垂直留白（`padding-top/bottom: 0`、`margin: 0`），块间距由内容最后一项的尾距承担，因此「卡片之间」和「块与块」是同一个 12。`.demo-block__body` 不再带 `margin-bottom`，块底留白只由块自己给。禁止在块上再叠一层 margin「看起来保险」——三层相加会得到 28 / 56 这种没人能解释的数。**卡片体内不叠尾距**：卡片壳已有四边内边距，块内最后一项的 `.demo-item` 右 / 下外边距由 `.demo-block:not(.demo-block--bare)` 归零，否则只有一排按钮的块下方会比上方厚一整档（12 内边距 + 12 尾距）；裸块不加这条，它正是靠尾距撑块间距。
 - 一页内示例较多时按 `section` 分组：`CatalogExample.section` 是页内分组标题，`DemoPage` 只在分组首块前插一个标题，未标 `section` 的页行为不变。分组判据按「使用者看效果的顺序」，不按库侧目录：Cell 页固定五组「容器形态 → 组级外观设置 → 单格内容与排布 → 交互与状态 → 与 Card 组合」，由大到小、由静态到交互；同类设置集中，新增设置追加到本组末尾、不插回形态组。Card 页固定三组「容器形态 → 外观设置 → 槽位与状态」，同样由大到小、由静态到交互。`tests/ui.test.mjs` 与 `tests/card.test.mjs` 断言两页的组顺序与分组连续，其他未标 `section` 的页不受影响。
 - **组合示例按引用方向归属，只向上引用、不向下引用**：通用容器不知道自己会被谁装，`Card` 页只列自身能力与宿主手搓的内容（`Text` / `View` + 自身槽位），不列举具体子组件的组合；`Cell` 与 `Card` 的组合归引用方 `Cell` 页展示，并放在该页自身能力之后。展示顺序固定为「先看默认值 → 再看可枚举档位 → 再看设置开关 → 再看槽位与内容 → 再看交互状态 → 最后看与其他组件的组合」。`tests/card.test.mjs` 断言 Card 页源码与示例 `imports` 都不出现 `ui/display/cell`；`tests/ui.test.mjs` 断言组合示例归 Cell 页末组。
 - 有尺寸轴的组件，页面第一块固定是「尺寸」示例：逐档铺开（sm / md / lg 各一条）并标出档位与取值，其余示例不再兼差当尺寸表。除这一块之外，演示一律走默认档（不传 `size`，即 `sm`），不写死 `md` / `lg`：同一形态有多个实例、或一页有多个形态时口径一致，尺寸混用会被读成形态差异，形态之间也就没法横向比较；宿主看到的就是不配参数时的样子。`tests/ui.test.mjs` 按示例块断言这条。
@@ -73,6 +74,7 @@ demo/                                               # 仓库内的 Taro 小程�
 - 三页职责固定：「主题配置」是**配置项清单**（基础配置 / 颜色配置 / 其他控件配置，颜色给出明暗色值与标准色相名），回答「默认值是什么、在哪改」；「设计基础」是**取值依据**（灰阶层级与色相分档的理由）；「尺寸」是**档位标尺**（逐档铺开看比例）。配置页只列**不传时真有默认值**的项，必须由调用方传的项不列；同一条取值允许在配置页出现一次，但只列值与档位名，不重复讲理由。
 - 整页就是内容本体的页标 `bare`，并让示例的 `title` 留空：页壳不渲染示例块卡片与标题区，卡片直接铺在页面底色上。不再出现「示例块卡片里再套 Card」的双层卡；主题配置页就是这种形态。
 - 分组判据按「使用者找组件时的场景」，不按 `src/ui/` 的目录：`Toast` 排基础组件、`Dialog` 排反馈组件、`Popup` 排基础而 `Overlay` 排反馈，但库侧路径仍是 `ui/feedback` / `ui/layout`，目录不反向约束 exports。
+- **演示按使用者分页，被引用的下层只演自己**：遮罩不知道谁会用它，所以遮罩页只演示压暗、浓度、底色、点击策略，不出现 Popup / Drawer / Dialog；Popup 用它做出来的成品归 Popup 页，抽屉与下拉归导航页，Dialog / Toast / Loading 归反馈页。`tests/layout.test.mjs` 断言遮罩页不出现使用者。
 - 每个页面必须走 `DemoShell`：外壳 `height: 100vh` + `scroll-view type="custom"`，页面 json 配 `disableScroll: true`。Skyline 不支持页面全局滚动，绕开外壳写普通容器会让超屏内容滚不到；平台依据见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md)。
 - 控件的效果展示归演示站；props、组内行为与用法代码归 `docs/api/<组件>.md`（如 [Cell 单元格](../api/cell.md)、[Switch 开关](../api/switch.md)、[Segmented 分段选择](../api/segmented.md)），演示站不展示代码。演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
 - 各 ui 子域各有自己的 style 出口，样式由各页装配时引入，不单独成页；icon 域没有组件，样式即字体声明与类名。子域清单以源码为准，文档不写死数量。
@@ -128,3 +130,5 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-14：配置页三块标题改用 Card 的 title（CellGroup 不再当卡片标题），配置文件块的标题与说明只留在卡片里
 - 2026-11-14：定死演示站纵向节奏（页 16 / 页头 16 / 块 16 / 卡 16，裸块不长垂直留白），删掉块 padding 与 body margin 的叠加
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
+- 2026-11-16：遮罩页目录 `mask` → `overlay`（组件 `Mask` 改名 `Overlay`，删掉重名的内部定位容器）
+- 2026-11-16：卡片体内最后一项的 `.demo-item` 尾距归零，修掉块底部比顶部厚一档的双份留白

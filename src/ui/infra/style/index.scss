@@ -14,7 +14,7 @@
   right: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
-  z-index: var(--mptk-c-overlay-host-z);
+  z-index: var(--mptk-c-layer-host);
 }
 
 .mptk-loading {
@@ -39,12 +39,16 @@
 }
 
 .mptk-dialog {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* 面板要压在自带遮罩之上：两者同处挂载点的层叠上下文里，靠层级 token 排序。 */
 .mptk-dialog__panel {
+  position: relative;
+  z-index: var(--mptk-c-layer-panel);
   background-color: var(--mptk-surface-1);
   border-radius: var(--mptk-radius-md);
   padding-top: var(--mptk-space-4);

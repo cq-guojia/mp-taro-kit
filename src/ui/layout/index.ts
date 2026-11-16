@@ -1,3 +1,3 @@
-export { Overlay, type OverlayProps } from './Overlay.js'
-export { Mask, type MaskProps } from './Mask.js'
+export { Overlay, type OverlayOpacity, type OverlayProps, type OverlayTone } from './Overlay.js'
+export { MOTION_DURATION } from './presence.js'
 export { Popup, type PopupPosition, type PopupProps } from './Popup.js'

@@ -518,6 +518,11 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
     assert.ok(entry.examples.some((example) => example.id === id), `${id} 页缺自己的示例块`)
   }
 
+  // 每个展示页都要接自己的页面配置：缺 disableScroll，Skyline 下整页就能跟着手指滚。
+  for (const page of catalogPages) {
+    assert.ok(exists(`../demo/src/pages/${page.id}/index.config.ts`), `${page.id} 页缺 disableScroll 配置`)
+  }
+
   const dividerCss = read('../dist/ui/display/style/index.css')
   assert.match(dividerCss, /\.mptk-divider--text\s*\{[^}]*background-color:\s*var\(--mptk-s-transparent\)/, '带文字的分隔线要横排')
   assert.match(dividerCss, /\.mptk-divider__text\s*\{[^}]*padding-left:\s*var\(--mptk-divider-content-gap\)/, '文字间距走语义变量')

@@ -1,32 +1,53 @@
+// 只用长写属性：Skyline 的简写属性里 var() 不生效，inset 也需展开。
+// 浮层层级读 --mptk-c-layer-*，组件不自己造 z 值。
+
+/* 遮罩：全库唯一实现。底色与浓度各走自己的 token，
+   底色绝不能取 --mptk-fg（字色，暗色下是浅灰，会把遮罩变成白蒙版）。 */
 .mptk-overlay {
+  --mptk-overlay-alpha: var(--mptk-c-overlay-opacity);
   position: fixed;
   top: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
-  z-index: var(--mptk-c-overlay-z);
+  z-index: var(--mptk-c-layer-overlay);
+  background-color: var(--mptk-c-overlay-color);
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: var(--mptk-c-motion-duration);
+  transition-timing-function: var(--mptk-ease);
 }
 
-.mptk-mask {
-  position: fixed;
-  top: var(--mptk-s-zero);
-  right: var(--mptk-s-zero);
-  bottom: var(--mptk-s-zero);
-  left: var(--mptk-s-zero);
-  background-color: var(--mptk-fg);
-  opacity: var(--mptk-c-mask-opacity);
-  z-index: var(--mptk-c-mask-z);
+.mptk-overlay--light {
+  background-color: var(--mptk-c-overlay-color-light);
+}
+
+.mptk-overlay--thin {
+  --mptk-overlay-alpha: var(--mptk-c-overlay-opacity-thin);
+}
+
+.mptk-overlay--thick {
+  --mptk-overlay-alpha: var(--mptk-c-overlay-opacity-thick);
+}
+
+/* 展开态才给浓度：opacity 同时承担进出场过渡，0 → 浓度这一跳就是淡入。 */
+.mptk-overlay--open {
+  opacity: var(--mptk-overlay-alpha);
 }
 
 .mptk-popup {
   position: relative;
-  z-index: var(--mptk-c-popup-z);
+  z-index: var(--mptk-c-layer-panel);
 }
 
 .mptk-popup__panel {
   position: fixed;
   left: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
+  display: flex;
+  flex-direction: column;
+  max-height: var(--mptk-c-popup-max-h);
+  overflow: hidden;
   background-color: var(--mptk-surface-1);
   border-top-left-radius: var(--mptk-radius-md);
   border-top-right-radius: var(--mptk-radius-md);
@@ -36,16 +57,49 @@
   padding-right: var(--mptk-space-4);
   padding-bottom: var(--mptk-space-4);
   padding-left: var(--mptk-space-4);
+  transition-property: transform, opacity;
+  transition-duration: var(--mptk-c-motion-duration);
+  transition-timing-function: var(--mptk-ease);
+}
+
+/* 内容区自己滚：flex 拿定高，min-height: 0 才允许压到父级 max-height 以内。 */
+.mptk-popup__body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* 贴底 / 贴顶要避让安全区：env() 在没有横条的设备上算 0。 */
+.mptk-popup__panel--bottom {
+  bottom: var(--mptk-s-zero);
+  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.mptk-popup--open .mptk-popup__panel--bottom {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .mptk-popup__panel--top {
   top: var(--mptk-s-zero);
+  padding-top: calc(var(--mptk-space-4) + env(safe-area-inset-top));
+  transform: translateY(-100%);
+  opacity: 0;
 }
 
-.mptk-popup__panel--bottom {
-  bottom: var(--mptk-s-zero);
+.mptk-popup--open .mptk-popup__panel--top {
+  transform: translateY(0);
+  opacity: 1;
 }
 
+/* 居中档：top 50% 必须配 -50% 位移，否则面板顶边压在中线上。 */
 .mptk-popup__panel--center {
   top: var(--mptk-s-center);
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.mptk-popup--open .mptk-popup__panel--center {
+  opacity: 1;
 }

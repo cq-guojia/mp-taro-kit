@@ -1,37 +1,62 @@
-.mptk-drawer__mask,
-.mptk-dropdown__mask {
-  position: fixed;
-  top: var(--mptk-s-zero);
-  right: var(--mptk-s-zero);
-  bottom: var(--mptk-s-zero);
-  left: var(--mptk-s-zero);
-  background-color: var(--mptk-fg);
-  opacity: var(--mptk-c-mask-opacity);
+// 只用长写属性：Skyline 的简写属性里 var() 不生效。
+// 遮罩不再自绘：Drawer / Dropdown 都引用 layout 的 .mptk-overlay。
+
+.mptk-drawer {
+  position: relative;
+  z-index: var(--mptk-c-layer-panel);
 }
 
 .mptk-drawer__panel {
   position: fixed;
   top: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
+  display: flex;
+  flex-direction: column;
+  width: var(--mptk-c-drawer-w);
   background-color: var(--mptk-surface-1);
   padding-top: var(--mptk-space-4);
   padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-4);
+  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
   padding-left: var(--mptk-space-4);
+  transition-property: transform;
+  transition-duration: var(--mptk-c-motion-duration);
+  transition-timing-function: var(--mptk-ease);
+}
+
+.mptk-drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .mptk-drawer__panel--left {
   left: var(--mptk-s-zero);
+  transform: translateX(-100%);
+}
+
+.mptk-drawer--open .mptk-drawer__panel--left {
+  transform: translateX(0);
 }
 
 .mptk-drawer__panel--right {
   right: var(--mptk-s-zero);
+  transform: translateX(100%);
+}
+
+.mptk-drawer--open .mptk-drawer__panel--right {
+  transform: translateX(0);
+}
+
+/* 下拉面板挂在自己外壳上：外壳给 position: relative，面板才有确定的定位基准。 */
+.mptk-dropdown {
+  position: relative;
+  z-index: var(--mptk-c-layer-popover);
 }
 
 .mptk-dropdown__panel {
   position: absolute;
   left: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
+  z-index: var(--mptk-c-layer-popover);
   background-color: var(--mptk-surface-1);
   border-bottom-left-radius: var(--mptk-radius-sm);
   border-bottom-right-radius: var(--mptk-radius-sm);
@@ -39,12 +64,22 @@
   padding-right: var(--mptk-space-3);
   padding-bottom: var(--mptk-space-2);
   padding-left: var(--mptk-space-3);
+  transition-property: transform, opacity;
+  transition-duration: var(--mptk-c-motion-duration);
+  transition-timing-function: var(--mptk-ease);
+  transform: translateY(-8px);
+  opacity: 0;
+}
+
+.mptk-dropdown--open .mptk-dropdown__panel {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .mptk-navbar {
   position: sticky;
   top: var(--mptk-s-zero);
-  z-index: var(--mptk-c-navbar-z);
+  z-index: var(--mptk-c-layer-navbar);
   background-color: var(--mptk-surface-1);
 }
 

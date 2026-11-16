@@ -400,7 +400,7 @@ export function renderHostThemeScss(config, overrides) {
     '// 这里展示的是「可覆盖项清单」：取消注释即生效，值仍由生成器写入，不在样式里手写。',
     '// 可配项示例（完整清单见 src/kit-config.generated.ts）：',
     '//   --mptk-surface-base / --mptk-radius-md / --mptk-business / --mptk-font-md',
-    '//   --mptk-c-mask-opacity / --mptk-c-spinner-rotate-dur / --mptk-s-full',
+    '//   --mptk-c-overlay-opacity / --mptk-c-spinner-rotate-dur / --mptk-s-full',
     '// 只写要改的键到项目根 kit.config.mjs，值由生成器写回这里。',
   ]
   return GENERATED_HEADER('站点主题覆盖层') +
