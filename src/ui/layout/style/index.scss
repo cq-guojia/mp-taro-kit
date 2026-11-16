@@ -7,7 +7,7 @@
   --mptk-overlay-alpha: var(--mptk-c-overlay-opacity);
   position: fixed;
   /* Skyline 下 fixed 的 0 落在页面内容区起点，状态栏那一条露白：向上让出一个顶部安全区。 */
-  top: calc(0px - env(safe-area-inset-top));
+  top: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
@@ -69,16 +69,23 @@
   min-height: 0;
 }
 
-/* 顶部让位：注入生效时由 JS 写成内联 px（= 探出量 + 目标位置），下面两条是**未注入时的兜底**。
-   兜底也要把探出量算进去：贴顶面板的 top 是 -env(safe-area-inset-top)，内容被一起抬高，
-   所以 padding 至少是 2 倍 env()；只写一份 env() 会整块少让一个状态栏高度
-   （真机表现：nav-bar 档看着像只让了状态栏、status-bar 档直接到顶）。 */
+/* 顶部让位：注入生效时由 JS 把目标位置写成内联 px，下面两条是**未注入时的兜底**。
+   面板贴边定位（top: 0），让位只加在内容 padding 上，两边同一套几何——
+   不要把安全区偏移混进 fixed 的 top：Skyline 下负 top 会把整块顶出可视区。 */
 .mptk-popup--inset-status-bar .mptk-popup__body {
-  padding-top: calc(env(safe-area-inset-top) * 2);
+  padding-top: env(safe-area-inset-top);
 }
 
 .mptk-popup--inset-nav-bar .mptk-popup__body {
-  padding-top: calc(env(safe-area-inset-top) * 2 + var(--mptk-c-navbar-h));
+  padding-top: calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h));
+}
+
+/* 让位档的面板顶部内边距归零：让位值本身就是「从屏幕顶到状态栏 / 导航栏底」，
+   面板再叠一层 16px 内边距会把正文多往下推一截（真机离胶囊底 20px+）。
+   左右 / 上下边距保持原样，只有顶部这一条让给内容区的 padding。 */
+.mptk-popup--inset-status-bar .mptk-popup__panel,
+.mptk-popup--inset-nav-bar .mptk-popup__panel {
+  padding-top: var(--mptk-s-zero);
 }
 
 /* 贴底：通栏，从底边升起；贴底两角留直角以对齐屏幕边缘。
@@ -98,11 +105,11 @@
   opacity: 1;
 }
 
-/* 贴顶：通栏，盖到状态栏；贴顶两角留直角。同样给确定高，原因见贴底档。
-   top 负值只让底色盖住状态栏（视觉）；面板自身不写安全区 padding 让位——
-   内容让位走 body 的 padding-top，且那个值里已经包含了这里探出去的高度（见 safe-inset.ts）。 */
+/* 贴顶：通栏，从屏幕顶起；贴顶两角留直角。同样给确定高，原因见贴底档。
+   面板贴边定位（top: 0），自身不写安全区 padding；让位单独加在内容区 padding-top
+   （见 safe-inset.ts 与上面的 .mptk-popup--inset-* 规则）。 */
 .mptk-popup__panel--top {
-  top: calc(0px - env(safe-area-inset-top));
+  top: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
   height: var(--mptk-c-popup-sheet-h);
@@ -140,7 +147,7 @@
 
 /* 侧滑：全高抽屉，横向进出；宽度取抽屉 token，左右各自写全不共用选择器。 */
 .mptk-popup__panel--left {
-  top: calc(0px - env(safe-area-inset-top));
+  top: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
   width: var(--mptk-c-drawer-w);
@@ -157,7 +164,7 @@
 }
 
 .mptk-popup__panel--right {
-  top: calc(0px - env(safe-area-inset-top));
+  top: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
   width: var(--mptk-c-drawer-w);

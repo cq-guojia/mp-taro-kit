@@ -70,11 +70,10 @@ export function Popup({
 
   // 贴顶 / 左右档会盖住状态栏与胶囊，默认让出导航栏；贴底 / 居中默认不让。
   const resolvedInset: PopupInsetTop = insetTop ?? (isTopAnchored(position) ? 'nav-bar' : 'none')
-  // 探出量与目标位置一起算：面板负 top 把内容抬高了 overhang，内容必须补回同样的量。
-  // 未注入真值时两者都是 0，由 CSS 的 env() 兜底。
+  // 面板贴边定位不动，让位单独加在内容上：WebView / Skyline 同一套几何。
+  // 未注入真值时为 0，由 CSS 的 env() 兜底。
   const inset = resolveTopInset(resolvedInset, getSafeAreaSnapshot())
-  const panelStyle = inset.overhang > 0 ? { top: `${-inset.overhang}px` } : undefined
-  const bodyStyle = inset.bodyPaddingTop > 0 ? { paddingTop: `${inset.bodyPaddingTop}px` } : undefined
+  const bodyStyle = inset.paddingTop > 0 ? { paddingTop: `${inset.paddingTop}px` } : undefined
 
   const names = [
     'mptk-popup',
@@ -90,7 +89,7 @@ export function Popup({
       {overlay ? (
         <Overlay visible={shown} closable={closable} lockScroll={lockScroll} duration={duration} onClose={onClose} />
       ) : null}
-      <View className={panel.filter(Boolean).join(' ')} style={panelStyle}>
+      <View className={panel.filter(Boolean).join(' ')}>
         <ScrollView scrollY className="mptk-popup__body" style={bodyStyle}>
           {children}
         </ScrollView>

@@ -197,7 +197,7 @@ test('五档位置齐全：上/中/下/左/右各有起点与展开态', () => {
   for (const side of ['left', 'right']) {
     const sideRule = new RegExp(`\\.mptk-popup__panel--${side}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
     assert.equal(declOf(sideRule, 'width'), 'var(--mptk-c-drawer-w)', `${side} 档没宽度，translateX 没有百分比参照`)
-    assert.match(sideRule, /top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, `${side} 档不是全高抽屉，顶部没盖到状态栏`)
+    assert.equal(declOf(sideRule, 'top'), 'var(--mptk-s-zero)', `${side} 档不是贴边全高抽屉`)
     assert.match(sideRule, /bottom:\s*var\(--mptk-s-zero\)/, `${side} 档不是全高抽屉，底部没到屏幕边`)
     assert.equal(declOf(sideRule, 'max-height'), '100%', `${side} 档被 80vh 限高，底下会留一截`)
   }
@@ -255,46 +255,32 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
     'top/left/right 默认让出导航栏，bottom/center 默认不让',
   )
   assert.match(src, /getSafeAreaSnapshot\(\)/, 'Popup 必须读 runtime 注入的真值')
-  assert.match(src, /top: `\$\{-inset\.overhang\}px`/, '面板上探高度必须与兜底同一基准')
+  assert.doesNotMatch(src, /top: `\$\{/, '面板不许写内联 top 探出：Skyline 下会整块顶出可视区')
   assert.match(
     src,
-    /paddingTop: `\$\{inset\.bodyPaddingTop\}px`/,
-    '内容让位必须是「探出量 + 目标位置」，只写目标位置会少让一个状态栏',
+    /paddingTop: `\$\{inset\.paddingTop\}px`/,
+    '让位只加在内容 padding 上，面板贴边定位（微信官方做法）',
   )
 
-  // 几何行为：给一组真机值（状态栏 54、胶囊 top 58 / height 32），落点必须正好落在目标位置。
+  // 几何行为：给一组真机值（状态栏 54、胶囊 top 58 / height 32），内容起点正好落在目标位置。
   const { resolveTopInset, isTopAnchored } = await import(
     pathToFileURL(join(root, 'dist/ui/layout/safe-inset.js')).href
   )
   const device = { statusBar: 54, navbar: 40, top: 94, configured: true }
-  const landing = (level) => {
-    const result = resolveTopInset(level, device)
-    return result.bodyPaddingTop - result.overhang
-  }
-  assert.deepEqual(
-    resolveTopInset('status-bar', device),
-    { overhang: 54, bodyPaddingTop: 108 },
-    'status-bar 档：探出 54 再补回 54',
-  )
-  assert.deepEqual(
-    resolveTopInset('nav-bar', device),
-    { overhang: 54, bodyPaddingTop: 148 },
-    'nav-bar 档：探出 54 再补回 54 + 40',
-  )
-  assert.equal(landing('status-bar'), 54, '状态栏档内容落点必须等于状态栏高度')
-  assert.equal(landing('nav-bar'), 94, '导航栏档内容落点必须等于状态栏 + 导航栏')
-  assert.deepEqual(resolveTopInset('none', device), { overhang: 0, bodyPaddingTop: 0 }, 'none 档不让')
+  assert.deepEqual(resolveTopInset('status-bar', device), { paddingTop: 54 }, 'status-bar 档让到状态栏底')
+  assert.deepEqual(resolveTopInset('nav-bar', device), { paddingTop: 94 }, 'nav-bar 档让到胶囊下沿')
+  assert.deepEqual(resolveTopInset('none', device), { paddingTop: 0 }, 'none 档不让')
   assert.deepEqual(
     resolveTopInset('nav-bar', { statusBar: 0, navbar: 0, top: 0, configured: false }),
-    { overhang: 0, bodyPaddingTop: 0 },
+    { paddingTop: 0 },
     '未注入时不许在这里猜，交 CSS env() 兜底',
   )
   assert.equal(
     isTopAnchored('top') && isTopAnchored('left') && isTopAnchored('right'),
     true,
-    '贴顶锚定的三档要探出',
+    '贴顶锚定的三档默认让导航栏',
   )
-  assert.equal(isTopAnchored('bottom') || isTopAnchored('center'), false, '贴底 / 居中不探出')
+  assert.equal(isTopAnchored('bottom') || isTopAnchored('center'), false, '贴底 / 居中默认不让')
 
   // 真值公式必须与 NavBar 同口径：内容高 = 胶囊高 + 上下对称留白，不许把胶囊高也乘 2。
   assert.match(
@@ -316,21 +302,31 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
     'demo 入口必须注入状态栏真值',
   )
 
-  // CSS 两档兜底仍在（未注入真值时用），且必须把面板探出的那一段一起算进去。
+  // CSS 兜底：面板贴边，env() 只作为「未注入时」的状态栏近似值。
   assert.match(
     css,
-    /\.mptk-popup--inset-status-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \* 2\)/,
-    '只让状态栏的兜底必须是 2 倍 env()：一份补面板探出，一份是状态栏本身',
+    /\.mptk-popup--inset-status-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*env\(safe-area-inset-top\)/,
+    '只让状态栏的兜底丢了',
   )
   assert.match(
     css,
-    /\.mptk-popup--inset-nav-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \* 2 \+ var\(--mptk-c-navbar-h\)\)/,
-    '状态栏+导航栏的兜底同样要 2 倍 env()，再加导航栏高',
+    /\.mptk-popup--inset-nav-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \+ var\(--mptk-c-navbar-h\)\)/,
+    '状态栏+导航栏的兜底丢了',
+  )
+  assert.doesNotMatch(
+    css,
+    /top:\s*calc\(0px - env\(safe-area-inset-top\)\)/,
+    '任何层级都不许用负 top 把面板/遮罩探出屏外：Skyline 下会整块被裁掉',
   )
   assert.doesNotMatch(
     /\.mptk-popup__panel--top\s*\{([^}]*)\}/.exec(css)?.[1] ?? '',
     /padding-top/,
     'top 档面板不许再写 padding-top 让位，避免与 body 注入叠加',
+  )
+  assert.match(
+    css,
+    /\.mptk-popup--inset-status-bar \.mptk-popup__panel,\s*\.mptk-popup--inset-nav-bar \.mptk-popup__panel\s*\{[^}]*padding-top:\s*var\(--mptk-s-zero\)/,
+    '让位档面板的顶部内边距必须归零：让位值已含状态栏+导航栏，再叠 16px 会把正文多推一截',
   )
 })
 
@@ -338,11 +334,17 @@ test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
   const css = read(NAV_CSS)
   const src = read('src/ui/navigation/Drawer.tsx')
   assert.match(src, /resolveTopInset\('nav-bar', getSafeAreaSnapshot\(\)\)/, '抽屉读同一份真值，让到导航栏下')
-  assert.match(src, /top: `\$\{-inset\.overhang\}px`/, '抽屉面板同样上探，底色才盖到屏顶')
+  assert.doesNotMatch(src, /top: `\$\{/, '抽屉面板同样不许用内联 top 探出')
   assert.match(
     css,
-    /\.mptk-drawer__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \* 2 \+ var\(--mptk-c-navbar-h\)\)/,
-    '抽屉内容要补回探出量并避开胶囊',
+    /\.mptk-drawer__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \+ var\(--mptk-c-navbar-h\)\)/,
+    '抽屉内容同样只加在 padding 上，避开胶囊',
+  )
+  assert.doesNotMatch(css, /top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, '抽屉面板不许负 top 探出')
+  assert.equal(
+    declOf(/\.mptk-drawer__panel\s*\{([^}]*)\}/.exec(css)?.[1] ?? '', 'padding-top'),
+    'var(--mptk-s-zero)',
+    '抽屉面板顶部内边距归零，避免与让位叠加',
   )
 })
 
@@ -443,10 +445,10 @@ test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
     '抽屉没避让底部安全区',
   )
 
-  // Skyline 下 fixed 的 top:0 落在页面内容区起点，状态栏那一条会露白。
-  assert.match(read(LAYOUT_CSS), /\.mptk-overlay\s*\{[^}]*top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, '遮罩没盖到状态栏')
-  assert.match(read(LAYOUT_CSS), /\.mptk-popup__panel--top\s*\{[^}]*top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, '贴顶面板没盖到状态栏')
-  assert.match(read(NAV_CSS), /\.mptk-drawer__panel\s*\{[^}]*top:\s*calc\(0px - env\(safe-area-inset-top\)\)/, '抽屉没盖到状态栏')
+  // 贴边定位：负 top 会把浮层整块顶出 Skyline 的可视区，三处都必须贴边。
+  assert.match(read(LAYOUT_CSS), /\.mptk-overlay\s*\{[^}]*top:\s*var\(--mptk-s-zero\)/, '遮罩没贴边')
+  assert.match(read(LAYOUT_CSS), /\.mptk-popup__panel--top\s*\{[^}]*top:\s*var\(--mptk-s-zero\)/, '贴顶面板没贴边')
+  assert.match(read(NAV_CSS), /\.mptk-drawer__panel\s*\{[^}]*top:\s*var\(--mptk-s-zero\)/, '抽屉没贴边')
 })
 
 test('居中档补上位移补偿，抽屉给出宽度（不然滑入滑出算不出来）', () => {

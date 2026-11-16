@@ -8,13 +8,14 @@
 
 .mptk-drawer__panel {
   position: fixed;
-  top: calc(0px - env(safe-area-inset-top));
+  top: var(--mptk-s-zero);
   bottom: var(--mptk-s-zero);
   display: flex;
   flex-direction: column;
   width: var(--mptk-c-drawer-w);
   background-color: var(--mptk-surface-1);
-  padding-top: var(--mptk-space-4);
+  /* 抽屉固定让到导航栏下（内容区 padding 已含状态栏 + 导航栏），这里不再叠顶部内边距。 */
+  padding-top: var(--mptk-s-zero);
   padding-right: var(--mptk-space-4);
   padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
   padding-left: var(--mptk-space-4);
@@ -23,12 +24,12 @@
   transition-timing-function: var(--mptk-ease);
 }
 
-/* 顶部让位：注入生效时由 JS 写成内联 px（探出量 + 目标位置），这里是未注入时的兜底。
-   面板 top 是 -env(safe-area-inset-top)，内容被一起抬高，所以兜底要 2 倍 env() 再叠导航栏高。 */
+/* 顶部让位：注入生效时由 JS 把目标位置写成内联 px，这里是未注入时的兜底。
+   面板贴边定位，让位只加在内容上（与 Popup 左右档同口径）。 */
 .mptk-drawer__body {
   flex: 1 1 auto;
   min-height: 0;
-  padding-top: calc(env(safe-area-inset-top) * 2 + var(--mptk-c-navbar-h));
+  padding-top: calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h));
 }
 
 .mptk-drawer__panel--left {

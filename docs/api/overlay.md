@@ -93,9 +93,9 @@ configureSafeArea({
 
 导航栏让位高度 = `statusBarHeight + 导航栏内容高`，内容高 = 胶囊高 + 上下对称留白（`menuButton.height + max(menuButton.top - statusBarHeight, 0) * 2`），与 `NavBar.tsx` 完全同口径——**不要**写成 `(top - statusBar + height) * 2`，那会把胶囊高也乘进去、真机让位偏多。
 
-**面板上探多少，内容就要补回多少**：贴顶 / 左右档面板的 `top` 取 `calc(0px - env(safe-area-inset-top))`，让底色盖住状态栏那一条（Skyline 下 fixed 的 0 不含状态栏，写 0 会露白）。这等于把面板连同内容一起抬高了一段，所以内容 `padding-top` = **上探量 + 目标位置**（目标位置以屏幕顶为 0）。只算目标位置会整块少让一个状态栏高度，真机表现就是「`nav-bar` 档看着像只让了状态栏」「`status-bar` 档直接到顶」。
+**面板贴边定位，让位只加在内容上**：这是微信官方的浮层适配口径——安全区偏移单独算在内容 `padding` 里，不要混进浮层的定位量。遮罩、贴顶面板、抽屉面板一律 `top: 0`；曾试过用 `top: calc(0px - env(safe-area-inset-top))` 把底色探到屏顶，WebView 下会多让一个状态栏高度，Skyline 下整块被页面容器裁掉、顶出可视区（状态栏和胶囊直接压在正文上）。内容 `padding-top` = 目标位置（以屏幕顶为 0）：`status-bar` 档 = 状态栏底，`nav-bar` 档 = 胶囊下沿。
 
-上探量与目标位置由 `resolveTopInset()`（`src/ui/layout/safe-inset.ts`）一并算出，`Popup` 与 `Drawer` 共用同一份；未注入真值时不在 JS 里猜，改走 CSS 兜底 `calc(env() * 2)` / `calc(env() * 2 + var(--mptk-c-navbar-h))`（一份补上探量、一份是状态栏本身）。贴顶档面板自身不写安全区 `padding-top`，避免与内容区叠加。
+目标位置由 `resolveTopInset()`（`src/ui/layout/safe-inset.ts`）算出，`Popup` 与 `Drawer` 共用同一份；未注入真值时不在 JS 里猜，走 CSS 兜底 `env(safe-area-inset-top)` / `calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h))`。官方文档里 Skyline 支持 `env()` 与四个 `safe-area-inset-*` 变量，但它只表示系统安全区、**不含胶囊几何**，所以 `nav-bar` 档必须靠 API 真值。
 
 ## 层级链
 
@@ -135,7 +135,7 @@ configureSafeArea({
 
 - **进出场**：组件挂载即渲染，关闭时先置收起态、播完 `duration` 再卸载；`duration: 0` 立即卸载（低端机 / 减少动效）。遮罩淡入淡出；贴底 / 贴顶面板上下位移进出，左右档横向位移进出，居中面板只淡入。
 - **面板层级**：面板自带 `z-index: var(--mptk-c-layer-panel)`，与遮罩同在 `.mptk-popup` 的层叠上下文内时也必须高于遮罩；缺了它面板会被遮罩盖住，表现为「点了没反应」。
-- **安全区**：顶部让位按 `insetTop` 三档，加在**内容区** `.mptk-popup__body` 的 `padding-top`——注入生效时是内联 px（上探量 + 目标位置），未注入回落 `calc(env() * 2)`（`nav-bar` 档再加 `--mptk-c-navbar-h`）。面板自身不加安全区 padding，否则与内容区叠加出双倍空白。底部与横条仍必须让：贴底面板与左右抽屉的 `padding-bottom` 各加一段 `env(safe-area-inset-bottom)`，没有横条的设备算 0。三个贴顶层（遮罩、Popup 的 top 档、抽屉面板）的 `top` 取 `calc(0px - env(safe-area-inset-top))`：Skyline 下 fixed 的 0 落在页面内容区起点，写 0 会让状态栏那一条露白；这段上探量必须在内容 `padding-top` 里补回，否则整块少让一个状态栏。
+- **安全区**：顶部让位按 `insetTop` 三档，加在**内容区** `.mptk-popup__body` 的 `padding-top`——注入生效时是内联 px（目标位置），未注入回落 `env(safe-area-inset-top)`（`nav-bar` 档再加 `--mptk-c-navbar-h`）。让位档的面板顶部内边距归零（左右 / 底部内边距不变）：让位值本身已含状态栏与导航栏，再叠一层 16px 会把正文多往下推一截。面板不写负 `top`：负 top 在 Skyline 下会把整块顶出可视区。底部与横条仍必须让：贴底面板与左右抽屉的 `padding-bottom` 各加一段 `env(safe-area-inset-bottom)`，没有横条的设备算 0。遮罩、贴顶面板、抽屉面板的 `top` 统一为 0，贴边定位与安全区让位分开处理。
 - **内滚**：Popup 面板 `max-height: var(--mptk-c-popup-max-h)`，内容区是 `scroll-view`（`flex: 1 1 auto; min-height: 0`），长内容在面板内部滚，不顶出屏幕。
 - **滚动穿透**：遮罩挂 `catchMove`。**边界**：Skyline 下页面滚动由消费方自己的 `scroll-view` 承担，遮罩拦不住那个容器的原生滚动 —— 需要完全锁死时，消费方要在浮层打开期间把 `scroll-y` 关掉。这条写在这里，不做假的承诺。
 - **命令式 Dialog**：自带遮罩，`closable={false}`，点空白不关，关闭只走按钮。
@@ -154,4 +154,5 @@ configureSafeArea({
 - 2026-11-16 14:16:36：三个贴顶层的 top 向上让出状态栏安全区，修 Skyline 下 fixed 0 起算露白
 - 2026-11-16：加 `--mptk-c-navbar-h`（44px，对齐微信）；遮罩 / 弹出层演示页改用 CellGroup 列表点整行，不再堆一排按钮
 - 2026-11-17：顶部让位定为三档（none / status-bar / nav-bar），真值由 runtime `configureSafeArea()` 注入（custom 导航栏下 fixed 从 y=0 起、Skyline 下 env() 不可靠）；nav-bar 高度公式对齐 NavBar（胶囊高 + 上下对称留白），修掉真机让位偏多
-- 2026-11-17：修顶部让位恒定少让一个状态栏。贴顶面板的负 `top` 上探量与内容让位原本分属两套原点（一个按面板盒、一个按屏幕顶），内容落点恒定差一个 `env(safe-area-inset-top)`，真机表现即「只让了状态栏」；改为「上探量 + 目标位置」一并计算（`safe-inset.ts`），CSS 兜底同步改 `calc(env() * 2)`。`Drawer` 补顶部让位，与 Popup 左右档同口径
+- 2026-11-17：浮层顶部让位按微信官方做法重构：面板贴边 `top: 0`，让位只加在内容 `padding-top`（真值由 runtime 注入，未注入用 `env()` 兜底）。撤掉「负 `top` 把底色探到屏顶」的方案——它在 WebView 下多让一个状态栏高度、Skyline 下整块被裁切顶出屏幕。`Drawer` 补顶部让位，与 Popup 左右档同口径
+- 2026-11-17：让位档面板的顶部内边距归零：让位值已含状态栏 + 导航栏，面板再叠 16px 会把正文多往下推一截；`Drawer` 同步归零

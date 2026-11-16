@@ -171,7 +171,7 @@ configureSafeArea({
 })
 ```
 
-runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawer 读快照，把「面板上探量 + 目标位置」内联成内容区 `padding-top`。未注入时不猜，走 CSS `calc(env() * 2)` 兜底。详见[遮罩与浮层 API](overlay.md)。
+runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawer 读快照，把目标位置内联成内容区 `padding-top`，面板保持贴边定位。未注入时不猜，走 CSS `env(safe-area-inset-top)` 兜底。详见[遮罩与浮层 API](overlay.md)。
 
 **必须同时做官方窗口主题配置**，否则 `page` 没有底色、转场首帧露白。`app.json`：
 
