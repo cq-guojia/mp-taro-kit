@@ -858,9 +858,10 @@ export const pages: CatalogPage[] = [
   },
 ]
 
-// 菜单真源：首组是基础规范（Foundations），中间六组对齐 Vant Weapp 的公共分类，
+// 菜单真源：首组是基础规范（Foundations），中间七组对齐 Vant Weapp 的公共分类 + 本库的浮层与弹出，
 // 后两组收纳本库独有的非 UI 能力。顺序固定：新增组件只把 planned 翻成 ready，不插队、不重排。
 // planned 不是待办清单，只占住位置，避免以后加内容时整段重排。
+// 浮层与弹出组内按「用户要做什么」排四档：通用容器 → 确认对话 → 操作面板 → 轻提示。
 export const menu: MenuGroup[] = [
   {
     id: 'foundations',
@@ -884,10 +885,9 @@ export const menu: MenuGroup[] = [
       { id: 'icon', label: 'Icon 图标', status: 'ready', pageId: 'icon' },
       { id: 'image', label: 'Image 图片', status: 'planned' },
       { id: 'layout', label: 'Layout 布局', status: 'planned' },
-      { id: 'popup', label: 'Popup 弹出层', status: 'ready', pageId: 'popup' },
+      { id: 'overlay', label: 'Overlay 遮罩', status: 'ready', pageId: 'overlay' },
       { id: 'space', label: 'Space 间距', status: 'planned' },
       { id: 'style', label: 'Style 内置样式', status: 'ready', pageId: 'foundation' },
-      { id: 'toast', label: 'Toast 轻提示', status: 'ready', pageId: 'feedback' },
       { id: 'overlay-host', label: 'OverlayHost 挂载点', status: 'ready', pageId: 'infra' },
       { id: 'safe-area', label: 'SafeArea 安全区', status: 'ready', pageId: 'infra' },
     ],
@@ -922,20 +922,31 @@ export const menu: MenuGroup[] = [
     id: 'feedback',
     title: '反馈组件',
     entries: [
-      { id: 'action-sheet', label: 'ActionSheet 动作面板', status: 'planned' },
       { id: 'barrage', label: 'Barrage 弹幕', status: 'planned' },
-      { id: 'dialog', label: 'Dialog 弹出框', status: 'ready', pageId: 'feedback' },
-      { id: 'dropdown-menu', label: 'DropdownMenu 下拉菜单', status: 'ready', pageId: 'navigation' },
       { id: 'floating-panel', label: 'FloatingPanel 浮动面板', status: 'planned' },
       { id: 'floating-bubble', label: 'FloatingBubble 浮动气泡', status: 'planned' },
-      { id: 'loading', label: 'Loading 加载', status: 'ready', pageId: 'feedback' },
-      { id: 'notify', label: 'Notify 消息通知', status: 'planned' },
-      { id: 'overlay', label: 'Overlay 遮罩', status: 'ready', pageId: 'overlay' },
       { id: 'pull-refresh', label: 'PullRefresh 下拉刷新', status: 'planned' },
-      { id: 'share-sheet', label: 'ShareSheet 分享面板', status: 'planned' },
       { id: 'swipe-cell', label: 'SwipeCell 滑动单元格', status: 'planned' },
       { id: 'loader', label: 'Loader 加载图标', status: 'ready', pageId: 'feedback' },
-      { id: 'drawer', label: 'Drawer 抽屉', status: 'ready', pageId: 'navigation' },
+    ],
+  },
+  {
+    id: 'floating',
+    title: '浮层与弹出',
+    entries: [
+      // 一 · 通用容器：内容是消费方塞的，库只管浮起来与关闭
+      { id: 'popup', label: 'Popup 弹出层', status: 'ready', pageId: 'popup' },
+      // 二 · 确认对话：问用户一个二选一（命令式版本仍在「命令式 API」组）
+      { id: 'dialog', label: 'Dialog 弹出框', status: 'ready', pageId: 'feedback' },
+      // 三 · 操作面板：给一组候选挑一个
+      { id: 'action-sheet', label: 'ActionSheet 动作面板', status: 'planned' },
+      { id: 'share-sheet', label: 'ShareSheet 分享面板', status: 'planned' },
+      { id: 'dropdown-menu', label: 'DropdownMenu 下拉菜单', status: 'ready', pageId: 'navigation' },
+      { id: 'popover', label: 'Popover 气泡弹出框', status: 'planned' },
+      // 四 · 轻提示：只告知，不用回应（命令式版本仍在「命令式 API」组）
+      { id: 'toast', label: 'Toast 轻提示', status: 'ready', pageId: 'feedback' },
+      { id: 'notify', label: 'Notify 消息通知', status: 'planned' },
+      { id: 'loading', label: 'Loading 加载', status: 'ready', pageId: 'feedback' },
     ],
   },
   {
@@ -954,7 +965,6 @@ export const menu: MenuGroup[] = [
       { id: 'lazyload', label: 'Lazyload 懒加载', status: 'planned' },
       { id: 'list', label: 'List 列表', status: 'planned' },
       { id: 'notice-bar', label: 'NoticeBar 通知栏', status: 'planned' },
-      { id: 'popover', label: 'Popover 气泡弹出框', status: 'planned' },
       { id: 'progress', label: 'Progress 进度条', status: 'planned' },
       { id: 'rolling-text', label: 'RollingText 翻滚文本', status: 'planned' },
       { id: 'skeleton', label: 'Skeleton 骨架屏', status: 'planned' },

@@ -253,7 +253,7 @@ test('演示站菜单：ready 必指真实展示页，planned 不绑跳转，条
   new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
   const { menu, catalogPages, appPages } = mod.exports
 
-  assert.ok(Array.isArray(menu) && menu.length === 9, '菜单必须是固定九组')
+  assert.ok(Array.isArray(menu) && menu.length === 10, '菜单必须是固定十组')
   assert.equal(menu[0].id, 'foundations', '首组必须是基础规范')
   assert.equal(menu[0].title, '基础规范')
   for (const id of ['design-foundation', 'sizing']) {
