@@ -411,6 +411,10 @@ test('cell 分组形态：inset 不画外框，最后一格由位置关掉分隔
   assert.equal(cellState.cellDividerVisible(false, 0, 2), false)
   assert.match(cellState.resolveCellGroupState({ dividerTone: 'match' }).className, /mptk-cell-group--divider-match/)
   assert.doesNotMatch(cellState.resolveCellGroupState({ dividerTone: 'soft' }).className, /--divider-match/)
+  assert.match(cellState.resolveCellGroupState({}).className, /mptk-cell-group--divider-inset/, '行间线内缩默认开，要派生可见类名')
+  assert.match(cellState.resolveCellGroupState({ dividerInset: true }).className, /mptk-cell-group--divider-inset/)
+  assert.match(cellState.resolveCellGroupState({ dividerInset: false }).className, /mptk-cell-group--divider-flush/, '显式关内缩切通底类名')
+  assert.doesNotMatch(cellState.resolveCellGroupState({ dividerInset: false }).className, /--divider-inset/)
   assert.match(cellState.resolveCellGroupState({ inset: true, frame: false }).className, /mptk-cell-group--frameless/)
   assert.doesNotMatch(cellState.resolveCellGroupState({ inset: true }).className, /--frameless/)
 })
@@ -426,7 +430,7 @@ const size: CellSize = 'large';
 const direction: CellArrowDirection = 'down';
 const tone: CellDividerTone = 'match';
 const cellProps: CellProps = { title: '单元格' };
-const groupProps: CellGroupProps = { inset: true, dividerTone: tone, frame: false };
+const groupProps: CellGroupProps = { inset: true, dividerTone: tone, dividerInset: false, frame: false };
 export const element = (
   <CellGroup {...groupProps} title="分组" border={false}>
     <Cell {...cellProps} label="描述" value="内容" icon="图标" rightIcon="右图标" extra="额外" center border size={size} isLink arrowDirection={direction} disabled onClick={() => {}} className="x">自定义值</Cell>
@@ -532,6 +536,31 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
 
   const css = read('../dist/ui/display/cell/style/index.css')
   assert.doesNotMatch(css, /--mptk-border-faint/, '外框不许取 faint 档')
+  const titleDivider = css.match(/(?:^|\n)\.mptk-cell-group__title-divider\s*\{([^}]*)\}/m)
+  assert.ok(titleDivider, '缺标题线样式')
+  assert.match(titleDivider[1], /background-color:\s*var\(--mptk-border\)/, '标题线是列表上边界，取外框色而不是组内浅线')
+  assert.doesNotMatch(titleDivider[1], /position:/, '组级线必须是流内元素，不许绝对定位')
+  assert.doesNotMatch(titleDivider[1], /margin/, '组级线是结构线，默认形态不许自带左右内缩')
+  assert.match(
+    css,
+    /\.mptk-cell-group--in-card\s+\.mptk-cell-group__title-divider\s*\{[^}]*margin-left:\s*calc\(-1\s*\*\s*var\(--mptk-card-spacing\)\)/,
+    '卡片内组线要负 margin 抵消 body 左右内距，通到卡片边缘',
+  )
+  assert.match(
+    css,
+    /\.mptk-cell-group--in-card\s+\.mptk-cell-group__border[^{]*\{[^}]*margin-left:\s*calc\(-1\s*\*\s*var\(--mptk-card-spacing\)\)/,
+    '卡片内外框线同样通到卡片边缘',
+  )
+  assert.match(
+    css,
+    /\.mptk-cell-group--in-card\s+\.mptk-cell-group__title\s*\{[^}]*padding-left:\s*var\(--mptk-card-spacing\)/,
+    '卡片内组标题与列表文字同一左边界',
+  )
+  assert.doesNotMatch(
+    css,
+    /\.mptk-cell-group__border\s*\{[^}]*position:/,
+    '上下外框线不许绝对定位',
+  )
   const inset = css.match(/(?:^|\n)\.mptk-cell-group__body--inset\s*\{([^}]*)\}/m)
   assert.ok(inset, '缺卡片形态样式')
   assert.equal((inset[1].match(/border-(?:top|right|bottom|left)-color:\s*var\(--mptk-border\)/g) ?? []).length, 4, '卡片四边外框都要取 --mptk-border')
@@ -544,9 +573,24 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   assert.match(divider[1], /right:\s*var\(--mptk-space-4\)/)
   assert.match(css, /\.mptk-cell-group--divider-match\s*\{[^}]*--mptk-cell-divider:\s*var\(--mptk-border\)/, 'match 档要把内线切回外框色')
   assert.match(
+    css,
+    /\.mptk-cell-group--divider-inset \.mptk-cell__divider\s*\{[^}]*left:\s*var\(--mptk-space-4\)[^}]*right:\s*var\(--mptk-space-4\)/,
+    '默认内缩：行线端点取内容区边距',
+  )
+  assert.match(
     resolveCssVars(css),
-    /\.mptk-cell-group--in-card\s+\.mptk-cell__divider\s*\{[^}]*left:\s*0[^}]*right:\s*0/,
-    '卡片内已由组缩进，线回到 0 免得叠成两道',
+    /\.mptk-cell-group--divider-flush \.mptk-cell__divider\s*\{[^}]*left:\s*0[^}]*right:\s*0/,
+    'dividerInset=false：通栏行线通到屏幕边',
+  )
+  assert.match(
+    resolveCssVars(css),
+    /\.mptk-cell-group--in-card\.mptk-cell-group--divider-inset \.mptk-cell__divider\s*\{[^}]*left:\s*0[^}]*right:\s*0/,
+    '卡片内默认内缩：行内距归零后线归零即与文字对齐',
+  )
+  assert.match(
+    css,
+    /\.mptk-cell-group--in-card\.mptk-cell-group--divider-flush \.mptk-cell__divider\s*\{[^}]*left:\s*calc\(-1 \* var\(--mptk-card-spacing\)\)[^}]*right:\s*calc\(-1 \* var\(--mptk-card-spacing\)\)/,
+    '卡片内通底必须跨出 body 内距到卡片边，不能写 0 凑数',
   )
   assert.match(resolveCssVars(css), /\.mptk-cell-group--frameless\s+\.mptk-cell-group__body--inset\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉四边描边')
 
@@ -562,8 +606,9 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   const demoStyle = read('../demo/src/app.scss')
   assert.doesNotMatch(demoStyle, /demo-cell-divider-match/, '宿主侧覆盖类已删除，设置统一走 prop')
   assert.match(displayPage, /dividerTone="match"/, '演示站要用枚举 prop')
+  assert.match(displayPage, /dividerInset=\{false\}/, '演示站要展示行线通底开关')
   assert.match(displayPage, /frame=\{false\}/, '演示站要展示无边框开关')
-  for (const id of ['cell-divider-tone', 'cell-card-frame']) {
+  for (const id of ['cell-divider-tone', 'cell-divider-inset', 'cell-card-frame']) {
     assert.ok(display.examples.some((example) => example.id === id), `演示站缺 ${id} 示例`)
   }
 })
@@ -578,7 +623,7 @@ test('Cell 展示页按五组顺序铺开，分组标题只在组首出现', () 
   const display = mod.exports.catalogPages.find((page) => page.id === 'display')
   const expected = [
     ['一 · 容器形态', ['cell-basic', 'cell-inset', 'cell-group-title']],
-    ['二 · 组级外观设置', ['cell-divider-tone', 'cell-card-frame']],
+    ['二 · 组级外观设置', ['cell-divider-tone', 'cell-divider-inset', 'cell-card-frame']],
     ['三 · 单格内容与排布', ['cell-size', 'cell-value-size', 'cell-icon', 'cell-slot', 'cell-center', 'cell-link']],
     ['四 · 交互与状态', ['cell-navigate', 'cell-state']],
     ['五 · 与 Card 组合', ['cell-with-card']],

@@ -1,5 +1,6 @@
 import { View } from '@tarojs/components'
 import type { CSSProperties } from 'react'
+import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
 
 export type OverlayTone = 'dark' | 'light'
@@ -65,3 +66,6 @@ export function Overlay({
     />
   )
 }
+
+/* 向 Card 声明：遮罩是浮层，关闭时渲染 null、不占内容流。 */
+markCardEdgeOutOfFlow(Overlay)

@@ -171,52 +171,63 @@ export function Segmented<T extends string = string>({
     className,
   ]
 
+  const track = (
+    <View id={`${uid}-track`} className="mptk-seg__track">
+      {indicator === 'thumb' && ready ? <View className="mptk-seg__thumb" style={thumbStyle} /> : null}
+      {items.map((item, index) => {
+        const active = item.value === display
+        const itemDisabled = item.disabled === true || locked
+        const itemNames = [
+          'mptk-seg__item',
+          active ? 'mptk-seg__item--on' : '',
+          itemDisabled ? 'mptk-seg__item--disabled' : '',
+        ]
+        const textStyle: CSSProperties | undefined =
+          indicator === 'line' && active && inlineColor !== undefined ? { color: inlineColor } : undefined
+        return (
+          <View
+            key={item.value}
+            id={`${uid}-i${String(index)}`}
+            className={itemNames.filter(Boolean).join(' ')}
+            style={textStyle}
+            onClick={() => {
+              if (!itemDisabled && !active) change(item.value)
+            }}
+          >
+            {item.icon === undefined ? null : <View className="mptk-seg__icon">{item.icon}</View>}
+            <View className="mptk-seg__text">
+              <View className="mptk-seg__label">
+                {item.label}
+                {item.count === undefined ? null : <View className="mptk-seg__count">{item.count}</View>}
+              </View>
+              {item.description === undefined ? null : (
+                <View className="mptk-seg__desc">{item.description}</View>
+              )}
+            </View>
+          </View>
+        )
+      })}
+      {indicator === 'line' && ready ? <View className="mptk-seg__line" style={lineStyle} /> : null}
+    </View>
+  )
+
   return (
     <View id={uid} className={names.filter(Boolean).join(' ')}>
-      <ScrollView
-        className="mptk-seg__scroll"
-        scrollX
-        scrollWithAnimation
-        scrollIntoView={`${uid}-i${String(activeIndex)}`}
-      >
-        <View id={`${uid}-track`} className="mptk-seg__track">
-          {indicator === 'thumb' && ready ? <View className="mptk-seg__thumb" style={thumbStyle} /> : null}
-          {items.map((item, index) => {
-            const active = item.value === display
-            const itemDisabled = item.disabled === true || locked
-            const itemNames = [
-              'mptk-seg__item',
-              active ? 'mptk-seg__item--on' : '',
-              itemDisabled ? 'mptk-seg__item--disabled' : '',
-            ]
-            const textStyle: CSSProperties | undefined =
-              indicator === 'line' && active && inlineColor !== undefined ? { color: inlineColor } : undefined
-            return (
-              <View
-                key={item.value}
-                id={`${uid}-i${String(index)}`}
-                className={itemNames.filter(Boolean).join(' ')}
-                style={textStyle}
-                onClick={() => {
-                  if (!itemDisabled && !active) change(item.value)
-                }}
-              >
-                {item.icon === undefined ? null : <View className="mptk-seg__icon">{item.icon}</View>}
-                <View className="mptk-seg__text">
-                  <View className="mptk-seg__label">
-                    {item.label}
-                    {item.count === undefined ? null : <View className="mptk-seg__count">{item.count}</View>}
-                  </View>
-                  {item.description === undefined ? null : (
-                    <View className="mptk-seg__desc">{item.description}</View>
-                  )}
-                </View>
-              </View>
-            )
-          })}
-          {indicator === 'line' && ready ? <View className="mptk-seg__line" style={lineStyle} /> : null}
-        </View>
-      </ScrollView>
+      {width === 'fit' ? (
+        /* fit 的底片宽 = 各段之和，没有可滚的溢出量。用普通 View 而不是 scroll-view：
+           Skyline 下 scroll-view 必须显式宽高，放在 Cell 值位那种按内容取宽的父级里会被算成 0，
+           整块消失（真机宽松才看得到）；ratio / equal 轨道是 100%、确有横滚需求，仍用 ScrollView。 */
+        <View className="mptk-seg__scroll">{track}</View>
+      ) : (
+        <ScrollView
+          className="mptk-seg__scroll"
+          scrollX
+          scrollWithAnimation
+          scrollIntoView={`${uid}-i${String(activeIndex)}`}
+        >
+          {track}
+        </ScrollView>
+      )}
     </View>
   )
 }

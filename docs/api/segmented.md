@@ -53,13 +53,13 @@
 | `ratio` | 撑满容器，段先按内容占宽、剩余空间均摊 | 量真实矩形 |
 | `equal` | 撑满容器，严格 `100 / N` 等分 | 纯百分比，零测量 |
 
-根 `View` 恒占满父宽（`display: flex; width: 100%`）且背景透明，可见的那条底片是内部的 track：`fit` 时 track 按内容宽、`ratio` / `equal` 时撑满 —— 段多与段少都由 track 的宽度表达，根节点只负责占位与裁剪。宽度不反过来靠内容收缩取宽，原因见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md) 里「收缩取宽塌成 0」那条。
+根 `View` 背景透明（`display: flex`），可见的那条底片是内部的 track，根节点只负责占位与裁剪。`fit` 时根节点 `width:auto`、整块按内容宽，里面是**普通 `View` 而不是 `ScrollView`**：底片宽 = 各段之和，没有可滚的溢出量；Skyline 下 `scroll-view` 必须显式宽高，放进 Cell 值位那种按内容取宽的父级会被算成 0、整块消失（真机宽松才看得到），普通 View 无此约束。`ratio` / `equal` 时根节点 `width:100%`、撑满**确定宽**的父级，轨道也撑满。两种口径各自成立：`ratio` / `equal` 不能改成内容宽（轨道 100% 需要确定宽），`fit` 不能吃父级百分比。另见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md) 里「收缩取宽塌成 0」那条。
 
 `fit` / `ratio` 的段宽由内容决定，百分比算不出位置，组件因此在挂载后的下一拍用 `Taro.createSelectorQuery()` 量一次 track 与各段的矩形，窗口尺寸变化、段数 / 档位 / 圆角 / 等待态变化时重量；量到之前不画指示器，避免先在错位置闪一下。`equal` 不测量。
 
 track 与每段都挂独立 id（`<uid>-track`、`<uid>-i<index>`），测量时逐个按 `#id` 查。段位的几何按 index 一一对应，批量选择只能按渲染树顺序拿、缺项时无从知道缺的是第几段；按 id 查能把「哪一段没量到」暴露出来，track 或任一段返回 `null` 就整体不画滑块，不把指示器画到错位置。`equal` 因为零测量，不受这条约束。
 
-超出根节点宽度时由内置 `ScrollView` 横向滚动，当前选中段靠 `scrollIntoView` 自动滚进可视区（`fit` 模式下段数多也不用宿主自己包容器）。因为根节点宽度是确定的 100%，滚动容器才有一把可算的尺子。
+`ratio` / `equal` 超出根节点宽度时由内置 `ScrollView` 横向滚动，当前选中段靠 `scrollIntoView` 自动滚进可视区；根节点宽度是确定的 100%，滚动容器才有一把可算的尺子。`fit` 没有可滚的溢出量，用普通 View 按内容铺开，不渲染 ScrollView，也不设 `scrollIntoView`。
 
 滑动块宽度减两份内缩、起点加一份，选中首段或末段时左右各留一份，不贴边；组件内联与样式里的 `--mptk-seg-inset` 读同一个 token（宽度写成两次相减，不在 calc 里用乘法），不再各存一份 3px / 6px。下划线的左右缩进取间距档 `--mptk-seg-line-inset`。
 
@@ -117,7 +117,7 @@ function FilterBar() {
 
 ### 验证状态
 
-已在主库自检与演示站编译产物里核实：五档高度、组件级出口与样式齐全、两组件互不引用、异步状态机四条转移、默认蓝与四份主题产物色板齐全、明色滑轨非白、两端留一个内缩 token、内置四色与自定义色值均有断言；等待态用底色呼吸而不是转圈（产物里不出现 spinner 几何、出现 `mptk-control-breathe`）也有断言。`equal` 的等分定位、滑块过渡、下划线与呼吸动画在 Skyline / WebView 双端实机**未验证**；`fit` 的 `createSelectorQuery` 测量路径 Skyline 真机已核对（2026-11-17，五档滑块均按内容贴合），WebView 与 `ratio` 档**未验证**。
+已在主库自检与演示站编译产物里核实：五档高度、组件级出口与样式齐全、两组件互不引用、异步状态机四条转移、默认蓝与四份主题产物色板齐全、明色滑轨非白、两端留一个内缩 token、内置四色与自定义色值均有断言；等待态用底色呼吸而不是转圈（产物里不出现 spinner 几何、出现 `mptk-control-breathe`）也有断言。`equal` 的等分定位、滑块过渡、下划线与呼吸动画在 Skyline / WebView 双端实机**未验证**；`fit` 的 `createSelectorQuery` 测量路径 Skyline 真机已核对（2026-11-17，五档滑块均按内容贴合）。2026-11-17 起 `fit` 在开发者工具 Skyline 下 Cell 值位不再渲染 ScrollView（普通 View 按内容宽），待用户在开发者工具复核；WebView 与 `ratio` 档**未验证**。
 
 ## 更新日志
 
@@ -139,3 +139,5 @@ function FilterBar() {
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
 - 2026-11-16 14:16:36：滑动块内缩左右两条改为读 --mptk-seg-inset，不再各写 3px/6px
 - 2026-11-17：测量改为 track 与各段挂独立 id 后按 `#id` 单选——任一段量不到就整体不画滑块，避免指示器画在错位置；Skyline 真机 fit 档已核对（滑块按内容贴合）
+- 2026-11-17：fit 模式滚动容器 `flex-basis` 从 0 改 auto（按内容取宽）：不定宽父级（Cell 值位）里根节点 `width:100%` 失去参照，开发者工具 Skyline 把整条链算成 0；basis auto 后三端一致，超宽仍靠 flex-shrink 收缩横滚；ratio / equal 不动（轨道 100% 必须由确定宽的根节点撑）
+- 2026-11-17：`width:auto` + `flex-basis:auto` 在 Cell 值位开发者工具下仍不显示，定位到根因是 Skyline 要求 `scroll-view` 显式宽高（官方文档与社区一致：横向滚动也需固定尺寸，`scroll-view` 子节点百分比不支持）。fit 改用普通 `View` 承载 track（底片宽 = 各段之和，本无可滚溢出量），移除 `scrollIntoView`；ratio / equal 保留 ScrollView，父级仍需确定宽

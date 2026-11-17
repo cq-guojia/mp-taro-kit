@@ -1,6 +1,7 @@
 import { ScrollView, View } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
+import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { Overlay } from '../layout/Overlay.js'
 import { MOTION_DURATION, usePresence } from '../layout/presence.js'
 import { resolveTopInset } from '../layout/safe-inset.js'
@@ -56,3 +57,6 @@ export function Drawer({
     </View>
   )
 }
+
+/* 向 Card 声明：抽屉是浮层，关闭时渲染 null、不占内容流。 */
+markCardEdgeOutOfFlow(Drawer)

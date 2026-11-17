@@ -62,7 +62,7 @@
 
 props 表、九种用法与代码示例见 [Cell 单元格](cell.md)。`.d.ts` 只表达 props 类型，以下几条由运行时保证：
 
-- `CellGroup` 默认通栏（`flush`），`inset` 为圆角内收卡片；卡片形态不画上下外框，`border` 只作用于通栏。装在 `Card` 里时由 `ui/infra/card-context` 自动派生 `--in-card`，同样不画上下外框；并由 `ui/infra/card-edge` 声明自己是贴边内容，`Card` 渲染期据此派生 `--edge-content` 关掉壳的上下留白，不用子级负 margin 抵消，消费方无需传参。
+- `CellGroup` 默认通栏（`flush`），`inset` 为圆角内收卡片；卡片形态的四边归 `frame`，`border` 只作用于通栏与卡内列表。装在 `Card` 里时由 `ui/infra/card-context` 自动派生 `--in-card`，`Card` 渲染期再按文档顺序注入「上 / 下边界要不要画」的提示，段与段之间恒好一条线；同时由 `ui/infra/card-edge` 声明自己是贴边内容，`Card` 据此派生 `--edge-content` 关掉壳的上下留白，不用子级负 margin 抵消，消费方无需传参（完整线规则见 [Cell 单元格](cell.md)）。
 - 组内最后一格的下分隔线由 `CellGroup` 按位置关掉，不用结构伪类；独立使用的 `Cell` 由自身 `border` 决定。
 - 点击态由 `onClick` 派生（不暴露 `clickable`），`isLink` 只渲染箭头，`disabled` 短路回调与按压反馈。
 - `value` 优先于 `children`，`rightIcon` 优先于 `isLink` 箭头；内容位均为 `ReactNode`。

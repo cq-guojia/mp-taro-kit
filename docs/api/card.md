@@ -59,7 +59,7 @@
 | `variant` | `CardVariant` | 否 | `'surface'` | 枚举 `'surface' \| 'filled' \| 'outline' \| 'plain'`，见「形态矩阵」 |
 | `radius` | `CardRadius` | 否 | 不传走 `--mptk-card-radius` | 枚举 `'none' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'`，对应 0 / 4 / 8 / 12 / 16 / 20；由 `state.ts` 派生修饰类，宿主不查变量名单、不写样式 |
 | `size` | `CardSize` | 否 | `'md'` | 枚举 `'sm' \| 'md' \| 'lg'`，只换分区间距（`--mptk-space-2 / -3 / -4`），不动字号与圆角 |
-| `headerDivider` | boolean | 否 | 跟随头部 | 有头部（标题 / 副标题 / 右侧操作任一）默认就画一条 1px 线，取 `--mptk-border-faint`；传 `false` 关掉 |
+| `headerDivider` | boolean | 否 | 跟随头部 | 有头部（标题 / 副标题 / 右侧操作任一）默认就画一条 1px 结构线，取 `--mptk-border`（与分组外框同档深线）；传 `false` 关掉 |
 | `footerDivider` | boolean | 否 | 跟随底部 | 有底部操作区默认就画一条线，同档同色；传 `false` 关掉 |
 | `color` | `CardColor` | 否 | 不传走 `--mptk-card-bg` | 内置色名或任意 CSS 色值，落在哪条通道由形态决定，见下 |
 | `onClick` | `() => void` | 否 | — | 给了才派生按压态；跳转由宿主注入，本库不接 `url` |
@@ -96,7 +96,7 @@
 - 五个槽位全部按需渲染：没给的槽位不产生节点，`cover` 给了还会去掉根节点的顶部留白，让封面贴到卡片上沿。
 - 形态始终显式派生一根修饰类，四种形态的类名可以互相覆盖（宿主在页面级写 `.mptk-card--outline` 就能改所有只有边的卡片），不需要按形态再开 props。
 - 头部字号取字号档：`title` 是 `--mptk-font-lg`（17/24），`subtitle` 是 `--mptk-font-xs`（12/17、`--mptk-fg-3`），比正文（`md`，15）低一档，与列表里的辅助文字同档。宿主不改字号，换档就走主题变量。
-- 头部与主体、主体与底部之间默认各带一条 1px 分隔线（`--mptk-border-faint`）：有分区就该把标题区 / 操作区与内容分开，不必每个调用点再传开关。要连成一片时传 `headerDivider={false}` / `footerDivider={false}`，两条线各自独立、互不牵连。
+- 头部与主体、主体与底部之间默认各带一条 1px 结构线（`--mptk-border`，与 CellGroup 外框/标题线同档）：分区线属一级结构线，跟行间线（二级 `--mptk-cell-divider`）分深浅，不必每个调用点再传开关。要连成一片时传 `headerDivider={false}` / `footerDivider={false}`，两条线各自独立、互不牵连。
 - 上下留白归壳、由 `hasCardEdgeContent()` 在渲染期从 `children` 派生：普通内容保留 `var(--mptk-card-spacing)`；声明了贴边的内容派生 `--edge-content`，并**按端**派生 `--edge-top` / `--edge-bottom`，该端 padding 直接为字面量 `0`，不经计算表达式、不吃渲染端支持度。子级不做负 margin 反抵消。
 - 归零只作用在真正贴边的那一端：没有 `title` / `subtitle` / `extra` 才派生 `--edge-top`（否则标题会被顶到卡片上边），没有 `footer` 才派生 `--edge-bottom`。所以「Card 带标题 + 里面一个 CellGroup」两端都保留留白，标题不再贴着卡片边、列表最后一行也不贴底。
 - 贴边时 body 的左右留白归零，左右间距改由贴边内容自己给（`CellGroup` 取 `var(--mptk-card-spacing)`，与卡片标题、底部操作区同一档），保证内容与分隔线离卡片边只有一道距离、且左边界与标题对齐。
@@ -130,13 +130,13 @@ export const CellInCard = () => (
 组合由 `ui/infra` 的两处契约自己成立，都不需要消费方参与：
 
 - `card-context.ts` 的 `CardSurfaceContext` 向后代声明「你在卡片里」；`CellGroup` 用 `useCardSurface()` 消费后派生 `mptk-cell-group--in-card`、组与行底色改透明。父传子调整的模式对齐 react-native-paper 的 `CardContext`。
-- `card-edge.ts` 的 `markCardEdgeContent()` 让 `CellGroup` 声明「我每行自带留白」；`Card` 在渲染期用 `hasCardEdgeContent(children)` 识别到它，派生 `mptk-card--edge-content`，再按槽位派生 `mptk-card--edge-top` / `--edge-bottom` 把该端 padding 直接置 0。同一份声明还让 `Card` 能把位置档（`first` / `middle` / `last` / `single`）注入给每个贴边的 `CellGroup`：首组不画上框、末组不画下框、中间上下都画、单组两头都收（几何见 [Cell 单元格](cell.md)）。声明是渲染期静态契约，不引入运行时状态、不产生首帧跳动，也不需要 `card` 与 `display/cell` 互相 import。
+- `card-edge.ts` 的 `markCardEdgeContent()` 让 `CellGroup` 声明「我每行自带留白」；`Card` 在渲染期用 `hasCardEdgeContent(children)` 识别到它，派生 `mptk-card--edge-content`，再按槽位派生 `mptk-card--edge-top` / `--edge-bottom` 把该端 padding 直接置 0。同一份声明还让 `Card` 按文档顺序给每个贴边的 `CellGroup` 注入「上边界要不要画、下边界要不要画」两个布尔（`CARD_EDGE_LINES_PROP`）：分组处恒好一条线——前面还有内容就画上边界，只有后面紧跟普通内容时才补下边界（线规则见 [Cell 单元格](cell.md)）。声明是渲染期静态契约，不引入运行时状态、不产生首帧跳动，也不需要 `card` 与 `display/cell` 互相 import。
 
 贴边取 shadcn/ui 的 Edge to edge 语义，但**不用负 margin**：小程序渲染端会静默丢弃变量参与计算的负 margin，编译与 CSS 层叠都查不出来，实机表现为 `margin: 0`，于是壳的 12px 与行的 12px 叠成 24px。改成壳上字面量 `0` 归零后，组合态顶部只剩 Cell 自身的一份 `--mptk-space-3`（12px）。不用 `:has()`，因为小程序 WXSS 不支持结构伪类。
 
-声明识别与位置注入都遍历 `children` 树（含数组与嵌套节点），因此 `<Card><View><CellGroup /></View></Card>` 一样贴边、一样拿得到位置档。边界是：若某个组件在自身内部才渲染 `CellGroup`、不让它出现在 `Card` 的 children 树里，`Card` 就无从识别，这类内容按根 `className` 自行定制。
+声明识别与边界注入都遍历 `children` 树（含数组与嵌套节点），因此 `<Card><View><CellGroup /></View></Card>` 一样贴边、一样拿得到边界提示。边界是：若某个组件在自身内部才渲染 `CellGroup`、不让它出现在 `Card` 的 children 树里，`Card` 就无从识别，这类内容按根 `className` 自行定制。
 
-遍历会**跳过声明了「脱离文档流」的浮层**（`markCardEdgeOutOfFlow`，`Popup` 已声明）。原因：首尾判定是渲染期静态遍历，而浮层关闭时渲染 `null`；只看 element 树的话，`<Card><CellGroup /><Popup open={false}>…</Popup></Card>` 里面板 children 会被当成排在 CellGroup 后面的可见内容，单组从 `single` 退化成 `first`、末组从 `last` 退化成 `middle`，贴着卡片边界的那条线就多画出来。新增的浮层类组件若可能渲染 `null`，应当同样声明。
+遍历会**跳过声明了「脱离文档流」的浮层**（`markCardEdgeOutOfFlow`）。原因：边界判定是渲染期静态遍历，而浮层关闭时渲染 `null`；只看 element 树的话，`<Card><CellGroup /><Popup open={false}>…</Popup></Card>` 里面板 children 会被当成排在 CellGroup 后面的可见内容，贴着卡片底的那条线就多画出来。已声明：`Popup` / `Overlay` / `Drawer` / `Dropdown` / `Dialog`；`Toast` / `Loading` 是行内组件、可见时确实占内容流，不声明。新增的浮层类组件若可能渲染 `null`，应当同样声明，`tests/card.test.mjs` 会逐个校验名单。
 
 因此卡的 `color`（内置色名或自定义色值）能透到 Cell 行，不会被白底盖住。`CellGroup` 的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone`）仍归 `CellGroup`，见 [Cell 单元格](cell.md)。
 
@@ -196,5 +196,8 @@ export const WithSlots = () => (
 - 2026-11-14：头部默认带分隔线（`headerDivider` 不给就跟随头部）；说明字号降到 `--mptk-font-xs`
 - 2026-11-15 00:20:59：取值真源改为 kit.config.mjs
 - 2026-11-15：形态扩成一支 `variant`（`surface` / `filled` / `outline` / `plain`），取代 `frame` 布尔开关；`radius` 补 `none`；补 `footerDivider` 且与 `headerDivider` 同口径默认跟随；色值按形态落通道（有面染底、只有边染线、`plain` 不参与）；按压反馈改为半透明叠加层（新增 `--mptk-card-press`），自定义色值与四种形态都能看到反馈
+- 2026-11-17：头/底分区线由 `--mptk-border-faint` 升到 `--mptk-border`，与 CellGroup 外框/标题线同为一级结构线，深浅口径统一
 - 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME）
 - 2026-11-17：CellGroup 位置档注入改为穿透包装层（原来只扫 body 顶层，内容被 View 包一层时全部落回 `none`，上下框线消失）
+- 2026-11-17：位置档改成边界提示（上 / 下边界两个布尔）：底线归前一块画（每个分组封口，最后一个元素不画），上边界只在前面是普通内容时画，分组处恒好一条线；浮层跳过说明同步改写，`Overlay` / `Drawer` / `Dropdown` / `Dialog` 补上脱离文档流声明（`Toast` / `Loading` 是行内组件，不声明）
+- 2026-11-17：边界遍历补上 `{list.map(…)}` 的数组与 `{cond && …}` 留下的 `false` / `null`：以前数组被当成一块「普通内容」，前一组因此多勾一条底线、数组里的组整块拿不到提示（这就是卡片里「标题上方多一条线」的来源）；`hasCardEdgeContent` 同步跳过脱离文档流的子树

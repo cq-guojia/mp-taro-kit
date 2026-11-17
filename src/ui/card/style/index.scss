@@ -110,7 +110,7 @@
 .mptk-card--header-divider .mptk-card__header {
   border-bottom-width: var(--mptk-c-border-w);
   border-bottom-style: solid;
-  border-bottom-color: var(--mptk-border-faint);
+  border-bottom-color: var(--mptk-border);
   padding-bottom: var(--mptk-space-2);
 }
 
@@ -190,6 +190,6 @@
 .mptk-card--footer-divider .mptk-card__footer {
   border-top-width: var(--mptk-c-border-w);
   border-top-style: solid;
-  border-top-color: var(--mptk-border-faint);
+  border-top-color: var(--mptk-border);
   padding-top: var(--mptk-space-2);
 }

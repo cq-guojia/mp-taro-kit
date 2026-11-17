@@ -50,7 +50,7 @@ demo/                                               # 仓库内的 Taro 小程�
         ├── card/index.tsx                          # src/ui/card/：Card 通用卡片容器，只列自身能力与宿主手搓内容
         ├── navigation/index.tsx                    # src/ui/navigation/：NavBar、Drawer、Dropdown
         ├── overlay/index.tsx                       # src/ui/layout/：Overlay 一份遮罩，只演自己，不演使用者
-        ├── popup/index.tsx                         # src/ui/layout/：Popup 弹出层、叠加顺序、长内容内滚
+        ├── popup/index.tsx                         # src/ui/layout/：顶部统一配置 + 位置档 + 关闭按钮位置
         ├── foundation/index.tsx                    # design + runtime + utils + core 四域合并：换肤、单例、工具、configure 注入
         └── commands/index.tsx                      # ui/commands.ts + state.ts + infra/OverlayHost：命令式 API
 ```

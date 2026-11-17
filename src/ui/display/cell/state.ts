@@ -1,5 +1,5 @@
 /** Cell / CellGroup 的状态与类名解析：零 React / Taro 依赖，自检可直接调用真实逻辑。 */
-import type { CardEdgePosition } from '../../infra/card-edge.js'
+import type { CardEdgeLines } from '../../infra/card-edge.js'
 
 export type CellSize = 'normal' | 'large'
 /** 右侧值的字号档：`xs` 与 label 同档（默认），`sm` 与标题同档。 */
@@ -56,15 +56,17 @@ export type CellGroupBorder = 'none' | 'top' | 'bottom' | 'both'
 
 export interface CellGroupStateInput {
   inset?: boolean
-  /** 上下外边框：`true` = both、`false` = none；不给则按上下文推导（见 edgePosition）。显式传值优先。 */
+  /** 上下外边框：`true` = both、`false` = none；不给则按上下文推导（见 edgeLines）。显式传值优先。 */
   border?: boolean | CellGroupBorder
   dividerTone?: CellDividerTone
+  /** 行间线左右是否留白；默认 true（与行文字对齐），false 通到容器边。 */
+  dividerInset?: boolean
   frame?: boolean
   /** 由 Card 的上下文传入：装在卡片里。消费方无需传参。 */
   inCard?: boolean
-  /** Card 在渲染期注入的位置档；只在不传 border 时用来推导该画哪条外框线。消费方无需传。 */
-  edgePosition?: CardEdgePosition
-  /** 由 CellGroup 在渲染期传入：有组标题。标题与列表之间永远一条线，不随位置档丢。 */
+  /** Card 在渲染期注入的边界提示；只在不传 border 时用来推导该画哪条外框线。消费方无需传。 */
+  edgeLines?: CardEdgeLines
+  /** 由 CellGroup 在渲染期传入：有组标题。标题与列表之间永远一条线，不随卡片位置丢。 */
   hasTitle?: boolean
   className?: string
 }
@@ -72,61 +74,66 @@ export interface CellGroupStateInput {
 export interface CellGroupState {
   className: string
   bodyClassName: string
-  /** 任意一条边在画（兼容旧字段）。 */
+  /** 上下任一条边在画（Card 与自检据此判断组有没有外框）。 */
   outerBorder: boolean
   borderTop: boolean
   borderBottom: boolean
-  /** 标题与列表之间那条线由标题自己提供：有标题且位置档不画上边线时为真。 */
+  /** 标题与列表之间那条线由标题自己提供：有标题且外框顶线未画时为真。 */
   titleDivider: boolean
 }
 
 /** 布尔兼容旧写法；显式值优先，没传才用上下文推导出的 fallback。 */
 function resolveBorderEdges(
   border: boolean | CellGroupBorder | undefined,
-  fallback: CellGroupBorder,
+  fallback: { top: boolean; bottom: boolean },
 ): { borderTop: boolean; borderBottom: boolean } {
-  const shape: CellGroupBorder =
-    border === true ? 'both' : border === false ? 'none' : border ?? fallback
+  if (border === true) return { borderTop: true, borderBottom: true }
+  if (border === false) return { borderTop: false, borderBottom: false }
+  if (border === undefined) return { borderTop: fallback.top, borderBottom: fallback.bottom }
   return {
-    borderTop: shape === 'both' || shape === 'top',
-    borderBottom: shape === 'both' || shape === 'bottom',
+    borderTop: border === 'both' || border === 'top',
+    borderBottom: border === 'both' || border === 'bottom',
   }
 }
 
 /**
- * 卡片内按位置派生外框线：**只画下边线，永不画上边线**。
+ * 线的归属（全形态唯一规则）：
  *
- * 组与组之间的分隔只由「前一组的底边线」提供：后一组再画一条上边线，两条就会紧挨着出现
- * 双线（上一组底 + 下一组顶），而且上边线落在列表顶部、标题在它上面，表现为「标题下没线、
- * 组上面多一条」。第一组贴卡片边界/标题区不画，最后一组贴卡片底不画，中间每组一条底线。
- * 想要组的顶部边框由消费方显式传 `border="top" | "both"`。
+ * 1. 相邻两块的分界处恒好一条线，任何两条线都不许紧挨；
+ * 2. 底线归前一块画：每个分组的下边界是它自己的封口线，只有自己排在最后才不画（卡片底边接管）；
+ * 3. 上边界只在前面是普通内容时画：紧跟卡片标题栏（标题栏自带线）或上一分组
+ *    （上一组的底线就是这条线）时让位，自己是第一块也不画；
+ * 4. 有标题时，标题与列表之间那条线：外框顶线画了就由它承担（它排在标题之后），
+ *    没画（标题栏 / 上一组的线接管）就由标题线补上。
+ *
+ * 通栏（不在 Card 里）整块自带上下两条封口边界；卡片内由 Card 逐块注入 `edgeLines`。
  */
-function defaultBorderInCard(position: CardEdgePosition | undefined): CellGroupBorder {
-  switch (position) {
-    case 'first':
-    case 'middle': return 'bottom'
-    default: return 'none'
-  }
-}
-
 export function resolveCellGroupState(input: CellGroupStateInput): CellGroupState {
   const inset = input.inset === true
   const inCard = input.inCard === true
+  const titled = input.hasTitle === true && !inset
   const names = ['mptk-cell-group', inset ? 'mptk-cell-group--inset' : 'mptk-cell-group--flush']
   if (inCard) names.push('mptk-cell-group--in-card')
   if (input.dividerTone === 'match') names.push('mptk-cell-group--divider-match')
+  /* 行间线内缩默认开：即使不传也派生类名，让「默认内缩」成为可见的组件状态，
+     而不是靠 CSS 基础规则凑出来的巧合。只有显式 false 才切通底。 */
+  names.push(input.dividerInset === false ? 'mptk-cell-group--divider-flush' : 'mptk-cell-group--divider-inset')
   if (input.frame === false) names.push('mptk-cell-group--frameless')
   if (input.className) names.push(input.className)
   const body = ['mptk-cell-group__body']
   if (inset) body.push('mptk-cell-group__body--inset')
   /* 卡片形态（inset）的四边由 frame 管，这里只管通栏 / 卡片内列表的上下两条线。 */
+  const hint = inCard
+    ? input.edgeLines ?? { top: false, bottom: false }
+    : { top: true, bottom: true }
+  /* 卡片内的提示已按文档顺序算好归属，直接用；显式 border 给的方向永远优先。 */
+  const fallback = hint
   const edges = inset
     ? { borderTop: false, borderBottom: false }
-    : resolveBorderEdges(input.border, inCard ? defaultBorderInCard(input.edgePosition) : 'both')
-  /* 标题与列表之间必须恰好一条线：位置档不画上边线时（first / single，或卡片内无位置档），
-     这条线由标题自己给；位置档画上边线时线就落在列表顶部，标题不再重复画。
-     inset 形态的列表自带四边描边，标题在外侧，同样不重复。 */
-  const titleDivider = input.hasTitle === true && !inset && !edges.borderTop
+    : resolveBorderEdges(input.border, fallback)
+  /* 标题与列表之间恒好一条线：外框顶线画了就由它承担（它就排在标题之后），没画（卡片内默认、
+     通栏显式关掉顶线）就由标题线补上。inset 的四边归 frame，标题线不参与。 */
+  const titleDivider = titled && !edges.borderTop
   return {
     className: names.join(' '),
     bodyClassName: body.join(' '),

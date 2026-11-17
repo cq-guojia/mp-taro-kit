@@ -7,4 +7,5 @@ export {
   type PopupCloseShape,
   type PopupClosePosition,
   type PopupInsetTop,
+  type PopupRoundSize,
 } from './Popup.js'

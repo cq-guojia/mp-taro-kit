@@ -1,5 +1,6 @@
 import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
+import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { Overlay } from '../layout/Overlay.js'
 import { MOTION_DURATION, usePresence } from '../layout/presence.js'
 
@@ -42,3 +43,6 @@ export function Dropdown({
     </View>
   )
 }
+
+/* 向 Card 声明：下拉面板是浮层，关闭时渲染 null、不占内容流。 */
+markCardEdgeOutOfFlow(Dropdown)

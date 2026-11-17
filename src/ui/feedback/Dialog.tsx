@@ -1,5 +1,6 @@
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
+import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 
 export interface DialogProps {
   open: boolean
@@ -51,3 +52,6 @@ export function Dialog({
     </View>
   )
 }
+
+/* 向 Card 声明：对话框是浮层，关闭时渲染 null、不占内容流。 */
+markCardEdgeOutOfFlow(Dialog)

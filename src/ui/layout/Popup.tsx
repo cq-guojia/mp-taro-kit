@@ -10,7 +10,7 @@ import {
   type PopupPosition,
 } from './close-position.js'
 import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
-import { Overlay } from './Overlay.js'
+import { Overlay, type OverlayOpacity, type OverlayTone } from './Overlay.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
 import { isTopAnchored, resolveTopInset, type TopInsetLevel } from './safe-inset.js'
 
@@ -23,6 +23,9 @@ export type { PopupCloseShape } from './close-style.js'
  */
 export type PopupInsetTop = TopInsetLevel
 
+/** 面板圆角尺寸档：平角 / 小 / 中 / 大；只作用于圆角已开启（round 或居中档）的面板。 */
+export type PopupRoundSize = 'none' | 'sm' | 'md' | 'lg'
+
 export interface PopupProps {
   open: boolean
   position?: PopupPosition
@@ -30,13 +33,19 @@ export interface PopupProps {
   onClose?: () => void
   /** 是否渲染遮罩，默认渲染 */
   overlay?: boolean
+  /** 遮罩底色档：dark 黑（默认）/ light 泛白；透传给内部 Overlay */
+  overlayTone?: OverlayTone
+  /** 遮罩浓度档：thin / default（默认）/ thick；透传给内部 Overlay */
+  overlayOpacity?: OverlayOpacity
   /** 点遮罩是否关闭，默认关闭 */
   closable?: boolean
   lockScroll?: boolean
   duration?: number
   className?: string
-  /** 面板圆角，默认关（平角）；开时尺寸读 --mptk-c-popup-radius */
+  /** 面板圆角，默认关（平角）；开时尺寸由 roundSize 决定 */
   round?: boolean
+  /** 面板圆角尺寸档：none / sm / md（默认）/ lg；居中档恒圆，贴边档需同时开 round */
+  roundSize?: PopupRoundSize
   /** 显示关闭按钮，默认关；只有 bottom / center 档支持，其余档忽略 */
   closeable?: boolean
   /** 关闭按钮形状，默认 circle（正圆）；rounded 为圆角方 */
@@ -62,11 +71,14 @@ export function Popup({
   children,
   onClose,
   overlay = true,
+  overlayTone,
+  overlayOpacity,
   closable = true,
   lockScroll = true,
   duration = MOTION_DURATION,
   className,
   round = false,
+  roundSize = 'md',
   closeable = false,
   closeShape = 'circle',
   closeBorder = true,
@@ -93,6 +105,7 @@ export function Popup({
     'mptk-popup',
     `mptk-popup--${position}`,
     round ? 'mptk-popup--round' : '',
+    `mptk-popup--radius-${roundSize}`,
     resolvedInset === 'none' ? '' : `mptk-popup--inset-${resolvedInset}`,
     closeOutside ? 'mptk-popup--close-outside' : '',
     shown ? 'mptk-popup--open' : '',
@@ -102,7 +115,15 @@ export function Popup({
   return (
     <View className={names.filter(Boolean).join(' ')}>
       {overlay ? (
-        <Overlay visible={shown} closable={closable} lockScroll={lockScroll} duration={duration} onClose={onClose} />
+        <Overlay
+          visible={shown}
+          tone={overlayTone}
+          opacity={overlayOpacity}
+          closable={closable}
+          lockScroll={lockScroll}
+          duration={duration}
+          onClose={onClose}
+        />
       ) : null}
       <View className={panel.filter(Boolean).join(' ')}>
         <ScrollView scrollY className="mptk-popup__body" style={bodyStyle}>
@@ -127,5 +148,5 @@ export function Popup({
 }
 
 /* 向 Card 声明：关闭时渲染 null、不占内容流。没有这条声明，Card 静态遍历 children 会把
-   面板内容当成排在 CellGroup 后面的可见内容，单组退化成 first，贴边那条线多画一条。 */
+   面板内容当成排在 CellGroup 后面的可见内容，前面那组因此多补一条底线。 */
 markCardEdgeOutOfFlow(Popup)

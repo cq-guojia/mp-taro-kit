@@ -2,7 +2,7 @@
 
 ## 接口 / 导出
 
-`mp-taro-kit/ui/layout`：`Overlay`、`OverlayProps`、`OverlayTone`、`OverlayOpacity`、`Popup`、`PopupProps`、`PopupPosition`、`PopupCloseShape`、`PopupClosePosition`、`PopupInsetTop`、`MOTION_DURATION`
+`mp-taro-kit/ui/layout`：`Overlay`、`OverlayProps`、`OverlayTone`、`OverlayOpacity`、`Popup`、`PopupProps`、`PopupPosition`、`PopupCloseShape`、`PopupClosePosition`、`PopupInsetTop`、`PopupRoundSize`、`MOTION_DURATION`
 `mp-taro-kit/ui/navigation`：`Drawer`、`Dropdown`（遮罩引用 layout 那一份）
 `mp-taro-kit/ui/infra`：`OverlayHost`（命令式 Dialog 也挂同一份遮罩）
 `mp-taro-kit/ui/layout/style`、`mp-taro-kit/ui/navigation/style`、`mp-taro-kit/ui/infra/style`：各自组件样式出口，宿主显式引一次
@@ -63,13 +63,23 @@
 | `lockScroll` | boolean | `true` | 是否阻止滚动穿透 |
 | `duration` | number | `MOTION_DURATION` | 进出场时长 |
 
+`Popup` 另外把内部遮罩的两轴与面板圆角尺寸暴露出来（Drawer / Dropdown 不暴露），三个参数都透传给同一份遮罩 / 同一条圆角变量，不在演示层另写样式：
+
+| 参数 | 类型 | 默认 | 说明 |
+|---|---|---|---|
+| `overlayTone` | `'dark' \| 'light'` | —（走 Overlay 默认 `dark`） | 遮罩底色档，透传给内部 `Overlay` 的 `tone` |
+| `overlayOpacity` | `'thin' \| 'default' \| 'thick'` | —（走 Overlay 默认 `default`） | 遮罩浓度档，透传给内部 `Overlay` 的 `opacity`；三档映射见下表 |
+| `roundSize` | `'none' \| 'sm' \| 'md' \| 'lg'` | `'md'` | 面板圆角尺寸档，派生 `.mptk-popup--radius-*` 类名切 `--mptk-c-popup-radius`；`none` 平角、`md` 12px |
+
+遮罩三档在演示站里的映射：浅 = `dark` + `thin`，深 = `dark` + `default`，泛白 = `light` + `default`。`roundSize` 只在圆角已开启的面板上生效——居中档恒圆，贴边档需同时传 `round`；`none` 给平角。
+
 其余参数（`open`、`position` / `side`、`children`、`onClose`、`className`）保持原样。
 
 `Popup` 的 `position` 取五档：`'top' | 'center' | 'bottom' | 'left' | 'right'`（默认 `bottom`）。形态对齐 Vant 4：上 / 下档通栏，左 / 右档是全高抽屉（宽度取 `--mptk-c-drawer-w`，240px，375 屏约 64%；不受面板限高影响，底下不留空），居中档有默认宽 `--mptk-c-popup-center-w`（280px，参考 Vant Dialog 320px / antd-mobile RN Modal 286px，375 屏约 75%）且最大不超屏——不是通栏。Skyline 不支持 Vant 用的 `fit-content`，所以居中档改用 token 默认宽，消费方可覆盖。原独立 `Drawer` 已取消，左右滑入由 Popup 的 `left` / `right` 档承担。面板有最小高 `--mptk-c-popup-min-h`（200px），内容少时不塌成一小溜。
 
 **贴顶 / 贴底档必须有确定高度**：Skyline 下 `scroll-view` 拿到确定高才会滚，只给 `max-height` 会被内容撑满屏、真机上滚不动（WebView 模拟器看不出这个问题）。这两档的高度取 `--mptk-c-popup-sheet-h`（35vh），`--mptk-c-popup-max-h` 只作上限。
 
-圆角按档默认，不必统一开关：**居中档默认四角全圆，贴边档默认平角**。贴边档要圆角时传 `round`，只圆内侧两角。尺寸统一读 `--mptk-c-popup-radius`，改 token 一处即可换全库圆角尺寸。
+圆角按档默认，不必统一开关：**居中档默认四角全圆，贴边档默认平角**。贴边档要圆角时传 `round`，只圆内侧两角。尺寸默认读 `--mptk-c-popup-radius`（`--mptk-radius-md` = 12px），改 token 一处即可换全库圆角尺寸；单次调用要换档传 `roundSize`（见上表），它由类名切同一个变量，宿主不必自己写圆角样式。
 
 关闭按钮同样可选，且**按弹窗形态分档**——不是每个形态都能用全部位置。`closeable` 默认 `false`；开启后复用核心 `Button`（`icon="common.base:guanbi"`，`size="xs"` 即 24px），按压变色走 Button 自带的 `mptk-btn--pressed`，不在浮层里另写一套按钮皮肤。按钮排在内容 `scroll-view` 之后才点得着（见下）。
 
@@ -81,7 +91,7 @@
 | 描边 | `closeBorder` | `true` | 有 / 无描边 |
 | 背景 | `closeBackground` | `true` | 有 / 无底色 |
 
-描边 × 背景映射 Button 的四种 `variant`：有底有描边 → `soft`；有底无描边 → `solid`；无底有描边 → `outline`；两者都无 → `ghost`（只有叉）。演示站上方用 Card + Cell + Segmented 实时配置这三轴与显隐 / 点遮罩，下方只点位置即可看到对应效果。
+描边 × 背景映射 Button 的四种 `variant`：有底有描边 → `soft`；有底无描边 → `solid`；无底有描边 → `outline`；两者都无 → `ghost`（只有叉）。演示站顶部「配置」区用 CellGroup + Segmented 统一配置这三轴，以及圆角尺寸 / 遮罩 / 点遮罩 / 让位；位置档是两个 Cell 行——「垂直」（顶部 / 中部 / 底部）与「侧面」（左侧 / 右侧），按钮放 value 位居右、走 xs 档；关闭按钮位置一块按形态分档，点按钮开面板即可看到配置生效。
 
 `closePosition` 只能用本形态支持的值；传了不支持的值回落到该形态默认值，`top` / `left` / `right` 三档直接不渲染（传什么都不生效）：
 
@@ -182,3 +192,4 @@ configureSafeArea({
 - 2026-11-17：`closePosition` 改为按形态分档——左右 / 上档不支持关闭按钮（设置无效）；底部四档（内部左上、跨半左上、外部右上、外部上方中间），中部五档（内部右上、跨半右上、外部右上、外部下方、外部右下方）。跨半只垂直跨、左右留距，外置档留 12px（`--mptk-space-3`）。居中档进场改为从目标位置下方 48px 上浮渐显（token `--mptk-c-popup-center-rise`）；演示站按形态 + 内外分四组展示，位置 / 底形 / 显隐 / 点遮罩开关均可切
 - 2026-11-17：关闭按钮复用核心 Button（xs 档 24px），按压变色走 `mptk-btn--pressed`；底形改用 Button 的 ghost / soft + radius 档，不再在浮层里另写一套按钮皮肤
 - 2026-11-17：关闭按钮样式拆成形状 / 描边 / 背景三个正交轴（`closeShape` / `closeBorder` / `closeBackground`），由 `resolveCloseStyle()` 映射 Button 的四形态；演示站上方 Card + Cell + Segmented 实时配置，下方只演示位置
+- 2026-11-17：`Popup` 暴露 `overlayTone` / `overlayOpacity` / `roundSize` 三个参数，把内部遮罩两轴与面板圆角尺寸提到组件层（原来只能改 token 或在 demo 里 hack）；圆角尺寸派生 `.mptk-popup--radius-*` 类名切 `--mptk-c-popup-radius`。演示站重排成顶部统一配置 + 位置档 + 关闭按钮位置三块，撤掉单独的平角 / 圆角、顶部让位、叠加顺序、长内滚四块

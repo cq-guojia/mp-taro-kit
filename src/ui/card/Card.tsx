@@ -82,7 +82,7 @@ export function Card({
     hasEdgeContent: hasCardEdgeContent(body),
   })
 
-  // 渲染期给贴边内容注入位置档：穿透包装层找到真正的 CellGroup，Card 不 import cell 子域，消费方零参数。
+  // 渲染期给贴边内容注入边界提示：穿透包装层找到真正的 CellGroup，Card 不 import cell 子域，消费方零参数。
   const decoratedBody = decorateCardEdgeChildren(Children.toArray(body))
 
   return (

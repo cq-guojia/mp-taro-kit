@@ -1,12 +1,12 @@
 /* Segmented：容器高度吃控件高度轴，段宽由 width 轴三选一。
-   fit   = 段宽 = 内容 + 左右内边距，底片宽 = 各段之和，超出即横向滚动（内置 scroll-view）；
-   ratio = 撑满，段先按内容占宽、剩余均摊（两字窄、四字宽）；
-   equal = 撑满，严格 100 / N 等分，唯一不需要测量的模式。
-   根节点恒为「占满父宽的布局容器」（背景透明、不带圆角底色），视觉上的那条底片是 track：
-   fit 时 track 按内容宽，ratio / equal 时 track 撑满。宽度必须由根节点定死 100%，
-   不能反过来靠内容收缩取宽 —— 开发者工具 Skyline 下，「inline-flex 收缩取宽」包着内部
-   scroll-view（flex-basis 0）会塌成 0 宽，整块只剩空白，真机却正常。
-   滑块 / 下划线都是 track 内的绝对定位元素，与段同一个滚动容器，滚动时自然跟随。
+   fit   = 段宽 = 内容 + 左右内边距，底片宽 = 各段之和，整块按内容宽（普通 View，不需要滚动）；
+   ratio = 撑满确定宽的父级，段先按内容占宽、剩余均摊（两字窄、四字宽），超出横滚；
+   equal = 撑满确定宽的父级，严格 100 / N 等分（唯一不需要测量的模式），超出横滚。
+   根节点背景透明、不带圆角底色，视觉上的那条底片是 track：fit 时按内容宽，ratio / equal 时撑满。
+   fit 刻意不用 scroll-view：底片宽 = 各段之和，没有可滚的溢出量；而 Skyline 下 scroll-view
+   必须显式宽高，放进 Cell 值位那种按内容取宽的父级会被算成 0、整块消失（真机宽松才看得到）。
+   ratio / equal 轨道是 100%、确有横滚需求，仍用 ScrollView，并要求父级确定宽。
+   滑块 / 下划线都是 track 内的绝对定位元素，滚动时自然跟随。
    圆角引用 --mptk-control-radius，半圆由组件加 --radius-pill 类切到 pill token。
    等待态不盖转圈：段里全是文字 / 图标，转圈会把段挤宽或压住字，
    改成滑块（下划线形态是线本身）的底色呼吸，见文件顶部 @use。 */
@@ -83,8 +83,8 @@
   opacity: var(--mptk-c-locked-opacity);
 }
 
-/* 横向滚动容器：宽度由根节点定死的 100% 给出（flex:1 1 0 在确定宽度的容器里才成立），
-   内容比它宽就横滑。overflow 交给 scroll-view 自己。 */
+/* 容器：ratio / equal 是 ScrollView，轨道 100%，由根节点（width:100% 且父级确定宽）
+   给出确定宽，flex:1 1 0 撑满；fit 是普通 View，按内容宽，flex:0 1 auto 由内容给出宽度。 */
 .mptk-seg__scroll {
   flex-grow: var(--mptk-s-flex-grow);
   flex-shrink: var(--mptk-s-flex-shrink);
@@ -93,6 +93,27 @@
   height: var(--mptk-s-full);
   white-space: var(--mptk-s-white-space-nowrap);
 }
+
+/* fit 的根节点按内容宽，不能吃父级百分比：Cell 值位是不定宽 flex 子项，
+   width:100% 在开发者工具 Skyline 里会解析成 0（真机按内容宽），整块消失。
+   里面是普通 View，配 flex-basis:auto，整条宽度链都由内容给出，不依赖父级是否确定宽，
+   也不触发 scroll-view「必须显式宽高」的约束。Skyline 下普通 View 默认纵向 flex，
+   这里显式改横向，track 才按主轴内容宽解析、不被交叉轴拉成父级宽。
+   ratio / equal 的根节点仍保持 width:100%——轨道 100%，必须撑满确定宽的父级。 */
+.mptk-seg--fit {
+  width: auto;
+}
+
+.mptk-seg--fit .mptk-seg__scroll {
+  display: flex;
+  flex-direction: row;
+  flex-grow: var(--mptk-s-flex-none);
+  flex-shrink: var(--mptk-s-flex-shrink);
+  /* 字面量 auto：不为一个值往全局 structure 加 token（schemaVersion 锁 1），
+     也不用 margin-auto 那个 token——语义是外边距，挪用会给宿主留坑。 */
+  flex-basis: auto;
+}
+
 
 /* 底片：fit 时按内容宽（inline-flex 收缩），ratio / equal 时被 100% 撑满。
    底色与圆角都在这一层，根节点只负责占位与裁剪 —— 见文件顶部说明。 */

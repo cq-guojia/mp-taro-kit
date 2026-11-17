@@ -1,10 +1,6 @@
 /* Cell / CellGroup 组件级样式：一套 DOM + 修饰符类切通栏 / 卡片。
    分隔线与外框都是独立 1px 元素，长写 background-color，不赌结构伪类。 */
 
-.mptk-cell-group {
-  position: relative;
-}
-
 /* 通栏：显式归零外边距，宿主给 Group 设过 margin 也不会被卡片形态带跑。 */
 .mptk-cell-group--flush {
   margin-top: var(--mptk-s-zero);
@@ -26,7 +22,7 @@
   line-height: var(--mptk-line-sm);
   padding-top: var(--mptk-space-3);
   padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-1);
+  padding-bottom: var(--mptk-space-2);
   padding-left: var(--mptk-space-4);
 }
 
@@ -62,23 +58,36 @@
   --mptk-cell-divider: var(--mptk-border);
 }
 
-/* 分隔线默认左右各留一个内容区边距，不通到底；卡片内由组统一缩进，线回到 0 免得叠成两道。 */
-.mptk-cell-group--in-card .mptk-cell__divider {
+/* 行间线内缩由 CellGroup 的 dividerInset 参数派生，默认 true（与行文字对齐）。
+   通栏：行自带 space-4 左右内距，线留该档即内缩、归零即通到屏幕边；
+   卡片内：行内距归零、body 给 card-spacing，线归零即与文字对齐、负该档即通到卡片边。
+   通底值必须跨出 body 的分区内距，不能写成 0 指望「看起来对」。 */
+.mptk-cell-group--divider-inset .mptk-cell__divider {
+  left: var(--mptk-space-4);
+  right: var(--mptk-space-4);
+}
+
+.mptk-cell-group--divider-flush .mptk-cell__divider {
   left: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
 }
 
-/* 标题与列表之间的分隔线：位置档不画列表上边线时由这里补一条，与行分隔线同色同缩进。 */
-.mptk-cell-group__title-divider {
-  height: var(--mptk-c-border-w);
-  margin-right: var(--mptk-space-4);
-  margin-left: var(--mptk-space-4);
-  background-color: var(--mptk-cell-divider);
+.mptk-cell-group--in-card.mptk-cell-group--divider-inset .mptk-cell__divider {
+  left: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
 }
 
-.mptk-cell-group--in-card .mptk-cell-group__title-divider {
-  margin-right: var(--mptk-s-zero);
-  margin-left: var(--mptk-s-zero);
+.mptk-cell-group--in-card.mptk-cell-group--divider-flush .mptk-cell__divider {
+  left: calc(-1 * var(--mptk-card-spacing));
+  right: calc(-1 * var(--mptk-card-spacing));
+}
+
+/* 标题与列表之间的分隔线：它是该组列表的上边界（卡片内默认由它承担，通栏在顶线被显式关掉时接替），
+   颜色取外框线那一档，与组底线同权；行与行之间的线才是浅一档的 --mptk-cell-divider。
+   组级线（外框与标题线）是结构线，一律左右通到底，不内缩；内缩的只有行间线。 */
+.mptk-cell-group__title-divider {
+  height: var(--mptk-c-border-w);
+  background-color: var(--mptk-border);
 }
 
 /* 设置三：frame={false} 去掉卡片四边描边，只靠圆角与底色区分。 */
@@ -89,22 +98,25 @@
   border-left-width: var(--mptk-s-zero);
 }
 
+/* 外框线是普通流内元素，不绝对定位：高度计入布局，位置只由先后兄弟决定，
+   不会因为父级 position 基准失效而跑到组外面与别的线叠成两条。 */
 .mptk-cell-group__border {
-  position: absolute;
-  left: var(--mptk-s-zero);
-  right: var(--mptk-s-zero);
   height: var(--mptk-c-border-w);
   background-color: var(--mptk-border);
 }
 
-.mptk-cell-group__border--top {
-  top: var(--mptk-s-zero);
+/* 卡片内：组被包在 body 的左右内距里，组级线要通到卡片边缘只能负 margin 抵消这一档。
+   负 margin 是有意的（贴边线必须跨出 body 的内容盒，没有别的到达方式）；
+   行文字与行间线的内缩不受影响——结构线通底、内容线内缩。 */
+.mptk-cell-group--in-card .mptk-cell-group__border,
+.mptk-cell-group--in-card .mptk-cell-group__title-divider {
+  margin-right: calc(-1 * var(--mptk-card-spacing));
+  margin-left: calc(-1 * var(--mptk-card-spacing));
 }
 
-.mptk-cell-group__border--bottom {
-  bottom: var(--mptk-s-zero);
-}
-
+/* 行高由最小高保底，内容真超过才按上下 padding 撑开；普通文本没顶到这档就居中。
+   内容区净高最小 --mptk-line-sm（20px），加上下各 6px padding（space-1 + space-0）= 32px；
+   box-sizing 是 border-box，这 32px 已含 padding，不再往外叠。 */
 .mptk-cell {
   position: relative;
   display: flex;
@@ -114,9 +126,10 @@
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
-  padding-top: var(--mptk-space-3);
+  min-height: calc(var(--mptk-line-sm) + var(--mptk-space-1) + var(--mptk-space-0) + var(--mptk-space-1) + var(--mptk-space-0));
+  padding-top: calc(var(--mptk-space-1) + var(--mptk-space-0));
   padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-3);
+  padding-bottom: calc(var(--mptk-space-1) + var(--mptk-space-0));
   padding-left: var(--mptk-space-4);
 }
 
@@ -230,7 +243,7 @@
   transform: var(--mptk-s-rotate-135);
 }
 
-/* 通到底：左右都不缩进，避免一侧留白多；卡片形态由 Group 圆角裁切。 */
+/* 独立 Cell 的默认内缩；装在 CellGroup 里时端点由 dividerInset 派生的规则接管（见上方）。 */
 .mptk-cell__divider {
   position: absolute;
   left: var(--mptk-space-4);
@@ -259,4 +272,11 @@
 .mptk-cell-group--in-card .mptk-cell {
   padding-right: var(--mptk-s-zero);
   padding-left: var(--mptk-s-zero);
+}
+
+/* 卡片内组标题收同一档：列表文字压在卡片分区间距上，标题跟着走才对得齐，
+   否则标题比下面的行多缩 4px，一行行看过去是歪的。 */
+.mptk-cell-group--in-card .mptk-cell-group__title {
+  padding-right: var(--mptk-card-spacing);
+  padding-left: var(--mptk-card-spacing);
 }

@@ -181,6 +181,13 @@
   opacity: 1;
 }
 
+/* 圆角尺寸档：由 Popup 的 roundSize 派生类名，改这一处变量，下面各档的圆角声明无需改。
+   none 给平角（0），sm / md / lg 取对应 radius 档；md 是默认值，与 token 初值一致。 */
+.mptk-popup--radius-none { --mptk-c-popup-radius: var(--mptk-radius-none); }
+.mptk-popup--radius-sm { --mptk-c-popup-radius: var(--mptk-radius-sm); }
+.mptk-popup--radius-md { --mptk-c-popup-radius: var(--mptk-radius-md); }
+.mptk-popup--radius-lg { --mptk-c-popup-radius: var(--mptk-radius-lg); }
+
 /* 圆角：居中档默认四角全圆（写在自己档位里）；贴边档默认平角，round 开启才圆内侧两角。
    尺寸统一读 --mptk-c-popup-radius，改一处全库跟随。 */
 .mptk-popup--round .mptk-popup__panel--bottom {

@@ -75,6 +75,22 @@ test('控件圆角统一走语义变量，容器统一降一号', () => {
   assert.ok(segRoot, '缺 .mptk-seg 根规则')
   assert.match(segRoot[1], /border-radius:\s*var\(--mptk-control-radius\)/, 'Segmented 容器圆角必须引用语义变量')
   assert.match(seg, /\.mptk-seg__thumb\s*\{[^}]*border-radius:\s*var\(--mptk-radius-xs\)/, '滑块比容器小一号')
+  /* fit 不用 scroll-view（底片宽 = 各段之和，没有可滚溢出量）：Skyline 下 scroll-view 必须显式
+     宽高，Cell 值位那种不定宽父级会把它算成 0、整块消失。普通 View 按内容宽无此约束。
+     ratio / equal 轨道是 100%、确有横滚需求，保留 basis 0 由确定宽的根节点撑。 */
+  const segFitRoot = /\.mptk-seg--fit\s*\{([^}]*)\}/.exec(seg)
+  assert.ok(segFitRoot, '缺 fit 模式根节点规则')
+  assert.match(segFitRoot[1], /width:\s*auto/, 'fit 根节点必须按内容宽，不能吃不定宽父级的 width:100%')
+  const segFitScroll = /\.mptk-seg--fit \.mptk-seg__scroll\s*\{([^}]*)\}/.exec(seg)
+  assert.ok(segFitScroll, '缺 fit 模式的容器覆盖')
+  assert.match(segFitScroll[1], /flex-basis:\s*auto/, 'fit 容器要按内容取宽，不许留在 basis 0')
+  assert.match(segFitScroll[1], /flex-direction:\s*row/, 'Skyline 下普通 View 默认纵向，fit 必须显式横向才能按内容宽')
+  const segRatioScroll = /(?:\.mptk-seg--ratio|\.mptk-seg--equal) \.mptk-seg__scroll\s*\{/.test(seg)
+  assert.equal(segRatioScroll, false, 'ratio / equal 不许跟着 fit 改 basis，它们要靠根节点撑满')
+  const segSrc = read('../src/ui/form/segmented/Segmented.tsx')
+  assert.match(segSrc, /width === 'fit' \? \(/, 'fit 与其它档必须走不同的容器分支')
+  assert.match(segSrc, /<View className="mptk-seg__scroll">\{track\}<\/View>/, 'fit 必须用普通 View 承载 track，不用 scroll-view')
+  assert.match(segSrc, /<ScrollView\s+className="mptk-seg__scroll"/, 'ratio / equal 确有横滚需求，仍用 ScrollView')
   const cell = read('../dist/ui/display/cell/style/index.css')
   assert.match(cell, /border-top-left-radius:\s*var\(--mptk-radius-sm\)/, 'Cell 四角降到 sm')
   assert.doesNotMatch(cell, /border-(top|bottom)-(left|right)-radius:\s*var\(--mptk-radius-md\)/, 'Cell 不许留在 md')

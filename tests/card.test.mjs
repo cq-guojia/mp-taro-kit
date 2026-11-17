@@ -7,7 +7,7 @@ import ts from 'typescript'
 import * as cardState from '../dist/ui/card/state.js'
 import * as cellState from '../dist/ui/display/cell/state.js'
 import { decorateCardEdgeChildren, hasCardEdgeContent } from '../dist/ui/card/edge.js'
-import { CARD_EDGE_CONTENT, CARD_EDGE_POSITION_PROP, markCardEdgeContent } from '../dist/ui/infra/card-edge.js'
+import { CARD_EDGE_CONTENT, CARD_EDGE_LINES_PROP, markCardEdgeContent } from '../dist/ui/infra/card-edge.js'
 import { resolveCssVars, catalogModuleStub } from './helpers/kit-config.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -96,9 +96,10 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   assert.equal(declOf(blue, '--mptk-card-bg'), 'var(--mptk-blue-soft)', '内置色走已有的淡色面')
   assert.equal(declOf(blue, '--mptk-card-accent'), 'var(--mptk-blue)', '只有边的形态要拿到同色相实色')
 
-  assert.match(css, /\.mptk-card--header-divider\s+\.mptk-card__header/, '头部分隔线要有规则')
+  const headerRule = ruleOf(css, '.mptk-card--header-divider .mptk-card__header')
+  assert.equal(declOf(headerRule, 'border-bottom-color'), 'var(--mptk-border)', '标题线与组级结构线同用深档')
   const footerRule = ruleOf(css, '.mptk-card--footer-divider .mptk-card__footer')
-  assert.equal(declOf(footerRule, 'border-top-color'), 'var(--mptk-border-faint)', '底部分隔线与头部同档同色')
+  assert.equal(declOf(footerRule, 'border-top-color'), 'var(--mptk-border)', '底部分隔线与头部同档深色')
   assert.equal(declOf(footerRule, 'padding-top'), 'var(--mptk-space-2)', '线到内容一档小间距，与头部对称')
 
   const heading = ruleOf(css, '.mptk-card__title')
@@ -237,67 +238,102 @@ test('Card 状态：形态派生、颜色双路、点击与等待态', () => {
   assert.equal(cardState.CARD_COLORS.length, 9, 'neutral + 8 支色相')
 })
 
-test('CellGroup 边框全景矩阵：位置档 × 标题 × 显式 border 的线数与位置', () => {
-  /* [位置档, 有无标题, 显式 border, 顶线, 底线, 标题线] —— 逐格钉死，改了任何一格都会红。 */
+test('CellGroup 边框全景矩阵：边界提示 × 标题 × 显式 border 的线数与位置', () => {
+  /* [上边界提示, 下边界提示, 有无标题, 显式 border, 顶线, 底线, 标题线] —— 逐格钉死，改了任何一格都会红。
+     卡片内「有标题」的组：提示给顶线时它落在标题与列表之间（排在标题之后），标题线让位；
+     提示不给顶线（紧跟标题栏 / 上一分组）时由标题线补上——两者恒好一条，不会叠成两条。 */
   const grid = [
-    [undefined, false, undefined, false, false, false],
-    [undefined, true, undefined, false, false, true],
-    ['single', false, undefined, false, false, false],
-    ['single', true, undefined, false, false, true],
-    ['first', false, undefined, false, true, false],
-    ['first', true, undefined, false, true, true],
-    ['middle', false, undefined, false, true, false],
-    ['middle', true, undefined, false, true, true],
-    ['last', false, undefined, false, false, false],
-    ['last', true, undefined, false, false, true],
-    ['middle', false, 'both', true, true, false],
-    ['middle', true, 'both', true, true, false],
-    ['first', false, 'none', false, false, false],
-    ['first', true, 'none', false, false, true],
-    ['last', false, 'top', true, false, false],
-    ['last', true, 'top', true, false, false],
+    [false, false, false, undefined, false, false, false],
+    [true, false, false, undefined, true, false, false],
+    [false, true, false, undefined, false, true, false],
+    [true, true, false, undefined, true, true, false],
+    [false, false, true, undefined, false, false, true],
+    [true, true, true, undefined, true, true, false],
+    [true, false, true, 'top', true, false, false],
+    [true, true, true, 'both', true, true, false],
+    [true, true, true, 'none', false, false, true],
+    [true, true, false, false, false, false, false],
+    [true, true, false, 'both', true, true, false],
   ]
-  for (const [edgePosition, hasTitle, border, top, bottom, titleDivider] of grid) {
-    const label = `position=${String(edgePosition)} title=${String(hasTitle)} border=${String(border)}`
-    const state = cellState.resolveCellGroupState({ inCard: true, edgePosition, hasTitle, border })
+  for (const [topHint, bottomHint, hasTitle, border, top, bottom, titleDivider] of grid) {
+    const label = `hint=${String(topHint)}/${String(bottomHint)} title=${String(hasTitle)} border=${String(border)}`
+    const state = cellState.resolveCellGroupState({
+      inCard: true,
+      edgeLines: { top: topHint, bottom: bottomHint },
+      hasTitle,
+      border,
+    })
     assert.equal(state.borderTop, top, `${label} 顶线不对`)
     assert.equal(state.borderBottom, bottom, `${label} 底线不对`)
     assert.equal(state.titleDivider, titleDivider, `${label} 标题线不对`)
   }
-  /* 显式 border 永远压过位置档：位置档只决定「不给 border 时画不画底线」。 */
-  assert.equal(cellState.resolveCellGroupState({ inCard: true, edgePosition: 'last', border: 'both' }).borderBottom, true)
-  assert.equal(cellState.resolveCellGroupState({ inCard: true, edgePosition: 'first', border: false }).borderBottom, false)
+  /* 通栏：整块自带上下框；显式关掉顶线时，标题与列表之间那条线由标题线补上，不许一起消失。 */
+  for (const [border, top, bottom, titleDivider] of [
+    [undefined, true, true, false],
+    ['none', false, false, true],
+    [false, false, false, true],
+    ['top', true, false, false],
+    ['bottom', false, true, true],
+    ['both', true, true, false],
+  ]) {
+    const state = cellState.resolveCellGroupState({ hasTitle: true, border })
+    assert.equal(state.borderTop, top, `通栏 border=${String(border)} 顶线不对`)
+    assert.equal(state.borderBottom, bottom, `通栏 border=${String(border)} 底线不对`)
+    assert.equal(state.titleDivider, titleDivider, `通栏 border=${String(border)} 标题线不对`)
+  }
+  /* 不变量：标题上下永远只有一条线——顶线与标题线互斥，任何形态任何组合下都不许同时为真。 */
+  for (const inCard of [true, false]) {
+    for (const border of [undefined, 'none', 'top', 'bottom', 'both', true, false]) {
+      for (const hasTitle of [true, false]) {
+        for (const hint of [{ top: true, bottom: true }, { top: false, bottom: false }]) {
+          const state = cellState.resolveCellGroupState({ inCard, edgeLines: hint, hasTitle, border })
+          assert.notEqual(
+            state.borderTop && state.titleDivider,
+            true,
+            `inCard=${String(inCard)} border=${String(border)} title=${String(hasTitle)} 顶线与标题线同时画了`,
+          )
+        }
+      }
+    }
+  }
+  /* 显式 border 永远压过边界提示：提示只决定「不给 border 时画不画这条边」。 */
+  assert.equal(
+    cellState.resolveCellGroupState({ inCard: true, edgeLines: { top: false, bottom: false }, border: 'both' }).borderBottom,
+    true,
+  )
+  assert.equal(
+    cellState.resolveCellGroupState({ inCard: true, edgeLines: { top: true, bottom: true }, border: false }).borderBottom,
+    false,
+  )
 })
 
 test('Card 与 CellGroup 组合：上下文自动收敛，消费方零参数', () => {
   const inside = cellState.resolveCellGroupState({ inCard: true })
-  assert.equal(inside.outerBorder, false, '没传位置时上下都不画，靠卡片边界收口')
+  assert.equal(inside.outerBorder, false, '没收到边界提示时上下都不画，靠卡片边界收口')
   assert.match(inside.className, /mptk-cell-group--in-card/)
 
-  /* 位置档只派生下边线：组间分隔由前一组的底线提供，后一组不再画上边线（否则双线）。 */
-  for (const [position, top, bottom] of [
-    ['first', false, true],
-    ['last', false, false],
-    ['middle', false, true],
-    ['single', false, false],
+  /* 无标题的组：提示说哪条画哪条，组自己一条不多一条不少。 */
+  for (const [hint, top, bottom] of [
+    [{ top: true, bottom: false }, true, false],
+    [{ top: false, bottom: true }, false, true],
+    [{ top: true, bottom: true }, true, true],
+    [{ top: false, bottom: false }, false, false],
   ]) {
-    const state = cellState.resolveCellGroupState({ inCard: true, edgePosition: position })
-    assert.equal(state.borderTop, top, `${position} 的上边线不对`)
-    assert.equal(state.borderBottom, bottom, `${position} 的下边线不对`)
+    const state = cellState.resolveCellGroupState({ inCard: true, edgeLines: hint })
+    assert.equal(state.borderTop, top, `hint=${JSON.stringify(hint)} 的上边线不对`)
+    assert.equal(state.borderBottom, bottom, `hint=${JSON.stringify(hint)} 的下边线不对`)
   }
-  /* 标题与列表之间恒一条线：位置档不再产生上边线，所以每一种位置档下都由标题侧补。 */
-  assert.deepEqual(
-    ['first', 'single', 'middle', 'last'].map(
-      (position) => cellState.resolveCellGroupState({ inCard: true, edgePosition: position, hasTitle: true }).titleDivider,
-    ),
-    [true, true, true, true],
-    '有标题的组在卡片里，标题下恒有一条线',
-  )
-  assert.equal(
-    cellState.resolveCellGroupState({ inCard: true, edgePosition: 'first', hasTitle: true }).borderTop,
-    false,
-    '位置档不许再画上边线，否则与标题线/上一组底线重复',
-  )
+  /* 卡片内有标题的组：标题与列表之间恒好一条线——顶线画了就落在标题与列表之间（它排在标题之后），
+     没画就由标题线补上；两者互斥但必有其一，不许同时画也不许一起消失。 */
+  for (const hint of [{ top: true, bottom: false }, { top: false, bottom: false }, { top: true, bottom: true }]) {
+    const titled = cellState.resolveCellGroupState({ inCard: true, edgeLines: hint, hasTitle: true })
+    assert.equal(
+      titled.titleDivider || titled.borderTop,
+      true,
+      `hint=${JSON.stringify(hint)} 有标题时标题与列表之间必须有一条线`,
+    )
+    assert.notEqual(titled.titleDivider && titled.borderTop, true, '标题线与顶线互斥，不许同时画')
+  }
   assert.equal(cellState.resolveCellGroupState({ inCard: true, hasTitle: false }).titleDivider, false, '无标题不画')
   assert.equal(cellState.resolveCellGroupState({ hasTitle: true }).titleDivider, false, '通栏形态列表自己画上边线')
   assert.equal(
@@ -306,47 +342,91 @@ test('Card 与 CellGroup 组合：上下文自动收敛，消费方零参数', (
     'inset 列表自带四边描边，标题不重复画',
   )
 
-  /* 显式 border 优先于位置推导：手动打开 / 关闭仍生效。 */
+  /* 显式 border 优先于边界提示：手动打开 / 关闭仍生效。 */
   assert.deepEqual(
-    cellState.resolveCellGroupState({ inCard: true, edgePosition: 'first', border: 'both' }),
+    cellState.resolveCellGroupState({ inCard: true, edgeLines: { top: false, bottom: false }, border: 'both' }),
     cellState.resolveCellGroupState({ inCard: true, border: 'both' }),
-    '显式 border=both 要盖过 first 的推导',
+    '显式 border=both 要盖过提示',
   )
   assert.equal(
-    cellState.resolveCellGroupState({ inCard: true, edgePosition: 'middle', border: false }).outerBorder,
+    cellState.resolveCellGroupState({ inCard: true, edgeLines: { top: true, bottom: true }, border: false }).outerBorder,
     false,
-    '显式 border=false 要盖过 middle 的推导',
+    '显式 border=false 要盖过提示',
   )
 
-  /* 位置注入是真跑的装饰器：Card 拿它注入，Node 自检直接验证每个贴边节点拿到的档位。 */
+  /* 边界提示是真跑的装饰器：Card 拿它注入，Node 自检直接验证每个贴边节点拿到哪条边界。 */
   const Group = markCardEdgeContent(() => null)
   const el = (type, children) => (children === undefined ? { type, props: {} } : { type, props: { children } })
   const group = () => el(Group)
   const plain = () => el('View')
-  const positionsOf = (nodes) => decorateCardEdgeChildren(nodes).map((node) => node.props?.[CARD_EDGE_POSITION_PROP])
-  assert.deepEqual(positionsOf([group()]), ['single'], '卡片里只一组时两头都收')
-  assert.deepEqual(positionsOf([group(), plain()]), ['first', undefined], '首组后面还有内容时画下线')
-  assert.deepEqual(positionsOf([plain(), group()]), [undefined, 'last'], '末组前面有内容时画上线')
-  assert.deepEqual(positionsOf([group(), plain(), group()]), ['first', undefined, 'last'], '两组分列首尾')
-  assert.deepEqual(positionsOf([group(), group(), group()]), ['first', 'middle', 'last'], '三组时中间组上下都画')
+  const linesOf = (nodes) => decorateCardEdgeChildren(nodes).map((node) => node.props?.[CARD_EDGE_LINES_PROP])
+  const box = (top, bottom) => ({ top, bottom })
+  assert.deepEqual(linesOf([group()]), [box(false, false)], '卡片里只一组：贴上下边界，两头都不画')
+  assert.deepEqual(linesOf([group(), plain()]), [box(false, true), undefined], '后面还有普通内容：底线照画封口')
+  assert.deepEqual(linesOf([plain(), group()]), [undefined, box(true, false)], '前面有普通内容时画上边界')
+  assert.deepEqual(linesOf([group(), group()]), [box(false, true), box(false, false)], '两组相邻：前一组的底线封口，后一组上边界让位')
+  assert.deepEqual(
+    linesOf([group(), plain(), group()]),
+    [box(false, true), undefined, box(true, false)],
+    '夹着普通内容时，两条边界分属前后两组',
+  )
+  assert.deepEqual(
+    linesOf([group(), group(), group()]),
+    [box(false, true), box(false, true), box(false, false)],
+    '三组：每组的底线都是封口线，接缝各恰好一条',
+  )
   /* 穿透包装层：demo 的 demo-block__content 与用户自己的布局 View 都会包一层，
-     位置必须打到里面的 CellGroup 上，不能只看 body 顶层（否则全部落回 none）。 */
+     提示必须打到里面的 CellGroup 上，不能只看 body 顶层（否则全部落回不画）。 */
   const wrapped = decorateCardEdgeChildren([el('View', [group(), plain(), group()])])
   assert.deepEqual(
-    wrapped[0].props.children.map((node) => node.props?.[CARD_EDGE_POSITION_PROP]),
-    ['first', undefined, 'last'],
-    '包装层里的贴边内容也要按文档顺序注入位置',
+    wrapped[0].props.children.map((node) => node.props?.[CARD_EDGE_LINES_PROP]),
+    [box(false, true), undefined, box(true, false)],
+    '包装层里的贴边内容也要按文档顺序注入边界',
   )
   const deep = decorateCardEdgeChildren([el('View', [el('View', [group(), group()])])])
   assert.deepEqual(
-    deep[0].props.children[0].props.children.map((node) => node.props?.[CARD_EDGE_POSITION_PROP]),
-    ['first', 'last'],
+    deep[0].props.children[0].props.children.map((node) => node.props?.[CARD_EDGE_LINES_PROP]),
+    [box(false, true), box(false, false)],
     '嵌套多层也要穿透',
   )
+  /* 页面最常见的写法：`{list.map(…)}` 会把组塞进一个数组，`{cond && <CellGroup/>}` 会留下 false。
+     数组与空节点必须摊平/丢掉，否则数组里的组拿不到提示、前一组的底线归属也算错。 */
+  const mapped = decorateCardEdgeChildren([group(), el('View', [group(), group()])])
+  assert.deepEqual(
+    mapped[1].props.children.map((node) => node.props?.[CARD_EDGE_LINES_PROP]),
+    [box(false, true), box(false, false)],
+    '数组里的组也要按文档顺序拿提示',
+  )
+  assert.deepEqual(
+    linesOf([group(), el('View', [group(), group()])]),
+    [box(false, true), undefined],
+    '后面跟的是数组（里面还是组）时，前一组的底线照画封口',
+  )
+  const conditional = decorateCardEdgeChildren([el('View', [false, group(), null, group()])])
+  assert.deepEqual(
+    conditional[0].props.children
+      .filter((node) => node !== null && node !== false)
+      .map((node) => node.props?.[CARD_EDGE_LINES_PROP]),
+    [box(false, true), box(false, false)],
+    '条件渲染留下的 false / null 不许算内容',
+  )
+  assert.deepEqual(
+    linesOf([group(), el('View', [false]), group()]),
+    [box(false, true), undefined, box(false, false)],
+    '只装着空节点的包装层不算内容',
+  )
+  /* 同一个 element 对象当两个兄弟用：提示按顺序消费，不许互相覆盖。 */
+  const reused = group()
+  assert.deepEqual(linesOf([reused, reused]), [box(false, true), box(false, false)], '同一个元素复用两次也要各拿各的提示')
+
   const single = decorateCardEdgeChildren([el('View', group())])
-  assert.equal(single[0].props.children.props[CARD_EDGE_POSITION_PROP], 'single', '单个子节点（children 非数组）也要注入')
+  assert.deepEqual(
+    single[0].props.children.props[CARD_EDGE_LINES_PROP],
+    box(false, false),
+    '单个子节点（children 非数组）也要注入',
+  )
   assert.match(read('../src/ui/card/Card.tsx'), /decorateCardEdgeChildren\(Children\.toArray\(body\)\)/, 'Card 要用穿透式装饰器')
-  assert.match(read('../src/ui/display/cell/CellGroup.tsx'), /CARD_EDGE_POSITION_PROP/, 'CellGroup 要读注入的位置')
+  assert.match(read('../src/ui/display/cell/CellGroup.tsx'), /CARD_EDGE_LINES_PROP/, 'CellGroup 要读注入的边界提示')
   const outside = cellState.resolveCellGroupState({})
   assert.equal(outside.outerBorder, true, '单独使用仍画上下外框')
   assert.doesNotMatch(outside.className, /--in-card/)
@@ -439,8 +519,13 @@ test('贴边留白由 Card 侧决定：渲染期识别 + 纯 CSS 归零，不靠
   assert.equal(declOf(ruleOf(cardCss, '.mptk-card'), 'padding-top'), 'var(--mptk-card-spacing)', '普通内容仍由壳给留白')
   assert.equal(resolveCssVars(declOf(ruleOf(cardCss, '.mptk-card--edge-top'), 'padding-top')), '0', '贴边时壳顶部必须解析成 0')
   assert.equal(resolveCssVars(declOf(ruleOf(cardCss, '.mptk-card--edge-bottom'), 'padding-bottom')), '0', '贴边时壳底部必须解析成 0')
-  assert.equal(declOf(ruleOf(cellCss, '.mptk-cell'), 'padding-top'), 'var(--mptk-space-3)', '行自己的上留白仍是唯一一份')
-  assert.equal(declOf(ruleOf(cellCss, '.mptk-cell'), 'padding-bottom'), 'var(--mptk-space-3)')
+  assert.equal(
+    declOf(ruleOf(cellCss, '.mptk-cell'), 'min-height'),
+    'calc(var(--mptk-line-sm) + var(--mptk-space-1) + var(--mptk-space-0) + var(--mptk-space-1) + var(--mptk-space-0))',
+    '最小高 = 内容区净高 20 + 上下 padding 各 6 = 32',
+  )
+  assert.equal(declOf(ruleOf(cellCss, '.mptk-cell'), 'padding-top'), 'calc(var(--mptk-space-1) + var(--mptk-space-0))', '上留白 6px，内容超出最小高时上下各多撑 2px')
+  assert.equal(declOf(ruleOf(cellCss, '.mptk-cell'), 'padding-bottom'), 'calc(var(--mptk-space-1) + var(--mptk-space-0))')
   assert.doesNotMatch(cellCss, /margin-(?:top|bottom):\s*calc\(/, '子级不再反抵消')
 
   /* 卡片内列表默认左右不到头：组给一档留白、行归零，卡片 body 不再叠一道。 */

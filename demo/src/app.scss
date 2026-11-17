@@ -264,13 +264,6 @@ page {
   text-align: right;
 }
 
-/* Cell 右侧的段控件：Segmented 根节点是 width:100%，父位必须定宽且不许收缩，
-   否则在 flex-shrink 的 value 位里被挤成 0 宽、整块消失。 */
-.demo-cell-segment {
-  flex-shrink: 0;
-  width: 280rpx;
-}
-
 /* 主题配置页的配置片段：壳由 Card 给，这里只管一行一条的排版。 */
 .demo-code {
   display: block;

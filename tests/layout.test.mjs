@@ -238,6 +238,38 @@ test('圆角默认：居中四角全圆，贴边平角；round 开启才圆贴�
   )
 })
 
+test('Popup 新三轴：遮罩底色 / 浓度由 props 透传，圆角尺寸由档位类名切变量', () => {
+  const src = read('src/ui/layout/Popup.tsx')
+  const entry = read('src/ui/layout/index.ts')
+  const css = read(LAYOUT_CSS)
+
+  // 类型与出口齐全，宿主能拿到档位名，不必自己写圆角样式。
+  assert.match(src, /import \{ Overlay, type OverlayOpacity, type OverlayTone \}/, 'Popup 没引遮罩两轴类型')
+  assert.match(src, /export type PopupRoundSize = 'none' \| 'sm' \| 'md' \| 'lg'/, '圆角尺寸档类型缺档')
+  assert.match(src, /overlayTone\?: OverlayTone/, 'Popup 没暴露遮罩底色轴')
+  assert.match(src, /overlayOpacity\?: OverlayOpacity/, 'Popup 没暴露遮罩浓度轴')
+  assert.match(src, /roundSize\?: PopupRoundSize/, 'Popup 没暴露圆角尺寸轴')
+  assert.match(entry, /type PopupRoundSize/, 'layout 出口没导出 PopupRoundSize')
+
+  // 透传要真到 Overlay，不是只收下 props 就丢掉。
+  assert.match(src, /tone=\{overlayTone\}/, '遮罩底色没透传给 Overlay')
+  assert.match(src, /opacity=\{overlayOpacity\}/, '遮罩浓度没透传给 Overlay')
+  assert.match(src, /roundSize = 'md'/, '圆角尺寸默认中档')
+  assert.match(src, /mptk-popup--radius-\$\{roundSize\}/, '圆角尺寸没派生出档位类名')
+
+  // 四档都落到 --mptk-c-popup-radius，各档 panel 声明不重复写死。
+  for (const tier of ['none', 'sm', 'md', 'lg']) {
+    assert.match(
+      css,
+      new RegExp(`\\.mptk-popup--radius-${tier}\\s*\\{[^}]*--mptk-c-popup-radius:\\s*var\\(--mptk-radius-${tier}\\)`),
+      `${tier} 档没切到 radius ${tier} token`,
+    )
+  }
+  const tokens = tokensOf()
+  assert.equal(tokens['--mptk-radius-none'], '0', '平档 token 丢了')
+  assert.equal(tokens['--mptk-radius-md'], '12px', '中档 token 变了，要同步文档')
+})
+
 test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env() 不可靠），公式对齐 NavBar', async () => {
   const css = read(LAYOUT_CSS)
   const src = read('src/ui/layout/Popup.tsx')
@@ -547,7 +579,7 @@ test('居中档补上位移补偿，抽屉给出宽度（不然滑入滑出算�
   assert.equal(declOf(panel, 'width'), 'var(--mptk-c-drawer-w)', '抽屉没宽度，translateX 百分比没有参照')
 })
 
-test('演示站按使用者分页：遮罩页只演遮罩，弹出层的戏归弹出层页', () => {
+test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留配置 + 位置档 + 关闭按钮位置', () => {
   const overlayPage = read('demo/src/pages/overlay/index.tsx')
   const popupPage = read('demo/src/pages/popup/index.tsx')
   const catalog = read('demo/src/catalog.ts')
@@ -562,82 +594,120 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层的戏归�
     '遮罩的备注文字要放 Cell 右侧 value（默认 xs + fg-2，左主右次），不是标题下方的 label',
   )
 
-  // 遮罩 / 弹出层两页统一走 Vant 风格：CellGroup 列表点整行，不再堆一排 Button。
+  // 遮罩 / 弹出层两页的配置与列表走 Vant 风格 CellGroup + Cell；
+  // 弹出层的位置档按用户要求改成横排按钮，遮罩页仍不许出现 Button。
   for (const [page, file] of [
     [overlayPage, '遮罩页'],
     [popupPage, '弹出层页'],
   ]) {
     assert.match(page, /<CellGroup[\s>]/, `${file} 缺 CellGroup`)
     assert.match(page, /<Cell[\s>]/, `${file} 缺 Cell 列表项`)
-    assert.doesNotMatch(page, /<Button\b/, `${file} 不该再用一排按钮，改用 Cell 列表`)
+  }
+  assert.doesNotMatch(overlayPage, /<Button\b/, '遮罩页不该出现按钮，只演遮罩')
+  // 位置按钮按用户要求降到 xs 档（24px）。
+  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 2, '两处位置按钮各显式降一档到 xs')
+
+  // 三块结构：顶部统一配置 + 位置档 + 关闭按钮位置；旧的六块全部撤掉。
+  // catalog 只取 popup 页自己的 examples 段，popup / overlay 是合法的页与菜单 id，不能整篇搜。
+  const popupCatalog = /id: 'popup',[\s\S]*?path: 'pages\/popup\/index',[\s\S]*?examples:\s*\[([\s\S]*?)\n {4}\],/.exec(catalog)?.[1] ?? ''
+  assert.ok(popupCatalog.length > 0, 'catalog 里找不到 popup 页的 examples 段')
+  for (const id of ['config', 'positions', 'close-position']) {
+    assert.match(popupPage, new RegExp(`id === '${id}'`), `弹出层页缺 ${id} 示例`)
+    assert.match(popupCatalog, new RegExp(`id: '${id}'`), `目录缺 ${id} 条目`)
+  }
+  for (const id of ['popup', 'inset', 'close', 'layers', 'scroll']) {
+    assert.doesNotMatch(popupPage, new RegExp(`id === '${id}'`), `旧的 ${id} 示例没撤掉`)
+    assert.doesNotMatch(popupCatalog, new RegExp(`id: '${id}'`), `目录还留着旧的 ${id} 条目`)
   }
 
-  for (const id of ['layers', 'scroll', 'close', 'inset']) {
-    assert.match(popupPage, new RegExp(`id === '${id}'`), `弹出层页缺 ${id} 示例`)
-    assert.match(catalog, new RegExp(`id: '${id}'`), `目录缺 ${id} 条目`)
-  }
-  assert.match(popupPage, /closeShape=\{closeShape\}/, '关闭按钮示例要真的切形状')
-  assert.match(popupPage, /closeBorder=\{closeBorder\}/, '关闭按钮示例要真的切描边')
-  assert.match(popupPage, /closeBackground=\{closeBackground\}/, '关闭按钮示例要真的切背景')
-  assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮示例要真的切位置')
-  assert.match(popupPage, /position=\{closePanel\}/, '关闭按钮示例要按形态切换弹窗')
-  assert.match(popupPage, /<CellGroup title="关闭按钮样式">/, '样式要用 CellGroup 分组，不套第二层卡片')
+  // 配置区七个 Segmented：形状 / 描边 / 背景 / 圆角尺寸 / 遮罩 / 点遮罩 / 不让位。
+  assert.equal(
+    (popupPage.match(/<Segmented\b/g) ?? []).length,
+    7,
+    '配置区七个 Segmented，下面两块演示不再各配一套滑块',
+  )
+  assert.equal(
+    (popupPage.match(/items=\{YES_NO\}/g) ?? []).length,
+    3,
+    '描边 / 背景 / 点遮罩各一个 YES_NO，形状用 SHAPES',
+  )
+  assert.match(popupPage, /items=\{SHAPES\}/, '关闭按钮形状用 Segmented 选')
+  assert.match(popupPage, /items=\{ROUND_SIZES\}/, '圆角尺寸用 Segmented 选')
+  assert.match(popupPage, /items=\{MASKS\}/, '遮罩三档用 Segmented 选')
+  assert.match(popupPage, /items=\{INSETS\}/, '不让位用 Segmented 选')
+  assert.doesNotMatch(popupPage, /items=\{SHOW_HIDE\}/, '显隐档已撤，不再单独演示开关按钮')
+  assert.match(popupPage, /<CellGroup title="关闭按钮">/, '样式要用 CellGroup 分组，不套第二层卡片')
+  assert.match(popupPage, /<CellGroup title="面板">/, '面板配置单独一组')
   assert.doesNotMatch(popupPage, /<Card\b/, '演示块已由 DemoBlock 套壳，页内不能再写 Card')
-  assert.equal(
-    (popupPage.match(/className="demo-cell-segment"/g) ?? []).length,
-    5,
-    '五个 Segmented 外层都要定宽，否则在 Cell value 位被挤成 0',
-  )
-  assert.match(
-    read('demo/src/app.scss'),
-    /\.demo-cell-segment\s*\{[^}]*width:/,
-    '定宽类要在 app.scss 里有实际宽度',
-  )
-  assert.match(popupPage, /items=\{SHAPES\}/, '形状用 Segmented 选')
-  assert.equal(
-    (popupPage.match(/items=\{YES_NO\}|items=\{SHOW_HIDE\}/g) ?? []).length,
-    4,
-    '描边 / 背景 / 显隐 / 点遮罩各一个 Segmented',
-  )
-  assert.doesNotMatch(popupPage, /关闭按钮底形/, '下方不再单独演示底形，样式由上方配置决定')
-  assert.match(popupPage, /closeable=\{closeVisible\}/, '关闭按钮示例要能切显示 / 不显示')
-  assert.match(popupPage, /closable=\{maskClosable\}/, '关闭按钮示例要能切点遮罩是否关闭')
-  for (const title of [
-    '底部弹窗关闭按钮 · 面板内',
-    '底部弹窗关闭按钮 · 面板外',
-    '中部弹窗关闭按钮 · 面板内',
-    '中部弹窗关闭按钮 · 面板外',
-  ]) {
-    assert.ok(popupPage.includes(`title: '${title}'`), `关闭按钮 demo 缺分组「${title}」`)
+
+  // 配置经 shared 一次派生，两个 Popup 各展开一次；圆角 / 遮罩走库 API，不再靠 demo hack。
+  assert.match(popupPage, /const shared = \{/, '缺统一配置对象')
+  assert.equal((popupPage.match(/\{\.\.\.shared\}/g) ?? []).length, 2, '两个演示 Popup 都要吃同一份配置')
+  for (const key of ['roundSize', 'overlayTone', 'overlayOpacity', 'closable', 'insetTop', 'closeShape', 'closeBorder', 'closeBackground']) {
+    assert.match(popupPage, new RegExp(`\\b${key}[:,]`), `shared 没带 ${key}`)
   }
-  for (const pos of [
-    'top-left', 'edge-top-left', 'above-right', 'above-center',
-    'top-right', 'edge-top-right', 'below-center', 'below-right',
-  ]) {
-    assert.ok(popupPage.includes(`value: '${pos}'`), `关闭按钮 demo 缺 ${pos} 档`)
+  assert.match(popupPage, /round: roundSize !== 'none'/, '平档不开 round，尺寸档只作用于开了圆角的面板')
+  assert.match(popupPage, /MASK_VALUES: Record<MaskLevel/, '遮罩三档要有 tone + opacity 映射')
+  assert.match(popupPage, /light: \{ tone: 'dark', opacity: 'thin' \}/, '浅档是深色薄遮罩')
+  assert.match(popupPage, /dark: \{ tone: 'dark', opacity: 'default' \}/, '深档是深色标准遮罩')
+  assert.match(popupPage, /pale: \{ tone: 'light', opacity: 'default' \}/, '泛白档是浅色遮罩')
+  assert.match(popupPage, /useState<MaskLevel>\('dark'\)/, '遮罩默认深档')
+  assert.match(popupPage, /useState<PopupRoundSize>\('md'\)/, '圆角默认中档')
+  assert.match(popupPage, /useState<PopupInsetTop>\('nav-bar'\)/, '不让位默认让到导航栏')
+  assert.match(popupPage, /useState\(true\)/, '点遮罩关闭默认开')
+  assert.match(popupPage, /value: 'none', label: '平'/, '圆角要有平档')
+  assert.match(popupPage, /title="让位"/, '让位配置标题按用户要求叫让位')
+  assert.match(popupPage, /label: '不让位'/, '让位档文案简化为不让位')
+  assert.match(popupPage, /label: '状态栏'/, '让位档文案简化为状态栏')
+  assert.match(popupPage, /label: '导航栏'/, '让位档文案简化为导航栏，不再写「状态栏 + 导航栏」')
+  assert.doesNotMatch(popupPage, /状态栏 \+ 导航栏/, '长文案不许回来')
+  assert.doesNotMatch(popupPage, /title="顶部让位"|title="不让位"/, '旧标题不许回来')
+
+  // 两块演示：位置档是两个 Cell 行（垂直 / 侧面），按钮在 value 位居右；关闭按钮位置按形态分档。
+  assert.match(popupPage, /title="垂直"/, '位置档第一行叫垂直')
+  assert.match(popupPage, /title="侧面"/, '位置档第二行叫侧面')
+  assert.doesNotMatch(popupPage, /<CellGroup title="垂直"|<CellGroup title="侧面"/, '不再用 CellGroup 标题分组，直接两个 Cell')
+  assert.match(popupPage, /const VERTICAL_POSITIONS/, '垂直档按钮数据源')
+  assert.match(popupPage, /const SIDE_POSITIONS/, '侧面档按钮数据源')
+  assert.match(popupPage, /label: '顶部'/, '垂直档叫顶部')
+  assert.match(popupPage, /label: '中部'/, '垂直档叫中部')
+  assert.match(popupPage, /label: '底部'/, '垂直档叫底部')
+  assert.match(popupPage, /label: '左侧'/, '侧面档叫左侧')
+  assert.match(popupPage, /label: '右侧'/, '侧面档叫右侧')
+  // 源码里只有两处 <Button JSX，各自 map 一份数组：垂直 3 + 侧面 2，运行时五个按钮。
+  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 2, '位置按钮两处 JSX，分别渲染垂直 / 侧面')
+  assert.equal((popupPage.match(/VERTICAL_POSITIONS\.map/g) ?? []).length, 1, '垂直档按钮走一份数据源')
+  assert.equal((popupPage.match(/SIDE_POSITIONS\.map/g) ?? []).length, 1, '侧面档按钮走一份数据源')
+  assert.equal(
+    (popupPage.match(/\{ value: '(?:top|center|bottom|left|right)', label: '(?:顶部|中部|底部|左侧|右侧)' \}/g) ?? []).length,
+    5,
+    '位置档共 5 个按钮：垂直 3 + 侧面 2',
+  )
+  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 2, '按钮横排用 demo-item 控制间距')
+  assert.match(popupPage, /size="xs"/, '按钮降到 xs 档')
+  assert.match(popupPage, /position=\{position\}/, '位置档要真的切 position')
+  assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮位置要真的切位置')
+  assert.match(popupPage, /position=\{closePanel\}/, '关闭按钮位置要按形态切换弹窗')
+  for (const pos of ['top-left', 'edge-top-left', 'above-right', 'above-center', 'top-right', 'edge-top-right', 'below-center', 'below-right']) {
+    assert.ok(popupPage.includes(`value: '${pos}'`), `关闭按钮位置 demo 缺 ${pos} 档`)
   }
   assert.equal(
     (popupPage.match(/value: '[^']+', label: '[^']+', panel: '(?:bottom|center)'/g) ?? []).length,
-    9,
-    '关闭按钮 demo 应覆盖底部 4 档 + 中部 5 档（above-right 两形态各一次，共 9 项）',
+    8,
+    '关闭按钮位置 demo 应覆盖底部 4 档 + 中部 4 档，共 8 项',
   )
   assert.doesNotMatch(
     popupPage,
     /outside-top-right|outside-bottom|outside-right|'bottom-left'|'bottom-right'/,
     '旧七档位置不该还留在 demo 里',
   )
-  assert.match(popupPage, /label: '不显示'/, '关闭按钮显隐要有「不显示」档')
-  assert.match(popupPage, /title="点遮罩关闭"/, '点遮罩开关要在配置卡片里')
-  assert.match(popupPage, /insetTop=\{insetTop\}/, '顶部让位示例要真的切 insetTop')
-  assert.match(popupPage, /只让状态栏/, '顶部让位示例必须保留「只让状态栏」档')
-  assert.match(popupPage, /状态栏 \+ 导航栏/, '顶部让位示例必须保留「状态栏 + 导航栏」档')
-  assert.doesNotMatch(
-    popupPage,
-    /insetTop=\{insetTop\}[\s\S]{0,80}closeable/,
-    '顶部让位示例默认不带关闭按钮：顶部弹层没人点右上角叉',
-  )
-  assert.match(popupPage, /showToast\(/, '叠加顺序示例要真的弹一条 Toast')
-  assert.match(popupPage, /length: 30/, '内滚示例要给足一屏放不下的内容')
+  assert.doesNotMatch(popupPage, /关闭按钮底形/, '不再单独演示底形，样式由上方配置决定')
+  assert.doesNotMatch(popupPage, /showToast\(/, '叠加顺序示例已撤')
+  assert.doesNotMatch(popupPage, /length: 30/, '内滚示例已撤')
+  assert.doesNotMatch(popupPage, /demo-diag/, '诊断对照块是一次性定位手段，修好后不许留在演示页')
+  assert.doesNotMatch(popupPage, /demo-cell-seg/, '定宽槽类不回收')
+  assert.doesNotMatch(popupPage, /width="equal"/, '值位里的段控件保持默认 fit')
+  assert.doesNotMatch(read('demo/src/app.scss'), /\.demo-cell-seg\s*\{/, '定宽槽类已经删掉，不许回收')
 
   assert.match(catalog, /id: 'overlay', label: 'Overlay 遮罩', status: 'ready', pageId: 'overlay'/, '菜单缺遮罩条目')
   assert.match(catalog, /path: 'pages\/overlay\/index'/, '遮罩页路径没跟上改名')
