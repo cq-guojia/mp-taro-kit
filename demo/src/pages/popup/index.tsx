@@ -5,6 +5,7 @@ import {
   Popup,
   type PopupPosition,
   type PopupCloseShape,
+  type PopupClosePosition,
   type PopupInsetTop,
 } from 'mp-taro-kit/ui/layout'
 import { showToast } from 'mp-taro-kit/ui'
@@ -25,6 +26,45 @@ const SHAPES: { value: PopupCloseShape; label: string }[] = [
   { value: 'plain', label: '只有叉' },
   { value: 'circle', label: '纯圆' },
   { value: 'rounded', label: '圆角方' },
+]
+
+type CloseDemoItem = {
+  value: PopupClosePosition
+  label: string
+  panel: 'bottom' | 'center'
+  note: string
+}
+
+const CLOSE_GROUPS: { title: string; items: CloseDemoItem[] }[] = [
+  {
+    title: '底部弹窗关闭按钮 · 面板内',
+    items: [
+      { value: 'top-left', label: '内部左上（默认）', panel: 'bottom', note: '离上、左边各一个间距' },
+      { value: 'edge-top-left', label: '跨半左上', panel: 'bottom', note: '垂直跨半，左边留距' },
+    ],
+  },
+  {
+    title: '底部弹窗关闭按钮 · 面板外',
+    items: [
+      { value: 'above-right', label: '外部右上', panel: 'bottom', note: '面板上方靠右 · 留 12px' },
+      { value: 'above-center', label: '外部上方中间', panel: 'bottom', note: '面板上方居中 · 留 12px' },
+    ],
+  },
+  {
+    title: '中部弹窗关闭按钮 · 面板内',
+    items: [
+      { value: 'top-right', label: '内部右上（默认）', panel: 'center', note: '离上、右边各一个间距' },
+      { value: 'edge-top-right', label: '跨半右上', panel: 'center', note: '垂直跨半，右边留距' },
+    ],
+  },
+  {
+    title: '中部弹窗关闭按钮 · 面板外',
+    items: [
+      { value: 'above-right', label: '外部右上', panel: 'center', note: '面板上方靠右 · 留 12px' },
+      { value: 'below-center', label: '外部下方', panel: 'center', note: '面板下方居中 · 留 12px' },
+      { value: 'below-right', label: '外部右下方', panel: 'center', note: '面板下方靠右 · 留 12px' },
+    ],
+  },
 ]
 
 const INSETS: { value: PopupInsetTop; label: string }[] = [
@@ -50,9 +90,28 @@ export default function PopupPage() {
   const [positionOpen, setPositionOpen] = useState(false)
   const [round, setRound] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
+  const [closePanel, setClosePanel] = useState<'bottom' | 'center'>('bottom')
   const [closeShape, setCloseShape] = useState<PopupCloseShape>('circle')
+  const [closePosition, setClosePosition] = useState<PopupClosePosition>('top-left')
+  const [closeVisible, setCloseVisible] = useState(true)
+  const [maskClosable, setMaskClosable] = useState(true)
   const [insetOpen, setInsetOpen] = useState(false)
   const [insetTop, setInsetTop] = useState<PopupInsetTop>('nav-bar')
+
+  const openCloseDemo = (options: {
+    panel?: 'bottom' | 'center'
+    shape?: PopupCloseShape
+    position?: PopupClosePosition
+    visible?: boolean
+    mask?: boolean
+  }) => {
+    if (options.panel) setClosePanel(options.panel)
+    if (options.shape) setCloseShape(options.shape)
+    if (options.position) setClosePosition(options.position)
+    if (options.visible !== undefined) setCloseVisible(options.visible)
+    if (options.mask !== undefined) setMaskClosable(options.mask)
+    setCloseOpen(true)
+  }
 
   const render = (id: string) => {
     if (id === 'positions') {
@@ -119,6 +178,19 @@ export default function PopupPage() {
     if (id === 'close') {
       return (
         <View>
+          {CLOSE_GROUPS.map((group) => (
+            <CellGroup key={group.title} title={group.title}>
+              {group.items.map((item) => (
+                <Cell
+                  key={`${item.panel}-${item.value}`}
+                  title={item.label}
+                  value={item.note}
+                  isLink
+                  onClick={() => openCloseDemo({ panel: item.panel, position: item.value, visible: true })}
+                />
+              ))}
+            </CellGroup>
+          ))}
           <CellGroup title="关闭按钮底形">
             {SHAPES.map((item) => (
               <Cell
@@ -126,22 +198,42 @@ export default function PopupPage() {
                 title={item.label}
                 value={`closeShape="${item.value}"`}
                 isLink
-                onClick={() => {
-                  setCloseShape(item.value)
-                  setCloseOpen(true)
-                }}
+                onClick={() => openCloseDemo({ shape: item.value, visible: true })}
               />
             ))}
           </CellGroup>
+          <CellGroup title="关闭按钮显隐 / 点遮罩">
+            <Cell
+              title="不显示关闭按钮"
+              value="closeable={false}（默认）"
+              isLink
+              onClick={() => openCloseDemo({ visible: false })}
+            />
+            <Cell title="显示关闭按钮" value="closeable" isLink onClick={() => openCloseDemo({ visible: true })} />
+            <Cell
+              title="点遮罩关闭"
+              value="closable={true}（默认）"
+              isLink
+              onClick={() => openCloseDemo({ mask: true })}
+            />
+            <Cell
+              title="屏蔽点遮罩关闭"
+              value="closable={false}"
+              isLink
+              onClick={() => openCloseDemo({ mask: false })}
+            />
+          </CellGroup>
           <Popup
             open={closeOpen}
-            position="bottom"
-            closeable
+            position={closePanel}
+            closeable={closeVisible}
+            closable={maskClosable}
             closeShape={closeShape}
+            closePosition={closePosition}
             onClose={() => setCloseOpen(false)}
           >
             <View className="demo-stack">
-              <Text>默认在右上角，离上边与右边的间距一致</Text>
+              <Text>{`${closePanel === 'bottom' ? '底部' : '中部'}弹窗 / ${closePosition} / ${closeShape}；点遮罩关闭：${maskClosable ? '开' : '关'}`}</Text>
               {SAMPLE_LINES.map((line) => (
                 <Text key={line}>{line}</Text>
               ))}

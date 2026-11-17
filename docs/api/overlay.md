@@ -71,7 +71,19 @@
 
 圆角按档默认，不必统一开关：**居中档默认四角全圆，贴边档默认平角**。贴边档要圆角时传 `round`，只圆内侧两角。尺寸统一读 `--mptk-c-popup-radius`，改 token 一处即可换全库圆角尺寸。
 
-关闭按钮同样可选：`closeable` 默认 `false`；开启后渲染图标库里的叉（`common.base:guanbi`，`size="xs"` 小一号），默认在面板内右上角、离上边与右边间距一致。按钮尺寸保持原 sm 档，不靠放大热区换命中——点得着靠关闭按钮排在内容 `scroll-view` 之后（见下）。`closeShape` 取 `'plain'`（只有叉）/ `'circle'`（纯圆浮出）/ `'rounded'`（圆角方浮出）；`closePosition` 可取四角 `'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'`，默认 `'top-right'`。点击关闭按钮走 `onClose`，与点遮罩关闭是两条独立路径。
+关闭按钮同样可选，且**按弹窗形态分档**——不是每个形态都能用全部位置。`closeable` 默认 `false`；开启后渲染图标库里的叉（`common.base:guanbi`，`size="xs"` 小一号），按钮尺寸保持原 sm 档，不靠放大热区换命中——点得着靠关闭按钮排在内容 `scroll-view` 之后（见下）。`closeShape` 取 `'plain'`（只有叉）/ `'circle'`（纯圆浮出）/ `'rounded'`（圆角方浮出），与位置自由组合。
+
+`closePosition` 只能用本形态支持的值；传了不支持的值回落到该形态默认值，`top` / `left` / `right` 三档直接不渲染（传什么都不生效）：
+
+| 形态 | 面板内 | 跨上边一半 | 面板上方 | 面板下方 | 默认 |
+|---|---|---|---|---|---|
+| `bottom` | `top-left` | `edge-top-left` | `above-right`、`above-center` | — | `top-left` |
+| `center` | `top-right` | `edge-top-right` | `above-right` | `below-center`、`below-right` | `top-right` |
+| `top` / `left` / `right` | 不支持 | 不支持 | 不支持 | 不支持 | 无关闭按钮 |
+
+几何口径：`top-left` / `top-right` 离上边与左右边各一个 `--mptk-space-2`；`edge-top-*` 只**垂直**跨自身高度一半，左右仍留 `--mptk-space-2`，不整体横向出界；`above-*` / `below-*` 与面板留一个 `--mptk-space-3`（12px），靠右档留右间距、居中档水平居中。跨边 / 外置档会让面板临时放开 `overflow`，否则按钮被裁掉。点击关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径，均可分别关掉。
+
+居中档进场不是纯渐显：从目标位置下方 `--mptk-c-popup-center-rise`（48px）往上浮入，同时渐显；退场反向。改距离只改配置一处。
 
 **关闭按钮必须排在内容 `scroll-view` 之后**：Skyline 下 `scroll-view` 是原生视图、绘制在后，关闭按钮放前面会被它盖住，表现为点了没反应。组件已按此顺序渲染，改结构时别调回去。
 
@@ -128,12 +140,13 @@ configureSafeArea({
 | `--mptk-c-popup-sheet-h` | `35vh` | 贴顶 / 贴底档确定高度，Skyline 下 scroll-view 要确定高才能滚 |
 | `--mptk-c-popup-center-w` | `280px` | 居中档默认宽，最大不超屏；参考 Vant Dialog 320px / antd-mobile RN Modal 286px |
 | `--mptk-c-popup-min-h` | `200px` | 面板最小高度，内容少时不塌成一小溜 |
+| `--mptk-c-popup-center-rise` | `48px` | 居中档进场起始偏移：从目标位置下方 48px 上浮渐显 |
 | `--mptk-c-popup-radius` | `var(--mptk-radius-md)` | 圆角尺寸，居中档默认带、贴边档 `round` 开启才带；改这一处换全库尺寸 |
 | `--mptk-c-drawer-w` | `240px` | 抽屉宽度；滑入滑出按自身宽度算 |
 
 ## 行为契约
 
-- **进出场**：组件挂载即渲染，关闭时先置收起态、播完 `duration` 再卸载；`duration: 0` 立即卸载（低端机 / 减少动效）。遮罩淡入淡出；贴底 / 贴顶面板上下位移进出，左右档横向位移进出，居中面板只淡入。
+- **进出场**：组件挂载即渲染，关闭时先置收起态、播完 `duration` 再卸载；`duration: 0` 立即卸载（低端机 / 减少动效）。遮罩淡入淡出；贴底 / 贴顶面板上下位移进出，左右档横向位移进出，居中面板从目标位置下方 `--mptk-c-popup-center-rise`（48px）上浮并渐显，退场反向。
 - **面板层级**：面板自带 `z-index: var(--mptk-c-layer-panel)`，与遮罩同在 `.mptk-popup` 的层叠上下文内时也必须高于遮罩；缺了它面板会被遮罩盖住，表现为「点了没反应」。
 - **安全区**：顶部让位按 `insetTop` 三档，加在**内容区** `.mptk-popup__body` 的 `padding-top`——注入生效时是内联 px（目标位置），未注入回落 `env(safe-area-inset-top)`（`nav-bar` 档再加 `--mptk-c-navbar-h`）。让位档的面板顶部内边距归零（左右 / 底部内边距不变）：让位值本身已含状态栏与导航栏，再叠一层 16px 会把正文多往下推一截。面板不写负 `top`：负 top 在 Skyline 下会把整块顶出可视区。底部与横条仍必须让：贴底面板与左右抽屉的 `padding-bottom` 各加一段 `env(safe-area-inset-bottom)`，没有横条的设备算 0。遮罩、贴顶面板、抽屉面板的 `top` 统一为 0，贴边定位与安全区让位分开处理。
 - **内滚**：Popup 面板 `max-height: var(--mptk-c-popup-max-h)`，内容区是 `scroll-view`（`flex: 1 1 auto; min-height: 0`），长内容在面板内部滚，不顶出屏幕。
@@ -156,3 +169,4 @@ configureSafeArea({
 - 2026-11-17：顶部让位定为三档（none / status-bar / nav-bar），真值由 runtime `configureSafeArea()` 注入（custom 导航栏下 fixed 从 y=0 起、Skyline 下 env() 不可靠）；nav-bar 高度公式对齐 NavBar（胶囊高 + 上下对称留白），修掉真机让位偏多
 - 2026-11-17：浮层顶部让位按微信官方做法重构：面板贴边 `top: 0`，让位只加在内容 `padding-top`（真值由 runtime 注入，未注入用 `env()` 兜底）。撤掉「负 `top` 把底色探到屏顶」的方案——它在 WebView 下多让一个状态栏高度、Skyline 下整块被裁切顶出屏幕。`Drawer` 补顶部让位，与 Popup 左右档同口径
 - 2026-11-17：让位档面板的顶部内边距归零：让位值已含状态栏 + 导航栏，面板再叠 16px 会把正文多往下推一截；`Drawer` 同步归零
+- 2026-11-17：`closePosition` 改为按形态分档——左右 / 上档不支持关闭按钮（设置无效）；底部四档（内部左上、跨半左上、外部右上、外部上方中间），中部五档（内部右上、跨半右上、外部右上、外部下方、外部右下方）。跨半只垂直跨、左右留距，外置档留 12px（`--mptk-space-3`）。居中档进场改为从目标位置下方 48px 上浮渐显（token `--mptk-c-popup-center-rise`）；演示站按形态 + 内外分四组展示，位置 / 底形 / 显隐 / 点遮罩开关均可切

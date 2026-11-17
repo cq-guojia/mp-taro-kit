@@ -125,6 +125,7 @@
 /* 居中：默认宽取 token，最大不超屏；左右 0 配 margin auto 才真的居中。
    Vant 用 fit-content，Skyline 不支持，所以给默认宽而不是撑满整屏。
    居中档默认带圆角（四角全圆），这与贴边档默认平角相反。 */
+/* 居中档从目标位置偏下 48px 起、往上浮进场；退场反向。token 改一处全库跟随。 */
 .mptk-popup__panel--center {
   top: var(--mptk-s-center);
   left: var(--mptk-s-zero);
@@ -137,11 +138,12 @@
   border-top-right-radius: var(--mptk-c-popup-radius);
   border-bottom-left-radius: var(--mptk-c-popup-radius);
   border-bottom-right-radius: var(--mptk-c-popup-radius);
-  transform: translateY(-50%);
+  transform: translateY(calc(var(--mptk-s-half-neg) + var(--mptk-c-popup-center-rise)));
   opacity: 0;
 }
 
 .mptk-popup--open .mptk-popup__panel--center {
+  transform: translateY(var(--mptk-s-half-neg));
   opacity: 1;
 }
 
@@ -239,12 +241,43 @@
   right: var(--mptk-space-2);
 }
 
-.mptk-popup__close--bottom-left {
-  bottom: var(--mptk-space-2);
-  left: var(--mptk-space-2);
+/* 外挂档要越过面板边界，面板不能再裁切它；按钮自身水平位置仍保留内侧间距。 */
+.mptk-popup--close-outside .mptk-popup__panel {
+  overflow: visible;
 }
 
-.mptk-popup__close--bottom-right {
-  bottom: var(--mptk-space-2);
+/* 跨半：只向面板外跨自身高度的一半，左右仍按内侧间距放。 */
+.mptk-popup__close--edge-top-left {
+  top: var(--mptk-s-zero);
+  left: var(--mptk-space-2);
+  transform: translateY(var(--mptk-s-half-neg));
+}
+
+.mptk-popup__close--edge-top-right {
+  top: var(--mptk-s-zero);
+  right: var(--mptk-space-2);
+  transform: translateY(var(--mptk-s-half-neg));
+}
+
+/* 面板上方 / 下方：与面板留一个间距档，不做半幅外移；靠右档留右间距，居中档水平居中。 */
+.mptk-popup__close--above-right {
+  bottom: calc(var(--mptk-s-full) + var(--mptk-space-3));
+  right: var(--mptk-space-2);
+}
+
+.mptk-popup__close--above-center {
+  bottom: calc(var(--mptk-s-full) + var(--mptk-space-3));
+  left: var(--mptk-s-half);
+  transform: translateX(var(--mptk-s-half-neg));
+}
+
+.mptk-popup__close--below-center {
+  top: calc(var(--mptk-s-full) + var(--mptk-space-3));
+  left: var(--mptk-s-half);
+  transform: translateX(var(--mptk-s-half-neg));
+}
+
+.mptk-popup__close--below-right {
+  top: calc(var(--mptk-s-full) + var(--mptk-space-3));
   right: var(--mptk-space-2);
 }

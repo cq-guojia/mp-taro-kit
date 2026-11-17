@@ -1,18 +1,21 @@
 import { ScrollView, View } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
+import {
+  isOutsideClosePosition,
+  resolveClosePosition,
+  type PopupClosePosition,
+  type PopupPosition,
+} from './close-position.js'
 import { Icon } from '../display/icon/index.js'
 import { Overlay } from './Overlay.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
 import { isTopAnchored, resolveTopInset, type TopInsetLevel } from './safe-inset.js'
 
-export type PopupPosition = 'top' | 'center' | 'bottom' | 'left' | 'right'
+export type { PopupClosePosition, PopupPosition } from './close-position.js'
 
 /** 关闭按钮底形：只有叉、圆形浮出、圆角方形浮出。 */
 export type PopupCloseShape = 'plain' | 'circle' | 'rounded'
-
-/** 关闭按钮位置：面板内四角。 */
-export type PopupClosePosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 
 /**
  * 顶部让位：`none` 不让；`status-bar` 只让状态栏；`nav-bar` 让状态栏 + 导航栏（避开胶囊）。
@@ -34,11 +37,11 @@ export interface PopupProps {
   className?: string
   /** 面板圆角，默认关（平角）；开时尺寸读 --mptk-c-popup-radius */
   round?: boolean
-  /** 显示关闭按钮，默认关 */
+  /** 显示关闭按钮，默认关；只有 bottom / center 档支持，其余档忽略 */
   closeable?: boolean
   /** 关闭按钮底形，默认只有叉 */
   closeShape?: PopupCloseShape
-  /** 关闭按钮位置，默认右上 */
+  /** 关闭按钮位置：按面板形态取可用档，不传用该形态默认值；左右 / 上档忽略 */
   closePosition?: PopupClosePosition
   /**
    * 顶部让位：status-bar 只让状态栏，nav-bar 再让导航栏（避开胶囊）。
@@ -62,7 +65,7 @@ export function Popup({
   round = false,
   closeable = false,
   closeShape = 'plain',
-  closePosition = 'top-right',
+  closePosition,
   insetTop,
 }: PopupProps) {
   const { mounted, open: shown } = usePresence(open, duration)
@@ -75,11 +78,16 @@ export function Popup({
   const inset = resolveTopInset(resolvedInset, getSafeAreaSnapshot())
   const bodyStyle = inset.paddingTop > 0 ? { paddingTop: `${inset.paddingTop}px` } : undefined
 
+  // 关闭按钮按面板形态取档：左右 / 上档直接不渲染；不支持的位置回落到该形态默认值。
+  const resolvedClosePosition = resolveClosePosition(position, closePosition)
+  const closeOutside = resolvedClosePosition !== null && isOutsideClosePosition(resolvedClosePosition)
+
   const names = [
     'mptk-popup',
     `mptk-popup--${position}`,
     round ? 'mptk-popup--round' : '',
     resolvedInset === 'none' ? '' : `mptk-popup--inset-${resolvedInset}`,
+    closeOutside ? 'mptk-popup--close-outside' : '',
     shown ? 'mptk-popup--open' : '',
   ]
   const panel = ['mptk-popup__panel', `mptk-popup__panel--${position}`, className]
@@ -95,12 +103,12 @@ export function Popup({
         </ScrollView>
         {/* 关闭按钮必须排在 scroll-view 后面：Skyline 下 scroll-view 是原生视图、绘制在后，
             放前面会被它盖住，点上去没反应。按钮保持原尺寸，靠这个顺序保证点得着。 */}
-        {closeable && onClose ? (
+        {closeable && onClose && resolvedClosePosition !== null ? (
           <View
             className={[
               'mptk-popup__close',
               `mptk-popup__close--${closeShape}`,
-              `mptk-popup__close--${closePosition}`,
+              `mptk-popup__close--${resolvedClosePosition}`,
             ].join(' ')}
             onClick={onClose}
           >

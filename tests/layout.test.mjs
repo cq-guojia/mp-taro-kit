@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { resolveCssVars } from './helpers/kit-config.mjs'
+import { resolveCssVars, tokensOf } from './helpers/kit-config.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')
@@ -192,8 +192,11 @@ test('五档位置齐全：上/中/下/左/右各有起点与展开态', () => {
     assert.match(css, new RegExp(`\\.mptk-popup__panel--${pos}\\s*\\{`), `缺 ${pos} 档样式`)
     assert.match(css, new RegExp(`\\.mptk-popup--open \\.mptk-popup__panel--${pos}\\s*\\{`), `${pos} 档缺展开态`)
   }
-  const src = read('src/ui/layout/Popup.tsx')
-  assert.match(src, /PopupPosition = 'top' \| 'center' \| 'bottom' \| 'left' \| 'right'/, '位置类型没补左右')
+  assert.match(
+    read('src/ui/layout/close-position.ts'),
+    /PopupPosition = 'top' \| 'center' \| 'bottom' \| 'left' \| 'right'/,
+    '位置类型没补左右',
+  )
   for (const side of ['left', 'right']) {
     const sideRule = new RegExp(`\\.mptk-popup__panel--${side}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
     assert.equal(declOf(sideRule, 'width'), 'var(--mptk-c-drawer-w)', `${side} 档没宽度，translateX 没有百分比参照`)
@@ -348,29 +351,78 @@ test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
   )
 })
 
-test('关闭按钮：图标库的叉 + 三种底形 + 四角位置', () => {
+test('关闭按钮：图标库的叉 + 三种底形 + 按形态分档的位置', async () => {
   const src = read('src/ui/layout/Popup.tsx')
+  assert.match(src, /resolveClosePosition\(position, closePosition\)/, '关闭按钮位置必须按面板形态解析')
+  assert.match(src, /isOutsideClosePosition\(resolvedClosePosition\)/, '跨边 / 外置档必须给面板放开 overflow')
   assert.match(src, /common\.base:guanbi/, '关闭按钮必须取图标库的叉图标')
   assert.match(src, /<Icon name="common\.base:guanbi" size="xs" \/>/, '叉图标用小一号 xs，别用 sm')
   assert.equal(
     /--mptk-popup-close-size:\s*var\((--mptk-[\w-]+)\)/.exec(read(LAYOUT_CSS))?.[1],
     '--mptk-control-h-sm',
-    '关闭按钮尺寸必须回原 sm 档，不靠放大热区换命中；点得着靠 DOM 顺序',
+    '关闭按钮尺寸保持 sm 档，不靠放大热区换命中；点得着靠 DOM 顺序',
   )
   assert.match(src, /closeShape = 'plain'/, '关闭按钮底形默认只有叉')
-  assert.match(src, /closePosition = 'top-right'/, '关闭按钮位置默认右上')
+  assert.match(src, /closeable = false/, '关闭按钮默认不显示')
   assert.ok(
     src.indexOf('mptk-popup__close') > src.indexOf('<ScrollView scrollY className="mptk-popup__body">'),
     '关闭按钮必须排在 scroll-view 后面：Skyline 下原生 scroll-view 绘制在后，放前面会盖住叉导致点不到',
   )
+  assert.match(
+    src,
+    /closeable && onClose && resolvedClosePosition !== null/,
+    '解析为 null 的形态（左右 / 上）不许渲染关闭按钮，设置无效',
+  )
+
+  // 行为断言：真跑一遍产物里的解析器，验证按形态收口、默认值与「设置无效」。
+  const { resolveClosePosition, isOutsideClosePosition } = await import(
+    pathToFileURL(join(root, 'dist/ui/layout/close-position.js')).href
+  )
+  const bottom = ['top-left', 'edge-top-left', 'above-right', 'above-center']
+  const center = ['top-right', 'edge-top-right', 'above-right', 'below-center', 'below-right']
+  for (const pos of bottom) assert.equal(resolveClosePosition('bottom', pos), pos, `底部应支持 ${pos}`)
+  for (const pos of center) assert.equal(resolveClosePosition('center', pos), pos, `中部应支持 ${pos}`)
+  assert.equal(resolveClosePosition('bottom', undefined), 'top-left', '底部默认内部左上')
+  assert.equal(resolveClosePosition('center', undefined), 'top-right', '中部默认内部右上')
+  assert.equal(resolveClosePosition('bottom', 'below-center'), 'top-left', '底部不支持下方档，应回落默认')
+  assert.equal(resolveClosePosition('center', 'above-center'), 'top-right', '中部不支持上方居中，应回落默认')
+  for (const panel of ['top', 'left', 'right']) {
+    assert.equal(resolveClosePosition(panel, 'top-right'), null, `${panel} 档不该有关闭按钮，传什么都不生效`)
+  }
+  assert.equal(isOutsideClosePosition('top-left'), false, '内部左上不算外置')
+  assert.equal(isOutsideClosePosition('top-right'), false, '内部右上不算外置')
+  for (const pos of ['edge-top-left', 'edge-top-right', 'above-right', 'above-center', 'below-center', 'below-right']) {
+    assert.equal(isOutsideClosePosition(pos), true, `${pos} 要放开面板 overflow，否则按钮被裁掉`)
+  }
 
   const css = read(LAYOUT_CSS)
   for (const shape of ['plain', 'circle', 'rounded']) {
     assert.match(css, new RegExp(`\\.mptk-popup__close--${shape}\\s*\\{`), `缺 ${shape} 底形样式`)
   }
-  for (const pos of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
-    assert.match(css, new RegExp(`\\.mptk-popup__close--${pos}\\s*\\{`), `缺 ${pos} 位置样式`)
+  const rule = (name) => new RegExp(`\\.mptk-popup__close--${name}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
+  assert.equal(declOf(rule('top-left'), 'top'), 'var(--mptk-space-2)', '内部左上离上边一个间距')
+  assert.equal(declOf(rule('top-left'), 'left'), 'var(--mptk-space-2)', '内部左上离左边一个间距')
+  assert.equal(declOf(rule('top-right'), 'top'), 'var(--mptk-space-2)', '内部右上离上边一个间距')
+  assert.equal(declOf(rule('top-right'), 'right'), 'var(--mptk-space-2)', '内部右上离右边一个间距')
+  for (const pos of ['edge-top-left', 'edge-top-right']) {
+    assert.equal(declOf(rule(pos), 'top'), 'var(--mptk-s-zero)', `${pos} 顶边贴面板上沿`)
+    assert.match(rule(pos), /transform:\s*translateY\(var\(--mptk-s-half-neg\)\)/, `${pos} 只垂直跨半`)
   }
+  assert.equal(declOf(rule('edge-top-left'), 'left'), 'var(--mptk-space-2)', '跨半左上左侧留距，不整体横向出界')
+  assert.equal(declOf(rule('edge-top-right'), 'right'), 'var(--mptk-space-2)', '跨半右上右侧留距，不整体横向出界')
+  assert.match(rule('above-right'), /bottom:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '上方靠右留 12px')
+  assert.match(rule('above-center'), /bottom:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '上方居中留 12px')
+  assert.match(rule('below-center'), /top:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '下方居中留 12px')
+  assert.match(rule('below-right'), /top:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '下方靠右留 12px')
+  assert.match(rule('above-right'), /right:\s*var\(--mptk-space-2\)/, '上方靠右档留右边距')
+  assert.match(rule('below-right'), /right:\s*var\(--mptk-space-2\)/, '下方靠右档留右边距')
+  assert.match(rule('above-center'), /left:\s*var\(--mptk-s-half\)/, '上方居中档水平居中')
+  assert.match(rule('below-center'), /left:\s*var\(--mptk-s-half\)/, '下方居中档水平居中')
+  assert.match(
+    css,
+    /\.mptk-popup--close-outside \.mptk-popup__panel\s*\{[^}]*overflow:\s*visible/,
+    '外置档面板必须放开 overflow，否则按钮被裁掉',
+  )
   assert.match(
     css,
     /\.mptk-popup__close--circle\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
@@ -455,9 +507,17 @@ test('居中档补上位移补偿，抽屉给出宽度（不然滑入滑出算�
   const css = read(LAYOUT_CSS)
   assert.match(
     css,
-    /\.mptk-popup__panel--center\s*\{[^}]*transform:\s*translateY\(-50%\)/,
-    '居中档只有 top: 50%，面板顶边会压在中线上',
+    /\.mptk-popup__panel--center\s*\{[^}]*transform:\s*translateY\(calc\(var\(--mptk-s-half-neg\) \+ var\(--mptk-c-popup-center-rise\)\)\)/,
+    '居中档进场起点必须是 -50% 再往下 48px，往上浮入',
   )
+  assert.match(
+    css,
+    /\.mptk-popup--open \.mptk-popup__panel--center\s*\{[^}]*transform:\s*translateY\(var\(--mptk-s-half-neg\)\)/,
+    '居中档展开态必须回到 -50%，否则上浮后不停在正中',
+  )
+  const tokens = tokensOf()
+  assert.equal(tokens['--mptk-c-popup-center-rise'], '48px', '上浮距离 token 丢了')
+  assert.equal(tokens['--mptk-s-half-neg'], '-50%', '负半幅 token 丢了')
   const nav = read(NAV_CSS)
   const panel = /\.mptk-drawer__panel\s*\{([^}]*)\}/.exec(nav)[1]
   assert.equal(declOf(panel, 'width'), 'var(--mptk-c-drawer-w)', '抽屉没宽度，translateX 百分比没有参照')
@@ -493,10 +553,39 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层的戏归�
     assert.match(catalog, new RegExp(`id: '${id}'`), `目录缺 ${id} 条目`)
   }
   assert.match(popupPage, /closeShape=\{closeShape\}/, '关闭按钮示例要真的切底形')
+  assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮示例要真的切位置')
+  assert.match(popupPage, /position=\{closePanel\}/, '关闭按钮示例要按形态切换弹窗')
+  assert.match(popupPage, /closeable=\{closeVisible\}/, '关闭按钮示例要能切显示 / 不显示')
+  assert.match(popupPage, /closable=\{maskClosable\}/, '关闭按钮示例要能切点遮罩是否关闭')
+  for (const title of [
+    '底部弹窗关闭按钮 · 面板内',
+    '底部弹窗关闭按钮 · 面板外',
+    '中部弹窗关闭按钮 · 面板内',
+    '中部弹窗关闭按钮 · 面板外',
+  ]) {
+    assert.ok(popupPage.includes(`title: '${title}'`), `关闭按钮 demo 缺分组「${title}」`)
+  }
+  for (const pos of [
+    'top-left', 'edge-top-left', 'above-right', 'above-center',
+    'top-right', 'edge-top-right', 'below-center', 'below-right',
+  ]) {
+    assert.ok(popupPage.includes(`value: '${pos}'`), `关闭按钮 demo 缺 ${pos} 档`)
+  }
+  assert.equal(
+    (popupPage.match(/value: '[^']+', label: '[^']+', panel: '(?:bottom|center)'/g) ?? []).length,
+    9,
+    '关闭按钮 demo 应覆盖底部 4 档 + 中部 5 档（above-right 两形态各一次，共 9 项）',
+  )
+  assert.doesNotMatch(
+    popupPage,
+    /outside-top-right|outside-bottom|outside-right|'bottom-left'|'bottom-right'/,
+    '旧七档位置不该还留在 demo 里',
+  )
+  assert.match(popupPage, /不显示关闭按钮/, '关闭按钮 demo 缺不显示档')
+  assert.match(popupPage, /屏蔽点遮罩关闭/, '关闭按钮 demo 缺点遮罩屏蔽档')
   assert.match(popupPage, /insetTop=\{insetTop\}/, '顶部让位示例要真的切 insetTop')
   assert.match(popupPage, /只让状态栏/, '顶部让位示例必须保留「只让状态栏」档')
   assert.match(popupPage, /状态栏 \+ 导航栏/, '顶部让位示例必须保留「状态栏 + 导航栏」档')
-  assert.doesNotMatch(popupPage, /closePosition=/, '关闭按钮默认就在右上角，demo 不再堆四个位置按钮')
   assert.doesNotMatch(
     popupPage,
     /insetTop=\{insetTop\}[\s\S]{0,80}closeable/,

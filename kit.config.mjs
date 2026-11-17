@@ -296,6 +296,7 @@ export default {
     "--mptk-c-popup-sheet-h": "35vh",                               // 贴顶/贴底档确定高度：Skyline 下 scroll-view 要确定高才能滚，只给 max-height 会被内容撑满屏；取 35vh 不让面板过长
     "--mptk-c-popup-center-w": "280px",                             // 居中档默认宽：Vant Dialog 320px / antd-mobile RN 286px，取 280px（375 屏约 75%），最大不超屏
     "--mptk-c-popup-min-h": "200px",                                // 面板最小高度：内容少时不塌成一小溜
+    "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
     "--mptk-c-drawer-w": "240px",                                   // 抽屉宽度：滑入滑出按自身宽度算；240px 在 375 屏约 64%，比 280px 窄一档
     "--mptk-c-navbar-weight": "500",                                // 导航栏标题字重
@@ -349,6 +350,7 @@ export default {
     "--mptk-s-zero": "0",                                           // 零值：清零 / 无偏移
     "--mptk-s-full": "100%",                                        // 满幅：宽高铺满容器
     "--mptk-s-half": "50%",                                         // 半幅：50% 尺寸或位移
+    "--mptk-s-half-neg": "-50%",                                    // 负半幅：向回位移自身一半（外挂关闭按钮跨边用）
     "--mptk-s-quarter": "25%",                                      // 四分之一：25% 尺寸或位移
     "--mptk-s-divider-stub": "10%",                                 // 分隔线短边：带文字时靠边一侧线长
     "--mptk-s-center": "50%",                                       // 居中定位：top / left 各 50%
