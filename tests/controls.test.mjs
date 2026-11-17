@@ -145,6 +145,18 @@ test('控件主色与业务色解耦：默认蓝、色板齐全；明色滑轨�
   }
 })
 
+test('Segmented 测量按独立 id 逐个查：缺项即不画滑块，不把指示器画在错位置', () => {
+  const src = read('../src/ui/form/segmented/Segmented.tsx')
+  assert.doesNotMatch(src, /select\([^)]*#\$\{uid\}[^)]*\.mptk-seg/, '段位几何按 index 对应，不许用组合选择器批量取')
+  assert.doesNotMatch(src, /selectAll\([^)]*\.mptk-seg__item/, '每段按独立 id 逐个查，不用 selectAll + class')
+  assert.match(src, /id=\{`\$\{uid\}-track`\}/, 'track 要挂独立 id 供测量')
+  assert.match(src, /query\.select\(`#\$\{uid\}-track`\)/, 'track 按独立 id 单选')
+  assert.match(src, /query\.select\(`#\$\{uid\}-i\$\{String\(index\)\}`\)/, '每段按已有独立 id 逐个查')
+  assert.match(src, /list\.some\(\(item\) => item === null\)/, '任一段量不到要整体放弃，不画错位置的滑块')
+  const dist = read('../dist/ui/form/segmented/Segmented.js')
+  assert.doesNotMatch(dist, /\.mptk-seg__track['"`]\s*\)/, '产物里不许残留组合选择器查询')
+})
+
 test('两端不贴边：Segmented 滑动块左右各让一个内缩 token，Switch 方形滑块四边同一个留边', () => {
   const segJs = read('../dist/ui/form/segmented/Segmented.js')
   assert.match(

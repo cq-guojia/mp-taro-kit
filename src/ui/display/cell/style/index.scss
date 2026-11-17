@@ -68,6 +68,19 @@
   right: var(--mptk-s-zero);
 }
 
+/* 标题与列表之间的分隔线：位置档不画列表上边线时由这里补一条，与行分隔线同色同缩进。 */
+.mptk-cell-group__title-divider {
+  height: var(--mptk-c-border-w);
+  margin-right: var(--mptk-space-4);
+  margin-left: var(--mptk-space-4);
+  background-color: var(--mptk-cell-divider);
+}
+
+.mptk-cell-group--in-card .mptk-cell-group__title-divider {
+  margin-right: var(--mptk-s-zero);
+  margin-left: var(--mptk-s-zero);
+}
+
 /* 设置三：frame={false} 去掉卡片四边描边，只靠圆角与底色区分。 */
 .mptk-cell-group--frameless .mptk-cell-group__body--inset {
   border-top-width: var(--mptk-s-zero);
@@ -160,11 +173,16 @@
   margin-top: var(--mptk-space-0);
 }
 
-/* 右侧值是说明性文字：默认与 label 同档（xs），valueSize="sm" 才回到标题档。 */
+/* 右侧值默认与 label 同档（xs），valueSize="sm" 回到标题档。
+   居右由 flex 负责，不只靠 text-align：value 也能塞段控件这类块级插槽，
+   纯文字 text-align 对块级子节点无效，会让插槽贴左（与箭头前的文字口径不一致）。 */
 .mptk-cell__value {
+  align-items: center;
   color: var(--mptk-fg-2);
+  display: flex;
   flex-shrink: var(--mptk-s-flex-shrink);
   font-size: var(--mptk-font-xs);
+  justify-content: flex-end;
   line-height: var(--mptk-line-xs);
   margin-left: var(--mptk-space-2);
   text-align: right;

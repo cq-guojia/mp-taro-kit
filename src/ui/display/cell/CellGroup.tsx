@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { Children, cloneElement, isValidElement } from 'react'
 import type { ReactNode } from 'react'
 import { useCardSurface } from '../../infra/card-context.js'
-import { markCardEdgeContent } from '../../infra/card-edge.js'
+import { CARD_EDGE_POSITION_PROP, markCardEdgeContent, type CardEdgePosition } from '../../infra/card-edge.js'
 import { Cell, type CellProps } from './Cell.js'
 import {
   cellDividerVisible,
@@ -26,10 +26,12 @@ export interface CellGroupProps {
   frame?: boolean
   children?: ReactNode
   className?: string
+  /** 内部字段：Card 渲染期注入的位置档，消费方不传；决定没显式给 border 时画哪条外框线。 */
+  [CARD_EDGE_POSITION_PROP]?: CardEdgePosition
 }
 
 /** 单元格分组：通栏 / 卡片共用一套 DOM，最后一格的分隔线由位置决定。
-    装在 Card 里时由上下文自动关掉上下外框与自身底色，消费方无需传参。 */
+    装在 Card 里时按所处位置自动收掉贴着卡片边界的那条外框线，消费方无需传参。 */
 export function CellGroup({
   title,
   inset = false,
@@ -38,9 +40,13 @@ export function CellGroup({
   frame,
   children,
   className,
+  [CARD_EDGE_POSITION_PROP]: edgePosition,
 }: CellGroupProps) {
   const { inCard } = useCardSurface()
-  const state = resolveCellGroupState({ inset, border, dividerTone, frame, inCard, className })
+  const state = resolveCellGroupState({
+    inset, border, dividerTone, frame, inCard, edgePosition, className,
+    hasTitle: title !== undefined,
+  })
   const items = Children.toArray(children)
   let lastCellIndex = -1
   items.forEach((item, index) => {
@@ -59,6 +65,8 @@ export function CellGroup({
           <Text>{title}</Text>
         </View>
       )}
+      {/* 标题与列表之间那条线：位置档不画列表上边线时由标题侧补上，永远不出现两条也永远不空。 */}
+      {state.titleDivider && <View className="mptk-cell-group__title-divider" />}
       <View className={state.bodyClassName}>
         {cells}
         {state.borderTop && <View className="mptk-cell-group__border mptk-cell-group__border--top" />}

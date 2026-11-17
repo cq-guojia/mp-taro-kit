@@ -14,7 +14,7 @@
 |---|---|---|---|---|
 | title | ReactNode | 否 | — | 分组标题 |
 | inset | boolean | 否 | 默认 `false` | `true` 为圆角内收卡片；`false` 为左右通到底的通栏 |
-| border | `boolean \| CellGroupBorder` | 否 | 跟随上下文 | 上下外边框，`'none' \| 'top' \| 'bottom' \| 'both'`，也接受 `true`（= both）/ `false`（= none）。不给则通栏画上下、装在 Card 里不画 |
+| border | `boolean \| CellGroupBorder` | 否 | 跟随上下文 | 上下外边框，`'none' \| 'top' \| 'bottom' \| 'both'`，也接受 `true`（= both）/ `false`（= none）。不给时通栏画上下；装在 Card 里按位置推导：首组不画上、末组不画下、中间组上下都画、单组两头都收。显式传值优先 |
 | dividerTone | `'soft' \| 'match'` | 否 | 默认 `'soft'` | 组内分隔线颜色档位：`soft` 比外框浅一档，`match` 与外框同色 |
 | frame | boolean | 否 | 默认 `true` | 卡片形态四边描边开关；`false` 得到无边框卡片。通栏上下外框仍由 `border` 控制 |
 | children | ReactNode | 否 | 直接子节点为 `Cell` | 组内单元格 |
@@ -59,8 +59,10 @@
 - 分隔线与上下外框都是独立 1px 元素；卡片形态由内容区的圆角与 `overflow: hidden` 裁切。外框（卡片四边与通栏形态的上下外框）取 `--mptk-border`；组内分隔线默认取 `--mptk-cell-divider`，比外框浅一档（明色 `rgba(0,0,0,.06)`、暗色 `rgba(255,255,255,.06)`），两者宽度同为 1px。默认值真源在 `kit.config.mjs` 的 `light` / `dark`。
 - 两个控件级设置都走 `CellGroup` 的 props，由 `state.ts` 派生修饰类，使用者不写样式：`dividerTone="match"` 把内线切到 `--mptk-border`（与外框同色）；`frame={false}` 去掉卡片四边描边。默认值分别是 `soft` / `true`，即浅线、有边框。
 - 主标题取 `--mptk-font-sm`（14/20）、说明与右侧值取 `--mptk-font-xs`（12/17）、说明上间距取 `--mptk-space-0`（2px）：字号与 Vant Weapp 的 14/12 持平，行高档位各自跟随；上间距比 WeUI / Vant 的 3～4px 再紧一档。右侧值是说明性文字，默认跟 `label` 同档；确需与标题等大时给 `valueSize="sm"`，不要用 className 改字号。
+- `value` 位统一靠右（`display:flex; justify-content:flex-end`），与箭头前的文字同一口径。这不只是 `text-align:right`——后者对塞进 `value` 的块级插槽（如 Segmented）无效，会让它贴左；flex 定位保证文字和插槽都贴右。
 - 垂直对齐默认居中（WeUI `.weui-cell` 与 TDesign `align="middle"` 的默认口径），由 `mptk-cell` 根的 `align-items: center` 实现；`center={false}` 派生 `mptk-cell--top` 改为整行顶部对齐，适用于多行 `label` 时右侧值要贴标题首行。整行只有根容器管对齐，图标位 / 额外位 / 箭头不各自写 `align-self`，两态下都不会出现「值贴顶、箭头仍居中」的错位。显式 `center` 只追加 `--center` 标记，与默认视觉一致。迁移：旧版 `center` 默认 `false`（顶部对齐），升级后要保留旧观感必须显式写 `center={false}`。不提供 `bottom` 档：单元格场景没有对应形态，不为一个没有真实用法的取值扩枚举。
-- 上下外框按边给：`border="top"` 只画上、`"bottom"` 只画下、`"both"` 两条、`"none"` 都不画；布尔 `true` / `false` 分别等于 `both` / `none`。不给时跟随上下文——通栏画上下，装在 `Card` 里不画（卡片已经提供壳）。这条对「卡片内列表想自己封一条上下线」是必须的：`<Card><CellGroup border="both">` 就长出上下两条。
+- 上下外框按边给：`border="top"` 只画上、`"bottom"` 只画下、`"both"` 两条、`"none"` 都不画；布尔 `true` / `false` 分别等于 `both` / `none`。显式传值永远优先：`<Card><CellGroup border="both">` 无论位置都手动长出上下两条，`border={false}` 也能手动关掉。
+- 不给 `border` 时按上下文推导：通栏画上下；装在 `Card` 里由 `Card` 渲染期算出每组的位置档（`first` / `middle` / `last` / `single`）注入——首组（含紧跟标题）贴着卡片顶边或标题分隔线，上框不画；末组贴着卡片底边或底部分隔线，下框不画；中间组上下都画；只有一组时两头都收。这样卡片里并排的多组之间仍有分隔线，不会像以前那样一刀切全去掉。
 - 分隔线默认左右各留 `var(--mptk-space-4)`，不通到底；装在 `Card` 里时改由组统一内收，线回到两端对齐内容，避免缩进叠成两道。这属固定形态，不给开关。
 - `frame` 只管卡片形态（`inset`）的四边描边，与 `border` 互不影响：卡片形态的上下线已经含在四边里，`border` 对它不生效。
 - `--mptk-cell-divider` 仍是设计层语义变量，宿主可在业务级主题定制时覆盖同名变量；控件级日常切换用上面的 props，不要求宿主写 CSS。
@@ -79,7 +81,7 @@
 </Card>
 ```
 
-`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后自动收敛：不渲染上下外框、派生 `mptk-cell-group--in-card`、组与行的底色改透明。同时 `CellGroup` 用 `ui/infra/card-edge` 的 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。
+`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后派生 `mptk-cell-group--in-card`、组与行的底色改透明；上下外框不是一刀切关掉，而是由 `Card` 渲染期用 `ui/infra/card-edge` 算出每组是首 / 中 / 末 / 单组后注入位置档，据此只收掉贴着卡片边界的那一端（规则见上文），显式 `border` 仍可覆盖。同时 `CellGroup` 用 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。
 
 卡片内的列表默认**左右不到头**：左右留白统一由组给一档，取卡片自己的 `var(--mptk-card-spacing)`（`sm` 8 / `md` 12 / `lg` 16），行自己不再留左右白，所以分隔线也跟着内缩、不会顶到卡片边，文字与卡片标题、底部操作区左边界对齐；贴边时 `Card` 的 body 左右留白同时归零，避免两道间距叠加。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone`）仍归 `CellGroup`，职责不重叠。
 
@@ -206,3 +208,5 @@ export const State = () => (
 - 2026-11-15 00:20:59：默认值真源改为 kit.config.mjs
 - 2026-11-15：右侧值字号默认改 `xs`（与 label 同档，原为 `sm`），新增 `valueSize="sm"` 回到标题档
 - 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME）
+- 2026-11-17：卡片内 CellGroup 的上下外框不再一刀切关掉；Card 渲染期注入位置档（首 / 中 / 末 / 单组），首组不画上、末组不画下、中间组上下都画、单组两头都收；显式 `border` 仍优先
+- 2026-11-17：`value` 位改 flex 靠右，块级插槽（如 Segmented）也贴右，不再只靠对块级无效的 `text-align`

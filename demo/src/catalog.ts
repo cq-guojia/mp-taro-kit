@@ -689,10 +689,13 @@ export const pages: CatalogPage[] = [
       {
         id: 'close',
         title: '关闭按钮',
-        hint: '叉图标取自图标库；底形只有叉 / 纯圆 / 圆角方，默认在面板右上角',
-        usage: '<Popup closeable closeShape="circle">…</Popup>',
-        imports: ['mp-taro-kit/ui/layout', 'mp-taro-kit/ui/layout/style'],
-        renderNotes: '点列表项直接开面板；关闭按钮默认离上边与右边间距一致，点击走 onClose',
+        hint: '叉图标取自图标库；形状 / 描边 / 背景三个轴自由组合，按弹窗形态决定可用位置',
+        usage: '<Popup closeable closeShape="circle" closeBorder closeBackground closePosition="top-left">…</Popup>',
+        imports: [
+          'mp-taro-kit/ui/layout', 'mp-taro-kit/ui/layout/style',
+          'mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style',
+        ],
+        renderNotes: '示例块壳里用 CellGroup 分组，首组 Cell + Segmented 实时配样式，下面点位置直接开面板；组合由 resolveCloseStyle 给出 Button 形态',
       },
       {
         id: 'layers',

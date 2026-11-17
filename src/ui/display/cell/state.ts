@@ -1,4 +1,5 @@
 /** Cell / CellGroup 的状态与类名解析：零 React / Taro 依赖，自检可直接调用真实逻辑。 */
+import type { CardEdgePosition } from '../../infra/card-edge.js'
 
 export type CellSize = 'normal' | 'large'
 /** 右侧值的字号档：`xs` 与 label 同档（默认），`sm` 与标题同档。 */
@@ -55,12 +56,16 @@ export type CellGroupBorder = 'none' | 'top' | 'bottom' | 'both'
 
 export interface CellGroupStateInput {
   inset?: boolean
-  /** 上下外边框：`true` = both、`false` = none；不给则跟随上下文（通栏画上下、装在 Card 里不画）。 */
+  /** 上下外边框：`true` = both、`false` = none；不给则按上下文推导（见 edgePosition）。显式传值优先。 */
   border?: boolean | CellGroupBorder
   dividerTone?: CellDividerTone
   frame?: boolean
-  /** 由 Card 的上下文传入：装在卡片里时本组不再画自己的外框。消费方无需传参。 */
+  /** 由 Card 的上下文传入：装在卡片里。消费方无需传参。 */
   inCard?: boolean
+  /** Card 在渲染期注入的位置档；只在不传 border 时用来推导该画哪条外框线。消费方无需传。 */
+  edgePosition?: CardEdgePosition
+  /** 由 CellGroup 在渲染期传入：有组标题。标题与列表之间永远一条线，不随位置档丢。 */
+  hasTitle?: boolean
   className?: string
 }
 
@@ -71,9 +76,11 @@ export interface CellGroupState {
   outerBorder: boolean
   borderTop: boolean
   borderBottom: boolean
+  /** 标题与列表之间那条线由标题自己提供：有标题且位置档不画上边线时为真。 */
+  titleDivider: boolean
 }
 
-/** 布尔兼容旧写法；不给则跟随上下文：通栏默认上下都画，卡片形态与装在 Card 里默认都不画。 */
+/** 布尔兼容旧写法；显式值优先，没传才用上下文推导出的 fallback。 */
 function resolveBorderEdges(
   border: boolean | CellGroupBorder | undefined,
   fallback: CellGroupBorder,
@@ -83,6 +90,22 @@ function resolveBorderEdges(
   return {
     borderTop: shape === 'both' || shape === 'top',
     borderBottom: shape === 'both' || shape === 'bottom',
+  }
+}
+
+/**
+ * 卡片内按位置派生外框线：**只画下边线，永不画上边线**。
+ *
+ * 组与组之间的分隔只由「前一组的底边线」提供：后一组再画一条上边线，两条就会紧挨着出现
+ * 双线（上一组底 + 下一组顶），而且上边线落在列表顶部、标题在它上面，表现为「标题下没线、
+ * 组上面多一条」。第一组贴卡片边界/标题区不画，最后一组贴卡片底不画，中间每组一条底线。
+ * 想要组的顶部边框由消费方显式传 `border="top" | "both"`。
+ */
+function defaultBorderInCard(position: CardEdgePosition | undefined): CellGroupBorder {
+  switch (position) {
+    case 'first':
+    case 'middle': return 'bottom'
+    default: return 'none'
   }
 }
 
@@ -99,13 +122,18 @@ export function resolveCellGroupState(input: CellGroupStateInput): CellGroupStat
   /* 卡片形态（inset）的四边由 frame 管，这里只管通栏 / 卡片内列表的上下两条线。 */
   const edges = inset
     ? { borderTop: false, borderBottom: false }
-    : resolveBorderEdges(input.border, inCard ? 'none' : 'both')
+    : resolveBorderEdges(input.border, inCard ? defaultBorderInCard(input.edgePosition) : 'both')
+  /* 标题与列表之间必须恰好一条线：位置档不画上边线时（first / single，或卡片内无位置档），
+     这条线由标题自己给；位置档画上边线时线就落在列表顶部，标题不再重复画。
+     inset 形态的列表自带四边描边，标题在外侧，同样不重复。 */
+  const titleDivider = input.hasTitle === true && !inset && !edges.borderTop
   return {
     className: names.join(' '),
     bodyClassName: body.join(' '),
     outerBorder: edges.borderTop || edges.borderBottom,
     borderTop: edges.borderTop,
     borderBottom: edges.borderBottom,
+    titleDivider,
   }
 }
 

@@ -367,6 +367,8 @@ test('cell 右侧值默认与 label 同档（xs），valueSize="sm" 回到标题
   assert.ok(value, '缺 .mptk-cell__value 规则')
   assert.match(value[1], /font-size:\s*var\(--mptk-font-xs\)/, '右侧值是说明性文字，默认取 xs')
   assert.match(value[1], /line-height:\s*var\(--mptk-line-xs\)/, '行高同档')
+  assert.match(value[1], /display:\s*flex/, '右侧值要用 flex 定位，text-align 管不到块级插槽')
+  assert.match(value[1], /justify-content:\s*flex-end/, '插槽内容（含段控件）也要贴右，和箭头前的文字同一口径')
   const sm = css.match(/(?:^|\n)\.mptk-cell__value--sm\s*\{([^}]*)\}/m)
   assert.ok(sm, '缺 .mptk-cell__value--sm 规则')
   assert.match(sm[1], /font-size:\s*var\(--mptk-font-sm\)/, 'sm 档取标题字号')

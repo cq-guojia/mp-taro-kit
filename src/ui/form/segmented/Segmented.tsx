@@ -95,14 +95,20 @@ export function Segmented<T extends string = string>({
       setCells(null)
       return
     }
+    /* 段位几何按 index 一一对应，所以 track 与每段各挂独立 id、逐个按 `#id` 查：
+       组合选择器只能按渲染树顺序批量拿，缺项时无从知道缺的是第几段；
+       按 id 查能把「哪一段没量到」暴露出来，任一段为 null 就整体不画滑块，
+       不把指示器画到错位置。 */
     const query = Taro.createSelectorQuery()
-    query.select(`#${uid} .mptk-seg__track`).boundingClientRect()
-    query.selectAll(`#${uid} .mptk-seg__item`).boundingClientRect()
+    query.select(`#${uid}-track`).boundingClientRect()
+    items.forEach((_, index) => {
+      query.select(`#${uid}-i${String(index)}`).boundingClientRect()
+    })
     query.exec((res) => {
       const track = (res[0] ?? null) as { left: number } | null
-      const list = (res[1] ?? []) as { left: number; width: number }[]
-      if (track === null || list.length !== items.length) return
-      setCells(list.map((item) => ({ left: item.left - track.left, width: item.width })))
+      const list = res.slice(1) as ({ left: number; width: number } | null)[]
+      if (track === null || list.length !== items.length || list.some((item) => item === null)) return
+      setCells(list.map((item) => ({ left: item!.left - track.left, width: item!.width })))
     })
   }, [items.length, needsMeasure, uid])
 
@@ -173,7 +179,7 @@ export function Segmented<T extends string = string>({
         scrollWithAnimation
         scrollIntoView={`${uid}-i${String(activeIndex)}`}
       >
-        <View className="mptk-seg__track">
+        <View id={`${uid}-track`} className="mptk-seg__track">
           {indicator === 'thumb' && ready ? <View className="mptk-seg__thumb" style={thumbStyle} /> : null}
           {items.map((item, index) => {
             const active = item.value === display

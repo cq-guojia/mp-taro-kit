@@ -356,13 +356,34 @@ test('关闭按钮：图标库的叉 + 三种底形 + 按形态分档的位置',
   assert.match(src, /resolveClosePosition\(position, closePosition\)/, '关闭按钮位置必须按面板形态解析')
   assert.match(src, /isOutsideClosePosition\(resolvedClosePosition\)/, '跨边 / 外置档必须给面板放开 overflow')
   assert.match(src, /common\.base:guanbi/, '关闭按钮必须取图标库的叉图标')
-  assert.match(src, /<Icon name="common\.base:guanbi" size="xs" \/>/, '叉图标用小一号 xs，别用 sm')
-  assert.equal(
-    /--mptk-popup-close-size:\s*var\((--mptk-[\w-]+)\)/.exec(read(LAYOUT_CSS))?.[1],
-    '--mptk-control-h-sm',
-    '关闭按钮尺寸保持 sm 档，不靠放大热区换命中；点得着靠 DOM 顺序',
+  assert.match(src, /<Button\b/, '关闭按钮复用核心 Button，不另写一套按钮皮肤')
+  assert.match(src, /icon="common\.base:guanbi"/, '叉图标走 Button 的图标通道')
+  assert.match(src, /size="xs"/, '关闭按钮降到 xs 档（24px），不再用 sm 的 32px')
+  assert.match(src, /variant=\{closeStyle\.variant\}/, '底色形态由 resolveCloseStyle 派生')
+  assert.match(src, /radius=\{closeStyle\.radius\}/, '圆角档由 resolveCloseStyle 派生')
+  assert.match(src, /closeBorder = true/, '描边轴默认开')
+  assert.match(src, /closeBackground = true/, '背景轴默认开')
+
+  // 真跑视觉解析器：形状一个轴、描边与背景两个布尔轴，组合出 Button 的四形态。
+  const { resolveCloseStyle } = await import(pathToFileURL(join(root, 'dist/ui/layout/close-style.js')).href)
+  assert.deepEqual(resolveCloseStyle('circle', true, true), { variant: 'soft', radius: 'pill' })
+  assert.deepEqual(resolveCloseStyle('circle', false, true), { variant: 'solid', radius: 'pill' })
+  assert.deepEqual(resolveCloseStyle('rounded', true, false), { variant: 'outline', radius: 'md' })
+  assert.deepEqual(resolveCloseStyle('rounded', false, false), { variant: 'ghost', radius: 'md' })
+  assert.doesNotMatch(src, /<Icon name="common\.base:guanbi"/, '叉不许再手写 Icon，按钮反馈要靠 Button')
+  assert.doesNotMatch(read(LAYOUT_CSS), /--mptk-popup-close-size/, 'popup 样式不再另立按钮尺寸')
+  assert.equal(tokensOf()['--mptk-control-h-xs'], '24px', 'Button xs 档就是缩小后的 24px')
+  assert.match(
+    read('src/ui/actions/Button.tsx'),
+    /hoverClass=\{disabled \|\| loading \? 'none' : 'mptk-btn--pressed'\}/,
+    'Button 要在可点时挂按压态',
   )
-  assert.match(src, /closeShape = 'plain'/, '关闭按钮底形默认只有叉')
+  assert.match(
+    read('dist/ui/actions/style/index.css'),
+    /\.mptk-btn--pressed\s*\{[^}]*opacity:\s*var\(--mptk-c-btn-pressed-opacity\)/,
+    '按压态要吃配置里的变色 token',
+  )
+  assert.match(src, /closeShape = 'circle'/, '形状轴默认圆形')
   assert.match(src, /closeable = false/, '关闭按钮默认不显示')
   assert.ok(
     src.indexOf('mptk-popup__close') > src.indexOf('<ScrollView scrollY className="mptk-popup__body">'),
@@ -396,9 +417,11 @@ test('关闭按钮：图标库的叉 + 三种底形 + 按形态分档的位置',
   }
 
   const css = read(LAYOUT_CSS)
-  for (const shape of ['plain', 'circle', 'rounded']) {
-    assert.match(css, new RegExp(`\\.mptk-popup__close--${shape}\\s*\\{`), `缺 ${shape} 底形样式`)
-  }
+  assert.doesNotMatch(
+    css,
+    /\.mptk-popup__close--(?:plain|circle|rounded)\s*\{/,
+    '底形不写在 popup 样式里，交给 Button 的 variant / radius',
+  )
   const rule = (name) => new RegExp(`\\.mptk-popup__close--${name}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
   assert.equal(declOf(rule('top-left'), 'top'), 'var(--mptk-space-2)', '内部左上离上边一个间距')
   assert.equal(declOf(rule('top-left'), 'left'), 'var(--mptk-space-2)', '内部左上离左边一个间距')
@@ -423,15 +446,16 @@ test('关闭按钮：图标库的叉 + 三种底形 + 按形态分档的位置',
     /\.mptk-popup--close-outside \.mptk-popup__panel\s*\{[^}]*overflow:\s*visible/,
     '外置档面板必须放开 overflow，否则按钮被裁掉',
   )
+  const actionCss = read('dist/ui/actions/style/index.css')
   assert.match(
-    css,
-    /\.mptk-popup__close--circle\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
-    '纯圆底必须是正圆',
+    actionCss,
+    /\.mptk-btn--radius-pill\s*\{[^}]*border-radius:\s*var\(--mptk-radius-pill\)/,
+    '纯圆走 Button 的 pill 圆角档',
   )
   assert.match(
-    css,
-    /\.mptk-popup__close--rounded\s*\{[^}]*border-radius:\s*var\(--mptk-radius-md\)/,
-    '圆角方底必须走圆角档',
+    actionCss,
+    /\.mptk-btn--radius-md\s*\{[^}]*border-radius:\s*var\(--mptk-radius-md\)/,
+    '圆角方走 Button 的 md 圆角档',
   )
 })
 
@@ -552,9 +576,30 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层的戏归�
     assert.match(popupPage, new RegExp(`id === '${id}'`), `弹出层页缺 ${id} 示例`)
     assert.match(catalog, new RegExp(`id: '${id}'`), `目录缺 ${id} 条目`)
   }
-  assert.match(popupPage, /closeShape=\{closeShape\}/, '关闭按钮示例要真的切底形')
+  assert.match(popupPage, /closeShape=\{closeShape\}/, '关闭按钮示例要真的切形状')
+  assert.match(popupPage, /closeBorder=\{closeBorder\}/, '关闭按钮示例要真的切描边')
+  assert.match(popupPage, /closeBackground=\{closeBackground\}/, '关闭按钮示例要真的切背景')
   assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮示例要真的切位置')
   assert.match(popupPage, /position=\{closePanel\}/, '关闭按钮示例要按形态切换弹窗')
+  assert.match(popupPage, /<CellGroup title="关闭按钮样式">/, '样式要用 CellGroup 分组，不套第二层卡片')
+  assert.doesNotMatch(popupPage, /<Card\b/, '演示块已由 DemoBlock 套壳，页内不能再写 Card')
+  assert.equal(
+    (popupPage.match(/className="demo-cell-segment"/g) ?? []).length,
+    5,
+    '五个 Segmented 外层都要定宽，否则在 Cell value 位被挤成 0',
+  )
+  assert.match(
+    read('demo/src/app.scss'),
+    /\.demo-cell-segment\s*\{[^}]*width:/,
+    '定宽类要在 app.scss 里有实际宽度',
+  )
+  assert.match(popupPage, /items=\{SHAPES\}/, '形状用 Segmented 选')
+  assert.equal(
+    (popupPage.match(/items=\{YES_NO\}|items=\{SHOW_HIDE\}/g) ?? []).length,
+    4,
+    '描边 / 背景 / 显隐 / 点遮罩各一个 Segmented',
+  )
+  assert.doesNotMatch(popupPage, /关闭按钮底形/, '下方不再单独演示底形，样式由上方配置决定')
   assert.match(popupPage, /closeable=\{closeVisible\}/, '关闭按钮示例要能切显示 / 不显示')
   assert.match(popupPage, /closable=\{maskClosable\}/, '关闭按钮示例要能切点遮罩是否关闭')
   for (const title of [
@@ -581,8 +626,8 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层的戏归�
     /outside-top-right|outside-bottom|outside-right|'bottom-left'|'bottom-right'/,
     '旧七档位置不该还留在 demo 里',
   )
-  assert.match(popupPage, /不显示关闭按钮/, '关闭按钮 demo 缺不显示档')
-  assert.match(popupPage, /屏蔽点遮罩关闭/, '关闭按钮 demo 缺点遮罩屏蔽档')
+  assert.match(popupPage, /label: '不显示'/, '关闭按钮显隐要有「不显示」档')
+  assert.match(popupPage, /title="点遮罩关闭"/, '点遮罩开关要在配置卡片里')
   assert.match(popupPage, /insetTop=\{insetTop\}/, '顶部让位示例要真的切 insetTop')
   assert.match(popupPage, /只让状态栏/, '顶部让位示例必须保留「只让状态栏」档')
   assert.match(popupPage, /状态栏 \+ 导航栏/, '顶部让位示例必须保留「状态栏 + 导航栏」档')

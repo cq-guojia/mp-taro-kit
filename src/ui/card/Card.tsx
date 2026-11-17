@@ -1,8 +1,9 @@
 import { View } from '@tarojs/components'
+import { Children } from 'react'
 import type { ReactNode } from 'react'
 import { CardSurfaceContext, CARD_SURFACE_INSIDE } from '../infra/card-context.js'
 import { PRESS_STAY_TIME } from '../infra/press.js'
-import { hasCardEdgeContent } from './edge.js'
+import { decorateCardEdgeChildren, hasCardEdgeContent } from './edge.js'
 import {
   resolveCardState,
   type CardColor,
@@ -81,6 +82,9 @@ export function Card({
     hasEdgeContent: hasCardEdgeContent(body),
   })
 
+  // 渲染期给贴边内容注入位置档：穿透包装层找到真正的 CellGroup，Card 不 import cell 子域，消费方零参数。
+  const decoratedBody = decorateCardEdgeChildren(Children.toArray(body))
+
   return (
     <CardSurfaceContext.Provider value={CARD_SURFACE_INSIDE}>
       <View
@@ -100,7 +104,7 @@ export function Card({
             {filled(extra) ? <View className="mptk-card__extra">{extra}</View> : null}
           </View>
         ) : null}
-        <View className="mptk-card__body">{body}</View>
+        <View className="mptk-card__body">{decoratedBody}</View>
         {hasFooter ? <View className="mptk-card__footer">{footer}</View> : null}
       </View>
     </CardSurfaceContext.Provider>

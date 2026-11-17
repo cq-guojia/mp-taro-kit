@@ -71,7 +71,17 @@
 
 圆角按档默认，不必统一开关：**居中档默认四角全圆，贴边档默认平角**。贴边档要圆角时传 `round`，只圆内侧两角。尺寸统一读 `--mptk-c-popup-radius`，改 token 一处即可换全库圆角尺寸。
 
-关闭按钮同样可选，且**按弹窗形态分档**——不是每个形态都能用全部位置。`closeable` 默认 `false`；开启后渲染图标库里的叉（`common.base:guanbi`，`size="xs"` 小一号），按钮尺寸保持原 sm 档，不靠放大热区换命中——点得着靠关闭按钮排在内容 `scroll-view` 之后（见下）。`closeShape` 取 `'plain'`（只有叉）/ `'circle'`（纯圆浮出）/ `'rounded'`（圆角方浮出），与位置自由组合。
+关闭按钮同样可选，且**按弹窗形态分档**——不是每个形态都能用全部位置。`closeable` 默认 `false`；开启后复用核心 `Button`（`icon="common.base:guanbi"`，`size="xs"` 即 24px），按压变色走 Button 自带的 `mptk-btn--pressed`，不在浮层里另写一套按钮皮肤。按钮排在内容 `scroll-view` 之后才点得着（见下）。
+
+样式拆成三个正交轴，组合由 `resolveCloseStyle()`（`src/ui/layout/close-style.ts`）算出 Button 的 `variant` / `radius`：
+
+| 轴 | 参数 | 默认 | 取值 |
+|---|---|---|---|
+| 形状 | `closeShape` | `'circle'` | `'circle'`（正圆 → `radius="pill"`）/ `'rounded'`（圆角方 → `radius="md"`） |
+| 描边 | `closeBorder` | `true` | 有 / 无描边 |
+| 背景 | `closeBackground` | `true` | 有 / 无底色 |
+
+描边 × 背景映射 Button 的四种 `variant`：有底有描边 → `soft`；有底无描边 → `solid`；无底有描边 → `outline`；两者都无 → `ghost`（只有叉）。演示站上方用 Card + Cell + Segmented 实时配置这三轴与显隐 / 点遮罩，下方只点位置即可看到对应效果。
 
 `closePosition` 只能用本形态支持的值；传了不支持的值回落到该形态默认值，`top` / `left` / `right` 三档直接不渲染（传什么都不生效）：
 
@@ -170,3 +180,5 @@ configureSafeArea({
 - 2026-11-17：浮层顶部让位按微信官方做法重构：面板贴边 `top: 0`，让位只加在内容 `padding-top`（真值由 runtime 注入，未注入用 `env()` 兜底）。撤掉「负 `top` 把底色探到屏顶」的方案——它在 WebView 下多让一个状态栏高度、Skyline 下整块被裁切顶出屏幕。`Drawer` 补顶部让位，与 Popup 左右档同口径
 - 2026-11-17：让位档面板的顶部内边距归零：让位值已含状态栏 + 导航栏，面板再叠 16px 会把正文多往下推一截；`Drawer` 同步归零
 - 2026-11-17：`closePosition` 改为按形态分档——左右 / 上档不支持关闭按钮（设置无效）；底部四档（内部左上、跨半左上、外部右上、外部上方中间），中部五档（内部右上、跨半右上、外部右上、外部下方、外部右下方）。跨半只垂直跨、左右留距，外置档留 12px（`--mptk-space-3`）。居中档进场改为从目标位置下方 48px 上浮渐显（token `--mptk-c-popup-center-rise`）；演示站按形态 + 内外分四组展示，位置 / 底形 / 显隐 / 点遮罩开关均可切
+- 2026-11-17：关闭按钮复用核心 Button（xs 档 24px），按压变色走 `mptk-btn--pressed`；底形改用 Button 的 ghost / soft + radius 档，不再在浮层里另写一套按钮皮肤
+- 2026-11-17：关闭按钮样式拆成形状 / 描边 / 背景三个正交轴（`closeShape` / `closeBorder` / `closeBackground`），由 `resolveCloseStyle()` 映射 Button 的四形态；演示站上方 Card + Cell + Segmented 实时配置，下方只演示位置

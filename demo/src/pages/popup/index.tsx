@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Text, View } from '@tarojs/components'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
+import { Segmented } from 'mp-taro-kit/ui/form/segmented'
 import {
   Popup,
   type PopupPosition,
@@ -11,6 +12,7 @@ import {
 import { showToast } from 'mp-taro-kit/ui'
 
 import 'mp-taro-kit/ui/display/style'
+import 'mp-taro-kit/ui/form/segmented/style'
 import 'mp-taro-kit/ui/layout/style'
 import { DemoPage } from '../../components/DemoBlock'
 
@@ -23,9 +25,18 @@ const POSITIONS: { value: PopupPosition; label: string }[] = [
 ]
 
 const SHAPES: { value: PopupCloseShape; label: string }[] = [
-  { value: 'plain', label: '只有叉' },
-  { value: 'circle', label: '纯圆' },
+  { value: 'circle', label: '圆形' },
   { value: 'rounded', label: '圆角方' },
+]
+
+const YES_NO = [
+  { value: 'yes', label: '有' },
+  { value: 'no', label: '无' },
+]
+
+const SHOW_HIDE = [
+  { value: 'yes', label: '显示' },
+  { value: 'no', label: '不显示' },
 ]
 
 type CloseDemoItem = {
@@ -91,25 +102,18 @@ export default function PopupPage() {
   const [round, setRound] = useState(false)
   const [closeOpen, setCloseOpen] = useState(false)
   const [closePanel, setClosePanel] = useState<'bottom' | 'center'>('bottom')
-  const [closeShape, setCloseShape] = useState<PopupCloseShape>('circle')
   const [closePosition, setClosePosition] = useState<PopupClosePosition>('top-left')
+  const [closeShape, setCloseShape] = useState<PopupCloseShape>('circle')
+  const [closeBorder, setCloseBorder] = useState(true)
+  const [closeBackground, setCloseBackground] = useState(true)
   const [closeVisible, setCloseVisible] = useState(true)
   const [maskClosable, setMaskClosable] = useState(true)
   const [insetOpen, setInsetOpen] = useState(false)
   const [insetTop, setInsetTop] = useState<PopupInsetTop>('nav-bar')
 
-  const openCloseDemo = (options: {
-    panel?: 'bottom' | 'center'
-    shape?: PopupCloseShape
-    position?: PopupClosePosition
-    visible?: boolean
-    mask?: boolean
-  }) => {
-    if (options.panel) setClosePanel(options.panel)
-    if (options.shape) setCloseShape(options.shape)
-    if (options.position) setClosePosition(options.position)
-    if (options.visible !== undefined) setCloseVisible(options.visible)
-    if (options.mask !== undefined) setMaskClosable(options.mask)
+  const openCloseDemo = (panel: 'bottom' | 'center', position: PopupClosePosition) => {
+    setClosePanel(panel)
+    setClosePosition(position)
     setCloseOpen(true)
   }
 
@@ -178,6 +182,73 @@ export default function PopupPage() {
     if (id === 'close') {
       return (
         <View>
+          <CellGroup title="关闭按钮样式">
+            <Cell
+              title="形状"
+              value={
+                <View className="demo-cell-segment">
+                  <Segmented
+                    items={SHAPES}
+                    value={closeShape}
+                    size="xs"
+                    onChange={(next) => setCloseShape(next as PopupCloseShape)}
+                  />
+                </View>
+              }
+            />
+            <Cell
+              title="描边"
+              value={
+                <View className="demo-cell-segment">
+                  <Segmented
+                    items={YES_NO}
+                    value={closeBorder ? 'yes' : 'no'}
+                    size="xs"
+                    onChange={(next) => setCloseBorder(next === 'yes')}
+                  />
+                </View>
+              }
+            />
+            <Cell
+              title="背景"
+              value={
+                <View className="demo-cell-segment">
+                  <Segmented
+                    items={YES_NO}
+                    value={closeBackground ? 'yes' : 'no'}
+                    size="xs"
+                    onChange={(next) => setCloseBackground(next === 'yes')}
+                  />
+                </View>
+              }
+            />
+            <Cell
+              title="关闭按钮"
+              value={
+                <View className="demo-cell-segment">
+                  <Segmented
+                    items={SHOW_HIDE}
+                    value={closeVisible ? 'yes' : 'no'}
+                    size="xs"
+                    onChange={(next) => setCloseVisible(next === 'yes')}
+                  />
+                </View>
+              }
+            />
+            <Cell
+              title="点遮罩关闭"
+              value={
+                <View className="demo-cell-segment">
+                  <Segmented
+                    items={YES_NO}
+                    value={maskClosable ? 'yes' : 'no'}
+                    size="xs"
+                    onChange={(next) => setMaskClosable(next === 'yes')}
+                  />
+                </View>
+              }
+            />
+          </CellGroup>
           {CLOSE_GROUPS.map((group) => (
             <CellGroup key={group.title} title={group.title}>
               {group.items.map((item) => (
@@ -186,54 +257,24 @@ export default function PopupPage() {
                   title={item.label}
                   value={item.note}
                   isLink
-                  onClick={() => openCloseDemo({ panel: item.panel, position: item.value, visible: true })}
+                  onClick={() => openCloseDemo(item.panel, item.value)}
                 />
               ))}
             </CellGroup>
           ))}
-          <CellGroup title="关闭按钮底形">
-            {SHAPES.map((item) => (
-              <Cell
-                key={item.value}
-                title={item.label}
-                value={`closeShape="${item.value}"`}
-                isLink
-                onClick={() => openCloseDemo({ shape: item.value, visible: true })}
-              />
-            ))}
-          </CellGroup>
-          <CellGroup title="关闭按钮显隐 / 点遮罩">
-            <Cell
-              title="不显示关闭按钮"
-              value="closeable={false}（默认）"
-              isLink
-              onClick={() => openCloseDemo({ visible: false })}
-            />
-            <Cell title="显示关闭按钮" value="closeable" isLink onClick={() => openCloseDemo({ visible: true })} />
-            <Cell
-              title="点遮罩关闭"
-              value="closable={true}（默认）"
-              isLink
-              onClick={() => openCloseDemo({ mask: true })}
-            />
-            <Cell
-              title="屏蔽点遮罩关闭"
-              value="closable={false}"
-              isLink
-              onClick={() => openCloseDemo({ mask: false })}
-            />
-          </CellGroup>
           <Popup
             open={closeOpen}
             position={closePanel}
             closeable={closeVisible}
             closable={maskClosable}
             closeShape={closeShape}
+            closeBorder={closeBorder}
+            closeBackground={closeBackground}
             closePosition={closePosition}
             onClose={() => setCloseOpen(false)}
           >
             <View className="demo-stack">
-              <Text>{`${closePanel === 'bottom' ? '底部' : '中部'}弹窗 / ${closePosition} / ${closeShape}；点遮罩关闭：${maskClosable ? '开' : '关'}`}</Text>
+              <Text>{`${closePanel === 'bottom' ? '底部' : '中部'}弹窗 / ${closePosition}；形状 ${closeShape} / 描边 ${closeBorder ? '有' : '无'} / 背景 ${closeBackground ? '有' : '无'}`}</Text>
               {SAMPLE_LINES.map((line) => (
                 <Text key={line}>{line}</Text>
               ))}

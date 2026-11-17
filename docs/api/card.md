@@ -129,12 +129,14 @@ export const CellInCard = () => (
 
 组合由 `ui/infra` 的两处契约自己成立，都不需要消费方参与：
 
-- `card-context.ts` 的 `CardSurfaceContext` 向后代声明「你在卡片里」；`CellGroup` 用 `useCardSurface()` 消费后不渲染上下外框（`outerBorder=false`）、派生 `mptk-cell-group--in-card`、组与行底色改透明。父传子调整的模式对齐 react-native-paper 的 `CardContext`。
-- `card-edge.ts` 的 `markCardEdgeContent()` 让 `CellGroup` 声明「我每行自带留白」；`Card` 在渲染期用 `hasCardEdgeContent(children)` 识别到它，派生 `mptk-card--edge-content`，再按槽位派生 `mptk-card--edge-top` / `--edge-bottom` 把该端 padding 直接置 0。声明是渲染期静态契约，不引入运行时状态、不产生首帧跳动，也不需要 `card` 与 `display/cell` 互相 import。
+- `card-context.ts` 的 `CardSurfaceContext` 向后代声明「你在卡片里」；`CellGroup` 用 `useCardSurface()` 消费后派生 `mptk-cell-group--in-card`、组与行底色改透明。父传子调整的模式对齐 react-native-paper 的 `CardContext`。
+- `card-edge.ts` 的 `markCardEdgeContent()` 让 `CellGroup` 声明「我每行自带留白」；`Card` 在渲染期用 `hasCardEdgeContent(children)` 识别到它，派生 `mptk-card--edge-content`，再按槽位派生 `mptk-card--edge-top` / `--edge-bottom` 把该端 padding 直接置 0。同一份声明还让 `Card` 能把位置档（`first` / `middle` / `last` / `single`）注入给每个贴边的 `CellGroup`：首组不画上框、末组不画下框、中间上下都画、单组两头都收（几何见 [Cell 单元格](cell.md)）。声明是渲染期静态契约，不引入运行时状态、不产生首帧跳动，也不需要 `card` 与 `display/cell` 互相 import。
 
 贴边取 shadcn/ui 的 Edge to edge 语义，但**不用负 margin**：小程序渲染端会静默丢弃变量参与计算的负 margin，编译与 CSS 层叠都查不出来，实机表现为 `margin: 0`，于是壳的 12px 与行的 12px 叠成 24px。改成壳上字面量 `0` 归零后，组合态顶部只剩 Cell 自身的一份 `--mptk-space-3`（12px）。不用 `:has()`，因为小程序 WXSS 不支持结构伪类。
 
-声明识别遍历 `children` 树（含数组与嵌套节点），因此 `<Card><View><CellGroup /></View></Card>` 一样贴边。边界是：若某个组件在自身内部才渲染 `CellGroup`、不让它出现在 `Card` 的 children 树里，`Card` 就无从识别，这类内容按根 `className` 自行定制。
+声明识别与位置注入都遍历 `children` 树（含数组与嵌套节点），因此 `<Card><View><CellGroup /></View></Card>` 一样贴边、一样拿得到位置档。边界是：若某个组件在自身内部才渲染 `CellGroup`、不让它出现在 `Card` 的 children 树里，`Card` 就无从识别，这类内容按根 `className` 自行定制。
+
+遍历会**跳过声明了「脱离文档流」的浮层**（`markCardEdgeOutOfFlow`，`Popup` 已声明）。原因：首尾判定是渲染期静态遍历，而浮层关闭时渲染 `null`；只看 element 树的话，`<Card><CellGroup /><Popup open={false}>…</Popup></Card>` 里面板 children 会被当成排在 CellGroup 后面的可见内容，单组从 `single` 退化成 `first`、末组从 `last` 退化成 `middle`，贴着卡片边界的那条线就多画出来。新增的浮层类组件若可能渲染 `null`，应当同样声明。
 
 因此卡的 `color`（内置色名或自定义色值）能透到 Cell 行，不会被白底盖住。`CellGroup` 的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone`）仍归 `CellGroup`，见 [Cell 单元格](cell.md)。
 
@@ -195,3 +197,4 @@ export const WithSlots = () => (
 - 2026-11-15 00:20:59：取值真源改为 kit.config.mjs
 - 2026-11-15：形态扩成一支 `variant`（`surface` / `filled` / `outline` / `plain`），取代 `frame` 布尔开关；`radius` 补 `none`；补 `footerDivider` 且与 `headerDivider` 同口径默认跟随；色值按形态落通道（有面染底、只有边染线、`plain` 不参与）；按压反馈改为半透明叠加层（新增 `--mptk-card-press`），自定义色值与四种形态都能看到反馈
 - 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME）
+- 2026-11-17：CellGroup 位置档注入改为穿透包装层（原来只扫 body 顶层，内容被 View 包一层时全部落回 `none`，上下框线消失）

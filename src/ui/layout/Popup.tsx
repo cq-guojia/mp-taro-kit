@@ -1,21 +1,21 @@
 import { ScrollView, View } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
+import { Button } from '../actions/Button.js'
+import { resolveCloseStyle, type PopupCloseShape } from './close-style.js'
 import {
   isOutsideClosePosition,
   resolveClosePosition,
   type PopupClosePosition,
   type PopupPosition,
 } from './close-position.js'
-import { Icon } from '../display/icon/index.js'
+import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { Overlay } from './Overlay.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
 import { isTopAnchored, resolveTopInset, type TopInsetLevel } from './safe-inset.js'
 
 export type { PopupClosePosition, PopupPosition } from './close-position.js'
-
-/** 关闭按钮底形：只有叉、圆形浮出、圆角方形浮出。 */
-export type PopupCloseShape = 'plain' | 'circle' | 'rounded'
+export type { PopupCloseShape } from './close-style.js'
 
 /**
  * 顶部让位：`none` 不让；`status-bar` 只让状态栏；`nav-bar` 让状态栏 + 导航栏（避开胶囊）。
@@ -39,8 +39,12 @@ export interface PopupProps {
   round?: boolean
   /** 显示关闭按钮，默认关；只有 bottom / center 档支持，其余档忽略 */
   closeable?: boolean
-  /** 关闭按钮底形，默认只有叉 */
+  /** 关闭按钮形状，默认 circle（正圆）；rounded 为圆角方 */
   closeShape?: PopupCloseShape
+  /** 关闭按钮是否带描边，默认 true；与 closeBackground 组合出核心 Button 的四种底色形态 */
+  closeBorder?: boolean
+  /** 关闭按钮是否带底色，默认 true；关掉且不带描边即只有叉 */
+  closeBackground?: boolean
   /** 关闭按钮位置：按面板形态取可用档，不传用该形态默认值；左右 / 上档忽略 */
   closePosition?: PopupClosePosition
   /**
@@ -64,7 +68,9 @@ export function Popup({
   className,
   round = false,
   closeable = false,
-  closeShape = 'plain',
+  closeShape = 'circle',
+  closeBorder = true,
+  closeBackground = true,
   closePosition,
   insetTop,
 }: PopupProps) {
@@ -81,6 +87,7 @@ export function Popup({
   // 关闭按钮按面板形态取档：左右 / 上档直接不渲染；不支持的位置回落到该形态默认值。
   const resolvedClosePosition = resolveClosePosition(position, closePosition)
   const closeOutside = resolvedClosePosition !== null && isOutsideClosePosition(resolvedClosePosition)
+  const closeStyle = resolveCloseStyle(closeShape, closeBorder, closeBackground)
 
   const names = [
     'mptk-popup',
@@ -102,20 +109,23 @@ export function Popup({
           {children}
         </ScrollView>
         {/* 关闭按钮必须排在 scroll-view 后面：Skyline 下 scroll-view 是原生视图、绘制在后，
-            放前面会被它盖住，点上去没反应。按钮保持原尺寸，靠这个顺序保证点得着。 */}
+            放前面会被它盖住，点上去没反应。按钮复用核心 Button 的 xs 档与按压变色。 */}
         {closeable && onClose && resolvedClosePosition !== null ? (
-          <View
-            className={[
-              'mptk-popup__close',
-              `mptk-popup__close--${closeShape}`,
-              `mptk-popup__close--${resolvedClosePosition}`,
-            ].join(' ')}
+          <Button
+            icon="common.base:guanbi"
+            size="xs"
+            type="default"
+            variant={closeStyle.variant}
+            radius={closeStyle.radius}
+            className={['mptk-popup__close', `mptk-popup__close--${resolvedClosePosition}`].join(' ')}
             onClick={onClose}
-          >
-            <Icon name="common.base:guanbi" size="xs" />
-          </View>
+          />
         ) : null}
       </View>
     </View>
   )
 }
+
+/* 向 Card 声明：关闭时渲染 null、不占内容流。没有这条声明，Card 静态遍历 children 会把
+   面板内容当成排在 CellGroup 后面的可见内容，单组退化成 first，贴边那条线多画一条。 */
+markCardEdgeOutOfFlow(Popup)
