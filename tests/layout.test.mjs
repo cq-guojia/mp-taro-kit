@@ -525,22 +525,26 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   assert.match(
     src,
     /closeable && onClose && resolvedClosePosition !== null/,
-    '解析为 null 的形态（左右 / 上）不许渲染关闭按钮，设置无效',
+    '解析为 null 的形态（左右抽屉）不许渲染关闭按钮，设置无效',
   )
 
   // 行为断言：真跑一遍产物里的解析器，验证按形态收口、默认值与「设置无效」。
   const { resolveClosePosition, isOutsideClosePosition } = await import(
     pathToFileURL(join(root, 'dist/ui/layout/close-position.js')).href
   )
-  const bottom = ['top-left', 'edge-top-left', 'above-right', 'above-center']
+  const bottom = ['top-left', 'edge-top-left', 'top-right', 'edge-top-right', 'above-right', 'above-center']
   const center = ['top-right', 'edge-top-right', 'above-right', 'below-center', 'below-right']
+  const top = ['below-center', 'below-right']
   for (const pos of bottom) assert.equal(resolveClosePosition('bottom', pos), pos, `底部应支持 ${pos}`)
   for (const pos of center) assert.equal(resolveClosePosition('center', pos), pos, `中部应支持 ${pos}`)
+  for (const pos of top) assert.equal(resolveClosePosition('top', pos), pos, `顶部应支持 ${pos}`)
   assert.equal(resolveClosePosition('bottom', undefined), 'top-left', '底部默认内部左上')
   assert.equal(resolveClosePosition('center', undefined), 'top-right', '中部默认内部右上')
+  assert.equal(resolveClosePosition('top', undefined), 'below-center', '顶部默认面板下方居中')
   assert.equal(resolveClosePosition('bottom', 'below-center'), 'top-left', '底部不支持下方档，应回落默认')
   assert.equal(resolveClosePosition('center', 'above-center'), 'top-right', '中部不支持上方居中，应回落默认')
-  for (const panel of ['top', 'left', 'right']) {
+  assert.equal(resolveClosePosition('top', 'top-right'), 'below-center', '顶部不支持面板内档，应回落默认')
+  for (const panel of ['left', 'right']) {
     assert.equal(resolveClosePosition(panel, 'top-right'), null, `${panel} 档不该有关闭按钮，传什么都不生效`)
   }
   assert.equal(isOutsideClosePosition('top-left'), false, '内部左上不算外置')
@@ -706,7 +710,7 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   }
   assert.doesNotMatch(overlayPage, /<Button\b/, '遮罩页不该出现按钮，只演遮罩')
   // 位置按钮按用户要求降到 xs 档（24px）。
-  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 2, '两处位置按钮各显式降一档到 xs')
+  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 3, '三处位置按钮（垂直 / 侧面 / 关闭按钮位置）各显式降一档到 xs')
 
   // 三块结构：顶部统一配置 + 位置档 + 关闭按钮位置；旧的六块全部撤掉。
   // catalog 只取 popup 页自己的 examples 段，popup / overlay 是合法的页与菜单 id，不能整篇搜。
@@ -777,27 +781,29 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   assert.match(popupPage, /label: '底部'/, '垂直档叫底部')
   assert.match(popupPage, /label: '左侧'/, '侧面档叫左侧')
   assert.match(popupPage, /label: '右侧'/, '侧面档叫右侧')
-  // 源码里只有两处 <Button JSX，各自 map 一份数组：垂直 3 + 侧面 2，运行时五个按钮。
-  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 2, '位置按钮两处 JSX，分别渲染垂直 / 侧面')
+  // 源码里三处 <Button JSX：垂直 3 + 侧面 2 + 关闭按钮位置三组横排。
+  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 3, '按钮三处 JSX：垂直 / 侧面 / 关闭按钮位置')
   assert.equal((popupPage.match(/VERTICAL_POSITIONS\.map/g) ?? []).length, 1, '垂直档按钮走一份数据源')
   assert.equal((popupPage.match(/SIDE_POSITIONS\.map/g) ?? []).length, 1, '侧面档按钮走一份数据源')
+  assert.equal((popupPage.match(/CLOSE_GROUPS\.map/g) ?? []).length, 1, '关闭按钮位置三组走一份数据源')
   assert.equal(
     (popupPage.match(/\{ value: '(?:top|center|bottom|left|right)', label: '(?:顶部|中部|底部|左侧|右侧)' \}/g) ?? []).length,
     5,
     '位置档共 5 个按钮：垂直 3 + 侧面 2',
   )
-  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 2, '按钮横排用 demo-item 控制间距')
+  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 3, '按钮横排用 demo-item 控制间距')
   assert.match(popupPage, /size="xs"/, '按钮降到 xs 档')
   assert.match(popupPage, /position=\{position\}/, '位置档要真的切 position')
   assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮位置要真的切位置')
   assert.match(popupPage, /position=\{closePanel\}/, '关闭按钮位置要按形态切换弹窗')
-  for (const pos of ['top-left', 'edge-top-left', 'above-right', 'above-center', 'top-right', 'edge-top-right', 'below-center', 'below-right']) {
+  // 演示区只留代表位置：底部 4 + 中部 4 + 顶部 2（去重后 6 个 API 值）。
+  for (const pos of ['above-center', 'above-right', 'top-right', 'edge-top-right', 'below-right', 'below-center']) {
     assert.ok(popupPage.includes(`value: '${pos}'`), `关闭按钮位置 demo 缺 ${pos} 档`)
   }
   assert.equal(
-    (popupPage.match(/value: '[^']+', label: '[^']+', panel: '(?:bottom|center)'/g) ?? []).length,
-    8,
-    '关闭按钮位置 demo 应覆盖底部 4 档 + 中部 4 档，共 8 项',
+    (popupPage.match(/title: '(?:底部|中部|顶部)'/g) ?? []).length,
+    3,
+    '关闭按钮位置 demo 合并成底部 / 中部 / 顶部三个 Cell 行',
   )
   assert.doesNotMatch(
     popupPage,

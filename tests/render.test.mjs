@@ -384,9 +384,18 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   assert.match(ghost, /mptk-btn--radius-sm/, 'rounded 形状走 sm 小方角（8px），不用看成正圆的 md、也不用在方块上过小的 xs')
   assert.doesNotMatch(ghost, /mptk-btn--ghost|mptk-btn--outline/, '背景「否」不能再派生 ghost / outline')
 
-  /* 没开 closeable 就没有按钮；贴顶档无论传什么都不渲染。 */
+  /* 没开 closeable 就没有按钮；左右抽屉无论传什么都不渲染。 */
   assert.doesNotMatch(render(h(Popup, { ...base, closeable: false }, h('div', null, '内容'))), /mptk-popup__close/)
-  assert.doesNotMatch(render(h(Popup, { ...base, position: 'top' }, h('div', null, '内容'))), /mptk-popup__close/, '贴顶档不支持关闭按钮')
+  for (const panel of ['left', 'right']) {
+    assert.doesNotMatch(render(h(Popup, { ...base, position: panel }, h('div', null, '内容'))), /mptk-popup__close/, `${panel} 抽屉不支持关闭按钮`)
+  }
+
+  /* 贴顶档支持面板下方外置位置，默认落面板下方居中。 */
+  const top = render(h(Popup, { ...base, position: 'top' }, h('div', null, '内容')))
+  assert.match(top, /mptk-popup__close--below-center/, '贴顶档默认关闭按钮落在面板下方居中')
+  assert.match(top, /mptk-popup--close-outside/, '贴顶档下方按钮要放开面板裁剪')
+  const topRight = render(h(Popup, { ...base, position: 'top', closePosition: 'below-right' }, h('div', null, '内容')))
+  assert.match(topRight, /mptk-popup__close--below-right/, '贴顶档可切到面板下方靠右')
 
   /* 外置档要放开面板裁剪，否则按钮被 overflow 裁掉。 */
   const outside = render(h(Popup, { ...base, closePosition: 'above-center' }, h('div', null, '内容')))

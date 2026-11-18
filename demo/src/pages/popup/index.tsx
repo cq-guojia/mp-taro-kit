@@ -75,15 +75,46 @@ const INSETS: { value: PopupInsetTop; label: string }[] = [
   { value: 'nav-bar', label: '导航栏' },
 ]
 
-const CLOSE_POSITIONS: { value: PopupClosePosition; label: string; panel: 'bottom' | 'center' }[] = [
-  { value: 'top-left', label: '内部左上', panel: 'bottom' },
-  { value: 'edge-top-left', label: '跨半左上', panel: 'bottom' },
-  { value: 'above-right', label: '外部右上', panel: 'bottom' },
-  { value: 'above-center', label: '外部上方居中', panel: 'bottom' },
-  { value: 'top-right', label: '内部右上', panel: 'center' },
-  { value: 'edge-top-right', label: '跨半右上', panel: 'center' },
-  { value: 'below-center', label: '外部下方居中', panel: 'center' },
-  { value: 'below-right', label: '外部右下方', panel: 'center' },
+type CloseDemoPanel = 'bottom' | 'center' | 'top'
+
+type CloseDemoGroup = {
+  panel: CloseDemoPanel
+  title: string
+  items: { value: PopupClosePosition; label: string }[]
+}
+
+/* 关闭按钮位置按弹窗形态并成三组：一行一个形态，行内横排该形态下的代表位置。
+   label 口径统一：首字内 / 外，次字左 / 右 / 中，末字上 / 下；跨半档用「跨半」后缀。
+   value 才是真实 API 值；底层仍保留其它位置的支持，只是不在这里演示。 */
+const CLOSE_GROUPS: CloseDemoGroup[] = [
+  {
+    panel: 'bottom',
+    title: '底部',
+    items: [
+      { value: 'above-right', label: '外右上' },
+      { value: 'above-center', label: '外上' },
+      { value: 'top-right', label: '内右上' },
+      { value: 'edge-top-right', label: '右跨半' },
+    ],
+  },
+  {
+    panel: 'center',
+    title: '中部',
+    items: [
+      { value: 'below-center', label: '外中下' },
+      { value: 'below-right', label: '外右下' },
+      { value: 'above-right', label: '外右上' },
+      { value: 'edge-top-right', label: '右上跨半' },
+    ],
+  },
+  {
+    panel: 'top',
+    title: '顶部',
+    items: [
+      { value: 'below-center', label: '外中下' },
+      { value: 'below-right', label: '外右下' },
+    ],
+  },
 ]
 
 const SAMPLE_LINES = [
@@ -109,8 +140,8 @@ export default function PopupPage() {
   const [positionOpen, setPositionOpen] = useState(false)
   const [position, setPosition] = useState<PopupPosition>('bottom')
   const [closeOpen, setCloseOpen] = useState(false)
-  const [closePanel, setClosePanel] = useState<'bottom' | 'center'>('bottom')
-  const [closePosition, setClosePosition] = useState<PopupClosePosition>('top-left')
+  const [closePanel, setClosePanel] = useState<CloseDemoPanel>('bottom')
+  const [closePosition, setClosePosition] = useState<PopupClosePosition>('above-center')
 
   const maskValues = MASK_VALUES[mask]
   const shared = {
@@ -227,20 +258,32 @@ export default function PopupPage() {
       )
     }
     if (id === 'close-position') {
+      const panelTitle = CLOSE_GROUPS.find((group) => group.panel === closePanel)?.title ?? closePanel
       return (
         <View>
           <CellGroup>
-            {CLOSE_POSITIONS.map((item) => (
+            {CLOSE_GROUPS.map((group) => (
               <Cell
-                key={`${item.panel}-${item.value}`}
-                title={`${item.panel === 'bottom' ? '底部' : '中部'} · ${item.label}`}
-                value={`closePosition="${item.value}"`}
-                isLink
-                onClick={() => {
-                  setClosePanel(item.panel)
-                  setClosePosition(item.value)
-                  setCloseOpen(true)
-                }}
+                key={group.panel}
+                title={group.title}
+                value={
+                  <View className="demo-row">
+                    {group.items.map((item) => (
+                      <Button
+                        key={item.value}
+                        className="demo-item"
+                        size="xs"
+                        onClick={() => {
+                          setClosePanel(group.panel)
+                          setClosePosition(item.value)
+                          setCloseOpen(true)
+                        }}
+                      >
+                        {item.label}
+                      </Button>
+                    ))}
+                  </View>
+                }
               />
             ))}
           </CellGroup>
@@ -252,7 +295,7 @@ export default function PopupPage() {
             {...shared}
           >
             <View className="demo-stack">
-              <Text>{`${closePanel === 'bottom' ? '底部' : '中部'}弹窗 / ${closePosition}；形状 ${closeShape} / 描边 ${closeBorder ? '有' : '无'} / 背景 ${closeBackground ? '有' : '半透明'}`}</Text>
+              <Text>{`${panelTitle}弹窗 / ${closePosition}；形状 ${closeShape} / 描边 ${closeBorder ? '有' : '无'} / 背景 ${closeBackground ? '有' : '半透明'}`}</Text>
               {SAMPLE_LINES.map((line) => (
                 <Text key={line}>{line}</Text>
               ))}

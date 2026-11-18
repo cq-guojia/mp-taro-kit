@@ -19,20 +19,24 @@ export type PopupClosePosition =
   | 'below-right'
 
 /**
- * 各形态允许的位置。贴顶 / 左右抽屉不进表：传什么都不渲染关闭按钮。
- * 底部只有左上语义，中部只有右上语义；外置档两边通用。
+ * 各形态允许的位置。左右抽屉不进表：传什么都不渲染关闭按钮。
+ * - bottom / center：内部档与跨半档左右两侧都支持（top-left/top-right、edge-top-left/edge-top-right），面板上方外置档通用；
+ * - center 另支持面板下方外置档；
+ * - top：面板贴顶，只支持面板下方外置档（关闭按钮落在面板下沿之外）。
  */
 const ALLOWED: Partial<Record<PopupPosition, readonly PopupClosePosition[]>> = {
-  bottom: ['top-left', 'edge-top-left', 'above-right', 'above-center'],
+  bottom: ['top-left', 'edge-top-left', 'top-right', 'edge-top-right', 'above-right', 'above-center'],
   center: ['top-right', 'edge-top-right', 'above-right', 'below-center', 'below-right'],
+  top: ['below-center', 'below-right'],
 }
 
 const DEFAULT: Partial<Record<PopupPosition, PopupClosePosition>> = {
   bottom: 'top-left',
   center: 'top-right',
+  top: 'below-center',
 }
 
-/** 左右抽屉与贴顶档没有关闭按钮：传任何位置都返回 null。传了本形态不支持的位置则回落到默认值。 */
+/** 左右抽屉没有关闭按钮：传任何位置都返回 null。传了本形态不支持的位置则回落到默认值。 */
 export function resolveClosePosition(
   panel: PopupPosition,
   requested: PopupClosePosition | undefined,

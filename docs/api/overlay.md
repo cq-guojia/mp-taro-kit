@@ -101,15 +101,18 @@
 
 **叉用自绘 `CloseGlyph`，不是字体图标**：字体叉的字形墨迹相对行盒偏上，且 iOS / Android 的字体基线算法不同，固定位移无法跨端根治。自绘叉把两笔 SVG path 画在 viewBox 正中（`--mptk-c-close-mask`），几何中心就是容器中心，跨端绝对居中；颜色取 `currentColor`，放进 Button 图标位时由 `--mptk-btn-fg` 注入，深浅底自动跟随。`CloseGlyph` 是 feedback 域的公共资产（`mp-taro-kit/ui/feedback/close`），通过 Button 的 `glyph` 槽位嵌入——以后任何按钮要放自绘图标都能复用，不局限于关闭叉。
 
-演示站顶部「配置」区用 CellGroup + Segmented 统一配置这三轴，以及圆角尺寸 / 遮罩 / 点遮罩 / 让位；位置档是两个 Cell 行——「垂直」（顶部 / 中部 / 底部）与「侧面」（左侧 / 右侧），按钮放 value 位居右、走 xs 档；关闭按钮位置一块按形态分档，点按钮开面板即可看到配置生效。
+演示站顶部「配置」区用 CellGroup + Segmented 统一配置这三轴，以及圆角尺寸 / 遮罩 / 点遮罩 / 让位；位置档是两个 Cell 行——「垂直」（顶部 / 中部 / 底部）与「侧面」（左侧 / 右侧），按钮放 value 位居右、走 xs 档；关闭按钮位置按弹窗形态合并成三个 Cell 行——「底部」「中部」「顶部」，每行内横排该形态下的代表位置，点按钮开对应形态的面板即可看到配置生效。
 
-`closePosition` 只能用本形态支持的值；传了不支持的值回落到该形态默认值，`top` / `left` / `right` 三档直接不渲染（传什么都不生效）：
+行内按钮名有统一口径：首字内 / 外，次字左 / 右 / 中，末字上 / 下，跨半档用「跨半」后缀（如「右上跨半」）。这套短名只用于演示站标签，真实 API 值仍是 `closePosition` 的枚举。
+
+`closePosition` 只能用本形态支持的值；传了不支持的值回落到该形态默认值。`left` / `right` 两档不渲染关闭按钮（传什么都不生效）；`top` 档只有面板下方外置档可用（弹窗贴顶，按钮落在面板下沿之外）：
 
 | 形态 | 面板内 | 跨上边一半 | 面板上方 | 面板下方 | 默认 |
 |---|---|---|---|---|---|
-| `bottom` | `top-left` | `edge-top-left` | `above-right`、`above-center` | — | `top-left` |
+| `bottom` | `top-left`、`top-right` | `edge-top-left`、`edge-top-right` | `above-right`、`above-center` | — | `top-left` |
 | `center` | `top-right` | `edge-top-right` | `above-right` | `below-center`、`below-right` | `top-right` |
-| `top` / `left` / `right` | 不支持 | 不支持 | 不支持 | 不支持 | 无关闭按钮 |
+| `top` | — | — | — | `below-center`、`below-right` | `below-center` |
+| `left` / `right` | 不支持 | 不支持 | 不支持 | 不支持 | 无关闭按钮 |
 
 几何口径：`top-left` / `top-right` 离上边与离左右边各一个 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px，比其它档再往内收 4px），不整体横向出界；`above-*` / `below-*` 与面板上下留一个 `--mptk-space-3`（12px），靠右档右侧同样留 `--mptk-space-3`，居中档水平居中。跨边 / 外置档会让面板临时放开 `overflow`，否则按钮被裁掉。点击关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径，均可分别关掉。
 
@@ -214,3 +217,4 @@ configureSafeArea({
 - 2026-11-18：叉从字体图标换成自绘 `CloseGlyph`，根治跨端偏上。实测字体字形墨迹中心偏离 hhea 内容区、iOS/Android 基线度量不同，固定位移无法通吃；自绘叉把两笔 path 画在 viewBox 正中，几何中心 = 容器中心，跨端绝对居中。资产落 feedback 域公共组件（`mp-taro-kit/ui/feedback/close`），形状走 `--mptk-c-close-mask` token、色走 currentColor（由 Button 的 `--mptk-btn-fg` 注入）；Button 新增通用 `glyph` 槽位（与 `icon` 互斥、优先），自绘图标不必再走字体通道。圈、描边、背景三轴 CSS 全保留。
 - 2026-11-18：叉边长 1em → 1.4em（按钮外框 30px 不变，叉从 12px 放大到约 16.8px）；跨半档左右离边 12 → 16px（`space-3` → `space-4`，往内收一档避开圆角）；内部档上边距 8 → 12px，使离上边与离左右边相等（四边等距）。其它位置档不变。
 - 2026-11-18：按钮外框与叉各缩 4px——外框 30 → 26px、叉 16.8 → 12.8px（改固定值，不吃字号档）；`rounded` 圆角档 xs → sm（4 → 8px，统一圆角档大一号）；default 档字色（叉与描边）从 fg-2 盖到中灰 fg-3，明色变浅、暗色变暗，两端收敛到灰。
+- 2026-11-18：`closePosition` 支持表扩展——`bottom` 增右侧内部 / 跨半两档（`top-right` / `edge-top-right`）、`top` 档新增面板下方两档（`below-center` / `below-right`，默认 `below-center`）；演示站关闭按钮位置按底部 / 中部 / 顶部合并成三个 Cell 行、行内横排按钮，只演示代表位置，底层已有支持不变。

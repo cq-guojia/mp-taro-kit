@@ -53,7 +53,7 @@ export interface PopupProps {
   round?: boolean
   /** 面板圆角尺寸档：none / sm / md（默认）/ lg；居中档恒圆，贴边档需同时开 round */
   roundSize?: PopupRoundSize
-  /** 显示关闭按钮，默认关；只有 bottom / center 档支持，其余档忽略 */
+  /** 显示关闭按钮，默认关；bottom / center / top 档支持，左右抽屉忽略 */
   closeable?: boolean
   /** 关闭按钮形状，默认 circle（正圆）；rounded 为圆角方 */
   closeShape?: PopupCloseShape
@@ -61,7 +61,7 @@ export interface PopupProps {
   closeBorder?: boolean
   /** 关闭按钮是否带底色，默认 true；关掉且不带描边即只有叉 */
   closeBackground?: boolean
-  /** 关闭按钮位置：按面板形态取可用档，不传用该形态默认值；左右 / 上档忽略 */
+  /** 关闭按钮位置：按面板形态取可用档，不传用该形态默认值；左右抽屉忽略 */
   closePosition?: PopupClosePosition
   /**
    * 顶部让位：status-bar 只让状态栏，nav-bar 再让导航栏（避开胶囊）。
@@ -122,7 +122,7 @@ export function Popup({
           ...(pad.left === undefined ? null : { paddingLeft: `${pad.left}px` }),
         }
 
-  // 关闭按钮按面板形态取档：左右 / 上档直接不渲染；不支持的位置回落到该形态默认值。
+  // 关闭按钮按面板形态取档：左右抽屉直接不渲染；不支持的位置回落到该形态默认值。
   const resolvedClosePosition = resolveClosePosition(position, closePosition)
   const closeOutside = resolvedClosePosition !== null && isOutsideClosePosition(resolvedClosePosition)
   const closeStyle = resolveCloseStyle(closeShape, closeBorder, closeBackground)
