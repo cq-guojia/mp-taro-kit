@@ -1,7 +1,8 @@
 import { ScrollView, View } from '@tarojs/components'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
 import { Button } from '../actions/Button.js'
+import { CloseGlyph } from '../feedback/close/CloseGlyph.js'
 import { resolveCloseStyle, type PopupCloseShape } from './close-style.js'
 import {
   isOutsideClosePosition,
@@ -25,6 +26,12 @@ export type PopupInsetTop = TopInsetLevel
 
 /** 面板圆角尺寸档：平角 / 小 / 中 / 大；只作用于圆角已开启（round 或居中档）的面板。 */
 export type PopupRoundSize = 'none' | 'sm' | 'md' | 'lg'
+
+/**
+ * 内容内边距：数字四边统一，或按边给；单位 px。
+ * 替换面板预留的 16px（--mptk-space-4），不替换让位——让位独立加在 body 上，两者相加。
+ */
+export type PopupContentPadding = number | Partial<Record<'top' | 'right' | 'bottom' | 'left', number>>
 
 export interface PopupProps {
   open: boolean
@@ -62,6 +69,8 @@ export interface PopupProps {
    * 真值来自 runtime 注入（getWindowInfo + 胶囊几何）；未注入时走 CSS env() 兜底。
    */
   insetTop?: PopupInsetTop
+  /** 内容内边距：替换面板预留的 16px，不替换让位；数字四边统一，对象按边给（未给的边留默认） */
+  contentPadding?: PopupContentPadding
 }
 
 /** 弹出层：遮罩 + 定位面板，面板内容走内部 scroll-view，超高自己滚。 */
@@ -85,16 +94,33 @@ export function Popup({
   closeBackground = true,
   closePosition,
   insetTop,
+  contentPadding,
 }: PopupProps) {
   const { mounted, open: shown } = usePresence(open, duration)
   if (!mounted) return null
 
-  // 贴顶 / 左右档会盖住状态栏与胶囊，默认让出导航栏；贴底 / 居中默认不让。
-  const resolvedInset: PopupInsetTop = insetTop ?? (isTopAnchored(position) ? 'nav-bar' : 'none')
+  // 让位只对上 / 左 / 右生效：先按位置判定，center / bottom 即使传了 insetTop 也强制 none。
+  const resolvedInset: PopupInsetTop = isTopAnchored(position) ? insetTop ?? 'nav-bar' : 'none'
   // 面板贴边定位不动，让位单独加在内容上：WebView / Skyline 同一套几何。
   // 未注入真值时为 0，由 CSS 的 env() 兜底。
   const inset = resolveTopInset(resolvedInset, getSafeAreaSnapshot())
   const bodyStyle = inset.paddingTop > 0 ? { paddingTop: `${inset.paddingTop}px` } : undefined
+
+  // 面板四边 padding：默认走 CSS 的 --mptk-space-4，只把显式给的边写成行内 px 覆盖。
+  // 这份是「预留内边距」，与 body 上的让位各占一层，两者相加互不替换。
+  const pad: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> =
+    typeof contentPadding === 'number'
+      ? { top: contentPadding, right: contentPadding, bottom: contentPadding, left: contentPadding }
+      : contentPadding ?? {}
+  const panelStyle: CSSProperties | undefined =
+    pad.top === undefined && pad.right === undefined && pad.bottom === undefined && pad.left === undefined
+      ? undefined
+      : {
+          ...(pad.top === undefined ? null : { paddingTop: `${pad.top}px` }),
+          ...(pad.right === undefined ? null : { paddingRight: `${pad.right}px` }),
+          ...(pad.bottom === undefined ? null : { paddingBottom: `${pad.bottom}px` }),
+          ...(pad.left === undefined ? null : { paddingLeft: `${pad.left}px` }),
+        }
 
   // 关闭按钮按面板形态取档：左右 / 上档直接不渲染；不支持的位置回落到该形态默认值。
   const resolvedClosePosition = resolveClosePosition(position, closePosition)
@@ -125,7 +151,7 @@ export function Popup({
           onClose={onClose}
         />
       ) : null}
-      <View className={panel.filter(Boolean).join(' ')}>
+      <View className={panel.filter(Boolean).join(' ')} style={panelStyle}>
         <ScrollView scrollY className="mptk-popup__body" style={bodyStyle}>
           {children}
         </ScrollView>
@@ -133,12 +159,16 @@ export function Popup({
             放前面会被它盖住，点上去没反应。按钮复用核心 Button 的 xs 档与按压变色。 */}
         {closeable && onClose && resolvedClosePosition !== null ? (
           <Button
-            icon="common.base:guanbi"
+            glyph={<CloseGlyph size="12.8px" />}
             size="xs"
             type="default"
             variant={closeStyle.variant}
             radius={closeStyle.radius}
-            className={['mptk-popup__close', `mptk-popup__close--${resolvedClosePosition}`].join(' ')}
+            className={[
+              'mptk-popup__close',
+              `mptk-popup__close--${resolvedClosePosition}`,
+              closeStyle.translucent ? 'mptk-popup__close--translucent' : '',
+            ].filter(Boolean).join(' ')}
             onClick={onClose}
           />
         ) : null}

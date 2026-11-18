@@ -40,8 +40,15 @@ export interface ButtonProps {
    * `#rgb` / `#rrggbb` / `rgb()` 能完整派生四形态；其它写法（`var(--x)`、色名）的 `soft` 浅底退回灰面。
    */
   color?: string
-  /** 前置图标，`库名:图标名`。 */
+  /**
+   * 前置图标，`库名:图标名` 的字体通道。与 `glyph` 互斥，同时给时 `glyph` 优先。
+   */
   icon?: string
+  /**
+   * 前置自绘图标节点（如 `<CloseGlyph />`），用于字体字形无法几何居中的场景。
+   * 与 `icon` 互斥、同时给时本项优先；尺寸由节点自己决定（通常 `1em`），颜色取按钮字色。
+   */
+  glyph?: ReactNode
   /** 后置图标，`库名:图标名`；加载期间不渲染。 */
   iconAfter?: string
   /** 撑满父宽。 */
@@ -82,6 +89,7 @@ export function Button({
   radius,
   color,
   icon,
+  glyph,
   iconAfter,
   block = false,
   width,
@@ -119,14 +127,15 @@ export function Button({
   }
 
   const hasLabel = children !== undefined && children !== null
-  const iconOnly = !hasLabel && icon !== undefined
+  const hasIcon = glyph !== undefined || icon !== undefined
+  const iconOnly = !hasLabel && hasIcon
   const label = loading && loadingText !== undefined ? loadingText : children
   const hasRenderedLabel = label !== undefined && label !== null
   const fixedWidth = block || width !== undefined || (style !== undefined && style.width !== undefined)
   const settledMode = loadingMode === 'auto' ? (fixedWidth ? 'inline' : 'circle') : loadingMode
   // 只有「没图标、有文字」才轮到 spinCircle：有图标时圈顶替图标位，宽度本来就不动。
   const spinCircle =
-    loading && settledMode === 'circle' && icon === undefined && loadingText === undefined && hasRenderedLabel
+    loading && settledMode === 'circle' && !hasIcon && loadingText === undefined && hasRenderedLabel
   const spinnerClass = spinCircle ? 'mptk-btn__spinner' : 'mptk-btn__spinner mptk-btn__icon'
 
   const names = [
@@ -166,6 +175,8 @@ export function Button({
         ) : (
           <Spinner size={SPINNER_SIZE} color={tintStyle?.color} className={spinnerClass} />
         )
+      ) : glyph !== undefined ? (
+        <View className="mptk-btn__glyph">{glyph}</View>
       ) : icon === undefined ? null : (
         <Icon name={icon} className="mptk-btn__icon" />
       )}

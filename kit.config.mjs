@@ -298,6 +298,8 @@ export default {
     "--mptk-c-popup-min-h": "200px",                                // 面板最小高度：内容少时不塌成一小溜
     "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
+    "--mptk-c-popup-close-size": "26px",                             // 关闭按钮外框：叉尺寸单独给（12.8px），外框与叉两轴分开
+    "--mptk-c-popup-close-bg-translucent": "rgba(0, 0, 0, 0.55)",    // 关闭按钮背景「否」档：半透明底色，只换 --mptk-btn-bg、叉色(--mptk-btn-fg)不动
     "--mptk-c-drawer-w": "240px",                                   // 抽屉宽度：滑入滑出按自身宽度算；240px 在 375 屏约 64%，比 280px 窄一档
     "--mptk-c-navbar-weight": "500",                                // 导航栏标题字重
     "--mptk-c-locked-opacity": ".5",                                // 锁定态（disabled / busy）不透明度
@@ -335,6 +337,8 @@ export default {
     "--mptk-c-control-breathe-dim": ".2",                           // 等待态呼吸最暗值
     "--mptk-c-spinner-mask": "url(\"data:image/svg+xml,"            // Spinner 环形遮罩：SVG data URI，环宽占直径 17%
       + "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='41.5' fill='none' stroke='%23fff' stroke-width='17'/%3E%3C/svg%3E\")",
+    "--mptk-c-close-mask": "url(\"data:image/svg+xml,"              // 关闭叉自绘遮罩：SVG data URI，叉几何中心严格落在 viewBox 正中，跨端绝对居中
+      + "%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M22 22L78 78M78 22L22 78' fill='none' stroke='%23fff' stroke-width='15' stroke-linecap='round'/%3E%3C/svg%3E\")",
     "--mptk-c-cell-arrow-size": "6px",                              // Cell 箭头方块边长
     "--mptk-c-switch-inset-2x": "4px",                              // Switch 滑块双侧内缩合计：calc 尺寸用
     "--mptk-c-demo-swatch-size": "48px",                            // 演示站色板大色块边长

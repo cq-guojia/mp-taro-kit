@@ -1,0 +1,17 @@
+/* 自绘关闭叉：颜色取 currentColor（放在 Button 里由 --mptk-btn-fg 注入），
+   形状由 kit.config 的 --mptk-c-close-mask 提供 —— SVG path 几何居中，跨端不依赖字体基线。
+   Skyline 的 mask 只认 url()，遮罩取值走变量，规则与 Spinner 环形遮罩同构。 */
+
+.mptk-close-glyph {
+  display: inline-block;
+  flex-grow: var(--mptk-s-flex-none);
+  flex-shrink: var(--mptk-s-flex-none);
+  box-sizing: border-box;
+  background-color: var(--mptk-s-current-color);
+  -webkit-mask-image: var(--mptk-c-close-mask);
+  mask-image: var(--mptk-c-close-mask);
+  -webkit-mask-repeat: var(--mptk-s-mask-repeat);
+  mask-repeat: var(--mptk-s-mask-repeat);
+  -webkit-mask-size: var(--mptk-s-mask-size);
+  mask-size: var(--mptk-s-mask-size);
+}

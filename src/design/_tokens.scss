@@ -1,4 +1,4 @@
-// @mptk-inputs:45391299002f
+// @mptk-inputs:ffca61a1f910
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -80,6 +80,8 @@
   --mptk-c-popup-min-h: 200px;
   --mptk-c-popup-center-rise: 48px;
   --mptk-c-popup-radius: var(--mptk-radius-md);
+  --mptk-c-popup-close-size: 26px;
+  --mptk-c-popup-close-bg-translucent: rgba(0, 0, 0, 0.55);
   --mptk-c-drawer-w: 240px;
   --mptk-c-navbar-weight: 500;
   --mptk-c-locked-opacity: .5;
@@ -116,6 +118,7 @@
   --mptk-c-spinner-scale: scale(.4);
   --mptk-c-control-breathe-dim: .2;
   --mptk-c-spinner-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='41.5' fill='none' stroke='%23fff' stroke-width='17'/%3E%3C/svg%3E");
+  --mptk-c-close-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M22 22L78 78M78 22L22 78' fill='none' stroke='%23fff' stroke-width='15' stroke-linecap='round'/%3E%3C/svg%3E");
   --mptk-c-cell-arrow-size: 6px;
   --mptk-c-switch-inset-2x: 4px;
   --mptk-c-demo-swatch-size: 48px;

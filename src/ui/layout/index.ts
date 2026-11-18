@@ -8,4 +8,5 @@ export {
   type PopupClosePosition,
   type PopupInsetTop,
   type PopupRoundSize,
+  type PopupContentPadding,
 } from './Popup.js'

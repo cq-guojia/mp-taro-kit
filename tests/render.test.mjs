@@ -377,11 +377,12 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   assert.match(soft, /mptk-btn--radius-pill/, 'circle 形状走 pill 圆角')
   assert.match(soft, /mptk-popup__close--top-left/, '底部面板默认关闭按钮在面板内左上')
 
-  /* 关掉底色与描边、换圆角方 → ghost + md。 */
+  /* 关掉底色与描边、换圆角方 → solid + 半透明 class；叉色不受背景轴影响。 */
   const ghost = render(h(Popup, { ...base, closeShape: 'rounded', closeBorder: false, closeBackground: false }, h('div', null, '内容')))
-  assert.match(ghost, /mptk-btn--ghost/, '无底无边只剩叉')
-  assert.match(ghost, /mptk-btn--radius-md/, 'rounded 形状走 md 圆角')
-  assert.doesNotMatch(ghost, /mptk-btn--soft|mptk-btn--solid|mptk-btn--outline/, '三轴组合只许派生出一种形态')
+  assert.match(ghost, /mptk-btn--solid/, '描边关 → solid，variant 只由描边轴决定')
+  assert.match(ghost, /mptk-popup__close--translucent/, '背景「否」走半透明 class，不再是空底')
+  assert.match(ghost, /mptk-btn--radius-sm/, 'rounded 形状走 sm 小方角（8px），不用看成正圆的 md、也不用在方块上过小的 xs')
+  assert.doesNotMatch(ghost, /mptk-btn--ghost|mptk-btn--outline/, '背景「否」不能再派生 ghost / outline')
 
   /* 没开 closeable 就没有按钮；贴顶档无论传什么都不渲染。 */
   assert.doesNotMatch(render(h(Popup, { ...base, closeable: false }, h('div', null, '内容'))), /mptk-popup__close/)

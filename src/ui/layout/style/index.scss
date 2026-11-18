@@ -80,14 +80,6 @@
   padding-top: calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h));
 }
 
-/* 让位档的面板顶部内边距归零：让位值本身就是「从屏幕顶到状态栏 / 导航栏底」，
-   面板再叠一层 16px 内边距会把正文多往下推一截（真机离胶囊底 20px+）。
-   左右 / 上下边距保持原样，只有顶部这一条让给内容区的 padding。 */
-.mptk-popup--inset-status-bar .mptk-popup__panel,
-.mptk-popup--inset-nav-bar .mptk-popup__panel {
-  padding-top: var(--mptk-s-zero);
-}
-
 /* 贴底：通栏，从底边升起；贴底两角留直角以对齐屏幕边缘。
    必须给确定 height：Skyline 的 scroll-view 只有拿到确定高才会滚，光靠 max-height 会被内容撑满屏。 */
 .mptk-popup__panel--bottom {
@@ -218,14 +210,42 @@
   z-index: var(--mptk-c-layer-popover);
 }
 
+/* 外框走 popup 私有的 30px，只覆盖高度轴；叉是自绘 CloseGlyph（边长 1em，继承 Button xs 的 12px 字号），
+   不随外框放大——「圆变大、叉不变」。双类选择器压过 .mptk-btn--xs，不依赖两个样式表的加载顺序。 */
+.mptk-btn.mptk-popup__close {
+  --mptk-btn-h: var(--mptk-c-popup-close-size);
+  height: var(--mptk-c-popup-close-size);
+}
+
+/* 背景「否」= 半透明：只换底色变量，叉色（--mptk-btn-fg）由描边轴决定、这里不碰。
+   三类名压过 .mptk-btn--default.mptk-btn--soft / --solid 的双类名，不依赖加载顺序。 */
+.mptk-btn.mptk-popup__close.mptk-popup__close--translucent {
+  --mptk-btn-bg: var(--mptk-c-popup-close-bg-translucent);
+}
+
+/* 叉与描边调灰：default 档原本字色取 ink-2（明色偏深、暗色偏白），
+   盖到中灰 fg-3，两端都往灰收敛。soft 档描边跟随 fg，一处改两处同变；
+   solid 档的叉也跟着变灰。三类名压过 .mptk-btn--default 的档位规则，不依赖表加载顺序。 */
+.mptk-btn.mptk-popup__close.mptk-btn--default {
+  --mptk-btn-fg: var(--mptk-fg-3);
+}
+
+/* 描边跟随叉色：default soft 档原本描边取 gray-5、叉取 fg-2，两色不一致。
+   库内 tone 档 soft 本就是 fg / border 同色，这里让 default 档也归一——描边 = 叉色，
+   细笔画的叉与边框看起来才是同一个颜色。三类名压过 .mptk-btn--default.mptk-btn--soft 的双类名。 */
+.mptk-btn.mptk-popup__close.mptk-btn--soft {
+  --mptk-btn-border: var(--mptk-btn-fg);
+}
+
+/* 内部档：离上边与离左右边都一个 space-3（12px），四边等距、看着才对称。 */
 .mptk-popup__close--top-left {
-  top: var(--mptk-space-2);
-  left: var(--mptk-space-2);
+  top: var(--mptk-space-3);
+  left: var(--mptk-space-3);
 }
 
 .mptk-popup__close--top-right {
-  top: var(--mptk-space-2);
-  right: var(--mptk-space-2);
+  top: var(--mptk-space-3);
+  right: var(--mptk-space-3);
 }
 
 /* 外挂档要越过面板边界，面板不能再裁切它；按钮自身水平位置仍保留内侧间距。 */
@@ -233,23 +253,24 @@
   overflow: visible;
 }
 
-/* 跨半：只向面板外跨自身高度的一半，左右仍按内侧间距放。 */
+/* 跨半：只向面板外跨自身高度的一半，左右离边 16px（space-4，比其它档再往内收一档），
+   避免盖住面板圆角——半跨只出现在 bottom / center，这两档常带圆角。 */
 .mptk-popup__close--edge-top-left {
   top: var(--mptk-s-zero);
-  left: var(--mptk-space-2);
+  left: var(--mptk-space-4);
   transform: translateY(var(--mptk-s-half-neg));
 }
 
 .mptk-popup__close--edge-top-right {
   top: var(--mptk-s-zero);
-  right: var(--mptk-space-2);
+  right: var(--mptk-space-4);
   transform: translateY(var(--mptk-s-half-neg));
 }
 
 /* 面板上方 / 下方：与面板留一个间距档，不做半幅外移；靠右档留右间距，居中档水平居中。 */
 .mptk-popup__close--above-right {
   bottom: calc(var(--mptk-s-full) + var(--mptk-space-3));
-  right: var(--mptk-space-2);
+  right: var(--mptk-space-3);
 }
 
 .mptk-popup__close--above-center {
@@ -266,5 +287,5 @@
 
 .mptk-popup__close--below-right {
   top: calc(var(--mptk-s-full) + var(--mptk-space-3));
-  right: var(--mptk-space-2);
+  right: var(--mptk-space-3);
 }

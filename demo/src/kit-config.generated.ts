@@ -1,4 +1,4 @@
-// @mptk-inputs:8167000c13ef
+// @mptk-inputs:f694c49c8416
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -2039,6 +2039,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "c-popup-radius",
     },
     {
+      "key": "--mptk-c-popup-close-size",
+      "label": "c-popup-close-size",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "26px",
+      "unit": "px",
+      "note": "c-popup-close-size",
+    },
+    {
+      "key": "--mptk-c-popup-close-bg-translucent",
+      "label": "c-popup-close-bg-translucent",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "rgba(0, 0, 0, 0.55)",
+      "unit": "color",
+      "note": "c-popup-close-bg-translucent",
+    },
+    {
       "key": "--mptk-c-drawer-w",
       "label": "c-drawer-w",
       "group": "component",
@@ -2361,6 +2379,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='41.5' fill='none' stroke='%23fff' stroke-width='17'/%3E%3C/svg%3E\")",
       "unit": "",
       "note": "c-spinner-mask",
+    },
+    {
+      "key": "--mptk-c-close-mask",
+      "label": "c-close-mask",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M22 22L78 78M78 22L22 78' fill='none' stroke='%23fff' stroke-width='15' stroke-linecap='round'/%3E%3C/svg%3E\")",
+      "unit": "",
+      "note": "c-close-mask",
     },
     {
       "key": "--mptk-c-cell-arrow-size",

@@ -43,6 +43,12 @@ const YES_NO = [
   { value: 'no', label: '否' },
 ]
 
+/* 背景档：否 = 半透明底色（叉色不变），不等于没有背景。 */
+const BG_OPTIONS = [
+  { value: 'yes', label: '是' },
+  { value: 'no', label: '半透明' },
+]
+
 const ROUND_SIZES: { value: PopupRoundSize; label: string }[] = [
   { value: 'none', label: '平' },
   { value: 'sm', label: '小' },
@@ -135,7 +141,7 @@ export default function PopupPage() {
             />
             <Cell
               title="背景"
-              value={<Segmented items={YES_NO} value={closeBackground ? 'yes' : 'no'} onChange={(next) => setCloseBackground(next === 'yes')} />}
+              value={<Segmented items={BG_OPTIONS} value={closeBackground ? 'yes' : 'no'} onChange={(next) => setCloseBackground(next === 'yes')} />}
             />
           </CellGroup>
           <CellGroup title="面板">
@@ -246,7 +252,7 @@ export default function PopupPage() {
             {...shared}
           >
             <View className="demo-stack">
-              <Text>{`${closePanel === 'bottom' ? '底部' : '中部'}弹窗 / ${closePosition}；形状 ${closeShape} / 描边 ${closeBorder ? '有' : '无'} / 背景 ${closeBackground ? '有' : '无'}`}</Text>
+              <Text>{`${closePanel === 'bottom' ? '底部' : '中部'}弹窗 / ${closePosition}；形状 ${closeShape} / 描边 ${closeBorder ? '有' : '无'} / 背景 ${closeBackground ? '有' : '半透明'}`}</Text>
               {SAMPLE_LINES.map((line) => (
                 <Text key={line}>{line}</Text>
               ))}

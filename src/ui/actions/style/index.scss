@@ -1,5 +1,6 @@
 @use 'sass:list';
 @use '../../feedback/spinner/style/index' as spinner;
+@use '../../feedback/close/style/index' as close;
 
 /* Button：一条高度刻度 + 四轴正交（语义色 / 底色形态 / 尺寸 / 圆角）。
    全库只有这一份按钮皮肤 —— 使用点不许再就地写按钮样式。
@@ -153,6 +154,13 @@ $button-tones: (
 
 .mptk-btn__icon {
   line-height: var(--mptk-s-line-flat);
+}
+
+/* 自绘图标位：把按钮字色喂给子节点的 currentColor（如 CloseGlyph 的叉），
+   与 loading 圈取 --mptk-btn-fg 同一口径；居中由按钮根的 inline-flex 负责。 */
+.mptk-btn__glyph {
+  display: inline-flex;
+  color: var(--mptk-btn-fg);
 }
 
 .mptk-btn__icon:not(:last-child) {

@@ -286,8 +286,8 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
   assert.match(insetSrc, /TopInsetLevel = 'none' \| 'status-bar' \| 'nav-bar'/, '让位三档不许删')
   assert.match(
     src,
-    /insetTop \?\? \(isTopAnchored\(position\) \? 'nav-bar' : 'none'\)/,
-    'top/left/right 默认让出导航栏，bottom/center 默认不让',
+    /isTopAnchored\(position\) \? insetTop \?\? 'nav-bar' : 'none'/,
+    '先按位置判定：top/left/right 才让位，bottom/center 即使传了 insetTop 也强制 none',
   )
   assert.match(src, /getSafeAreaSnapshot\(\)/, 'Popup 必须读 runtime 注入的真值')
   assert.doesNotMatch(src, /top: `\$\{/, '面板不许写内联 top 探出：Skyline 下会整块顶出可视区')
@@ -358,11 +358,19 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
     /padding-top/,
     'top 档面板不许再写 padding-top 让位，避免与 body 注入叠加',
   )
-  assert.match(
+  assert.doesNotMatch(
     css,
-    /\.mptk-popup--inset-status-bar \.mptk-popup__panel,\s*\.mptk-popup--inset-nav-bar \.mptk-popup__panel\s*\{[^}]*padding-top:\s*var\(--mptk-s-zero\)/,
-    '让位档面板的顶部内边距必须归零：让位值已含状态栏+导航栏，再叠 16px 会把正文多推一截',
+    /\.mptk-popup--inset-(?:status-bar|nav-bar) \.mptk-popup__panel\s*\{[^}]*padding-top:\s*var\(--mptk-s-zero\)/,
+    '旧「让位档面板 padding-top 归零」规则已撤：预留内边距要留给 contentPadding 覆盖并与让位相加',
   )
+  // contentPadding：数字四边统一 / 对象按边给，写行内覆盖面板预留 16px；让位仍走 body 独立相加。
+  assert.match(src, /export type PopupContentPadding = number \| Partial<Record<.*number>>/, '内容内边距类型支持数字与四边对象')
+  assert.match(src, /contentPadding\?: PopupContentPadding/, 'Popup 暴露 contentPadding')
+  assert.match(src, /style=\{panelStyle\}/, '面板挂上内容内边距行内样式')
+  assert.match(src, /paddingTop: `\$\{pad\.top\}px`/, 'top 边距写行内 px')
+  assert.match(src, /bodyStyle/, '让位仍走 body 的 bodyStyle，与面板 padding 各占一层')
+  const entry = read('src/ui/layout/index.ts')
+  assert.match(entry, /type PopupContentPadding/, 'layout 出口没导出 PopupContentPadding')
 })
 
 test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
@@ -383,28 +391,121 @@ test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
   )
 })
 
-test('关闭按钮：图标库的叉 + 三种底形 + 按形态分档的位置', async () => {
+test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档的位置', async () => {
   const src = read('src/ui/layout/Popup.tsx')
   assert.match(src, /resolveClosePosition\(position, closePosition\)/, '关闭按钮位置必须按面板形态解析')
   assert.match(src, /isOutsideClosePosition\(resolvedClosePosition\)/, '跨边 / 外置档必须给面板放开 overflow')
-  assert.match(src, /common\.base:guanbi/, '关闭按钮必须取图标库的叉图标')
+  assert.match(src, /CloseGlyph/, '叉改成自绘几何居中的 CloseGlyph，不再用字体字形')
   assert.match(src, /<Button\b/, '关闭按钮复用核心 Button，不另写一套按钮皮肤')
-  assert.match(src, /icon="common\.base:guanbi"/, '叉图标走 Button 的图标通道')
-  assert.match(src, /size="xs"/, '关闭按钮降到 xs 档（24px），不再用 sm 的 32px')
+  assert.match(src, /glyph=\{<CloseGlyph size="12\.8px" \/>\}/, '叉走 Button 的自绘 glyph 槽位，边长 12.8px')
+  assert.doesNotMatch(src, /common\.base:guanbi/, '不许再用字体叉：字形墨迹偏上且各端基线不一')
+  assert.match(src, /size="xs"/, '按钮仍走 xs 档：叉尺寸单独给，外框走私有 token，两轴分开')
   assert.match(src, /variant=\{closeStyle\.variant\}/, '底色形态由 resolveCloseStyle 派生')
   assert.match(src, /radius=\{closeStyle\.radius\}/, '圆角档由 resolveCloseStyle 派生')
   assert.match(src, /closeBorder = true/, '描边轴默认开')
   assert.match(src, /closeBackground = true/, '背景轴默认开')
 
-  // 真跑视觉解析器：形状一个轴、描边与背景两个布尔轴，组合出 Button 的四形态。
+  assert.match(src, /closeStyle\.translucent/, '背景「否」的半透明标志接到 class 上')
+  // 真跑视觉解析器：描边定 variant、背景轴只翻 translucent——切背景时叉色（fg）不变。
   const { resolveCloseStyle } = await import(pathToFileURL(join(root, 'dist/ui/layout/close-style.js')).href)
-  assert.deepEqual(resolveCloseStyle('circle', true, true), { variant: 'soft', radius: 'pill' })
-  assert.deepEqual(resolveCloseStyle('circle', false, true), { variant: 'solid', radius: 'pill' })
-  assert.deepEqual(resolveCloseStyle('rounded', true, false), { variant: 'outline', radius: 'md' })
-  assert.deepEqual(resolveCloseStyle('rounded', false, false), { variant: 'ghost', radius: 'md' })
-  assert.doesNotMatch(src, /<Icon name="common\.base:guanbi"/, '叉不许再手写 Icon，按钮反馈要靠 Button')
-  assert.doesNotMatch(read(LAYOUT_CSS), /--mptk-popup-close-size/, 'popup 样式不再另立按钮尺寸')
-  assert.equal(tokensOf()['--mptk-control-h-xs'], '24px', 'Button xs 档就是缩小后的 24px')
+  assert.deepEqual(resolveCloseStyle('circle', true, true), { variant: 'soft', radius: 'pill', translucent: false })
+  assert.deepEqual(resolveCloseStyle('circle', false, true), { variant: 'solid', radius: 'pill', translucent: false })
+  assert.deepEqual(resolveCloseStyle('rounded', true, false), { variant: 'soft', radius: 'sm', translucent: true })
+  assert.deepEqual(resolveCloseStyle('rounded', false, false), { variant: 'solid', radius: 'sm', translucent: true })
+  assert.doesNotMatch(src, /<Icon name=/, '叉不许走字体 Icon，按钮反馈要靠 Button')
+  // 外框 26px 走 popup 私有 token，只覆盖高度轴；叉边长单独给 12.8px，两轴分开。
+  assert.equal(tokensOf()['--mptk-c-popup-close-size'], '26px', '关闭按钮外框 30 → 26px（缩 4px）')
+  // 自绘叉：SVG path 几何居中，token + 组件出口 + 按钮槽位取色齐全。
+  const closeMask = tokensOf()['--mptk-c-close-mask']
+  assert.ok(closeMask?.includes('data:image/svg+xml'), '叉遮罩走 SVG data URI（Skyline 的 mask 只认 url()）')
+  assert.match(closeMask ?? '', /path d='M22 22L78 78M78 22L22 78'/, '叉两条线关于中心对称，几何中心 = viewBox 中心')
+  assert.match(closeMask ?? '', /viewBox='0 0 100 100'/, 'viewBox 正方形，缩放不变形')
+  for (const file of [
+    'dist/ui/feedback/close/index.js',
+    'dist/ui/feedback/close/index.d.ts',
+    'dist/ui/feedback/close/CloseGlyph.js',
+    'dist/ui/feedback/close/style/index.css',
+  ]) {
+    assert.ok(existsSync(new URL(`../${file}`, import.meta.url)), `缺自绘叉产物 ${file}`)
+  }
+  const closeCss = resolveCssVars(read('dist/ui/feedback/close/style/index.css'))
+  assert.match(closeCss, /background-color:\s*currentColor/, '叉色取 currentColor，由按钮字色注入')
+  assert.match(closeCss, /mask-image:\s*url\(/, 'Skyline 的 mask 只认 url()，叉遮罩必须有')
+  assert.match(closeCss, /mask-size:\s*100% 100%/, '叉遮罩铺满组件')
+  assert.doesNotMatch(closeCss, /#[0-9a-fA-F]{3,8}\b/, '自绘叉不许硬编码色值')
+  const glyphSrc = read('src/ui/feedback/close/CloseGlyph.tsx')
+  assert.match(glyphSrc, /size \?\? '1em'/, '叉默认边长 1em，跟随按钮字号')
+  assert.match(
+    read('src/ui/actions/Button.tsx'),
+    /glyph !== undefined \? \(\s*<View className="mptk-btn__glyph">\{glyph\}<\/View>/,
+    'Button 图标位优先渲染自绘 glyph 槽位',
+  )
+  assert.match(
+    read('dist/ui/actions/style/index.css'),
+    /\.mptk-btn__glyph\s*\{[^}]*color:\s*var\(--mptk-btn-fg\)/,
+    '按钮把字色喂给自绘图标槽位',
+  )
+  // 背景「否」= 半透明：只换 --mptk-btn-bg，不碰 --mptk-btn-fg（叉色）。
+  assert.equal(tokensOf()['--mptk-c-popup-close-bg-translucent'], 'rgba(0, 0, 0, 0.55)', '半透明底色约 55%')
+  assert.match(
+    read(LAYOUT_CSS),
+    /\.mptk-btn\.mptk-popup__close\.mptk-popup__close--translucent\s*\{[^}]*--mptk-btn-bg:\s*var\(--mptk-c-popup-close-bg-translucent\)/,
+    '半透明档只覆盖底色变量',
+  )
+  assert.doesNotMatch(
+    /\.mptk-btn\.mptk-popup__close\.mptk-popup__close--translucent\s*\{([^}]*)\}/.exec(read(LAYOUT_CSS))?.[1] ?? '',
+    /--mptk-btn-fg/,
+    '半透明档不许改叉色',
+  )
+  // 描边与叉同色：default soft 档原本 fg=fg-2、border=gray-5 两色分叉，是「描边和叉不是同一色」的根因。
+  const actionsCss = read('dist/ui/actions/style/index.css')
+  const defaultSoft = /\.mptk-btn--default\.mptk-btn--soft\s*\{([^}]*)\}/.exec(actionsCss)?.[1] ?? ''
+  assert.equal(declOf(defaultSoft, '--mptk-btn-fg'), 'var(--mptk-fg-2)', 'default soft 叉色取 fg-2')
+  assert.equal(declOf(defaultSoft, '--mptk-btn-border'), 'var(--mptk-gray-5)', 'default soft 描边取 gray-5，与叉不同色')
+  const theme = resolveCssVars(read('dist/styles/theme-light.css'))
+  assert.notStrictEqual(
+    /--mptk-fg-2:\s*([^;]+);/.exec(theme)?.[1],
+    /--mptk-gray-5:\s*([^;]+);/.exec(theme)?.[1],
+    'fg-2 与 gray-5 解析后确实是两个色值，归一不是无的放矢',
+  )
+  assert.match(
+    read(LAYOUT_CSS),
+    /\.mptk-btn\.mptk-popup__close\.mptk-btn--soft\s*\{[^}]*--mptk-btn-border:\s*var\(--mptk-btn-fg\)/,
+    '关闭按钮 soft 档描边跟随叉色，三类名压过 default soft 双类名，与库内 tone 档 soft 的 fg/border 同色约定一致',
+  )
+  // 叉与描边调灰：default 档字色盖到中灰 fg-3；描边跟随 fg，一处改两处同变。
+  assert.match(
+    read(LAYOUT_CSS),
+    /\.mptk-btn\.mptk-popup__close\.mptk-btn--default\s*\{[^}]*--mptk-btn-fg:\s*var\(--mptk-fg-3\)/,
+    '关闭按钮 default 档字色（叉）盖到中灰 fg-3，三类名压过 default 双类名',
+  )
+  const themeDark = resolveCssVars(read('dist/styles/theme-dark.css'))
+  const lum = (hex) => {
+    const n = Number.parseInt(hex.replace('#', ''), 16)
+    return 0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)
+  }
+  const fg2Light = /--mptk-fg-2:\s*([^;]+);/.exec(theme)?.[1]?.trim()
+  const fg3Light = /--mptk-fg-3:\s*([^;]+);/.exec(theme)?.[1]?.trim()
+  const fg2Dark = /--mptk-fg-2:\s*([^;]+);/.exec(themeDark)?.[1]?.trim()
+  const fg3Dark = /--mptk-fg-3:\s*([^;]+);/.exec(themeDark)?.[1]?.trim()
+  assert.ok(lum(fg3Light) > lum(fg2Light), '明色下 fg-3 比 fg-2 浅（不再偏深）')
+  assert.ok(lum(fg3Dark) < lum(fg2Dark), '暗色下 fg-3 比 fg-2 暗（不再偏白）')
+  assert.match(
+    read(LAYOUT_CSS),
+    /\.mptk-btn\.mptk-popup__close\s*\{[^}]*--mptk-btn-h:\s*var\(--mptk-c-popup-close-size\)[^}]*height:\s*var\(--mptk-c-popup-close-size\)/,
+    '双类选择器只覆盖外框高度轴，不碰 --mptk-btn-font（叉尺寸单独给，不吃字号档）',
+  )
+  assert.doesNotMatch(
+    /\.mptk-btn\.mptk-popup__close\s*\{([^}]*)\}/.exec(read(LAYOUT_CSS))?.[1] ?? '',
+    /--mptk-btn-font/,
+    '叉字号不许跟着放大',
+  )
+  assert.equal(tokensOf()['--mptk-control-h-xs'], '24px', 'Button xs 档仍是 24px，字号与按钮高度解耦')
+  // 半跨左右距比其它档再往内收一档：12 → 16（space-3 → space-4），更远离面板圆角。
+  for (const name of ['edge-top-left', 'edge-top-right']) {
+    const rule = new RegExp(`\\.mptk-popup__close--${name}\\s*\\{([^}]*)\\}`).exec(read(LAYOUT_CSS))?.[1] ?? ''
+    assert.match(rule, /(?:left|right):\s*var\(--mptk-space-4\)/, `${name} 左右距要收到 space-4（16px）`)
+  }
   assert.match(
     read('src/ui/actions/Button.tsx'),
     /hoverClass=\{disabled \|\| loading \? 'none' : 'mptk-btn--pressed'\}/,
@@ -455,22 +556,22 @@ test('关闭按钮：图标库的叉 + 三种底形 + 按形态分档的位置',
     '底形不写在 popup 样式里，交给 Button 的 variant / radius',
   )
   const rule = (name) => new RegExp(`\\.mptk-popup__close--${name}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
-  assert.equal(declOf(rule('top-left'), 'top'), 'var(--mptk-space-2)', '内部左上离上边一个间距')
-  assert.equal(declOf(rule('top-left'), 'left'), 'var(--mptk-space-2)', '内部左上离左边一个间距')
-  assert.equal(declOf(rule('top-right'), 'top'), 'var(--mptk-space-2)', '内部右上离上边一个间距')
-  assert.equal(declOf(rule('top-right'), 'right'), 'var(--mptk-space-2)', '内部右上离右边一个间距')
+  assert.equal(declOf(rule('top-left'), 'top'), 'var(--mptk-space-3)', '内部左上离上边 12px，与离左边相等')
+  assert.equal(declOf(rule('top-left'), 'left'), 'var(--mptk-space-3)', '内部左上离左边 12px')
+  assert.equal(declOf(rule('top-right'), 'top'), 'var(--mptk-space-3)', '内部右上离上边 12px，与离右边相等')
+  assert.equal(declOf(rule('top-right'), 'right'), 'var(--mptk-space-3)', '内部右上离右边 12px')
   for (const pos of ['edge-top-left', 'edge-top-right']) {
     assert.equal(declOf(rule(pos), 'top'), 'var(--mptk-s-zero)', `${pos} 顶边贴面板上沿`)
     assert.match(rule(pos), /transform:\s*translateY\(var\(--mptk-s-half-neg\)\)/, `${pos} 只垂直跨半`)
   }
-  assert.equal(declOf(rule('edge-top-left'), 'left'), 'var(--mptk-space-2)', '跨半左上左侧留距，不整体横向出界')
-  assert.equal(declOf(rule('edge-top-right'), 'right'), 'var(--mptk-space-2)', '跨半右上右侧留距，不整体横向出界')
+  assert.equal(declOf(rule('edge-top-left'), 'left'), 'var(--mptk-space-4)', '跨半左上左侧留距 16px，比其它档再往内收一档，避开圆角')
+  assert.equal(declOf(rule('edge-top-right'), 'right'), 'var(--mptk-space-4)', '跨半右上右侧留距 16px，比其它档再往内收一档，避开圆角')
   assert.match(rule('above-right'), /bottom:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '上方靠右留 12px')
   assert.match(rule('above-center'), /bottom:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '上方居中留 12px')
   assert.match(rule('below-center'), /top:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '下方居中留 12px')
   assert.match(rule('below-right'), /top:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '下方靠右留 12px')
-  assert.match(rule('above-right'), /right:\s*var\(--mptk-space-2\)/, '上方靠右档留右边距')
-  assert.match(rule('below-right'), /right:\s*var\(--mptk-space-2\)/, '下方靠右档留右边距')
+  assert.match(rule('above-right'), /right:\s*var\(--mptk-space-3\)/, '上方靠右档右边距 1.5 倍（12px）')
+  assert.match(rule('below-right'), /right:\s*var\(--mptk-space-3\)/, '下方靠右档右边距 1.5 倍（12px）')
   assert.match(rule('above-center'), /left:\s*var\(--mptk-s-half\)/, '上方居中档水平居中')
   assert.match(rule('below-center'), /left:\s*var\(--mptk-s-half\)/, '下方居中档水平居中')
   assert.match(
@@ -628,9 +729,11 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   )
   assert.equal(
     (popupPage.match(/items=\{YES_NO\}/g) ?? []).length,
-    3,
-    '描边 / 背景 / 点遮罩各一个 YES_NO，形状用 SHAPES',
+    2,
+    '描边 / 点遮罩各一个 YES_NO；背景档改走 BG_OPTIONS',
   )
+  assert.match(popupPage, /items=\{BG_OPTIONS\}/, '背景档用 BG_OPTIONS 单独选')
+  assert.match(popupPage, /const BG_OPTIONS[\s\S]*?label: '半透明'/, '背景「否」档文案改为半透明')
   assert.match(popupPage, /items=\{SHAPES\}/, '关闭按钮形状用 Segmented 选')
   assert.match(popupPage, /items=\{ROUND_SIZES\}/, '圆角尺寸用 Segmented 选')
   assert.match(popupPage, /items=\{MASKS\}/, '遮罩三档用 Segmented 选')

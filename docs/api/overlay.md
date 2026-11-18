@@ -2,7 +2,7 @@
 
 ## 接口 / 导出
 
-`mp-taro-kit/ui/layout`：`Overlay`、`OverlayProps`、`OverlayTone`、`OverlayOpacity`、`Popup`、`PopupProps`、`PopupPosition`、`PopupCloseShape`、`PopupClosePosition`、`PopupInsetTop`、`PopupRoundSize`、`MOTION_DURATION`
+`mp-taro-kit/ui/layout`：`Overlay`、`OverlayProps`、`OverlayTone`、`OverlayOpacity`、`Popup`、`PopupProps`、`PopupPosition`、`PopupCloseShape`、`PopupClosePosition`、`PopupInsetTop`、`PopupRoundSize`、`PopupContentPadding`、`MOTION_DURATION`
 `mp-taro-kit/ui/navigation`：`Drawer`、`Dropdown`（遮罩引用 layout 那一份）
 `mp-taro-kit/ui/infra`：`OverlayHost`（命令式 Dialog 也挂同一份遮罩）
 `mp-taro-kit/ui/layout/style`、`mp-taro-kit/ui/navigation/style`、`mp-taro-kit/ui/infra/style`：各自组件样式出口，宿主显式引一次
@@ -87,11 +87,21 @@
 
 | 轴 | 参数 | 默认 | 取值 |
 |---|---|---|---|
-| 形状 | `closeShape` | `'circle'` | `'circle'`（正圆 → `radius="pill"`）/ `'rounded'`（圆角方 → `radius="md"`） |
+| 形状 | `closeShape` | `'circle'` | `'circle'`（正圆 → `radius="pill"`）/ `'rounded'`（小方角 → `radius="sm"` 8px） |
 | 描边 | `closeBorder` | `true` | 有 / 无描边 |
-| 背景 | `closeBackground` | `true` | 有 / 无底色 |
+| 背景 | `closeBackground` | `true` | 有底 / 半透明底（叉色不变） |
 
-描边 × 背景映射 Button 的四种 `variant`：有底有描边 → `soft`；有底无描边 → `solid`；无底有描边 → `outline`；两者都无 → `ghost`（只有叉）。演示站顶部「配置」区用 CellGroup + Segmented 统一配置这三轴，以及圆角尺寸 / 遮罩 / 点遮罩 / 让位；位置档是两个 Cell 行——「垂直」（顶部 / 中部 / 底部）与「侧面」（左侧 / 右侧），按钮放 value 位居右、走 xs 档；关闭按钮位置一块按形态分档，点按钮开面板即可看到配置生效。
+关闭按钮外框走 `--mptk-c-popup-close-size`（26px，比 Button `xs` 档的 24px 略大）；叉是自绘的 `CloseGlyph`（边长固定 12.8px）——外框与叉两轴分开，互不联动。左右离边：内部档与外置靠右档为 12px（`--mptk-space-3`），内部档的上下左右四边等距（都 12px）；**跨半档**再往内收一档到 16px（`--mptk-space-4`），更远离面板圆角。
+
+描边单独定 Button 的 `variant`：有边 → `soft`，无边 → `solid`。背景轴与描边正交：切到「半透明」只把底色换成 `--mptk-c-popup-close-bg-translucent`（`rgba(0, 0, 0, 0.55)`，约 55%），**不改 `--mptk-btn-fg`**（叉的颜色由 `variant` 决定，不随背景轴变）。
+
+`soft` 档的**描边与叉同色**：核心 Button 的 `default` soft 原本描边取 `--mptk-gray-5`、叉取 `--mptk-fg-2`，两者不同色；关闭按钮用三类名把 `--mptk-btn-border` 改成 `var(--mptk-btn-fg)`，让描边跟随叉色。这与库内 tone 档 soft 的 `fg` / `border` 同色约定一致，只作用于 popup 关闭按钮。
+
+两者的**颜色调到中灰**：`default` 档字色原本取 `--mptk-fg-2`（明色偏深、暗色偏白），关闭按钮再用三类名把 `--mptk-btn-fg` 盖成 `--mptk-fg-3`（明色 `#767d87`、暗色 `#858d98`），两端都往灰收敛。因为 soft 档描边跟随 `--mptk-btn-fg`，一处改叉与边框一起变灰；solid 档的叉也一起变。半透明背景轴仍只换 `--mptk-btn-bg`，不碰这层字色。
+
+**叉用自绘 `CloseGlyph`，不是字体图标**：字体叉的字形墨迹相对行盒偏上，且 iOS / Android 的字体基线算法不同，固定位移无法跨端根治。自绘叉把两笔 SVG path 画在 viewBox 正中（`--mptk-c-close-mask`），几何中心就是容器中心，跨端绝对居中；颜色取 `currentColor`，放进 Button 图标位时由 `--mptk-btn-fg` 注入，深浅底自动跟随。`CloseGlyph` 是 feedback 域的公共资产（`mp-taro-kit/ui/feedback/close`），通过 Button 的 `glyph` 槽位嵌入——以后任何按钮要放自绘图标都能复用，不局限于关闭叉。
+
+演示站顶部「配置」区用 CellGroup + Segmented 统一配置这三轴，以及圆角尺寸 / 遮罩 / 点遮罩 / 让位；位置档是两个 Cell 行——「垂直」（顶部 / 中部 / 底部）与「侧面」（左侧 / 右侧），按钮放 value 位居右、走 xs 档；关闭按钮位置一块按形态分档，点按钮开面板即可看到配置生效。
 
 `closePosition` 只能用本形态支持的值；传了不支持的值回落到该形态默认值，`top` / `left` / `right` 三档直接不渲染（传什么都不生效）：
 
@@ -101,13 +111,15 @@
 | `center` | `top-right` | `edge-top-right` | `above-right` | `below-center`、`below-right` | `top-right` |
 | `top` / `left` / `right` | 不支持 | 不支持 | 不支持 | 不支持 | 无关闭按钮 |
 
-几何口径：`top-left` / `top-right` 离上边与左右边各一个 `--mptk-space-2`；`edge-top-*` 只**垂直**跨自身高度一半，左右仍留 `--mptk-space-2`，不整体横向出界；`above-*` / `below-*` 与面板留一个 `--mptk-space-3`（12px），靠右档留右间距、居中档水平居中。跨边 / 外置档会让面板临时放开 `overflow`，否则按钮被裁掉。点击关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径，均可分别关掉。
+几何口径：`top-left` / `top-right` 离上边与离左右边各一个 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px，比其它档再往内收 4px），不整体横向出界；`above-*` / `below-*` 与面板上下留一个 `--mptk-space-3`（12px），靠右档右侧同样留 `--mptk-space-3`，居中档水平居中。跨边 / 外置档会让面板临时放开 `overflow`，否则按钮被裁掉。点击关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径，均可分别关掉。
 
 居中档进场不是纯渐显：从目标位置下方 `--mptk-c-popup-center-rise`（48px）往上浮入，同时渐显；退场反向。改距离只改配置一处。
 
 **关闭按钮必须排在内容 `scroll-view` 之后**：Skyline 下 `scroll-view` 是原生视图、绘制在后，关闭按钮放前面会被它盖住，表现为点了没反应。组件已按此顺序渲染，改结构时别调回去。
 
-顶部让位三档：`insetTop` 取 `'none'`（不让）/ `'status-bar'`（只让状态栏）/ `'nav-bar'`（状态栏 + 导航栏，避开胶囊）。**不传时按位置推导**：`top` / `left` / `right` 默认 `'nav-bar'`，`bottom` / `center` 默认 `'none'`；显式传值尊重调用方。让位只加在内容区 `padding-top`，状态栏区域仍是面板底色。
+顶部让位三档：`insetTop` 取 `'none'`（不让）/ `'status-bar'`（只让状态栏）/ `'nav-bar'`（状态栏 + 导航栏，避开胶囊）。**只对 `top` / `left` / `right` 生效**：这三档不传时默认 `'nav-bar'`、传了按传入档；`bottom` / `center` 传什么都强制 `'none'`，不产生顶部空白。让位只加在内容区 `padding-top`，状态栏区域仍是面板底色。
+
+内容内边距 `contentPadding`：`number`（四边统一）或 `{ top?, right?, bottom?, left? }`（按边给，单位 px，未给的边走面板默认 16px）。它**替换面板预留的 16px**，不替换让位——让位独立加在内容区 `padding-top`，两者相加：例如让位算出 420px、`contentPadding.top = 50`，则顶部总留白 470px；下边距就是 `contentPadding.bottom`（默认 16px）。
 
 **真值必须由 runtime 注入，不能只靠 CSS `env()`**：页面 `navigationStyle: 'custom'` 时微信不预留状态栏空间、`fixed` 从 `y=0` 起。官方文档里 Skyline 支持 `env(safe-area-inset-top)` 等四个值，但它最多只给出状态栏高度，**给不出胶囊下沿**；`nav-bar` 档要避开右上胶囊，只能取平台真值。真值来自 `getWindowInfo().statusBarHeight` + `getMenuButtonBoundingClientRect()`：
 
@@ -162,13 +174,16 @@ configureSafeArea({
 | `--mptk-c-popup-min-h` | `200px` | 面板最小高度，内容少时不塌成一小溜 |
 | `--mptk-c-popup-center-rise` | `48px` | 居中档进场起始偏移：从目标位置下方 48px 上浮渐显 |
 | `--mptk-c-popup-radius` | `var(--mptk-radius-md)` | 圆角尺寸，居中档默认带、贴边档 `round` 开启才带；改这一处换全库尺寸 |
+| `--mptk-c-popup-close-size` | `26px` | 关闭按钮外框；叉是自绘 CloseGlyph（边长固定 12.8px），外框与叉两轴分开 |
+| `--mptk-c-close-mask` | SVG data URI | 自绘关闭叉的遮罩：两笔 path 画在 viewBox 正中、几何居中，跨端不依赖字体基线 |
+| `--mptk-c-popup-close-bg-translucent` | `rgba(0, 0, 0, 0.55)` | 关闭按钮背景「半透明」档底色；只换底色，叉色 `--mptk-btn-fg` 不动 |
 | `--mptk-c-drawer-w` | `240px` | 抽屉宽度；滑入滑出按自身宽度算 |
 
 ## 行为契约
 
 - **进出场**：组件挂载即渲染，关闭时先置收起态、播完 `duration` 再卸载；`duration: 0` 立即卸载（低端机 / 减少动效）。遮罩淡入淡出；贴底 / 贴顶面板上下位移进出，左右档横向位移进出，居中面板从目标位置下方 `--mptk-c-popup-center-rise`（48px）上浮并渐显，退场反向。
 - **面板层级**：面板自带 `z-index: var(--mptk-c-layer-panel)`，与遮罩同在 `.mptk-popup` 的层叠上下文内时也必须高于遮罩；缺了它面板会被遮罩盖住，表现为「点了没反应」。
-- **安全区**：顶部让位按 `insetTop` 三档，加在**内容区** `.mptk-popup__body` 的 `padding-top`——注入生效时是内联 px（目标位置），未注入回落 `env(safe-area-inset-top)`（`nav-bar` 档再加 `--mptk-c-navbar-h`）。让位档的面板顶部内边距归零（左右 / 底部内边距不变）：让位值本身已含状态栏与导航栏，再叠一层 16px 会把正文多往下推一截。面板不写负 `top`：负 top 在 Skyline 下会把整块顶出可视区。底部与横条仍必须让：贴底面板与左右抽屉的 `padding-bottom` 各加一段 `env(safe-area-inset-bottom)`，没有横条的设备算 0。遮罩、贴顶面板、抽屉面板的 `top` 统一为 0，贴边定位与安全区让位分开处理。
+- **安全区**：顶部让位按 `insetTop` 三档，只对 `top` / `left` / `right` 生效（`bottom` / `center` 强制 none），加在**内容区** `.mptk-popup__body` 的 `padding-top`——注入生效时是内联 px（目标位置），未注入回落 `env(safe-area-inset-top)`（`nav-bar` 档再加 `--mptk-c-navbar-h`）。面板四边的内边距由 `contentPadding` 决定（默认 16px），与让位各占一层、两者相加；旧「让位档面板 padding-top 归零」已撤。面板不写负 `top`：负 top 在 Skyline 下会把整块顶出可视区。底部与横条仍必须让：贴底面板与左右抽屉的 `padding-bottom` 各加一段 `env(safe-area-inset-bottom)`，没有横条的设备算 0。遮罩、贴顶面板、抽屉面板的 `top` 统一为 0，贴边定位与安全区让位分开处理。
 - **内滚**：Popup 面板 `max-height: var(--mptk-c-popup-max-h)`，内容区是 `scroll-view`（`flex: 1 1 auto; min-height: 0`），长内容在面板内部滚，不顶出屏幕。
 - **滚动穿透**：遮罩挂 `catchMove`。**边界**：Skyline 下页面滚动由消费方自己的 `scroll-view` 承担，遮罩拦不住那个容器的原生滚动 —— 需要完全锁死时，消费方要在浮层打开期间把 `scroll-y` 关掉。这条写在这里，不做假的承诺。
 - **命令式 Dialog**：自带遮罩，`closable={false}`，点空白不关，关闭只走按钮。
@@ -193,3 +208,9 @@ configureSafeArea({
 - 2026-11-17：关闭按钮复用核心 Button（xs 档 24px），按压变色走 `mptk-btn--pressed`；底形改用 Button 的 ghost / soft + radius 档，不再在浮层里另写一套按钮皮肤
 - 2026-11-17：关闭按钮样式拆成形状 / 描边 / 背景三个正交轴（`closeShape` / `closeBorder` / `closeBackground`），由 `resolveCloseStyle()` 映射 Button 的四形态；演示站上方 Card + Cell + Segmented 实时配置，下方只演示位置
 - 2026-11-17：`Popup` 暴露 `overlayTone` / `overlayOpacity` / `roundSize` 三个参数，把内部遮罩两轴与面板圆角尺寸提到组件层（原来只能改 token 或在 demo 里 hack）；圆角尺寸派生 `.mptk-popup--radius-*` 类名切 `--mptk-c-popup-radius`。演示站重排成顶部统一配置 + 位置档 + 关闭按钮位置三块，撤掉单独的平角 / 圆角、顶部让位、叠加顺序、长内滚四块
+- 2026-11-18：关闭按钮外框走 `--mptk-c-popup-close-size`（26px）、叉字号仍 xs 12px；`rounded` 档改半径 4px（`radius-xs`，原来 md=12px 在 24px 方块上看着还是正圆，两档分不出）；半跨左右距 ×1.5 落到 `--mptk-space-3`（12px）避开圆角。让位只对 top/left/right 生效，bottom/center 传了也强制 none。新增 `contentPadding`（数字四边统一 / 对象按边给），替换面板预留 16px、不替换让位，两者相加；撤销旧「让位档面板 padding-top 归零」。
+- 2026-11-18：关闭按钮外框 26 → 30px（叉仍 xs 12px 不放大）；所有位置的左右离边距离统一到 12px（`--mptk-space-3`，原 8px 的 1.5 倍，覆盖内部 / 跨半 / 外置靠右档）；背景「否」重定义为半透明档（`--mptk-c-popup-close-bg-translucent` = `rgba(0,0,0,.55)`），由 `.mptk-popup__close--translucent` 只换 `--mptk-btn-bg`、不碰叉色 `--mptk-btn-fg`，`resolveCloseStyle` 的 variant 只由描边轴定。
+- 2026-11-18：`soft` 档描边改为跟随叉色（`.mptk-btn.mptk-popup__close.mptk-btn--soft` 把 `--mptk-btn-border` 指向 `--mptk-btn-fg`）——`default` soft 原本描边 gray-5、叉 fg-2 两色不一致，细笔画的叉看着更淡；归一同色，与库内 tone 档 soft 约定一致。
+- 2026-11-18：叉从字体图标换成自绘 `CloseGlyph`，根治跨端偏上。实测字体字形墨迹中心偏离 hhea 内容区、iOS/Android 基线度量不同，固定位移无法通吃；自绘叉把两笔 path 画在 viewBox 正中，几何中心 = 容器中心，跨端绝对居中。资产落 feedback 域公共组件（`mp-taro-kit/ui/feedback/close`），形状走 `--mptk-c-close-mask` token、色走 currentColor（由 Button 的 `--mptk-btn-fg` 注入）；Button 新增通用 `glyph` 槽位（与 `icon` 互斥、优先），自绘图标不必再走字体通道。圈、描边、背景三轴 CSS 全保留。
+- 2026-11-18：叉边长 1em → 1.4em（按钮外框 30px 不变，叉从 12px 放大到约 16.8px）；跨半档左右离边 12 → 16px（`space-3` → `space-4`，往内收一档避开圆角）；内部档上边距 8 → 12px，使离上边与离左右边相等（四边等距）。其它位置档不变。
+- 2026-11-18：按钮外框与叉各缩 4px——外框 30 → 26px、叉 16.8 → 12.8px（改固定值，不吃字号档）；`rounded` 圆角档 xs → sm（4 → 8px，统一圆角档大一号）；default 档字色（叉与描边）从 fg-2 盖到中灰 fg-3，明色变浅、暗色变暗，两端收敛到灰。
