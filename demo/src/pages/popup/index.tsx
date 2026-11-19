@@ -4,7 +4,9 @@ import { Button } from 'mp-taro-kit/ui/actions'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
 import {
+  ImagePopup,
   Popup,
+  type ImagePopupSlide,
   type OverlayOpacity,
   type OverlayTone,
   type PopupClosePosition,
@@ -117,6 +119,61 @@ const CLOSE_GROUPS: CloseDemoGroup[] = [
   },
 ]
 
+/* 演示用真实图：
+   IMAGE_A / IMAGE_B 是两张常规高度图，用于单图、多图翻页、带按钮与尺寸档；
+   LONG_IMAGE 是超长图，只用于「长图滚动」档（不参与单图 / 多图翻页）；
+   ACTION_BTN_IMAGE 是图片按钮专用图。 */
+const IMAGE_A = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/page-main/image/popup/89483104-2293-4dc2-97bb-341cf9277a1c.png'
+const IMAGE_B = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/checkin/image/df61b214-81f1-4e29-98b9-b38957695bb2.png.png'
+const LONG_IMAGE = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/content/image/4965/d278336e-af7d-4c83-a423-727495583650.webp'
+const ACTION_BTN_IMAGE = 'https://t-cdn-oss.qswnet.com/file/zuche/lottery-center/image/1fc1dcb1-a8f8-444f-941c-d9b5caa12003.png'
+
+/* 第一类「图片」：单图用 A，多图翻页用 A + B（都是正常高度，无长图）。
+   每屏给确定宽、不锁高——图片按各自真实比例撑高：矮图框就矮、高图框就高，不压变形。 */
+const GALLERY_SLIDES: ImagePopupSlide[] = [
+  { src: IMAGE_A, width: 320 },
+  { src: IMAGE_B, width: 320 },
+]
+
+/* 第二类「带按钮」两种类型，默认居中；两个库按钮顺带演示按钮之间的默认间距。 */
+const ACTION_BUTTON_SLIDE: ImagePopupSlide = {
+  src: IMAGE_A,
+  width: 320,
+  actions: [
+    { text: '取消', type: 'default', onClick: () => undefined },
+    { text: '查看详情', type: 'primary', onClick: () => undefined },
+  ],
+}
+const ACTION_IMAGE_SLIDE: ImagePopupSlide = {
+  src: IMAGE_A,
+  width: 320,
+  actions: [
+    { src: ACTION_BTN_IMAGE, height: 36, onClick: () => undefined },
+  ],
+}
+
+/* 第三类「图片尺寸」三档：定宽 / 定高 / 长图滚动。 */
+type ImageSizeMode = 'width' | 'height' | 'scroll'
+const SIZE_DEMO: { value: ImageSizeMode; label: string }[] = [
+  { value: 'width', label: '定宽' },
+  { value: 'height', label: '定高' },
+  { value: 'scroll', label: '长图滚动' },
+]
+
+/* 关闭位：定宽 / 长图滚动用默认外下中，定高档演示外下右。 */
+const SIZE_CLOSE_POSITION: Record<ImageSizeMode, PopupClosePosition> = {
+  width: 'below-center',
+  height: 'below-right',
+  scroll: 'below-center',
+}
+
+function sizeDemoSlide(mode: ImageSizeMode): ImagePopupSlide {
+  if (mode === 'width') return { src: IMAGE_A, width: 320 }
+  if (mode === 'height') return { src: IMAGE_A, height: 240 }
+  // 长图：给确定宽让面板贴合图片、滚动条落在图片右缘；视口限高 320px 不变，不顶满屏。
+  return { src: LONG_IMAGE, width: 320, maxHeight: 320, fit: 'scroll' }
+}
+
 const SAMPLE_LINES = [
   '第 1 行：这次给足长度，能看出面板的真实形态',
   '第 2 行：上下档通栏，左右档是全高抽屉',
@@ -142,6 +199,12 @@ export default function PopupPage() {
   const [closeOpen, setCloseOpen] = useState(false)
   const [closePanel, setClosePanel] = useState<CloseDemoPanel>('bottom')
   const [closePosition, setClosePosition] = useState<PopupClosePosition>('above-center')
+  const [imageOpen, setImageOpen] = useState(false)
+  const [imageMulti, setImageMulti] = useState(false)
+  const [actionOpen, setActionOpen] = useState(false)
+  const [actionKind, setActionKind] = useState<'button' | 'image'>('button')
+  const [sizeMode, setSizeMode] = useState<ImageSizeMode>('width')
+  const [sizeOpen, setSizeOpen] = useState(false)
 
   const maskValues = MASK_VALUES[mask]
   const shared = {
@@ -301,6 +364,76 @@ export default function PopupPage() {
               ))}
             </View>
           </Popup>
+        </View>
+      )
+    }
+    if (id === 'image-popup') {
+      return (
+        <View>
+          <CellGroup>
+            <Cell
+              title="图片"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => { setImageMulti(false); setImageOpen(true) }}>单图</Button>
+                  <Button className="demo-item" size="xs" onClick={() => { setImageMulti(true); setImageOpen(true) }}>多图翻页</Button>
+                </View>
+              }
+            />
+            <Cell
+              title="带按钮"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => { setActionKind('button'); setActionOpen(true) }}>库按钮</Button>
+                  <Button className="demo-item" size="xs" onClick={() => { setActionKind('image'); setActionOpen(true) }}>图片按钮</Button>
+                </View>
+              }
+            />
+            <Cell
+              title="图片尺寸"
+              value={
+                <View className="demo-row">
+                  {SIZE_DEMO.map((item) => (
+                    <Button
+                      key={item.value}
+                      className="demo-item"
+                      size="xs"
+                      onClick={() => { setSizeMode(item.value); setSizeOpen(true) }}
+                    >
+                      {item.label}
+                    </Button>
+                  ))}
+                </View>
+              }
+            />
+          </CellGroup>
+          <ImagePopup
+            open={imageOpen}
+            slides={imageMulti ? GALLERY_SLIDES : GALLERY_SLIDES.slice(0, 1)}
+            closeable
+            closePosition="below-center"
+            overlayTone={maskValues.tone}
+            overlayOpacity={maskValues.opacity}
+            onClose={() => setImageOpen(false)}
+          />
+          <ImagePopup
+            open={actionOpen}
+            slides={[actionKind === 'button' ? ACTION_BUTTON_SLIDE : ACTION_IMAGE_SLIDE]}
+            closeable
+            closePosition="below-center"
+            overlayTone={maskValues.tone}
+            overlayOpacity={maskValues.opacity}
+            onClose={() => setActionOpen(false)}
+          />
+          <ImagePopup
+            open={sizeOpen}
+            slides={[sizeDemoSlide(sizeMode)]}
+            closeable
+            closePosition={SIZE_CLOSE_POSITION[sizeMode]}
+            overlayTone={maskValues.tone}
+            overlayOpacity={maskValues.opacity}
+            onClose={() => setSizeOpen(false)}
+          />
         </View>
       )
     }

@@ -20,7 +20,7 @@ docs/                                               # 项目文档库入口
 │   ├── divider.md                                  # 分隔线的纯线形态、带文字形态与 contentPosition 契约
 │   ├── exports.md                                  # exports 子路径形态、挂载与注入约定、peer 版本下限
 │   ├── icons.md                                    # 平台项目与命名规则、类名契约、多色行为与字体加载稳定性
-│   ├── overlay.md                                  # 遮罩与浮层底座：一份遮罩、一条层级链、进出场/安全区/内滚
+│   ├── overlay.md                                  # 遮罩与浮层：一份遮罩、一条层级链、Popup 五档与裸壳、ImagePopup 尺寸模型
 │   ├── segmented.md                                # Segmented 的 items 契约、两种指示器与异步切换
 │   ├── switch.md                                   # Switch 的两种形状、五档尺寸与异步切换
 │   └── tag.md                                      # 标签的高度刻度、底色形态、圆角档与图标规则，以及与 Badge 的边界
@@ -65,3 +65,4 @@ docs/                                               # 项目文档库入口
 - 2026-11-15 15:35:00：索引补 api/button.md
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
 - 2026-11-16：索引补 api/overlay.md（遮罩收一份、层级收一条链）
+- 2026-11-19：overlay.md 描述补 Popup / ImagePopup，索引与文档实际内容对齐

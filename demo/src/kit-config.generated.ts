@@ -1,4 +1,4 @@
-// @mptk-inputs:f694c49c8416
+// @mptk-inputs:9ebd18367b1e
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -2007,7 +2007,7 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "c-popup-center-w",
       "group": "component",
       "groupLabel": "组件视觉值",
-      "value": "280px",
+      "value": "320px",
       "unit": "px",
       "note": "c-popup-center-w",
     },
@@ -2019,6 +2019,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "200px",
       "unit": "px",
       "note": "c-popup-min-h",
+    },
+    {
+      "key": "--mptk-image-popup-action-gap",
+      "label": "image-popup-action-gap",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "var(--mptk-space-2)",
+      "unit": "",
+      "note": "image-popup-action-gap",
     },
     {
       "key": "--mptk-c-popup-center-rise",

@@ -705,6 +705,18 @@ export const pages: CatalogPage[] = [
         ],
         renderNotes: '按面板形态分档：底部四档、中部五档；左右 / 上档忽略关闭按钮设置，不再单独演示',
       },
+      {
+        id: 'image-popup',
+        title: '图片弹窗',
+        hint: '传图片和按钮即成的弹窗：单图直出、多图翻页，图片按自身比例自适应',
+        usage: '<ImagePopup open slides={[{ src, width: 320, actions: [{ text, onClick }, { src, height: 36 }] }]} closeable closePosition="below-center" onClose={close} />',
+        imports: [
+          'mp-taro-kit/ui/layout', 'mp-taro-kit/ui/layout/style',
+          'mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style',
+          'mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style',
+        ],
+        renderNotes: '单图直出 / 多图 Swiper；按钮用现成 Button，actionsAlign 控对齐；遮罩底色与浓度跟随顶部配置，关闭按钮三轴不跟随',
+      },
     ],
   },
   {

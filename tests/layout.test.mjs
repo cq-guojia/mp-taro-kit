@@ -366,11 +366,16 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
   // contentPadding：数字四边统一 / 对象按边给，写行内覆盖面板预留 16px；让位仍走 body 独立相加。
   assert.match(src, /export type PopupContentPadding = number \| Partial<Record<.*number>>/, '内容内边距类型支持数字与四边对象')
   assert.match(src, /contentPadding\?: PopupContentPadding/, 'Popup 暴露 contentPadding')
-  assert.match(src, /style=\{panelStyle\}/, '面板挂上内容内边距行内样式')
+  assert.match(src, /style=\{padStyle === undefined \? panelStyle : \{ \.\.\.padStyle, \.\.\.panelStyle \}\}/, '面板内边距与传入 panelStyle 合并挂行内')
+  assert.match(src, /panelStyle\?: CSSProperties/, 'Popup 暴露 panelStyle 供 ImagePopup 贴合图片宽')
   assert.match(src, /paddingTop: `\$\{pad\.top\}px`/, 'top 边距写行内 px')
   assert.match(src, /bodyStyle/, '让位仍走 body 的 bodyStyle，与面板 padding 各占一层')
   const entry = read('src/ui/layout/index.ts')
   assert.match(entry, /type PopupContentPadding/, 'layout 出口没导出 PopupContentPadding')
+  // ImagePopup 与尺寸模型的类型都要从出口可达：消费者配置 slides 时要能标注类型。
+  for (const name of ['ImagePopup', 'ImagePopupSlide', 'ImagePopupAction', 'ImagePopupActionsAlign', 'ImageSizeInput', 'ImageWidthSpec', 'ImageHeightSpec', 'ImageFitMode', 'ImageNaturalSize']) {
+    assert.match(entry, new RegExp(name), `layout 出口没导出 ${name}`)
+  }
 })
 
 test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
@@ -519,8 +524,8 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   assert.match(src, /closeShape = 'circle'/, '形状轴默认圆形')
   assert.match(src, /closeable = false/, '关闭按钮默认不显示')
   assert.ok(
-    src.indexOf('mptk-popup__close') > src.indexOf('<ScrollView scrollY className="mptk-popup__body">'),
-    '关闭按钮必须排在 scroll-view 后面：Skyline 下原生 scroll-view 绘制在后，放前面会盖住叉导致点不到',
+    src.indexOf('mptk-popup__close') > src.indexOf('mptk-popup__body'),
+    '关闭按钮必须排在内容容器之后：Skyline 下原生 scroll-view 绘制在后，放前面会盖住叉导致点不到',
   )
   assert.match(
     src,
@@ -578,6 +583,17 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   assert.match(rule('below-right'), /right:\s*var\(--mptk-space-3\)/, '下方靠右档右边距 1.5 倍（12px）')
   assert.match(rule('above-center'), /left:\s*var\(--mptk-s-half\)/, '上方居中档水平居中')
   assert.match(rule('below-center'), /left:\s*var\(--mptk-s-half\)/, '下方居中档水平居中')
+
+  // 图片弹窗专用覆盖：裸壳面板已内联贴合图片，左右档关闭按钮不再留内侧间距、与图片左右缘齐平。
+  // 基础 Popup 各档间距（上面已断言）不动——覆盖只在 mptk-image-popup__panel 作用域内。
+  const imagePanelRule = (name) =>
+    new RegExp(`\\.mptk-image-popup__panel\\s+\\.mptk-popup__close--${name}\\s*(?:,[^}]*?)?\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
+  for (const pos of ['top-right', 'edge-top-right', 'above-right', 'below-right']) {
+    assert.equal(declOf(imagePanelRule(pos), 'right'), 'var(--mptk-s-zero)', `${pos} 在图片弹窗里右缘贴图片，不留内侧间距`)
+  }
+  for (const pos of ['top-left', 'edge-top-left']) {
+    assert.equal(declOf(imagePanelRule(pos), 'left'), 'var(--mptk-s-zero)', `${pos} 在图片弹窗里左缘贴图片，不留内侧间距`)
+  }
   assert.match(
     css,
     /\.mptk-popup--close-outside \.mptk-popup__panel\s*\{[^}]*overflow:\s*visible/,
@@ -626,6 +642,16 @@ test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
     'var(--mptk-c-popup-min-h)',
     '面板没最小高度，内容少时会塌成一小溜',
   )
+  // 裸壳：面板不限高、不裁切，body 用 View 按内容撑高（不抢剩余空间）。
+  const barePanel = /\.mptk-popup--surface-none \.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.equal(declOf(barePanel, 'min-height'), 'var(--mptk-s-zero)', '裸壳面板 min-height 未归零')
+  assert.equal(declOf(barePanel, 'max-height'), 'none', '裸壳面板不该限高，内容自己决定')
+  assert.equal(declOf(barePanel, 'overflow'), 'visible', '裸壳面板不该裁切内容')
+  assert.equal(
+    declOf(/\.mptk-popup--surface-none \.mptk-popup__body\s*\{([^}]*)\}/.exec(css)?.[1] ?? '', 'flex'),
+    '0 0 auto',
+    '裸壳 body 是 View，要按内容撑高不抢剩余空间',
+  )
   assert.equal(
     /--mptk-c-popup-sheet-h:\s*([^;]+);/.exec(read('dist/styles/theme-light.css'))?.[1],
     '35vh',
@@ -641,10 +667,16 @@ test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
   const body = /\.mptk-popup__body\s*\{([^}]*)\}/.exec(css)
   assert.ok(body, '缺弹层内容区规则')
   assert.equal(declOf(body[1], 'min-height'), '0', '内容区不给 min-height: 0，flex 压不进限高')
+  const popupSrc = read('src/ui/layout/Popup.tsx')
   assert.match(
-    read('src/ui/layout/Popup.tsx'),
+    popupSrc,
+    /surface === 'none' \? \([\s\S]*?<View className="mptk-popup__body" style=\{bodyStyle\}>/,
+    '裸壳档内容必须是 View 直出（不是 scroll-view），且注入让位真值',
+  )
+  assert.match(
+    popupSrc,
     /<ScrollView scrollY className="mptk-popup__body" style=\{bodyStyle\}>/,
-    '内容区没换 scroll-view，或没注入让位真值',
+    '默认档内容区还得是 scroll-view，长内容才能自己滚、让位真值也要注入',
   )
 
   assert.match(
@@ -662,6 +694,59 @@ test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
   assert.match(read(LAYOUT_CSS), /\.mptk-overlay\s*\{[^}]*top:\s*var\(--mptk-s-zero\)/, '遮罩没贴边')
   assert.match(read(LAYOUT_CSS), /\.mptk-popup__panel--top\s*\{[^}]*top:\s*var\(--mptk-s-zero\)/, '贴顶面板没贴边')
   assert.match(read(NAV_CSS), /\.mptk-drawer__panel\s*\{[^}]*top:\s*var\(--mptk-s-zero\)/, '抽屉没贴边')
+})
+
+test('图片弹窗多图：每屏容器垂直居中，swiper 高度由 JS 注入确定值', () => {
+  const css = read(LAYOUT_CSS)
+  const slide = /\.mptk-image-popup__slide\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.ok(slide.length > 0, '缺多图每屏容器 .mptk-image-popup__slide')
+  assert.equal(declOf(slide, 'justify-content'), 'center', '每屏图片要垂直居中，不能贴顶被裁')
+  assert.equal(declOf(slide, 'align-items'), 'center', '每屏图片要水平居中')
+  assert.equal(declOf(slide, 'height'), '100%', '每屏容器要撑满 Swiper 注入的高度')
+
+  // 切页高度动画：JS 改内联 height + CSS 过渡 height，平滑矮图/高图切换的上下跳动（移植自笔记浏览页）。
+  const swiperRule = /\.mptk-image-popup__swiper\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.ok(swiperRule.length > 0, '缺多图 Swiper 容器 .mptk-image-popup__swiper')
+  assert.equal(declOf(swiperRule, 'transition-property'), 'height', '只过渡 height，不牵动其它属性')
+  assert.equal(declOf(swiperRule, 'transition-duration'), 'var(--mptk-dur)', '高度动画时长走库通用 token')
+  assert.equal(declOf(swiperRule, 'transition-timing-function'), 'var(--mptk-ease)', '高度动画缓动走库通用 token')
+
+  const src = read('src/ui/layout/ImagePopup.tsx')
+  assert.match(src, /height: typeof swiperHeight === 'number'/, 'Swiper 必须挂确定高度：像素值转 px，px / vh 交给 CSS')
+  assert.match(src, /const swiperHeight = multi \? viewportOf\(size\) : 0/, 'Swiper 高度跟随当前页，不取全局最大值')
+  assert.doesNotMatch(src, /Math\.max\(\.\.\.sized\.map/, '不能再取所有页最大高度，否则切页框高不随图片变')
+  assert.match(src, /renderPicture\(item, sized\[itemIndex\]/, '多图每屏按自己的尺寸渲染')
+  // 面板贴合图片：用 widthPx（确定像素宽）驱动 panelStyle，不再用 typeof==='number' 判 CSS 字符串。
+  assert.match(src, /panelStyle =\s*\n?\s*size\.widthPx !== null/, '面板宽度基于解析出的像素宽')
+  assert.match(src, /className="mptk-image-popup__panel"\s+panelStyle=\{panelStyle\}/, 'panelStyle 传给 Popup 贴合图片')
+  assert.doesNotMatch(src, /typeof size\.width === 'number'/, 'width 已是 CSS 字符串，不能用 typeof number 判断')
+  // 长图滚动视口只开 scroll-y，绝不开 X —— 全局只有 Y 轴滚动。
+  assert.match(src, /scrollY\s+scrollX=\{false\}/, '滚动视口只开 scroll-y、显式关 scroll-x')
+  assert.doesNotMatch(src, /scrollX=\{true\}/, '任何地方都不开放 X 轴滚动')
+
+  // 回归①：Image 上绝不写 maxWidth / maxHeight / 固定 height——长图压细条的根因。
+  const slideImage = /function renderSlideImage\([\s\S]*?\n\}/.exec(src)?.[0] ?? ''
+  assert.ok(slideImage.length > 0, '找不到 renderSlideImage')
+  assert.doesNotMatch(slideImage, /maxHeight: size\.maxHeight/, '不给 Image 写 maxHeight')
+  // 加载失败 / 0×0 要「定论」后显示，不能因为 needsNatural 一直挂着 opacity:0
+  assert.match(src, /onError=\{handleError\}/, 'Image 要接 onError')
+  assert.match(src, /settle\(width > 0 && height > 0 \? \{ width, height \} : null\)/, '非法尺寸按失败定论')
+  assert.equal((slideImage.match(/height: `\$\{String\(size\.height\)\}px`/g) ?? []).length, 1, 'Image 只在定高档写一次 height')
+  // 图片与滚动视口 flex 不收缩，避免被 flex 压变形。
+  assert.equal(declOf(/\.mptk-image-popup__image\s*\{([^}]*)\}/.exec(css)?.[1] ?? '', 'flex'), 'none', '图片 flex:none 不被压')
+  assert.equal(declOf(/\.mptk-image-popup__scroll\s*\{([^}]*)\}/.exec(css)?.[1] ?? '', 'flex'), 'none', '滚动视口 flex:none 不被压')
+  // 按钮行：能换行 + 两轴间距同源，图片按钮与文字按钮混排不挤成一条。
+  const actionsRule = /\.mptk-image-popup__actions\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.ok(actionsRule.length > 0, '缺按钮行 .mptk-image-popup__actions')
+  assert.equal(declOf(actionsRule, 'flex-wrap'), 'wrap', '按钮行要能换行，避免图片按钮占满时挤掉文字按钮')
+  assert.match(declOf(actionsRule, 'column-gap') ?? '', /--mptk-image-popup-action-gap/, '按钮横向间距走 token')
+  assert.match(declOf(actionsRule, 'row-gap') ?? '', /--mptk-image-popup-action-gap/, '换行后的行间距走同一 token')
+
+  // 回归②：尺寸引擎区分显示宽 / 显示高，定高 widthPx 用 height×ratio。
+  const resolver = read('src/ui/layout/image-size.ts')
+  assert.match(resolver, /displayHeight: number \| null/, '解析结果含显示高，供视口定高')
+  assert.match(resolver, /widthPx: ratio === null \? null : Math\.round\(heightPx \* ratio\)/, '定高显示宽 = 最终高度 × 比例（maxHeight 折算后）')
+  assert.doesNotMatch(resolver, /mode: 'aspectFit'/, '不再用 aspectFit 压盒子')
 })
 
 test('居中档补上位移补偿，抽屉给出宽度（不然滑入滑出算不出来）', () => {
@@ -709,8 +794,9 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
     assert.match(page, /<Cell[\s>]/, `${file} 缺 Cell 列表项`)
   }
   assert.doesNotMatch(overlayPage, /<Button\b/, '遮罩页不该出现按钮，只演遮罩')
-  // 位置按钮按用户要求降到 xs 档（24px）。
-  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 3, '三处位置按钮（垂直 / 侧面 / 关闭按钮位置）各显式降一档到 xs')
+  // 位置按钮按用户要求降到 xs 档（24px）：垂直 / 侧面 / 关闭按钮位置各一处 + 图片弹窗三类
+  // （图片单图/多图两处 + 带按钮库按钮/图片按钮两处 + 图片尺寸 map 一处，运行时 3 个）。
+  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 8, '位置三处 + 图片弹窗五个入口按钮都显式降一档到 xs')
 
   // 三块结构：顶部统一配置 + 位置档 + 关闭按钮位置；旧的六块全部撤掉。
   // catalog 只取 popup 页自己的 examples 段，popup / overlay 是合法的页与菜单 id，不能整篇搜。
@@ -781,8 +867,8 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   assert.match(popupPage, /label: '底部'/, '垂直档叫底部')
   assert.match(popupPage, /label: '左侧'/, '侧面档叫左侧')
   assert.match(popupPage, /label: '右侧'/, '侧面档叫右侧')
-  // 源码里三处 <Button JSX：垂直 3 + 侧面 2 + 关闭按钮位置三组横排。
-  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 3, '按钮三处 JSX：垂直 / 侧面 / 关闭按钮位置')
+  // 源码里八处 <Button JSX：垂直 / 侧面 / 关闭按钮位置各一处 + 图片弹窗图片两类 + 带按钮两类 + 尺寸档 map 一处。
+  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 8, '按钮八处 JSX：位置三处 + 图片弹窗四类入口 + 尺寸档一处')
   assert.equal((popupPage.match(/VERTICAL_POSITIONS\.map/g) ?? []).length, 1, '垂直档按钮走一份数据源')
   assert.equal((popupPage.match(/SIDE_POSITIONS\.map/g) ?? []).length, 1, '侧面档按钮走一份数据源')
   assert.equal((popupPage.match(/CLOSE_GROUPS\.map/g) ?? []).length, 1, '关闭按钮位置三组走一份数据源')
@@ -791,7 +877,7 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
     5,
     '位置档共 5 个按钮：垂直 3 + 侧面 2',
   )
-  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 3, '按钮横排用 demo-item 控制间距')
+  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 8, '按钮横排用 demo-item 控制间距（位置三处 + 图片弹窗四类入口 + 尺寸档一处）')
   assert.match(popupPage, /size="xs"/, '按钮降到 xs 档')
   assert.match(popupPage, /position=\{position\}/, '位置档要真的切 position')
   assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮位置要真的切位置')
@@ -805,6 +891,37 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
     3,
     '关闭按钮位置 demo 合并成底部 / 中部 / 顶部三个 Cell 行',
   )
+  // 图片弹窗示例固定三类三个 Cell：图片 / 带按钮 / 图片尺寸。
+  assert.equal(
+    (popupPage.match(/title="(?:图片|带按钮|图片尺寸)"/g) ?? []).length,
+    3,
+    '图片弹窗 demo 应是图片 / 带按钮 / 图片尺寸三个 Cell',
+  )
+  for (const label of ['单图', '多图翻页', '库按钮', '图片按钮']) {
+    assert.ok(popupPage.includes(`>${label}</Button>`), `图片弹窗 demo 缺按钮 ${label}`)
+  }
+  for (const label of ['定宽', '定高', '长图滚动']) {
+    assert.ok(popupPage.includes(`label: '${label}'`), `图片尺寸 demo 缺档 ${label}`)
+  }
+  // 带按钮两类：库按钮走 text、图片按钮走专用图 src（lottery-center 图）。
+  assert.match(popupPage, /text: '查看详情'/, '库按钮示例用内置 Button 的文字按钮')
+  // 回归：库按钮示例不用只有边框的 soft/outline（白底太透看不清），用实心档。
+  assert.match(popupPage, /\{ text: '取消', type: 'default', onClick:/, '库按钮示例用实心 default，不用 soft/outline')
+  assert.doesNotMatch(popupPage, /\{ text: '取消', variant: '(?:soft|outline|ghost)'/, '库按钮示例不得用只有边框的透底档')
+  assert.match(popupPage, /ACTION_BTN_IMAGE = 'https:\/\/t-cdn-oss\.qswnet\.com\/file\/zuche\/lottery-center\/image\//, '图片按钮用指定的 lottery-center 图')
+  assert.match(popupPage, /\{ src: ACTION_BTN_IMAGE, height: 36,/, '图片按钮项传 src + 定高')
+  // 单图 / 多图翻页用两张正常高度图，长图不参与翻页、只用于长图滚动档。
+  // 回归：每屏给确定宽、不锁高——高度随各图比例变，矮图矮高图高、不压变形；宽统一 320 减半两边留白。
+  assert.match(popupPage, /const GALLERY_SLIDES: ImagePopupSlide\[\] = \[\s*\{ src: IMAGE_A, width: 320 \},\s*\{ src: IMAGE_B, width: 320 \},?\s*\]/, '多图翻页用 IMAGE_A + IMAGE_B，每屏给确定宽不锁高')
+  assert.match(popupPage, /slides=\{imageMulti \? GALLERY_SLIDES : GALLERY_SLIDES\.slice\(0, 1\)\}/, '单图 / 多图翻页共用两张正常高度图，长图不参与')
+  assert.match(popupPage, /return \{ src: LONG_IMAGE, width: 320, maxHeight: 320, fit: 'scroll' \}/, '长图档宽 320 + maxHeight 320，视口贴合图片且不太高')
+  // 关闭位：定宽 / 长图滚动用默认外下中，定高档演示外下右。
+  assert.match(popupPage, /const SIZE_CLOSE_POSITION: Record<ImageSizeMode, PopupClosePosition>/, '尺寸档到关闭位的映射表缺失')
+  assert.match(popupPage, /width: 'below-center'/, '定宽档关闭位应是外下中')
+  assert.match(popupPage, /height: 'below-right'/, '定高档关闭位应是外下右')
+  assert.match(popupPage, /scroll: 'below-center'/, '长图滚动档关闭位应回到默认外下中')
+  assert.match(popupPage, /closePosition=\{SIZE_CLOSE_POSITION\[sizeMode\]\}/, '尺寸演示弹窗没按模式派生关闭位')
+  assert.match(popupPage, /cdn-oss\.qswnet\.com/, '图片 demo 用真实运营图 URL')
   assert.doesNotMatch(
     popupPage,
     /outside-top-right|outside-bottom|outside-right|'bottom-left'|'bottom-right'/,

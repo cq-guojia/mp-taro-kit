@@ -8,5 +8,22 @@ export {
   type PopupClosePosition,
   type PopupInsetTop,
   type PopupRoundSize,
+  type PopupSurface,
   type PopupContentPadding,
 } from './Popup.js'
+export {
+  ImagePopup,
+  type ImagePopupProps,
+  type ImagePopupSlide,
+  type ImagePopupAction,
+  type ImagePopupActionsAlign,
+} from './ImagePopup.js'
+export type {
+  ImageFitMode,
+  ImageHeightSpec,
+  ImageNaturalSize,
+  ImageSizeInput,
+  ImageSizeToken,
+  ImageWidthSpec,
+  ResolvedImageSize,
+} from './image-size.js'

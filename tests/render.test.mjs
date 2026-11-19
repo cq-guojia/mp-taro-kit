@@ -13,7 +13,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createRequire, registerHooks } from 'node:module'
 import { pathToFileURL, fileURLToPath } from 'node:url'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -59,13 +59,21 @@ for (const specifier of ['react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 
 const componentsStub = `
 import { forwardRef, createElement } from ${JSON.stringify(PRE_RESOLVED.get('react'))}
 const make = (tag) => forwardRef((props, ref) => {
-  const { className, style, id, children } = props
-  return createElement(tag, { className, id, style, ref }, children)
+  const { className, style, id, children, scrollY, scrollX, indicatorDots, mode } = props
+  return createElement(tag, {
+    className, id, style, ref,
+    ...(scrollY === true ? { 'scroll-y': '' } : {}),
+    ...(scrollX === true ? { 'scroll-x': '' } : {}),
+    ...(indicatorDots === true ? { 'indicator-dots': '' } : {}),
+    ...(mode === undefined ? {} : { mode }),
+  }, children)
 })
 export const View = make('view')
 export const Text = make('text')
 export const ScrollView = make('scroll-view')
 export const Image = make('image')
+export const Swiper = make('swiper')
+export const SwiperItem = make('swiper-item')
 `
 
 registerHooks({
@@ -89,7 +97,8 @@ const h = React.createElement
 
 const { Card } = await import('../dist/ui/card/index.js')
 const { CellGroup, Cell } = await import('../dist/ui/display/cell/index.js')
-const { Overlay, Popup } = await import('../dist/ui/layout/index.js')
+const { Overlay, Popup, ImagePopup } = await import('../dist/ui/layout/index.js')
+const { resolveImageSize } = await import('../dist/ui/layout/image-size.js')
 const { Drawer, Dropdown } = await import('../dist/ui/navigation/index.js')
 const { Dialog, Loading, Toast } = await import('../dist/ui/feedback/index.js')
 const { CARD_EDGE_OUT_OF_FLOW } = await import('../dist/ui/infra/card-edge.js')
@@ -400,6 +409,210 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   /* 外置档要放开面板裁剪，否则按钮被 overflow 裁掉。 */
   const outside = render(h(Popup, { ...base, closePosition: 'above-center' }, h('div', null, '内容')))
   assert.match(outside, /mptk-popup--close-outside/, '面板上方的按钮需要根节点放开裁剪')
+
+  /* 裸壳档：面板 class 带 surface-none，浮层能力（遮罩 / 关闭按钮）仍在。 */
+  const bare = render(h(Popup, { ...base, surface: 'none' }, h('div', null, '自画内容')))
+  assert.match(bare, /mptk-popup--surface-none/, 'surface=none 要落裸壳 class')
+  assert.match(bare, /mptk-popup__close--top-left/, '裸壳档关闭按钮仍渲染，不随壳一起没')
+  assert.match(bare, /mptk-overlay/, '裸壳档遮罩仍在')
+  assert.doesNotMatch(bare, /<scroll-view/, '裸壳档内容不能套 scroll-view，否则面板无固定高时塌成 0')
+  const panel = render(h(Popup, base, h('div', null, 'x')))
+  assert.doesNotMatch(panel, /mptk-popup--surface-none/, '默认档不能带裸壳 class')
+  assert.match(panel, /<scroll-view/, '默认档内容仍走 scroll-view，长内容自己滚')
+})
+
+test('ImagePopup 尺寸模型：宽/高/比例/原图/上界/滚动/不放大', () => {
+  const ctx = { containerWidth: 240 }
+  const r = (input) => resolveImageSize(input, ctx)
+  // 定宽 + 比例 → 只锁宽走 widthFix，displayHeight 供视口定高；height 恒 null 由原生按比例撑
+  assert.deepEqual(r({ width: 200, ratio: 0.75 }), {
+    width: '200px', widthPx: 200, height: null, displayHeight: 267, mode: 'widthFix', scroll: false,
+    needsNatural: false,
+  }, '定宽 × 比例(宽/高) 只锁宽，显示高 267 供视口，不压盒子')
+  // 定高 → heightFix，宽度自适应；显示宽由 height×ratio 得，供面板贴合（不是原图像素宽）
+  assert.deepEqual(r({ height: 150 }), {
+    width: 'auto', widthPx: null, height: 150, displayHeight: 150, mode: 'heightFix', scroll: false,
+    needsNatural: true,
+  }, '定高走 heightFix，比例未知首帧 widthPx=null')
+  assert.equal(
+    resolveImageSize({ height: 200 }, { containerWidth: 240, natural: { width: 100, height: 400 } }).widthPx,
+    50, '定高 200 × 比例(100/400=0.25) → 显示宽 50，面板贴合的是显示宽而非原图宽 100',
+  )
+  // 原图比例（口径宽/高）
+  assert.equal(r({ width: 240, naturalWidth: 750, naturalHeight: 1000 }).displayHeight, 320, '原图比例用宽/高，240 → 显示高 320')
+  // width:auto 不放大：按 onLoad 真实宽
+  assert.equal(resolveImageSize({ width: 'auto' }, { containerWidth: 240, natural: { width: 120, height: 80 } }).width, '120px', 'auto 走真实尺寸不放大')
+  // 未给 width：默认取容器内容宽的确定像素，不再走 '100%' 拉满（面板贴合需要确定宽）
+  const defaulted = r({})
+  assert.equal(defaulted.width, '240px', '未给宽时默认取 containerWidth 的确定像素宽')
+  assert.equal(defaulted.widthPx, 240, '默认宽有确定像素值，外层面板才能贴合')
+  // 上界全档生效：maxWidth 是纯宽度上界，不依赖比例
+  assert.equal(r({ width: 400, maxWidth: 300 }).widthPx, 300, 'maxWidth 无比例时也要生效')
+  assert.equal(r({ height: 400, maxHeight: 200, ratio: 1 }).height, 200, '定高档 maxHeight 压高度')
+  assert.equal(r({ height: 400, maxWidth: 100, ratio: 1 }).height, 100, '定高档 maxWidth 按比例反推最大高度')
+  assert.equal(
+    resolveImageSize({ width: 400, maxWidth: 300, fit: 'scroll' }, { containerWidth: 320 }).widthPx,
+    300,
+    'scroll 档 maxWidth 约束视口宽',
+  )
+  // '100%' 档比例已知时按内容区宽折算显示高，多图 Swiper 才能定高
+  assert.equal(r({ width: '100%', ratio: 2 }).displayHeight, 120, "'100%' 按内容区宽折算显示高（240/2）")
+  // auto 按原图宽，但不放大也不超内容区
+  assert.equal(
+    resolveImageSize({ width: 'auto' }, { containerWidth: 240, natural: { width: 800, height: 400 } }).widthPx,
+    240,
+    'auto 不放大也不超内容区，宽图不出面板',
+  )
+  // '100%'：宽度由容器决定、widthPx=null，保持 widthFix，不写死高度
+  const pct = r({ width: '100%', fit: 'scroll' })
+  assert.equal(pct.widthPx, null, "'100%' 无确定像素宽")
+  assert.equal(pct.mode, 'widthFix', "'100%' 保持 widthFix")
+  assert.equal(pct.height, null, "'100%' 不锁高")
+  // 上界：scroll 档 maxHeight 只给视口、不写 Image；contain 档折算进 width
+  const bounded = r({ width: 240, maxHeight: '320px', fit: 'scroll' })
+  assert.equal(bounded.maxHeight, '320px', 'maxHeight 的 px 值只作滚动视口高')
+  assert.equal(bounded.scroll, true, 'fit=scroll 打开 Y 滚动视口')
+  assert.equal(bounded.height, null, 'scroll 档不锁图片高，长图不压扁')
+  const capped = resolveImageSize({ width: 400, maxHeight: 200 }, { containerWidth: 240, natural: { width: 400, height: 200 } })
+  assert.equal(capped.widthPx, 400, 'contain 的 maxHeight 折算进宽度上限：400 宽 2:1 图在 200 高内仍是 400 宽')
+  const capped2 = resolveImageSize({ width: 400, maxHeight: 100 }, { containerWidth: 240, natural: { width: 400, height: 200 } })
+  assert.equal(capped2.widthPx, 200, 'maxHeight 100 把 2:1 图的宽压到 200（仍 widthFix 不拉伸）')
+  // 定宽无比例首帧 → widthFix + needsNatural，等 onLoad 回灌
+  assert.deepEqual(
+    (({ width, widthPx, height, mode, needsNatural }) => ({ width, widthPx, height, mode, needsNatural }))(r({ width: 240 })),
+    { width: '240px', widthPx: 240, height: null, mode: 'widthFix', needsNatural: true },
+    '定宽无比例首帧交 widthFix，等 onLoad 回灌',
+  )
+  // 定宽 + onLoad 回灌真实尺寸后算出显示高
+  const loaded = resolveImageSize({ width: 240 }, { containerWidth: 240, natural: { width: 600, height: 300 } })
+  assert.equal(loaded.displayHeight, 120, '回灌 2:1 真实比例后 240 宽 → 显示高 120')
+  assert.equal(loaded.needsNatural, false, '回灌后不再是待定几何')
+})
+
+test('ImagePopup：单图直出、多图走 Swiper + 红点，两类按钮、长图只 Y 滚动', () => {
+  const single = render(
+    h(ImagePopup, {
+      open: true,
+      onClose: () => {},
+      slides: [{ src: 'a.png', width: 240, ratio: 0.75 }],
+    }),
+  )
+  assert.match(single, /mptk-popup--surface-none/, '图片弹窗底层是裸壳 Popup')
+  assert.match(single, /mptk-popup__close--below-center/, '默认关闭按钮落在图片下方')
+  assert.match(single, /mptk-image-popup__single/, '单图直出，不走 Swiper')
+  assert.doesNotMatch(single, /<swiper/, '单图不该出 Swiper')
+  assert.match(single, /mptk-image-popup__panel/, '面板 class 用于把宽度贴合图片')
+  assert.doesNotMatch(single, /scaleToFill/, '任何档都不拉伸')
+
+  // 未给 width：图片按面板默认宽 320px 显示，面板同步贴合 320px（不再 '100%' 拉满）
+  const defaultedSlide = render(
+    h(ImagePopup, { open: true, onClose: () => {}, slides: [{ src: 'a.png' }] }),
+  )
+  assert.match(defaultedSlide, /<image[^>]*style="[^"]*width:320px/, '未给宽的图片默认 320px')
+  assert.match(defaultedSlide, /mptk-image-popup__panel[^>]*style="[^"]*width:320px/, '面板贴合默认图宽 320px')
+
+  // 图片按钮未给宽：按原图尺寸（auto → 容器宽 200 兜底），不再撑满按钮行把文字按钮挤走
+  const autoButton = render(
+    h(ImagePopup, {
+      open: true,
+      onClose: () => {},
+      slides: [{ src: 'a.png', width: 320, actions: [{ src: 'btn.png' }] }],
+    }),
+  )
+  assert.match(autoButton, /mptk-image-popup__action-image[^>]*width:200px/, '图片按钮默认按容器宽兜底，不撑满')
+
+  // 比例未知的首帧先隐藏，等 onLoad 回灌 / onError 定论后再显示
+  const pending = render(
+    h(ImagePopup, { open: true, onClose: () => {}, slides: [{ src: 'a.png', height: 240 }] }),
+  )
+  assert.match(pending, /<image[^>]*style="[^"]*opacity:0/, '比例未知首帧先隐藏，避免跳变')
+
+  // 空 slides 不渲染任何东西，也不抛
+  assert.equal(render(h(ImagePopup, { open: true, onClose: () => {}, slides: [] })), '', '空 slides 静默不渲染')
+
+  // 红点可关
+  const noDots = render(
+    h(ImagePopup, {
+      open: true,
+      onClose: () => {},
+      showIndicators: false,
+      slides: [{ src: 'a.png', width: 320 }, { src: 'b.png', width: 320 }],
+    }),
+  )
+  assert.doesNotMatch(noDots, /indicator-dots/, 'showIndicators=false 不渲染原生红点')
+
+  const withActions = render(
+    h(ImagePopup, {
+      open: true,
+      onClose: () => {},
+      slides: [{
+        src: 'a.png',
+        width: 240,
+        ratio: 0.75,
+        actionsAlign: 'right',
+        actions: [
+          { text: '查看详情', type: 'primary', variant: 'solid', size: 'lg' },
+          { src: 'btn.png', height: 36 },
+        ],
+      }],
+    }),
+  )
+  assert.match(withActions, /mptk-btn/, '文字按钮用现成 Button')
+  assert.match(withActions, /查看详情/, '按钮文字落在 children')
+  assert.match(withActions, /mptk-btn--lg/, '文字按钮 size 透传，消费端可配')
+  assert.match(withActions, /justify-content:flex-end/, 'align=right 落到 flex-end')
+  assert.match(withActions, /mptk-image-popup__action-image/, '图片按钮独立渲染')
+  assert.match(withActions, /height:36px/, '图片按钮定高、宽按原图自适应')
+
+  // 长图：scroll 档套 scroll-view，只开 scroll-y，视口高取 maxHeight，绝不 X 滚动。
+  const longImage = render(
+    h(ImagePopup, {
+      open: true,
+      onClose: () => {},
+      slides: [{ src: 'long.png', width: '100%', maxHeight: 500, fit: 'scroll' }],
+    }),
+  )
+  assert.match(longImage, /mptk-image-popup__scroll/, '长图套滚动视口')
+  assert.match(longImage, /<scroll-view[^>]*scroll-y/, '滚动视口开 scroll-y')
+  assert.doesNotMatch(longImage, /scroll-x="true"/, '绝不开放 X 轴滚动')
+  assert.match(longImage, /height:500px/, '视口高取 maxHeight')
+  // 回归：Image 只锁宽走 widthFix，绝不写死 height / max-height——否则长图被压成细条。
+  assert.match(longImage, /mode="widthFix"/, '长图图片走 widthFix，按真实比例撑高')
+  assert.doesNotMatch(longImage, /<image[^>]*style="[^"]*max-height/, 'Image 上不得写 max-height，长图不能被压扁')
+  assert.doesNotMatch(longImage, /<image[^>]*style="[^"]*height:/, 'Image 上不得写固定 height，只在滚动视口定高')
+
+  const multi = render(
+    h(ImagePopup, {
+      open: true,
+      onClose: () => {},
+      slides: [
+        { src: 'a.png', width: 240, ratio: 0.75 },
+        { src: 'b.png', width: 200, height: 400 },
+        { src: 'long.png', width: '100%', maxHeight: 300, fit: 'scroll' },
+      ],
+    }),
+  )
+  assert.match(multi, /mptk-image-popup__slider/, '多图走 slider 容器')
+  assert.match(multi, /<swiper/, '多图出 Swiper')
+  assert.match(multi, /indicator-dots/, '多图保留微信原生红点')
+  assert.equal((multi.match(/<swiper-item/g) ?? []).length, 3, '每张图一个 SwiperItem')
+  assert.equal((multi.match(/mptk-image-popup__slide\b/g) ?? []).length, 3, '每屏一个居中容器')
+  // Swiper 高度跟随当前页（第 1 屏 240/0.75=320），不取全局最大值——切到高图才变高、叉随之下移。
+  assert.match(multi, /<swiper[^>]*style="height:320px"/, 'Swiper 高度等于当前页图片高度')
+  assert.doesNotMatch(multi, /<swiper[^>]*style="height:400px"/, '不再取所有页最大高度')
+  // 每图独立尺寸：定高图走 heightFix，宽度自适应、不锁死，而不是统一兜底宽。
+  assert.match(multi, /width:auto;height:400px/, '定高图按自己的高度渲染，宽交 heightFix 自适应')
+  // 面板贴合当前图片宽：定宽 240 → 面板内联 width:240px，叉按面板右缘即贴图片右缘。
+  assert.match(single, /mptk-image-popup__panel"\s+style="width:240px;max-width:100vw"/, '单图面板内联宽度贴合图片，不再左右留白')
+  assert.match(multi, /mptk-image-popup__panel"\s+style="width:240px;max-width:100vw"/, '多图面板同样贴合当前页图片宽')
+
+  // 单图索引钳制：slides 长度变化后越界的 current 必须被归零，否则组件 return null 打不开。
+  const imageSrc = readFileSync(new URL('../src/ui/layout/ImagePopup.tsx', import.meta.url), 'utf8')
+  assert.match(
+    imageSrc,
+    /const index = slides\.length === 0 \? 0 : Math\.min\(Math\.max\(current, 0\), slides\.length - 1\)/,
+    '索引必须无条件钳到 [0, slides.length-1]，多图滑到末页后切单图也要归零',
+  )
 })
 
 test('浮层类组件都声明了「脱离文档流」：关闭时渲染 null 也不污染 Card 的边界判定', () => {

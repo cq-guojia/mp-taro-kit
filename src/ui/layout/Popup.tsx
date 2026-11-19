@@ -27,6 +27,9 @@ export type PopupInsetTop = TopInsetLevel
 /** 面板圆角尺寸档：平角 / 小 / 中 / 大；只作用于圆角已开启（round 或居中档）的面板。 */
 export type PopupRoundSize = 'none' | 'sm' | 'md' | 'lg'
 
+/** 面板表面：`panel`（默认，有底色 / 内边距 / 圆角）或 `none`（裸壳，只留遮罩 / 浮起 / 关闭能力，内容自己画）。 */
+export type PopupSurface = 'panel' | 'none'
+
 /**
  * 内容内边距：数字四边统一，或按边给；单位 px。
  * 替换面板预留的 16px（--mptk-space-4），不替换让位——让位独立加在 body 上，两者相加。
@@ -49,6 +52,8 @@ export interface PopupProps {
   lockScroll?: boolean
   duration?: number
   className?: string
+  /** 面板表面，默认 `panel`（有底色 / 内边距 / 圆角）；`none` 是裸壳，只留浮层能力，内容自己画 */
+  surface?: PopupSurface
   /** 面板圆角，默认关（平角）；开时尺寸由 roundSize 决定 */
   round?: boolean
   /** 面板圆角尺寸档：none / sm / md（默认）/ lg；居中档恒圆，贴边档需同时开 round */
@@ -71,6 +76,8 @@ export interface PopupProps {
   insetTop?: PopupInsetTop
   /** 内容内边距：替换面板预留的 16px，不替换让位；数字四边统一，对象按边给（未给的边留默认） */
   contentPadding?: PopupContentPadding
+  /** 面板内联样式：ImagePopup 用它让裸壳面板贴合图片宽度；不传走各档位默认 */
+  panelStyle?: CSSProperties
 }
 
 /** 弹出层：遮罩 + 定位面板，面板内容走内部 scroll-view，超高自己滚。 */
@@ -86,6 +93,7 @@ export function Popup({
   lockScroll = true,
   duration = MOTION_DURATION,
   className,
+  surface = 'panel',
   round = false,
   roundSize = 'md',
   closeable = false,
@@ -95,6 +103,7 @@ export function Popup({
   closePosition,
   insetTop,
   contentPadding,
+  panelStyle,
 }: PopupProps) {
   const { mounted, open: shown } = usePresence(open, duration)
   if (!mounted) return null
@@ -112,7 +121,7 @@ export function Popup({
     typeof contentPadding === 'number'
       ? { top: contentPadding, right: contentPadding, bottom: contentPadding, left: contentPadding }
       : contentPadding ?? {}
-  const panelStyle: CSSProperties | undefined =
+  const padStyle: CSSProperties | undefined =
     pad.top === undefined && pad.right === undefined && pad.bottom === undefined && pad.left === undefined
       ? undefined
       : {
@@ -130,6 +139,7 @@ export function Popup({
   const names = [
     'mptk-popup',
     `mptk-popup--${position}`,
+    surface === 'none' ? 'mptk-popup--surface-none' : '',
     round ? 'mptk-popup--round' : '',
     `mptk-popup--radius-${roundSize}`,
     resolvedInset === 'none' ? '' : `mptk-popup--inset-${resolvedInset}`,
@@ -151,11 +161,19 @@ export function Popup({
           onClose={onClose}
         />
       ) : null}
-      <View className={panel.filter(Boolean).join(' ')} style={panelStyle}>
-        <ScrollView scrollY className="mptk-popup__body" style={bodyStyle}>
-          {children}
-        </ScrollView>
-        {/* 关闭按钮必须排在 scroll-view 后面：Skyline 下 scroll-view 是原生视图、绘制在后，
+      <View className={panel.filter(Boolean).join(' ')} style={padStyle === undefined ? panelStyle : { ...padStyle, ...panelStyle }}>
+        {surface === 'none' ? (
+          /* 裸壳档内容自己画：不套 scroll-view，否则面板无固定高时它塌成 0 把内容裁没。
+             要滚由调用方自己在 children 里包 scroll-view（与 Vant / NutUI 一致）。 */
+          <View className="mptk-popup__body" style={bodyStyle}>
+            {children}
+          </View>
+        ) : (
+          <ScrollView scrollY className="mptk-popup__body" style={bodyStyle}>
+            {children}
+          </ScrollView>
+        )}
+        {/* 关闭按钮必须排在内容容器后面：Skyline 下 scroll-view 是原生视图、绘制在后，
             放前面会被它盖住，点上去没反应。按钮复用核心 Button 的 xs 档与按压变色。 */}
         {closeable && onClose && resolvedClosePosition !== null ? (
           <Button

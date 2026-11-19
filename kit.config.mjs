@@ -294,8 +294,9 @@ export default {
     "--mptk-c-motion-duration": "300ms",                            // 浮层进出场时长，带单位；0s 表示不做动画（JS 侧 MOTION_DURATION 仍是数值 300）
     "--mptk-c-popup-max-h": "80vh",                                 // 弹出层面板上限高：超出后面板内部滚动，不顶出屏幕
     "--mptk-c-popup-sheet-h": "35vh",                               // 贴顶/贴底档确定高度：Skyline 下 scroll-view 要确定高才能滚，只给 max-height 会被内容撑满屏；取 35vh 不让面板过长
-    "--mptk-c-popup-center-w": "280px",                             // 居中档默认宽：Vant Dialog 320px / antd-mobile RN 286px，取 280px（375 屏约 75%），最大不超屏
+    "--mptk-c-popup-center-w": "320px",                             // 居中档默认宽：对齐 Vant Dialog 320px（antd-mobile RN 286px），375 屏两边各留 27.5px，最大不超屏
     "--mptk-c-popup-min-h": "200px",                                // 面板最小高度：内容少时不塌成一小溜
+    "--mptk-image-popup-action-gap": "var(--mptk-space-2)",         // 图片弹窗动作组里文字按钮 / 图片按钮之间的默认间距，站点可覆盖
     "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
     "--mptk-c-popup-close-size": "26px",                             // 关闭按钮外框：叉尺寸单独给（12.8px），外框与叉两轴分开

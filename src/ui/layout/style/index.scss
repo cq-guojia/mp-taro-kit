@@ -289,3 +289,104 @@
   top: calc(var(--mptk-s-full) + var(--mptk-space-3));
   right: var(--mptk-space-3);
 }
+
+/* 裸壳：只留浮层能力（遮罩 / 进场 / 关闭按钮 / 定位），面板本身不画底色、内边距、圆角。
+   放文件末尾、双类名压过基础面板与各档位（含 --round）声明，不依赖样式表顺序。
+   min-height 归零：否则内容少时面板仍撑到 popup-min-h 一截空白底。 */
+/* 裸壳：只留浮层能力（遮罩 / 进场 / 关闭按钮 / 定位），面板完全不干预内容。
+   min-height / max-height / overflow 全部撤掉，高度由 children 自己决定——
+   children 用 View 直出（不是 scroll-view），不会被 0 高度裁掉；要滚由调用方自己包。 */
+.mptk-popup--surface-none .mptk-popup__panel {
+  background-color: transparent;
+  min-height: var(--mptk-s-zero);
+  max-height: none;
+  overflow: visible;
+  padding-top: var(--mptk-s-zero);
+  padding-right: var(--mptk-s-zero);
+  padding-bottom: var(--mptk-s-zero);
+  padding-left: var(--mptk-s-zero);
+  border-top-left-radius: var(--mptk-s-zero);
+  border-top-right-radius: var(--mptk-s-zero);
+  border-bottom-left-radius: var(--mptk-s-zero);
+  border-bottom-right-radius: var(--mptk-s-zero);
+}
+
+/* 裸壳内容是 View，flex:0 0 auto 让它按自身内容撑高、不去抢剩余空间。 */
+.mptk-popup--surface-none .mptk-popup__body {
+  flex: 0 0 auto;
+}
+
+/* 图片弹窗：图片 + 按钮纵向排列；多图交给 Swiper，红点用原生 indicator。
+   对齐走内联 justifyContent（center / flex-start / flex-end），这里只管排布与间距。 */
+.mptk-image-popup__single,
+.mptk-image-popup__slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* 长图滚动视口：只开 scroll-y，绝不开 X，视口宽由 JS 贴合图片、图片宽度恒不超视口。
+   flex:none 防止纵向 flex 把视口压扁；视口高度由 JS 内联定死（固定高 + Y 滚动）。 */
+.mptk-image-popup__scroll {
+  flex: none;
+  max-width: 100%;
+}
+
+/* 多图切页：JS 按当前页图片比例重算并内联 Swiper 高度，这里让高度平滑过渡——
+   参考笔记浏览页的 swiper 高度动画，避免矮图/高图切换时图片和关闭按钮上下瞬跳。
+   只过渡 height（唯一变化的量），时长/缓动走库通用动效 token；--mptk-dur 设 0s 即关闭动画。 */
+.mptk-image-popup__swiper {
+  width: 100%;
+  transition-property: height;
+  transition-duration: var(--mptk-dur);
+  transition-timing-function: var(--mptk-ease);
+}
+
+/* 多图每屏：撑满 Swiper 注入的确定高度（跟随当前页图片显示高），图片水平 + 垂直居中。
+   flex:none 让图片按自身真实比例撑开，绝不被 flex 拉伸或压扁——矮图矮、高图高。 */
+.mptk-image-popup__slide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.mptk-image-popup__image {
+  display: block;
+  flex: none;
+}
+
+/* 图片弹窗专用覆盖：裸壳面板宽度已内联贴合图片，关闭按钮在左右档时不再留内侧间距，
+   左右边缘与图片齐平——否则外框虽贴图片，叉仍比图片更靠里/靠外，看着很怪。
+   双类选择器压过基础单类规则；只改左右轴，上下间距 / 跨半垂直位移 / 居中档与其它 Popup 形态都不动。 */
+.mptk-image-popup__panel .mptk-popup__close--top-right,
+.mptk-image-popup__panel .mptk-popup__close--edge-top-right,
+.mptk-image-popup__panel .mptk-popup__close--above-right,
+.mptk-image-popup__panel .mptk-popup__close--below-right {
+  right: var(--mptk-s-zero);
+}
+
+.mptk-image-popup__panel .mptk-popup__close--top-left,
+.mptk-image-popup__panel .mptk-popup__close--edge-top-left {
+  left: var(--mptk-s-zero);
+}
+
+.mptk-image-popup__actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  padding-top: var(--mptk-space-3);
+  column-gap: var(--mptk-image-popup-action-gap, var(--mptk-space-2));
+  row-gap: var(--mptk-image-popup-action-gap, var(--mptk-space-2));
+}
+
+/* 图片按钮复用图片尺寸模型，宽 / 高由 resolveImageSize 内联给出，这里只管可点击与间距。 */
+.mptk-image-popup__action-image {
+  display: block;
+  flex: 0 0 auto;
+}
