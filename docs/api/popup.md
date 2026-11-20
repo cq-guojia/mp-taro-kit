@@ -28,9 +28,9 @@
 |---|---|---|---|
 | 形状 | `closeShape` | `'circle'` | `'circle'`（正圆 → `radius="pill"`）/ `'rounded'`（小方角 → `radius="sm"` 8px） |
 | 描边 | `closeBorder` | `true` | 有 / 无描边 |
-| 背景 | `closeBackground` | `true` | 有底 / 半透明底（叉色不变） |
+| 背景 | `closeBackground` | `false` | 半透明底（默认）/ 实底；叉色不随这轴变 |
 
-外框走 `--mptk-c-popup-close-size`（26px），叉是自绘 `CloseGlyph`（边长固定 12.8px），两轴互不联动。有边 → `soft`，无边 → `solid`；背景轴只换底色 `--mptk-c-popup-close-bg-translucent`（`rgba(0, 0, 0, 0.55)`），不改叉色。`soft` 档再用三类名让描边跟随 `--mptk-btn-fg`（与库内 tone 档 soft 同色约定一致），`default` 档字色取次级图标档 `--mptk-gray-6`：外圈描边与小叉同色一起压淡，明暗两端各降一档，暗色下不再过亮、过显眼。关闭按钮尺寸不随这个改，外框与叉仍是 26 / 12.8px。
+外框走 `--mptk-c-popup-close-size`（26px），叉是自绘 `CloseGlyph`（边长固定 12.8px），两轴互不联动。有边 → `soft`，无边 → `solid`；背景轴只换底色，不改叉色——**默认半透明底**（`closeBackground={false}`，底色 `--mptk-c-popup-close-bg-translucent = rgba(0, 0, 0, 0.55)`），传 `true` 才是实底。半透明类 `.mptk-popup__close--translucent` 是三类名，压过 Button 自己的 `.mptk-btn--default.mptk-btn--soft` 双类名，所以默认档真的吃到半透明底色，不会被实底盖掉。`soft` 档再用三类名让描边跟随 `--mptk-btn-fg`（与库内 tone 档 soft 同色约定一致），`default` 档字色取次级图标档 `--mptk-gray-6`：外圈描边与小叉同色一起压淡，明暗两端各降一档，暗色下不再过亮、过显眼。关闭按钮尺寸不随这个改，外框与叉仍是 26 / 12.8px。演示站自己的「背景」开关是应用态，不影响库默认值。
 
 叉不用字体图标：字形墨迹相对行盒偏上，且 iOS / Android 基线度量不同，固定位移无法跨端根治。自绘叉把两笔 SVG path 画在 viewBox 正中（`--mptk-c-close-mask`），几何中心即容器中心；颜色取 `currentColor`，经 Button 的 `glyph` 槽位由 `--mptk-btn-fg` 注入。
 
@@ -213,3 +213,4 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-20 23:32:48：底部留白口径补注：FAB 贴底与 Popup/Drawer 共用 resolveBottomInset 取最大
 - 2026-11-21 00:31:40：补留白落点口径：滚动容器写内容尾距，定高面板才写面板 padding
 - 2026-11-21 00:49:16：关闭按钮描边与叉改走 gray-6 次级图标档，暗色不再过亮；尺寸保持 26/12.8px 不变
+- 2026-11-21 01:03:45：关闭按钮默认改半透明底：closeBackground 默认 false，ImagePopup 同步，三类名压过 Button 实底；演示站开关不动

@@ -440,7 +440,12 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   assert.match(src, /variant=\{closeStyle\.variant\}/, '底色形态由 resolveCloseStyle 派生')
   assert.match(src, /radius=\{closeStyle\.radius\}/, '圆角档由 resolveCloseStyle 派生')
   assert.match(src, /closeBorder = true/, '描边轴默认开')
-  assert.match(src, /closeBackground = true/, '背景轴默认开')
+  assert.match(src, /closeBackground = false/, '背景轴默认半透明（不是实底）')
+  assert.match(
+    read('src/ui/layout/ImagePopup.tsx'),
+    /closeBackground = false/,
+    'ImagePopup 背景默认同 Popup：半透明',
+  )
 
   assert.match(src, /closeStyle\.translucent/, '背景「否」的半透明标志接到 class 上')
   // 真跑视觉解析器：描边定 variant、背景轴只翻 translucent——切背景时叉色（fg）不变。

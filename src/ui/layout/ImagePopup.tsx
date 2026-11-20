@@ -217,7 +217,7 @@ export function ImagePopup({
   closeable = true,
   closeShape = 'circle',
   closeBorder = true,
-  closeBackground = true,
+  closeBackground = false,
   overlayTone,
   overlayOpacity,
   closable,

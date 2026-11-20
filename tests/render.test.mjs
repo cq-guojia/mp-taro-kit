@@ -380,11 +380,16 @@ test('Card 里的浮层不占内容流：Popup 关着时边界提示不被它的
 test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落到真实 Button 类名', () => {
   const base = { open: true, onClose: () => {}, closeable: true, position: 'bottom' }
 
-  /* 默认 circle + 描边 + 底色 → soft（浅底 + 边）+ pill 圆角。 */
+  /* 默认 circle + 描边 + 半透明底 → soft（边）+ translucent class + pill 圆角。 */
   const soft = render(h(Popup, base, h('div', null, '内容')))
-  assert.match(soft, /mptk-btn--soft/, '默认档要有底色又有描边，落在 soft')
+  assert.match(soft, /mptk-btn--soft/, '默认档有描边，落在 soft')
+  assert.match(soft, /mptk-popup__close--translucent/, '默认底色就是半透明：不传 closeBackground 也要挂半透明 class')
   assert.match(soft, /mptk-btn--radius-pill/, 'circle 形状走 pill 圆角')
   assert.match(soft, /mptk-popup__close--above-right/, '底部面板默认关闭按钮在面板外右上')
+
+  /* 显式传 true 才走实底：半透明 class 必须消失，否则默认值改了却盖不住。 */
+  const solid = render(h(Popup, { ...base, closeBackground: true }, h('div', null, '内容')))
+  assert.doesNotMatch(solid, /mptk-popup__close--translucent/, 'closeBackground=true 是实底，不该带半透明 class')
 
   /* 关掉底色与描边、换圆角方 → solid + 半透明 class；叉色不受背景轴影响。 */
   const ghost = render(h(Popup, { ...base, closeShape: 'rounded', closeBorder: false, closeBackground: false }, h('div', null, '内容')))
