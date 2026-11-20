@@ -76,9 +76,17 @@ export function createKitApp<P extends { children?: ReactNode }>(
 
     const windowInfo = Taro.getWindowInfo()
     const menuButton = Taro.getMenuButtonBoundingClientRect()
+    // 底部横条真值 = 屏幕高 - 安全区底边。safeArea 在 H5 / 部分机型缺失，取不到按 0，
+    // 交 CSS env() 兜底。Skyline 下不能靠 env(safe-area-inset-bottom) 自己取，必须注入。
+    const safeArea = windowInfo.safeArea
+    const bottomInset =
+      safeArea && typeof windowInfo.screenHeight === 'number'
+        ? Math.max(windowInfo.screenHeight - safeArea.bottom, 0)
+        : 0
     configureSafeArea({
       statusBarHeight: windowInfo.statusBarHeight ?? 0,
       menuButton: { top: menuButton.top, height: menuButton.height },
+      bottomInset,
     })
 
     const onDarkChange =

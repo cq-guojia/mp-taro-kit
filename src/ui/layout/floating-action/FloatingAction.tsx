@@ -1,7 +1,9 @@
 import { View } from '@tarojs/components'
 import type { CSSProperties, ReactNode } from 'react'
+import { getSafeAreaSnapshot } from '../../../runtime/safe-area.js'
 import { markCardEdgeOutOfFlow } from '../../infra/card-edge.js'
 import { MOTION_DURATION, usePresence } from '../presence.js'
+import { resolveBottomInset } from '../safe-inset.js'
 import { Button, type ButtonProps } from '../../actions/Button.js'
 
 /** 常驻按钮的位置档：左右 × 贴底 / 居中，由 FloatingActionGroup 统一决定。 */
@@ -71,8 +73,16 @@ export function FloatingActionGroup({
   style,
 }: FloatingActionGroupProps) {
   const names = ['mptk-fab-group', `mptk-fab-group--${position}`, className].filter(Boolean).join(' ')
+  // 贴底两档离底距离 = max(呼吸 16, 横条真值)，两笔同一目的取较大者，不累加。
+  // 未注入时不写、交 CSS 兜底；消费方 style 可再覆盖。
+  const bottomInset =
+    position === 'bottom-right' || position === 'bottom-left'
+      ? resolveBottomInset(getSafeAreaSnapshot()).paddingBottom
+      : 0
+  const groupStyle: CSSProperties | undefined =
+    bottomInset === 0 ? style : { bottom: `${bottomInset}px`, ...style }
   return (
-    <View className={names} style={style}>
+    <View className={names} style={groupStyle}>
       {children}
     </View>
   )

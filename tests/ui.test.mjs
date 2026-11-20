@@ -789,7 +789,10 @@ test('常驻浮动按钮：两层契约、组件级与子域出口、层级不�
   assert.doesNotMatch(css, /z-index:\s*\d/, '层级不许写死数字')
   assert.match(css, /\.mptk-fab\s*\{[^}]*pointer-events:\s*none/, '退场期必须让出命中测试')
   assert.doesNotMatch(css, /\bgap\s*:/, '竖排不许用 gap（老 WebView 内核不支持）')
-  assert.match(css, /env\(safe-area-inset-bottom\)/, '贴底档缺安全区让位')
+  // 贴底离边距离取最大不累加：CSS 只留呼吸档，横条真值由 JS 注入写行内覆盖。
+  assert.match(css, /\.mptk-fab-group--bottom-right\s*,[\s\S]{0,80}?\{\s*bottom:\s*var\(--mptk-space-4\)/, '贴底档 CSS 该只留呼吸档')
+  assert.doesNotMatch(css, /bottom:\s*calc\([^;]*env\(safe-area-inset-bottom\)\)/, '贴底档不该把呼吸与横条相加')
+  assert.match(action, /resolveBottomInset\(getSafeAreaSnapshot\(\)\)/, 'FAB 贴底没读注入的横条真值算 max')
   assert.match(css, /\.mptk-fab--translucent \.mptk-btn--solid,\s*\.mptk-fab--translucent \.mptk-btn--outline\s*\{[^}]*--mptk-btn-bg:\s*var\(--mptk-c-fab-bg\)/, '半透明底没覆盖实心与描边档底色变量')
   assert.doesNotMatch(css, /--mptk-btn-border:\s*var\(--mptk-c-fab-bg\)/, '半透明不许盖掉描边变量')
   const config = read('../kit.config.mjs')

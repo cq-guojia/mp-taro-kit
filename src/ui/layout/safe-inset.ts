@@ -29,3 +29,20 @@ export function resolveTopInset(level: TopInsetLevel, snapshot: SafeAreaSnapshot
 export function isTopAnchored(position: string): boolean {
   return position === 'top' || position === 'left' || position === 'right'
 }
+
+/**
+ * 贴底浮层的底部内边距（px）。呼吸间距与顶部取最大，不累加：
+ * 横条已经 34px 就盖过 16px 呼吸，再相加会白留一截；非全面屏横条 0 时用呼吸 16px。
+ * 未注入真值时返回 0，交给 CSS 的 env() 兜底（不在这里猜横条高度）。
+ */
+export const BOTTOM_BREATH_PX = 16
+
+export interface BottomInset {
+  /** 内容区 padding-bottom（px），以屏幕底为 0 的避让量 */
+  readonly paddingBottom: number
+}
+
+export function resolveBottomInset(snapshot: SafeAreaSnapshot): BottomInset {
+  if (!snapshot.configured) return { paddingBottom: 0 }
+  return { paddingBottom: Math.max(BOTTOM_BREATH_PX, snapshot.bottom) }
+}

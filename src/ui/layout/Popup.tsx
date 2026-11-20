@@ -13,7 +13,7 @@ import {
 import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { Overlay, type OverlayOpacity, type OverlayTone } from './Overlay.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
-import { isTopAnchored, resolveTopInset, type TopInsetLevel } from './safe-inset.js'
+import { isTopAnchored, resolveBottomInset, resolveTopInset, type TopInsetLevel } from './safe-inset.js'
 
 export type { PopupClosePosition, PopupPosition } from './close-position.js'
 export type { PopupCloseShape } from './close-style.js'
@@ -121,10 +121,16 @@ export function Popup({
     typeof contentPadding === 'number'
       ? { top: contentPadding, right: contentPadding, bottom: contentPadding, left: contentPadding }
       : contentPadding ?? {}
+  // 贴底形态（下弹 + 左右全高抽屉）的底部内边距 = max(呼吸, 横条真值)：
+  // 两笔留白同一目的取较大者，不累加。未注入时为 0（不写行内），交 CSS 兜底。
+  // contentPadding / panelStyle 依次覆盖。top / center 贴边不占底，不加。
+  const anchoredBottom = position === 'bottom' || position === 'left' || position === 'right'
+  const bottomInset = anchoredBottom ? resolveBottomInset(getSafeAreaSnapshot()).paddingBottom : 0
   const padStyle: CSSProperties | undefined =
-    pad.top === undefined && pad.right === undefined && pad.bottom === undefined && pad.left === undefined
+    pad.top === undefined && pad.right === undefined && pad.bottom === undefined && pad.left === undefined && bottomInset === 0
       ? undefined
       : {
+          ...(bottomInset > 0 ? { paddingBottom: `${bottomInset}px` } : null),
           ...(pad.top === undefined ? null : { paddingTop: `${pad.top}px` }),
           ...(pad.right === undefined ? null : { paddingRight: `${pad.right}px` }),
           ...(pad.bottom === undefined ? null : { paddingBottom: `${pad.bottom}px` }),

@@ -4,7 +4,7 @@ import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
 import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { Overlay } from '../layout/Overlay.js'
 import { MOTION_DURATION, usePresence } from '../layout/presence.js'
-import { resolveTopInset } from '../layout/safe-inset.js'
+import { resolveBottomInset, resolveTopInset } from '../layout/safe-inset.js'
 
 export type DrawerSide = 'left' | 'right'
 
@@ -38,8 +38,12 @@ export function Drawer({
   if (!mounted) return null
 
   // 抽屉与 Popup 左右档同口径：面板贴边，让位单独加在内容上。
-  const inset = resolveTopInset('nav-bar', getSafeAreaSnapshot())
+  const snapshot = getSafeAreaSnapshot()
+  const inset = resolveTopInset('nav-bar', snapshot)
   const bodyStyle = inset.paddingTop > 0 ? { paddingTop: `${inset.paddingTop}px` } : undefined
+  // 全高抽屉底部同样要避让横条：max(呼吸, 横条)，不累加；未注入时不写、交 CSS 兜底。
+  const bottomPadding = resolveBottomInset(snapshot).paddingBottom
+  const panelStyle = bottomPadding > 0 ? { paddingBottom: `${bottomPadding}px` } : undefined
 
   const names = ['mptk-drawer', `mptk-drawer--${side}`, shown ? 'mptk-drawer--open' : '']
   const panel = ['mptk-drawer__panel', `mptk-drawer__panel--${side}`, className]
@@ -49,7 +53,7 @@ export function Drawer({
       {overlay ? (
         <Overlay visible={shown} closable={closable} lockScroll={lockScroll} duration={duration} onClose={onClose} />
       ) : null}
-      <View className={panel.filter(Boolean).join(' ')}>
+      <View className={panel.filter(Boolean).join(' ')} style={panelStyle}>
         <ScrollView scrollY className="mptk-drawer__body" style={bodyStyle}>
           {children}
         </ScrollView>

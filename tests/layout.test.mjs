@@ -300,9 +300,37 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
   )
 
   // 几何行为：给一组真机值（状态栏 54、胶囊 top 58 / height 32），内容起点正好落在目标位置。
-  const { resolveTopInset, isTopAnchored } = await import(
+  const { resolveTopInset, isTopAnchored, resolveBottomInset, BOTTOM_BREATH_PX } = await import(
     pathToFileURL(join(root, 'dist/ui/layout/safe-inset.js')).href
   )
+  // 底部留白：呼吸与横条取最大，不累加。横条 34 > 呼吸 16 时只留 34；非全面屏横条 0 时留 16。
+  assert.equal(BOTTOM_BREATH_PX, 16, '呼吸间距常量必须是 16，与 --mptk-space-4 同值')
+  assert.deepEqual(
+    resolveBottomInset({ statusBar: 0, navbar: 0, top: 0, bottom: 34, configured: true }),
+    { paddingBottom: 34 },
+    '横条 34px 已盖过呼吸 16px，取 34，不许相加成 50',
+  )
+  assert.deepEqual(
+    resolveBottomInset({ statusBar: 0, navbar: 0, top: 0, bottom: 0, configured: true }),
+    { paddingBottom: 16 },
+    '非全面屏横条 0 时用呼吸 16px',
+  )
+  assert.deepEqual(
+    resolveBottomInset({ statusBar: 0, navbar: 0, top: 0, bottom: 8, configured: true }),
+    { paddingBottom: 16 },
+    '横条小于呼吸时取呼吸，不累加',
+  )
+  assert.deepEqual(
+    resolveBottomInset({ statusBar: 0, navbar: 0, top: 0, bottom: 0, configured: false }),
+    { paddingBottom: 0 },
+    '未注入时不猜，交 CSS 兜底',
+  )
+  assert.equal(
+    /--mptk-space-4:\s*([^;]+);/.exec(resolveCssVars(read('dist/styles/theme-light.css')))?.[1] ?? '',
+    '16px',
+    '呼吸常量必须与 token --mptk-space-4 同值，改 token 要同步 BOTTOM_BREATH_PX',
+  )
+
   const device = { statusBar: 54, navbar: 40, top: 94, configured: true }
   assert.deepEqual(resolveTopInset('status-bar', device), { paddingTop: 54 }, 'status-bar 档让到状态栏底')
   assert.deepEqual(resolveTopInset('nav-bar', device), { paddingTop: 94 }, 'nav-bar 档让到胶囊下沿')
@@ -384,7 +412,8 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
 test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
   const css = read(NAV_CSS)
   const src = read('src/ui/navigation/Drawer.tsx')
-  assert.match(src, /resolveTopInset\('nav-bar', getSafeAreaSnapshot\(\)\)/, '抽屉读同一份真值，让到导航栏下')
+  assert.match(src, /resolveTopInset\('nav-bar', snapshot\)/, '抽屉读同一份真值，让到导航栏下')
+  assert.match(src, /getSafeAreaSnapshot\(\)/, '抽屉快照取自 runtime 注入')
   assert.doesNotMatch(src, /top: `\$\{/, '抽屉面板同样不许用内联 top 探出')
   assert.match(
     css,
@@ -578,9 +607,15 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   }
   assert.equal(declOf(rule('edge-top-left'), 'left'), 'var(--mptk-space-4)', '跨半左上左侧留距 16px，比其它档再往内收一档，避开圆角')
   assert.equal(declOf(rule('edge-top-right'), 'right'), 'var(--mptk-space-4)', '跨半右上右侧留距 16px，比其它档再往内收一档，避开圆角')
-  // 外置档：锚在面板边缘内侧（top / bottom: 0），用 transform 按**按钮自身高度**移出面板。
-  // 旧写法 bottom/top: calc(100% + gap) 的 100% 参照面板高度，Skyline 下 fixed 面板高度参与计算时
-  // 会把按钮顶到屏幕外（关闭按钮跑屏幕左上、离面板很远）。这里只动 transform，位置首帧即正确。
+  // 根因防回归：关闭按钮 absolute 必须写在双类上，权重压过 .mptk-btn{position:relative}。
+  // 单类 .mptk-popup__close{position:absolute} 会被后加载的同权重 .mptk-btn 覆盖 → 按钮退回
+  // 文档流、right 丢失、各档位置全部错乱（实测截图 × 落到左侧中部）。
+  const btnCloseRule = /\.mptk-btn\.mptk-popup__close\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.match(btnCloseRule, /position:\s*absolute/, 'absolute 必须写在双类 .mptk-btn.mptk-popup__close 上压过 Button')
+  assert.match(btnCloseRule, /z-index:\s*var\(--mptk-c-layer-popover\)/, '层级同样写在双类上')
+
+  // 外置档：锚在面板边缘内侧（top/bottom: 0），用 transform 按按钮自身高度移出面板。
+  // translateY 百分比参照按钮自身（确定量），不参照面板高度；前提是上面的 absolute 真生效。
   assert.equal(declOf(rule('above-right'), 'top'), 'var(--mptk-s-zero)', '上方靠右锚在面板顶边内侧')
   assert.match(rule('above-right'), /transform:\s*translateY\(calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '上方靠右按自身高度上移一个间距档')
   assert.equal(declOf(rule('above-center'), 'top'), 'var(--mptk-s-zero)', '上方居中锚在面板顶边内侧')
@@ -589,9 +624,6 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   assert.match(rule('below-center'), /transform:\s*translate\(var\(--mptk-s-half-neg\), calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)\)/, '下方居中按自身高度下移并水平居中')
   assert.equal(declOf(rule('below-right'), 'bottom'), 'var(--mptk-s-zero)', '下方靠右锚在面板底边内侧')
   assert.match(rule('below-right'), /transform:\s*translateY\(calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)\)/, '下方靠右按自身高度下移一个间距档')
-  for (const pos of ['above-right', 'above-center', 'below-center', 'below-right']) {
-    assert.doesNotMatch(rule(pos), /(?:^|[;{\s])(?:bottom|top):\s*calc\(/, `${pos} 不许再用参照面板高度的 bottom/top: calc() 外置定位`)
-  }
   assert.match(rule('above-right'), /right:\s*var\(--mptk-space-3\)/, '上方靠右档右边距 1.5 倍（12px）')
   assert.match(rule('below-right'), /right:\s*var\(--mptk-space-3\)/, '下方靠右档右边距 1.5 倍（12px）')
   assert.match(rule('above-center'), /left:\s*var\(--mptk-s-half\)/, '上方居中档水平居中')
@@ -689,16 +721,20 @@ test('面板不限高、内容撑开，贴底贴顶避让安全区', () => {
   assert.doesNotMatch(popupSrc, /<ScrollView/, 'Popup 不该再套 scroll-view，滚动交给调用方')
   assert.doesNotMatch(popupSrc, /from '@tarojs\/components'[\s\S]{0,40}ScrollView/, 'Popup 不该 import ScrollView')
 
+  // 底部避让改为注入真值 + max(呼吸, 横条)：CSS 只留呼吸档，不写 calc(呼吸 + env) 叠加。
   assert.match(
     css,
-    /\.mptk-popup__panel--bottom\s*\{[^}]*padding-bottom:\s*calc\(var\(--mptk-space-4\) \+ env\(safe-area-inset-bottom\)\)/,
-    '贴底面板没避让底部安全区',
+    /\.mptk-popup__panel--bottom\s*\{[^}]*padding-bottom:\s*var\(--mptk-space-4\)/,
+    '贴底面板 CSS 该只留一个呼吸档，横条由 JS 注入覆盖',
   )
+  assert.doesNotMatch(css, /padding-bottom:\s*calc\([^;]*env\(safe-area-inset-bottom\)\)/, 'CSS 不该再叠加 env 底部安全区')
   assert.match(
     read(NAV_CSS),
-    /\.mptk-drawer__panel\s*\{[^}]*padding-bottom:\s*calc\([^;]*env\(safe-area-inset-bottom\)\)/,
-    '抽屉没避让底部安全区',
+    /\.mptk-drawer__panel\s*\{[^}]*padding-bottom:\s*var\(--mptk-space-4\)/,
+    '抽屉 CSS 该只留呼吸档，横条由 JS 注入覆盖',
   )
+  assert.match(popupSrc, /resolveBottomInset\(getSafeAreaSnapshot\(\)\)/, 'Popup 没读注入的底部真值')
+  assert.match(read('src/ui/navigation/Drawer.tsx'), /resolveBottomInset\(snapshot\)/, 'Drawer 没读注入的底部真值')
 
   // 贴边定位：负 top 会把浮层整块顶出 Skyline 的可视区，三处都必须贴边。
   assert.match(read(LAYOUT_CSS), /\.mptk-overlay\s*\{[^}]*top:\s*var\(--mptk-s-zero\)/, '遮罩没贴边')

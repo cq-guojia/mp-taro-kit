@@ -41,13 +41,24 @@ test('demo 设置面板：每页常驻入口，底部面板按内容撑高，三
   }
   assert.match(/\.mptk-popup__body\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? '', /flex:\s*0 0 auto/, 'body 该按内容撑高')
 
-  // 规范修复防回归：面板不限高；外置关闭按钮用 transform 相对自身高度定位，不参照面板高度。
-  // 否则 Skyline 下 fixed 面板高度参与计算，会把关闭按钮顶到屏幕左上、离面板很远。
+  // 规范修复防回归：面板不限高；关闭按钮 absolute 写在双类上（压过 .mptk-btn 的 relative），
+  // 外置档用 transform 按按钮自身高度移出面板——位置正确的前提是 absolute 真生效。
   const panelBlock = /\.mptk-popup__panel\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? ''
   assert.doesNotMatch(panelBlock, /max-height\s*:/, '面板不该写 max-height 声明（注释里提到不算）')
+  const btnCloseRule = /\.mptk-btn\.mptk-popup__close\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? ''
+  assert.match(btnCloseRule, /position:\s*absolute/, '关闭按钮 absolute 必须写在双类上，压过 .mptk-btn{position:relative}')
+  // 底部留白取最大、不累加：贴底档 CSS 只留呼吸，横条由 JS 注入真值后写行内覆盖。
+  const bottomRule = /\.mptk-popup__panel--bottom\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? ''
+  assert.doesNotMatch(bottomRule, /padding-bottom\s*:\s*calc\(/, '贴底档不该写 calc(呼吸 + env)，两笔留白相加会白留一截')
+  assert.match(
+    read('src/ui/layout/Popup.tsx'),
+    /resolveBottomInset\(getSafeAreaSnapshot\(\)\)/,
+    '贴底弹窗该读注入的底部真值算 max(呼吸, 横条)',
+  )
   const aboveRight = /\.mptk-popup__close--above-right\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? ''
-  assert.match(aboveRight, /transform:\s*translateY\(calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '外右上按钮该用 transform 相对自身高度移出面板')
-  assert.doesNotMatch(aboveRight, /(?:^|[;{\s])(?:bottom|top):\s*calc\(/, '外置按钮不该再用参照面板高度的 calc 定位')
+  assert.match(aboveRight, /top:\s*var\(--mptk-s-zero\)/, '外右上锚在面板顶边内侧')
+  assert.match(aboveRight, /right:\s*var\(--mptk-space-3\)/, '外右上该保留 right 定位')
+  assert.match(aboveRight, /transform:\s*translateY\(calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '外右上按按钮自身高度上移')
 
   // 单组 CellGroup、无标题、无副标题、去上下外框线、分隔线不内缩。
   assert.equal((panel.match(/<CellGroup/g) ?? []).length, 1, '应该只有一组 CellGroup')

@@ -43,7 +43,9 @@
 | `top` | — | — | — | `below-center`、`below-right` | `below-right` |
 | `left` / `right` | 不支持 | 不支持 | 不支持 | 不支持 | 无关闭按钮 |
 
-几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。外置档把按钮锚在面板边缘内侧（`top` / `bottom: 0`），再用 `transform` 按**按钮自身高度**移出面板：`above-*` 用 `--mptk-s-full-neg`（-100%）上移、`below-*` 用 `--mptk-s-full`（100%）下移。不用 `top/bottom: calc(100% + gap)`——那里的 100% 参照面板高度，Skyline 下 `fixed` 面板高度参与计算时会把按钮顶到屏幕外（表现为关闭按钮跑到屏幕左上、离面板很远），且越出面板后 `right` 失效会退回左边。`transform` 的百分比相对按钮自身，是确定量，首帧即正确。跨边 / 外置档会临时放开面板 `overflow`，否则按钮被裁。点关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径。
+几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。外置档锚在面板边缘内侧（`top` / `bottom: 0`），再用 `transform` 按**按钮自身高度**移出面板：`above-*` 用 `--mptk-s-full-neg`（-100%）上移、`below-*` 用 `--mptk-s-full`（100%）下移——百分比参照按钮自身，是确定量，不参照面板高度，面板高度变化也不影响按钮位置。
+
+**绝对定位的前提**：关闭按钮复用核心 `Button`，而 `.mptk-btn` 带 `position:relative`。所以 `position:absolute` 与 `z-index` 必须写在**双类** `.mptk-btn.mptk-popup__close`（权重 0,2,0）上压过它；若写在单类 `.mptk-popup__close`（0,1,0），会被后加载的同权重 `.mptk-btn` 覆盖，absolute 失效、按钮退回文档流、`right` 丢失、各档位置全部错乱（实测 × 落到左侧中部）。这与主流库（Vant 等）关闭图标直接 `position:absolute` 是同一诉求，只是本库复用 Button 需要额外提权。跨边 / 外置档会临时放开面板 `overflow`，否则按钮被裁。点关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径。
 
 ### 面板表面 surface
 
@@ -76,13 +78,21 @@ import { configureSafeArea } from 'mp-taro-kit/runtime'
 
 const windowInfo = Taro.getWindowInfo()
 const menuButton = Taro.getMenuButtonBoundingClientRect()
+const safeArea = windowInfo.safeArea
 configureSafeArea({
   statusBarHeight: windowInfo.statusBarHeight ?? 0,
   menuButton: { top: menuButton.top, height: menuButton.height },
+  bottomInset: safeArea && typeof windowInfo.screenHeight === 'number'
+    ? Math.max(windowInfo.screenHeight - safeArea.bottom, 0)
+    : 0,
 })
 ```
 
+`createKitApp` 已在入口注入这两组真值，走它就不必手写上面这段。
+
 导航栏让位高度 = `statusBarHeight + 胶囊高 + max(menuButton.top - statusBarHeight, 0) × 2`，与 `NavBar.tsx` 同口径；不能写成 `(top - statusBar + height) * 2`（胶囊高乘两遍）。面板贴边定位不动，让位只加在内容上：遮罩、贴顶面板、抽屉面板一律 `top: 0`，不写负 `top`（Skyline 下会把整块顶出可视区）。未注入真值时走 CSS 兜底 `env(safe-area-inset-top)` / `calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h))`；`resolveTopInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup 与 Drawer 共用。
+
+**底部留白取最大，不累加。** 贴底形态（`bottom` / `left` / `right`）的底部内边距 = `max(呼吸 16px, 横条高度)`：呼吸与横条是同一目的（内容离屏幕底边多远），横条已经盖过呼吸就不再相加，否则全面屏上会白留一截。横条 0 的非全面屏用呼吸 16px。横条真值同样注入（Skyline 下 `env(safe-area-inset-bottom)` 不可靠），CSS 贴底档只留一个呼吸档 `--mptk-space-4`，JS 注入真值后写行内覆盖；`resolveBottomInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup、Drawer 与贴底 [FloatingAction](floating-action.md) 共用。未注入时不猜、保持呼吸，由真机走 `createKitApp` 注入。`contentPadding.bottom` / `panelStyle` 可再次覆盖。
 
 ### 样式契约
 
@@ -195,4 +205,7 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-20 21:57:03：修裸壳档错位：撤掉贴顶/贴底固定 height，高度真由内容决定
 - 2026-11-20 22:16:12：核心改造：高度由内容撑开不再写死35vh，body统一View，关闭按钮默认右上，删sheet-h token
 - 2026-11-20 22:26:58：关闭按钮默认改外右上 above-right（bottom/center）
-- 2026-11-20：规范修复关闭按钮跑屏幕左上/离面板远：面板撤掉 max-height（Skyline 下参与 fixed 面板高度计算，把内容撑高型面板顶成上限高、留底部空白）；外置关闭按钮改锚面板边缘内侧 + transform 按自身高度移出（新增 `--mptk-s-full-neg`），不再用参照面板高度的 bottom/top calc(100% + gap)
+- 2026-11-20：规范修复关闭按钮跑屏幕左上/离面板远：面板撤掉 max-height（Skyline 下参与 fixed 面板高度计算，把内容撑高型面板顶成上限高、留底部空白），面板高度恒等于内容高，外置关闭按钮沿用 transform 按自身高度移出面板
+- 2026-11-21：修关闭按钮各档位置全错乱的根因——单类 `.mptk-popup__close{position:absolute}` 被后加载的同权重 `.mptk-btn{position:relative}` 覆盖，absolute 失效、按钮退回文档流、right 丢失；absolute 与 z-index 移入双类 `.mptk-btn.mptk-popup__close`（0,2,0）压过 Button，定位方案保持 transform 不变
+- 2026-11-20 23:25:59：底部留白改取最大不累加：贴底/抽屉 padding = max(呼吸 16, 横条)，横条真值随 configureSafeArea 注入（screenHeight - safeArea.bottom），CSS 撤掉 calc(16 + env)；修全面屏上底部白留一截
+- 2026-11-20 23:32:48：底部留白口径补注：FAB 贴底与 Popup/Drawer 共用 resolveBottomInset 取最大

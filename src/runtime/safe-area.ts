@@ -14,6 +14,11 @@ export interface SafeAreaFaces {
   readonly statusBarHeight?: number
   /** 右上胶囊几何（px）；取自 Taro.getMenuButtonBoundingClientRect()。 */
   readonly menuButton?: { readonly top: number; readonly height: number }
+  /**
+   * 底部横条安全区高度（px）= screenHeight - safeArea.bottom。
+   * 取自 Taro.getWindowInfo()，Skyline 下 env(safe-area-inset-bottom) 不可靠，必须注入真值。
+   */
+  readonly bottomInset?: number
 }
 
 /** 对外只读快照：全部 px；未注入时全 0，由 CSS env() 兜底。 */
@@ -24,6 +29,8 @@ export interface SafeAreaSnapshot {
   readonly navbar: number
   /** 状态栏 + 导航栏：避开状态栏与胶囊的总高度 */
   readonly top: number
+  /** 底部横条安全区高度；未注入为 0，由 CSS env() 兜底 */
+  readonly bottom: number
   readonly configured: boolean
 }
 
@@ -37,7 +44,7 @@ export interface SafeAreaStore {
 const NAVBAR_FALLBACK_H = 44
 
 function createSafeAreaStore(): SafeAreaStore {
-  let snapshot: SafeAreaSnapshot = { statusBar: 0, navbar: 0, top: 0, configured: false }
+  let snapshot: SafeAreaSnapshot = { statusBar: 0, navbar: 0, top: 0, bottom: 0, configured: false }
 
   return {
     getSnapshot: () => snapshot,
@@ -50,10 +57,12 @@ function createSafeAreaStore(): SafeAreaStore {
         menu && menu.height > 0
           ? menu.height + Math.max(menu.top - statusBar, 0) * 2
           : NAVBAR_FALLBACK_H
-      snapshot = { statusBar, navbar, top: statusBar + navbar, configured: true }
+      // 底部横条取注入真值，负数（异常机型）夹到 0。不在这里加呼吸间距——那是样式职责。
+      const bottom = Math.max(faces.bottomInset ?? 0, 0)
+      snapshot = { statusBar, navbar, top: statusBar + navbar, bottom, configured: true }
     },
     resetForTests: () => {
-      snapshot = { statusBar: 0, navbar: 0, top: 0, configured: false }
+      snapshot = { statusBar: 0, navbar: 0, top: 0, bottom: 0, configured: false }
     },
   }
 }

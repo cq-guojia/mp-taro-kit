@@ -19,7 +19,7 @@ export default createKitApp(App, {
 `createKitApp` 内部依次做：
 
 1. `configure(createTaroFaces(faces), core)` —— 13 个平台方法走 Taro 默认实现，业务用 `faces` 覆盖差异项。
-2. `configureSafeArea` —— 取 `getWindowInfo().statusBarHeight` + `getMenuButtonBoundingClientRect()` 注入真值（Skyline 下 `env()` 取不到）。
+2. `configureSafeArea` —— 取 `getWindowInfo().statusBarHeight` + `getMenuButtonBoundingClientRect()` 注入顶部真值，取 `screenHeight - safeArea.bottom` 注入底部横条真值（Skyline 下 `env()` 取不到）。
 3. `setThemeMode(mode, faces)` —— 默认跟随系统，`theme.onDarkChange` 默认用 `themeConfig` 同步窗口背景。
 4. 渲染 `children` + 命令宿主。
 
@@ -245,3 +245,4 @@ async function submit() {
 - 2026-11-20 19:54:32：补按场景接入示例：新项目 app 入口、index 页默认用法、某页关回顶加自定义按钮、登录窗写哪
 - 2026-11-20：回顶免配置——不传 `scrollViewId` 时自动认领 children 里第一个 ScrollView 并注入 id / enhanced / onScroll；找不到静默无效；显式 id 仍走原路径
 - 2026-11-20 20:51:14：澄清自动认领只认直接子节点，Fragment 不摊平
+- 2026-11-20 23:25:59：configureSafeArea 注入补底部横条真值 screenHeight - safeArea.bottom

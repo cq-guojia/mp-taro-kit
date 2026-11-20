@@ -17,7 +17,8 @@
   /* 抽屉固定让到导航栏下（内容区 padding 已含状态栏 + 导航栏），这里不再叠顶部内边距。 */
   padding-top: var(--mptk-s-zero);
   padding-right: var(--mptk-space-4);
-  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  /* 底部横条由 JS 注入真值后按 max(呼吸, 横条) 写行内覆盖，这里只留呼吸档，不叠加 env()。 */
+  padding-bottom: var(--mptk-space-4);
   padding-left: var(--mptk-space-4);
   transition-property: transform;
   transition-duration: var(--mptk-c-motion-duration);

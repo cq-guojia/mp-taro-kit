@@ -21,10 +21,12 @@
   left: var(--mptk-space-4);
 }
 
-/* 贴底两档才让底部安全区；居中两档垂直居中。 */
+/* 贴底两档离底距离：CSS 只留呼吸档；横条真值由 JS 注入后按 max(呼吸, 横条) 写行内覆盖，
+   不写 calc(16px + env())——离边距离与横条同目的，相加会白留一截，且 Skyline 下 env() 不可靠。
+   未注入（如 node 自检）保持呼吸，真机走 createKitApp 注入。居中两档垂直居中。 */
 .mptk-fab-group--bottom-right,
 .mptk-fab-group--bottom-left {
-  bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  bottom: var(--mptk-space-4);
 }
 
 .mptk-fab-group--right-middle,

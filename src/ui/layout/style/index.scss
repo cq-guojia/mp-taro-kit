@@ -86,12 +86,15 @@
 
 /* 贴底：通栏，从底边升起；贴底两角留直角以对齐屏幕边缘。
    高度由 children 撑开，不写死 35vh：每个 sheet 内容不同，统一高度必然留空。
-   要滚由调用方在 children 里包 scroll-view 并给高，见 docs/api/popup.md。 */
+   要滚由调用方在 children 里包 scroll-view 并给高，见 docs/api/popup.md。
+   底部留白只给一个呼吸档：横条安全区由 JS 注入真值后按 max(呼吸, 横条) 写行内覆盖，
+   不在这里写 calc(16px + env())——两笔是同一目的（内容离底多远），相加会白留一截，
+   且 Skyline 下 env() 不可靠。未注入（如 node 自检）时保持呼吸，真机走 createKitApp 注入。 */
 .mptk-popup__panel--bottom {
   bottom: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
-  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  padding-bottom: var(--mptk-space-4);
   transform: translateY(100%);
   opacity: 0;
 }
@@ -150,7 +153,7 @@
   width: var(--mptk-c-drawer-w);
   /* 抽屉必须全高，不能吃基础类的 80vh 限高，否则底下留一截。 */
   max-height: 100%;
-  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  padding-bottom: var(--mptk-space-4);
   transform: translateX(-100%);
   opacity: 0;
 }
@@ -166,7 +169,7 @@
   right: var(--mptk-s-zero);
   width: var(--mptk-c-drawer-w);
   max-height: 100%;
-  padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+  padding-bottom: var(--mptk-space-4);
   transform: translateX(100%);
   opacity: 0;
 }
@@ -207,15 +210,15 @@
 
 /* 关闭按钮复用核心 Button：xs 档尺寸、按压变色都由 --mptk-btn-* 与 mptk-btn--pressed 提供；
    plain 用 ghost（只有叉），circle / rounded 用 soft + radius，见 Popup.tsx。
-   这里只保留浮层里的绝对定位与层级，不再另写一套按钮皮肤。 */
-.mptk-popup__close {
+   这里只保留浮层里的绝对定位与层级，不再另写一套按钮皮肤。
+   绝对定位必须写在双类 .mptk-btn.mptk-popup__close 上（权重 0,2,0）：单类 .mptk-popup__close
+   会被后加载的 .mptk-btn{position:relative}（同权重、后者胜）覆盖，absolute 失效 → 按钮退回
+   文档流、right 丢失、各档位置全部错乱。与下面外框同用双类，不依赖样式表加载顺序。 */
+.mptk-btn.mptk-popup__close {
   position: absolute;
   z-index: var(--mptk-c-layer-popover);
-}
-
-/* 外框走 popup 私有的 30px，只覆盖高度轴；叉是自绘 CloseGlyph（边长 1em，继承 Button xs 的 12px 字号），
-   不随外框放大——「圆变大、叉不变」。双类选择器压过 .mptk-btn--xs，不依赖两个样式表的加载顺序。 */
-.mptk-btn.mptk-popup__close {
+  /* 外框走 popup 私有的 30px，只覆盖高度轴；叉是自绘 CloseGlyph（边长 1em，继承 Button xs 的 12px 字号），
+     不随外框放大——「圆变大、叉不变」。 */
   --mptk-btn-h: var(--mptk-c-popup-close-size);
   height: var(--mptk-c-popup-close-size);
 }
@@ -272,9 +275,8 @@
 
 /* 面板上方 / 下方：与面板留一个间距档；靠右档留右间距，居中档水平居中。
    定位锚在面板边缘内侧（top / bottom: 0），再用 transform 按**按钮自身高度**移出面板：
-   translateY 的百分比参照按钮自身，是确定量；不写 `bottom/top: calc(100% + gap)`——
-   那里的 100% 参照面板高度，Skyline 下 fixed 面板的高度参与计算时会把按钮顶到屏幕外，
-   且按钮越出面板后 right 失效、退回静态位置落到左边。这里只动 transform，位置首帧即正确。 */
+   translateY 的百分比参照按钮自身（确定量），不参照面板高度，面板高度变化也不影响按钮位置。
+   位置是否正确的前提是 absolute 生效（见 .mptk-btn.mptk-popup__close 的双类声明）。 */
 .mptk-popup__close--above-right {
   top: var(--mptk-s-zero);
   right: var(--mptk-space-3);
