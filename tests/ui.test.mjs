@@ -860,9 +860,11 @@ test('自动回顶：阈值变化即重算、一次节点命令回顶、无逐�
   assert.match(src, /lastTop\.current = top/, '没记录最后滚动位置')
   assert.match(src, /lastTop\.current >= visibilityHeight/, '阈值变化没用最后位置重算 —— 配置改了不生效')
   assert.match(src, /\[visibilityHeight\]/, '重算 effect 没依赖 visibilityHeight')
-  // 一次命令：scrollTo({top:0, animated:true, duration})，无逐帧、无受控
+  // 一次命令，无逐帧无受控；瞬间档 animated:false、动画档 animated:true+duration
   assert.match(src, /function scrollViewToTop/, '缺一次回顶命令')
-  assert.match(src, /scrollTo\?\.\(\{ top: 0, animated: true, duration \}\)/, '不是一次动画命令')
+  assert.match(src, /duration <= 0/, '缺瞬间档分支')
+  assert.match(src, /scrollTo\?\.\(\{ top: 0, animated: false \}\)/, '瞬间档没关动画 —— 安卓会照播默认动画')
+  assert.match(src, /scrollTo\?\.\(\{ top: 0, animated: true, duration \}\)/, '动画档不是一次命令')
   assert.doesNotMatch(src, /setTimeout|setInterval|requestAnimationFrame/, '不许逐帧 —— 逐帧命令会让视图层来回蹦')
   assert.doesNotMatch(src, /driveTop|setDriveTop/, '不许有 driveTop state —— 受控 scrollTop 会回弹过山车')
   assert.doesNotMatch(src, /from ['"]@tarojs\/taro['"]/, '不许 import Taro')
