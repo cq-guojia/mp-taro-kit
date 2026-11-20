@@ -14,17 +14,16 @@ page {
 }
 
 /* Skyline 不支持页面全局滚动，滚动交给 scroll-view：
-   外壳撑满页面内容盒，导航栏占自身高度，正文区吃掉剩余高度并成为唯一滚动容器。
-   高度用 100% 而非 100vh：库的页面基线（styles/tokens）把底部安全区做成了 page 的 padding-bottom，
-   100% 跟着内容盒走会自动让出安全区；写 100vh 会顶破安全区、底部被裁。 */
-/* 底部安全区由外壳自己让位并铺背景：page 的 padding 区在 Skyline 下不画背景，会露白。 */
+   外壳撑满视口（page 已是 height:100%，库基线不给 page 加安全区 padding），
+   导航栏占自身高度，正文区吃掉剩余高度并成为唯一滚动容器。 */
+/* 底部安全区不截短外壳：留白加在滚动内容 .demo-page 的末尾（见下），
+   让用户能滚到最下面把内容滑上去、露出横条——而不是把整个可视区削掉一截、滚不到底。 */
 .demo-shell {
   background-color: var(--mptk-surface-base);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   height: var(--mptk-s-full);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .demo-shell__body {
@@ -41,7 +40,8 @@ page {
 .demo-page {
   padding-top: var(--mptk-space-4);
   padding-right: var(--mptk-s-zero);
-  padding-bottom: var(--mptk-s-zero);
+  /* 底部安全区作为滚动内容的尾距：随滚动滑上去，可视区保持全高。 */
+  padding-bottom: env(safe-area-inset-bottom);
   padding-left: var(--mptk-s-zero);
 }
 

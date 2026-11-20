@@ -67,6 +67,10 @@ test('demo 设置面板：每页常驻入口，底部面板按内容撑高，三
   assert.match(panel, /<CellGroup border=\{false\}/, '不要 CellGroup 上下的 border')
   assert.match(panel, /dividerInset=\{false\}/, 'Cell 分隔线不要内缩那种 border')
 
+  // 两处分段控件走库默认档（CONTROL_SIZE_DEFAULT = sm），不写死 xs：滑块比原来大一档。
+  assert.equal((panel.match(/<Segmented\b/g) ?? []).length, 2, '明暗 / 编译两处分段控件')
+  assert.doesNotMatch(panel, /<Segmented[\s\S]{0,120}?size="xs"/, '分段控件不该写死 xs，按默认档摆')
+
   // 三项：明暗模式复用 setThemeMode / useThemeSnapshot，编译模式，版本用编译期常量。
   assert.match(panel, /setThemeMode\(next\)/, '明暗模式没接 setThemeMode')
   assert.match(panel, /useThemeSnapshot\(\)/, '明暗模式没读当前主题')

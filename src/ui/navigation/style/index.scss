@@ -17,8 +17,7 @@
   /* 抽屉固定让到导航栏下（内容区 padding 已含状态栏 + 导航栏），这里不再叠顶部内边距。 */
   padding-top: var(--mptk-s-zero);
   padding-right: var(--mptk-space-4);
-  /* 底部横条由 JS 注入真值后按 max(呼吸, 横条) 写行内覆盖，这里只留呼吸档，不叠加 env()。 */
-  padding-bottom: var(--mptk-space-4);
+  padding-bottom: var(--mptk-s-zero);
   padding-left: var(--mptk-space-4);
   transition-property: transform;
   transition-duration: var(--mptk-c-motion-duration);
@@ -31,6 +30,12 @@
   flex: 1 1 auto;
   min-height: 0;
   padding-top: calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h));
+}
+
+/* 底部留白放在滚动内容末尾（不是面板/ScrollView 自身），随滚动滑上去、可视区保持全高。
+   呼吸兜底在这里；注入真值后由 Drawer.tsx 写行内 max(呼吸, 横条) 覆盖。 */
+.mptk-drawer__tail {
+  padding-bottom: var(--mptk-space-4);
 }
 
 .mptk-drawer__panel--left {

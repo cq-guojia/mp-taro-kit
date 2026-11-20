@@ -30,7 +30,7 @@
 | 描边 | `closeBorder` | `true` | 有 / 无描边 |
 | 背景 | `closeBackground` | `true` | 有底 / 半透明底（叉色不变） |
 
-外框走 `--mptk-c-popup-close-size`（26px），叉是自绘 `CloseGlyph`（边长固定 12.8px），两轴互不联动。有边 → `soft`，无边 → `solid`；背景轴只换底色 `--mptk-c-popup-close-bg-translucent`（`rgba(0, 0, 0, 0.55)`），不改叉色。`soft` 档再用三类名让描边跟随 `--mptk-btn-fg`（与库内 tone 档 soft 同色约定一致），`default` 档字色盖成 `--mptk-fg-3`，明 / 暗两端都收敛到中灰。
+外框走 `--mptk-c-popup-close-size`（26px），叉是自绘 `CloseGlyph`（边长固定 12.8px），两轴互不联动。有边 → `soft`，无边 → `solid`；背景轴只换底色 `--mptk-c-popup-close-bg-translucent`（`rgba(0, 0, 0, 0.55)`），不改叉色。`soft` 档再用三类名让描边跟随 `--mptk-btn-fg`（与库内 tone 档 soft 同色约定一致），`default` 档字色取次级图标档 `--mptk-gray-6`：外圈描边与小叉同色一起压淡，明暗两端各降一档，暗色下不再过亮、过显眼。关闭按钮尺寸不随这个改，外框与叉仍是 26 / 12.8px。
 
 叉不用字体图标：字形墨迹相对行盒偏上，且 iOS / Android 基线度量不同，固定位移无法跨端根治。自绘叉把两笔 SVG path 画在 viewBox 正中（`--mptk-c-close-mask`），几何中心即容器中心；颜色取 `currentColor`，经 Button 的 `glyph` 槽位由 `--mptk-btn-fg` 注入。
 
@@ -93,6 +93,8 @@ configureSafeArea({
 导航栏让位高度 = `statusBarHeight + 胶囊高 + max(menuButton.top - statusBarHeight, 0) × 2`，与 `NavBar.tsx` 同口径；不能写成 `(top - statusBar + height) * 2`（胶囊高乘两遍）。面板贴边定位不动，让位只加在内容上：遮罩、贴顶面板、抽屉面板一律 `top: 0`，不写负 `top`（Skyline 下会把整块顶出可视区）。未注入真值时走 CSS 兜底 `env(safe-area-inset-top)` / `calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h))`；`resolveTopInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup 与 Drawer 共用。
 
 **底部留白取最大，不累加。** 贴底形态（`bottom` / `left` / `right`）的底部内边距 = `max(呼吸 16px, 横条高度)`：呼吸与横条是同一目的（内容离屏幕底边多远），横条已经盖过呼吸就不再相加，否则全面屏上会白留一截。横条 0 的非全面屏用呼吸 16px。横条真值同样注入（Skyline 下 `env(safe-area-inset-bottom)` 不可靠），CSS 贴底档只留一个呼吸档 `--mptk-space-4`，JS 注入真值后写行内覆盖；`resolveBottomInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup、Drawer 与贴底 [FloatingAction](floating-action.md) 共用。未注入时不猜、保持呼吸，由真机走 `createKitApp` 注入。`contentPadding.bottom` / `panelStyle` 可再次覆盖。
+
+**留白落点看容器是否自身滚动。** 贴底面板是 `fixed` 定高容器、自身不滚，留白写在面板 `padding-bottom`（Popup 的 `bottom` / `left` / `right` 档）；全高抽屉是滚动容器，留白写在滚动内容末尾的尾距 View（`.mptk-drawer__tail`）上，随内容滚上去、横条区域可见，面板 `padding-bottom` 恒为 0——写在面板上会把滚动可视区截短、永远滚不到底。demo 站同理：`.demo-shell` 保持满高，安全区加在滚动内容 `.demo-page` 的末尾。
 
 ### 样式契约
 
@@ -209,3 +211,5 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-21：修关闭按钮各档位置全错乱的根因——单类 `.mptk-popup__close{position:absolute}` 被后加载的同权重 `.mptk-btn{position:relative}` 覆盖，absolute 失效、按钮退回文档流、right 丢失；absolute 与 z-index 移入双类 `.mptk-btn.mptk-popup__close`（0,2,0）压过 Button，定位方案保持 transform 不变
 - 2026-11-20 23:25:59：底部留白改取最大不累加：贴底/抽屉 padding = max(呼吸 16, 横条)，横条真值随 configureSafeArea 注入（screenHeight - safeArea.bottom），CSS 撤掉 calc(16 + env)；修全面屏上底部白留一截
 - 2026-11-20 23:32:48：底部留白口径补注：FAB 贴底与 Popup/Drawer 共用 resolveBottomInset 取最大
+- 2026-11-21 00:31:40：补留白落点口径：滚动容器写内容尾距，定高面板才写面板 padding
+- 2026-11-21 00:49:16：关闭按钮描边与叉改走 gray-6 次级图标档，暗色不再过亮；尺寸保持 26/12.8px 不变

@@ -510,11 +510,12 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
     /\.mptk-btn\.mptk-popup__close\.mptk-btn--soft\s*\{[^}]*--mptk-btn-border:\s*var\(--mptk-btn-fg\)/,
     '关闭按钮 soft 档描边跟随叉色，三类名压过 default soft 双类名，与库内 tone 档 soft 的 fg/border 同色约定一致',
   )
-  // 叉与描边调灰：default 档字色盖到中灰 fg-3；描边跟随 fg，一处改两处同变。
+  // 叉与描边压到次级图标档 gray-6：暗色 fg-3 是浅灰，在深底上过亮、过显眼；
+  // 描边跟随 fg，一处改两处同变（外圈与叉一起淡），三类名压过 default 双类名。
   assert.match(
     read(LAYOUT_CSS),
-    /\.mptk-btn\.mptk-popup__close\.mptk-btn--default\s*\{[^}]*--mptk-btn-fg:\s*var\(--mptk-fg-3\)/,
-    '关闭按钮 default 档字色（叉）盖到中灰 fg-3，三类名压过 default 双类名',
+    /\.mptk-btn\.mptk-popup__close\.mptk-btn--default\s*\{[^}]*--mptk-btn-fg:\s*var\(--mptk-gray-6\)/,
+    '关闭按钮 default 档字色（叉）取次级图标档 gray-6，暗底不再过亮',
   )
   const themeDark = resolveCssVars(read('dist/styles/theme-dark.css'))
   const lum = (hex) => {
@@ -527,6 +528,11 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   const fg3Dark = /--mptk-fg-3:\s*([^;]+);/.exec(themeDark)?.[1]?.trim()
   assert.ok(lum(fg3Light) > lum(fg2Light), '明色下 fg-3 比 fg-2 浅（不再偏深）')
   assert.ok(lum(fg3Dark) < lum(fg2Dark), '暗色下 fg-3 比 fg-2 暗（不再偏白）')
+  // 关闭按钮从 fg-3 改走 gray-6：明底更浅、暗底更暗，两端都降对比、不抢眼。
+  const gray6Light = /--mptk-gray-6:\s*([^;]+);/.exec(theme)?.[1]?.trim()
+  const gray6Dark = /--mptk-gray-6:\s*([^;]+);/.exec(themeDark)?.[1]?.trim()
+  assert.ok(lum(gray6Light) > lum(fg3Light), '明色下 gray-6 比 fg-3 浅，关闭按钮更不显眼')
+  assert.ok(lum(gray6Dark) < lum(fg3Dark), '暗色下 gray-6 比 fg-3 暗，关闭按钮不再过亮')
   assert.match(
     read(LAYOUT_CSS),
     /\.mptk-btn\.mptk-popup__close\s*\{[^}]*--mptk-btn-h:\s*var\(--mptk-c-popup-close-size\)[^}]*height:\s*var\(--mptk-c-popup-close-size\)/,
@@ -728,10 +734,41 @@ test('面板不限高、内容撑开，贴底贴顶避让安全区', () => {
     '贴底面板 CSS 该只留一个呼吸档，横条由 JS 注入覆盖',
   )
   assert.doesNotMatch(css, /padding-bottom:\s*calc\([^;]*env\(safe-area-inset-bottom\)\)/, 'CSS 不该再叠加 env 底部安全区')
+  // 抽屉与 demo 同口径：安全区是滚动内容末尾的尾距（随内容滚、能滑上去），
+  // 不写在面板/外壳自身上——否则全高抽屉/外壳的滚动可视区被截短、滚不到底。
+  const drawerCss = read(NAV_CSS)
+  assert.equal(
+    declOf(/\.mptk-drawer__panel\s*\{([^}]*)\}/.exec(drawerCss)?.[1] ?? '', 'padding-bottom'),
+    'var(--mptk-s-zero)',
+    '抽屉面板不给底部 padding，否则全高抽屉的滚动可视区被截短',
+  )
   assert.match(
-    read(NAV_CSS),
-    /\.mptk-drawer__panel\s*\{[^}]*padding-bottom:\s*var\(--mptk-space-4\)/,
-    '抽屉 CSS 该只留呼吸档，横条由 JS 注入覆盖',
+    drawerCss,
+    /\.mptk-drawer__tail\s*\{[^}]*padding-bottom:\s*var\(--mptk-space-4\)/,
+    '呼吸兜底该在滚动内容末尾的尾距上，不在面板上',
+  )
+  const drawerSrc = read('src/ui/navigation/Drawer.tsx')
+  assert.match(
+    drawerSrc,
+    /<View className="mptk-drawer__tail" style=\{tailStyle\} \/>/,
+    '底部横条真值必须写在滚动内容末尾的尾距上（随内容滚、能滑上去）',
+  )
+  assert.doesNotMatch(drawerSrc, /panelStyle/, '不该再把底部留白写回面板，面板 padding 会截短可视区')
+  const demoCss = read('demo/src/app.scss')
+  assert.equal(
+    declOf(/\.demo-shell\s*\{([^}]*)\}/.exec(demoCss)?.[1] ?? '', 'padding-bottom'),
+    null,
+    'demo 外壳不该加底部安全区 padding，否则全站滚动区被截短',
+  )
+  assert.equal(
+    declOf(/\.demo-page\s*\{([^}]*)\}/.exec(demoCss)?.[1] ?? '', 'padding-bottom'),
+    'env(safe-area-inset-bottom)',
+    'demo 底部安全区该作为滚动内容 .demo-page 的尾距',
+  )
+  assert.match(
+    read('demo/src/components/DemoShell.tsx'),
+    /<View className="demo-page">\{children\}<\/View>/,
+    '.demo-page 必须是滚动区里的内容节点，尾距才随滚动滑上去',
   )
   assert.match(popupSrc, /resolveBottomInset\(getSafeAreaSnapshot\(\)\)/, 'Popup 没读注入的底部真值')
   assert.match(read('src/ui/navigation/Drawer.tsx'), /resolveBottomInset\(snapshot\)/, 'Drawer 没读注入的底部真值')

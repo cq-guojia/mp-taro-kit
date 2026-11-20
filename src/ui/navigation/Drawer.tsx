@@ -41,9 +41,11 @@ export function Drawer({
   const snapshot = getSafeAreaSnapshot()
   const inset = resolveTopInset('nav-bar', snapshot)
   const bodyStyle = inset.paddingTop > 0 ? { paddingTop: `${inset.paddingTop}px` } : undefined
-  // 全高抽屉底部同样要避让横条：max(呼吸, 横条)，不累加；未注入时不写、交 CSS 兜底。
+  // 底部横条留白 = max(呼吸, 横条)，放在滚动内容末尾的尾距 View 上（随内容滚、能滑上去），
+  // 不写在面板/ScrollView 自身上——那会把全高抽屉的滚动可视区截短、滚不到底。
+  // 未注入时不写，交 CSS 尾距兜底。
   const bottomPadding = resolveBottomInset(snapshot).paddingBottom
-  const panelStyle = bottomPadding > 0 ? { paddingBottom: `${bottomPadding}px` } : undefined
+  const tailStyle = bottomPadding > 0 ? { paddingBottom: `${bottomPadding}px` } : undefined
 
   const names = ['mptk-drawer', `mptk-drawer--${side}`, shown ? 'mptk-drawer--open' : '']
   const panel = ['mptk-drawer__panel', `mptk-drawer__panel--${side}`, className]
@@ -53,9 +55,10 @@ export function Drawer({
       {overlay ? (
         <Overlay visible={shown} closable={closable} lockScroll={lockScroll} duration={duration} onClose={onClose} />
       ) : null}
-      <View className={panel.filter(Boolean).join(' ')} style={panelStyle}>
+      <View className={panel.filter(Boolean).join(' ')}>
         <ScrollView scrollY className="mptk-drawer__body" style={bodyStyle}>
           {children}
+          <View className="mptk-drawer__tail" style={tailStyle} />
         </ScrollView>
       </View>
     </View>

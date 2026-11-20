@@ -78,7 +78,7 @@ export function DemoSettings({ open, onClose }: { open: boolean; onClose: () => 
           <Cell
             title="明暗模式"
             value={
-              <Segmented items={THEME_ITEMS} value={mode} onChange={(next) => setThemeMode(next)} size="xs" />
+              <Segmented items={THEME_ITEMS} value={mode} onChange={(next) => setThemeMode(next)} />
             }
           />
           <Cell
@@ -88,7 +88,6 @@ export function DemoSettings({ open, onClose }: { open: boolean; onClose: () => 
                 items={RENDERER_ITEMS}
                 value={targetRenderer}
                 onChange={changeRenderer}
-                size="xs"
               />
             }
           />

@@ -229,11 +229,12 @@
   --mptk-btn-bg: var(--mptk-c-popup-close-bg-translucent);
 }
 
-/* 叉与描边调灰：default 档原本字色取 ink-2（明色偏深、暗色偏白），
-   盖到中灰 fg-3，两端都往灰收敛。soft 档描边跟随 fg，一处改两处同变；
-   solid 档的叉也跟着变灰。三类名压过 .mptk-btn--default 的档位规则，不依赖表加载顺序。 */
+/* 叉与描边压到次级图标档：default 档原本取 ink-2（暗色偏白），此前盖到 fg-3 仍是浅灰，
+   暗底上过亮、过显眼。改用 gray-6（色板里就是「次级图标」档），明暗两端各降一档、同步收敛；
+   soft 档描边跟随 fg，一处改两处同变（外圈和小叉一起淡）；solid 档的叉也跟着变。
+   三类名压过 .mptk-btn--default 的档位规则，不依赖表加载顺序。 */
 .mptk-btn.mptk-popup__close.mptk-btn--default {
-  --mptk-btn-fg: var(--mptk-fg-3);
+  --mptk-btn-fg: var(--mptk-gray-6);
 }
 
 /* 描边跟随叉色：default soft 档原本描边取 gray-5、叉取 fg-2，两色不一致。
