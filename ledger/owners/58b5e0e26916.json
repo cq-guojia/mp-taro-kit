@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261120-0940-0920-全局挂载与主模板方案调研": {"category": "调研", "created": "2026-11-20 09:40:29", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-20 09:40:29", "status": "doing", "tags": ["全局挂载", "主模板", "弹层", "架构决策", "调研"], "title": "全局挂载与主模板方案调研", "updated": "2026-11-20 11:34:56", "worklog": "worklog/202611/20-0940-0920-全局挂载与主模板方案调研.md"}
+    "20261120-0940-0920-全局挂载与主模板方案调研": {"category": "调研", "created": "2026-11-20 09:40:29", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-20 09:40:29", "status": "doing", "tags": ["全局挂载", "主模板", "弹层", "架构决策", "调研"], "title": "全局挂载与主模板方案调研", "updated": "2026-11-20 11:44:07", "worklog": "worklog/202611/20-0940-0920-全局挂载与主模板方案调研.md"}
   },
   "version": "20261022000000"
 }
