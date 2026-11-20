@@ -53,10 +53,16 @@ export function DemoPage({
   pageId,
   render,
   floating,
+  scrollViewId,
+  onScrollTop,
+  children,
 }: {
   pageId: string
   render: (id: string) => ReactNode
   floating?: ReactNode
+  scrollViewId?: string
+  onScrollTop?: (top: number) => void
+  children?: ReactNode
 }) {
   const page = pageOf(pageId)
   const blocks = page.examples.map((example, index) => ({
@@ -64,7 +70,12 @@ export function DemoPage({
     showSection: example.section !== undefined && example.section !== page.examples[index - 1]?.section,
   }))
   return (
-    <DemoShell title={page.title} floating={floating}>
+    <DemoShell
+      title={page.title}
+      floating={floating}
+      scrollViewId={scrollViewId}
+      onScrollTop={onScrollTop}
+    >
       <View className="demo-page__head">
         <Text className="demo-page__summary">{page.summary}</Text>
       </View>
@@ -80,6 +91,7 @@ export function DemoPage({
           </DemoBlock>
         </Fragment>
       ))}
+      {children}
     </DemoShell>
   )
 }

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import Taro from '@tarojs/taro'
 import { View } from '@tarojs/components'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
-import { FloatingAction, FloatingActionGroup } from 'mp-taro-kit/ui/layout'
+import { BackToTop, FloatingAction, FloatingActionGroup, useBackToTop, scrollViewToTop } from 'mp-taro-kit/ui/layout'
 import type { FloatingActionPosition } from 'mp-taro-kit/ui/layout'
 import type { ButtonRadius, ButtonSize, ButtonVariant } from 'mp-taro-kit/ui/actions'
 
@@ -11,6 +12,8 @@ import 'mp-taro-kit/ui/form/segmented/style'
 import 'mp-taro-kit/ui/layout/floating-action/style'
 import 'mp-taro-kit/ui/icon/style'
 import { DemoPage } from '../../components/DemoBlock'
+
+const SCROLL_VIEW_ID = 'layout-demo-scroll'
 
 const POSITIONS: { value: FloatingActionPosition; label: string }[] = [
   { value: 'bottom-right', label: '右下' },
@@ -48,12 +51,24 @@ const BACKGROUNDS = [
   { value: 'solid', label: '实心' },
 ]
 
-/* 三个真实图标入口：设置 / 回顶 / 修改，都是 common.base 包里的图标名。 */
+const THRESHOLDS = [
+  { value: '0', label: '0' },
+  { value: '200', label: '200' },
+  { value: '400', label: '400' },
+]
+
+const BACK_DURATIONS = [
+  { value: '0', label: '瞬间' },
+  { value: '450', label: '450ms' },
+  { value: '900', label: '900ms' },
+]
+
 const ITEMS = [
   { id: 'settings', label: '设置', icon: 'common.base:shezhi' },
-  { id: 'backtop', label: '回顶', icon: 'common.base:huidingbu' },
   { id: 'edit', label: '修改', icon: 'common.base:xiugai' },
 ]
+
+type ScrollNode = Parameters<typeof scrollViewToTop>[0]
 
 export default function LayoutPage() {
   const [visible, setVisible] = useState(true)
@@ -62,9 +77,35 @@ export default function LayoutPage() {
   const [variant, setVariant] = useState<ButtonVariant>('outline')
   const [radius, setRadius] = useState<ButtonRadius>('md')
   const [translucent, setTranslucent] = useState(true)
+  const [threshold, setThreshold] = useState('200')
+  const [backDuration, setBackDuration] = useState('450')
+  const nodeRef = useRef<ScrollNode | null>(null)
+  const { visible: backVisible, onScroll: onBackScroll } = useBackToTop({
+    visibilityHeight: Number(threshold),
+  })
+
+  /* 节点只查一次缓存；点回顶发一次 scrollTo，不逐帧、不碰 scrollTop 属性。 */
+  const handleBack = (): void => {
+    const emit = (node: ScrollNode): void => scrollViewToTop(node, Number(backDuration))
+    if (nodeRef.current) {
+      emit(nodeRef.current)
+      return
+    }
+    Taro.createSelectorQuery()
+      .select(`#${SCROLL_VIEW_ID}`)
+      .node()
+      .exec((res) => {
+        const node = res?.[0]?.node as ScrollNode | null | undefined
+        if (node) {
+          nodeRef.current = node
+          emit(node)
+        }
+      })
+  }
 
   const floating = (
     <FloatingActionGroup position={position}>
+      <BackToTop visible={backVisible} onClick={handleBack} />
       {ITEMS.map((item) => (
         <FloatingAction
           key={item.id}
@@ -108,10 +149,33 @@ export default function LayoutPage() {
             title="背景"
             value={<Segmented items={BACKGROUNDS} value={translucent ? 'translucent' : 'solid'} onChange={(next) => setTranslucent(next === 'translucent')} />}
           />
+          <Cell
+            title="回顶阈值"
+            value={<Segmented items={THRESHOLDS} value={threshold} onChange={setThreshold} />}
+          />
+          <Cell
+            title="回顶动画"
+            value={<Segmented items={BACK_DURATIONS} value={backDuration} onChange={setBackDuration} />}
+          />
         </CellGroup>
       </View>
     )
   }
 
-  return <DemoPage pageId="layout" render={render} floating={floating} />
+  return (
+    <DemoPage
+      pageId="layout"
+      render={render}
+      floating={floating}
+      scrollViewId={SCROLL_VIEW_ID}
+      onScrollTop={onBackScroll}
+    >
+      <View className="demo-filler">
+        <View className="demo-filler__note">向下滚动，越过阈值后回顶按钮淡入；点它滚回顶部。</View>
+        {Array.from({ length: 40 }, (_, index) => (
+          <View key={index} className="demo-filler__row">滚动占位 {index + 1}</View>
+        ))}
+      </View>
+    </DemoPage>
+  )
 }

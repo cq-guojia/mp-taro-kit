@@ -801,9 +801,11 @@ test('常驻浮动按钮：两层契约、组件级与子域出口、层级不�
   for (const name of ['FloatingActionGroup', 'FloatingAction', 'CellGroup', 'Segmented']) {
     assert.match(page, new RegExp(`<${name}[\\s>]`), `演示页缺 ${name}`)
   }
-  for (const icon of ['common.base:shezhi', 'common.base:huidingbu', 'common.base:xiugai']) {
+  for (const icon of ['common.base:shezhi', 'common.base:xiugai']) {
     assert.ok(page.includes(icon), `演示页缺真实图标 ${icon}`)
   }
+  // 回顶图标由 BackToTop 默认提供，不再在 demo 里硬写；这里只查 demo 挂了它
+  assert.match(page, /<BackToTop\b/, '演示页没挂 BackToTop')
   assert.doesNotMatch(page, /onClick=\{\(\) => setVisible\(false\)\}/, '点按钮不许连带隐藏整列')
   assert.doesNotMatch(page, /<CellGroup title=/, '演示页分组标题不要')
   assert.doesNotMatch(page, /demo-note/, '演示页底部说明不要')
@@ -833,4 +835,62 @@ test('常驻浮动按钮：两层契约、组件级与子域出口、层级不�
   // 文档：API 契约已建，索引已挂
   assert.ok(exists('../docs/api/floating-action.md'), '缺 API 文档')
   assert.match(read('../docs/README.md'), /floating-action\.md/, '文档索引缺 floating-action')
+})
+
+test('自动回顶：阈值变化即重算、一次节点命令回顶、无逐帧无受控（不蹦不残影）', () => {
+  // 组件级出口与子域 barrel
+  const barrel = read('../dist/ui/layout/index.js')
+  for (const name of ['BackToTop', 'useBackToTop', 'scrollViewToTop']) {
+    assert.match(barrel, new RegExp(name), `layout barrel 缺 ${name}`)
+  }
+  assert.match(read('../dist/ui/layout/index.d.ts'), /BackToTopProps/, 'layout barrel 缺 BackToTopProps 类型')
+  assert.match(read('../dist/ui/layout/index.d.ts'), /UseBackToTopOptions/, 'layout barrel 缺 UseBackToTopOptions 类型')
+  assert.doesNotMatch(read('../dist/ui/layout/index.js'), /useBackTopScroll/, '逐帧钩子 useBackTopScroll 应删除（会来回蹦）')
+  assert.doesNotMatch(read('../dist/ui/layout/index.js'), /BACK_TO_TOP_DURATION/, '旧导出 BACK_TO_TOP_DURATION 应删除')
+  assert.match(read('../dist/ui/layout/floating-action/index.js'), /scrollViewToTop/, '组件级出口缺 scrollViewToTop')
+
+  const src = read('../src/ui/layout/floating-action/BackToTop.tsx')
+  assert.match(src, /<FloatingAction\b/, '没复用 FloatingAction 壳')
+  assert.doesNotMatch(src, /from ['"].*Button/, '不许直接 import Button，要走壳')
+  assert.match(src, /icon="common\.base:huidingbu"/, '回顶默认图标丢了')
+  // 阈值钩子：翻转短路 + 阈值变化时用 lastTop 立即重算
+  assert.match(src, /top >= visibilityHeight/, '阈值显隐判断缺失')
+  assert.match(src, /visibilityHeight = 300/, '阈值默认不是 300')
+  assert.match(src, /if \(next === reached\.current\) return/, '缺阈值翻转短路，会每帧 setState')
+  assert.match(src, /lastTop\.current = top/, '没记录最后滚动位置')
+  assert.match(src, /lastTop\.current >= visibilityHeight/, '阈值变化没用最后位置重算 —— 配置改了不生效')
+  assert.match(src, /\[visibilityHeight\]/, '重算 effect 没依赖 visibilityHeight')
+  // 一次命令：scrollTo({top:0, animated:true, duration})，无逐帧、无受控
+  assert.match(src, /function scrollViewToTop/, '缺一次回顶命令')
+  assert.match(src, /scrollTo\?\.\(\{ top: 0, animated: true, duration \}\)/, '不是一次动画命令')
+  assert.doesNotMatch(src, /setTimeout|setInterval|requestAnimationFrame/, '不许逐帧 —— 逐帧命令会让视图层来回蹦')
+  assert.doesNotMatch(src, /driveTop|setDriveTop/, '不许有 driveTop state —— 受控 scrollTop 会回弹过山车')
+  assert.doesNotMatch(src, /from ['"]@tarojs\/taro['"]/, '不许 import Taro')
+  assert.doesNotMatch(src, /createSelectorQuery|pageScrollTo/, '不许自己查节点')
+  assert.doesNotMatch(src, /onScrollTopChange/, '旧逐帧回调还在')
+
+  // 演示页：点一次发一次命令，节点缓存，零逐帧零受控
+  const page = read('../demo/src/pages/layout/index.tsx')
+  assert.match(page, /<BackToTop\b/, '演示页没挂 BackToTop')
+  assert.match(page, /useBackToTop\(/, '演示页没用阈值钩子')
+  assert.match(page, /scrollViewToTop\(node, Number\(backDuration\)\)/, '没用一次回顶命令接时长配置')
+  assert.match(page, /nodeRef\.current/, '节点没缓存')
+  assert.doesNotMatch(page, /useBackTopScroll|setTimeout|animateToTop/, '演示页残留逐帧逻辑 —— 会来回蹦')
+  assert.doesNotMatch(page, /scrollTop=\{/, '演示页不能把任何值绑到 scrollTop —— 会回弹过山车')
+  for (const label of ['回顶阈值', '回顶动画']) {
+    assert.ok(page.includes(`title="${label}"`), `演示页缺「${label}」配置 cell`)
+  }
+  const shell = read('../demo/src/components/DemoShell.tsx')
+  assert.doesNotMatch(shell, /scrollTop=\{scrollTop\}/, '外壳不能受控 scrollTop —— 回弹根因')
+  assert.match(shell, /onScrollTop\?\.\(event\.detail\.scrollTop\)/, '外壳没只读回传滚动位置')
+  assert.match(shell, /enhanced/, '滚动区没开 enhanced，节点 scrollTo 不生效')
+
+  // 文档与索引
+  const doc = read('../docs/api/back-to-top.md')
+  assert.ok(exists('../docs/api/back-to-top.md'), '缺 API 文档')
+  assert.match(read('../docs/README.md'), /back-to-top\.md/, '文档索引缺 back-to-top')
+  assert.match(doc, /onScrollTopChange/, '文档没交代旧 API 废弃原因')
+  assert.match(doc, /仅 iOS|安卓/, '文档没交代平台 scrollTo duration 的限制')
+  assert.match(doc, /来回蹦|过山车/, '文档没交代逐帧方案废弃原因')
+  assert.match(doc, /scrollViewToTop/, '文档示例缺一次回顶命令')
 })

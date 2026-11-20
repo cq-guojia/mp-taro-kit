@@ -13,13 +13,14 @@ docs/                                               # 项目文档库入口
 ├── guides/                                         # 具体操作步骤：接入、更新、排障
 │   └── icon-update.md                              # 平台增删图标后同步生成物与验证的操作步骤
 ├── api/                                            # 对外承诺的契约与导出
+│   ├── back-to-top.md                              # 阈值显隐的回顶按钮：逐帧回顶动画、duration 可配、滚动位置受控喂入
 │   ├── button.md                                   # Button 的四轴外观、品牌色派生、纯图标正方形与三档加载
 │   ├── card.md                                     # Card 的竞品对比结论、槽位与设置契约、颜色双路、与 Cell 的组合
 │   ├── cell.md                                     # Cell / CellGroup 的 props、组内行为与九种用法代码
 │   ├── config.md                                   # 统一配置真源、生成链、Taro 插件一次性接入与全量可配项
 │   ├── divider.md                                  # 分隔线的纯线形态、带文字形态与 contentPosition 契约
 │   ├── exports.md                                  # exports 子路径形态、挂载与注入约定、peer 版本下限
-│   ├── floating-action.md                           # 常驻浮动按钮的两层拆分、位置档、受控显隐与进出场
+│   ├── floating-action.md                          # 常驻浮动按钮的两层拆分、位置档、受控显隐与进出场
 │   ├── icons.md                                    # 平台项目与命名规则、类名契约、多色行为与字体加载稳定性
 │   ├── overlay.md                                  # 遮罩与浮层底座：一份遮罩、一条层级链、进出场与安全区注入
 │   ├── popup.md                                    # Popup 五档与裸壳、关闭按钮三轴、ImagePopup 图片弹窗尺寸模型
@@ -70,3 +71,4 @@ docs/                                               # 项目文档库入口
 - 2026-11-19：overlay.md 描述补 Popup / ImagePopup，索引与文档实际内容对齐
 - 2026-11-19：索引补 api/popup.md（Popup / ImagePopup 组件契约从 overlay.md 拆出）
 - 2026-11-19：索引补 api/floating-action.md（常驻浮动按钮的两层拆分与受控显隐）
+- 2026-11-20 14:23:46：索引补 api/back-to-top.md（阈值回顶、逐帧动画、滚动受控喂入）

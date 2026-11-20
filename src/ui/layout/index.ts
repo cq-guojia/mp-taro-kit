@@ -1,3 +1,4 @@
+
 export { Overlay, type OverlayOpacity, type OverlayProps, type OverlayTone } from './Overlay.js'
 export { MOTION_DURATION } from './presence.js'
 export {
@@ -33,4 +34,11 @@ export {
   type FloatingActionProps,
   type FloatingActionGroupProps,
   type FloatingActionPosition,
+} from './floating-action/index.js'
+export {
+  BackToTop,
+  useBackToTop,
+  scrollViewToTop,
+  type BackToTopProps,
+  type UseBackToTopOptions,
 } from './floating-action/index.js'

@@ -57,6 +57,25 @@ page {
   line-height: var(--mptk-line-sm);
 }
 
+/* 回顶演示的可滚动占位：只给高度让 scroll-view 能滚过阈值，颜色走 fg token。 */
+.demo-filler {
+  padding: var(--mptk-space-3) var(--mptk-space-4);
+}
+
+.demo-filler__note {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  margin-bottom: var(--mptk-space-3);
+}
+
+.demo-filler__row {
+  color: var(--mptk-fg-1);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  padding: var(--mptk-space-2) var(--mptk-s-zero);
+}
+
 /* 首页品牌区：无外框，图标、一句话与三个构建标签整体居中。 */
 .demo-hero {
   align-items: center;
