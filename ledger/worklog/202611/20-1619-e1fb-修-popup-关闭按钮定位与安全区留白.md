@@ -1,8 +1,9 @@
 # 20261120-1619-e1fb-修-popup-关闭按钮定位与安全区留白: 修 Popup 关闭按钮定位与安全区留白
 
 - **Tags**: Popup, 安全区, 关闭按钮, Skyline, 缺陷修复
-- **Status**: doing · 2026-11-20 17:24:59 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: done · 2026-11-20 17:25:09 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-20 16:19:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Sealed**: 2026-11-20 17:25:09 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
      The `- **Tags**: …` line is inserted at the top by new --tags; omitted when there are no tags
@@ -111,3 +112,4 @@
 - 2026-11-20 16:19:51 · new · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · created and claimed
 - 2026-11-20 16:20:40 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 根因定位：单类 .mptk-popup__close 的 absolute 被后加载 .mptk-btn 的 relative 覆盖，双类提权修复；transform 方案保持；底部留白改 max(呼吸,横条) 注入真值；test196/build/guard/demo/doclint 全绿，待用户真机验收
 - 2026-11-20 17:24:59 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 收尾补全过程：安全区改滚动内容尾距（demo 外壳/Drawer tail，面板 padding 归零）；关闭按钮描边与叉改 gray-6、尺寸不动；分段滑块回默认 sm；closeBackground 默认 false（Popup/ImagePopup），级联实测 rgba(0,0,0,.55)；两笔提交 8c6d9c7、f1537e3 已推送，196/196 全绿
+- 2026-11-20 17:25:09 · close · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · sealed: 关闭按钮定位根因（absolute 被 Button relative 覆盖）已修、transform 方案保持；底部留白改取最大；安全区改滚动内容尾距不截短可视区；描边叉色压暗、分段滑块回默认 sm、背景默认半透明。文档/WORKLOG/测试同步，两笔提交已推送，门禁全绿。
