@@ -9,7 +9,6 @@ import type { ButtonRadius, ButtonSize, ButtonVariant } from 'mp-taro-kit/ui/act
 
 import 'mp-taro-kit/ui/display/cell/style'
 import 'mp-taro-kit/ui/form/segmented/style'
-import 'mp-taro-kit/ui/layout/floating-action/style'
 import 'mp-taro-kit/ui/icon/style'
 import { DemoPage } from '../../components/DemoBlock'
 
@@ -166,8 +165,9 @@ export default function LayoutPage() {
     <DemoPage
       pageId="layout"
       render={render}
-      floating={floating}
+      backToTop={false}
       scrollViewId={SCROLL_VIEW_ID}
+      floating={floating}
       onScrollTop={onBackScroll}
     >
       <View className="demo-filler">

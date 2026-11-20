@@ -5,6 +5,7 @@ import { Card } from 'mp-taro-kit/ui/card'
 import { Divider } from 'mp-taro-kit/ui/display'
 import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/style'
+import type { KitAction } from 'mp-taro-kit/app'
 import { catalogPages, type CatalogExample } from '../catalog'
 import { DemoShell } from './DemoShell'
 
@@ -52,15 +53,21 @@ export function DemoBlock({
 export function DemoPage({
   pageId,
   render,
-  floating,
+  actions,
+  hideActions,
+  backToTop,
   scrollViewId,
+  floating,
   onScrollTop,
   children,
 }: {
   pageId: string
   render: (id: string) => ReactNode
-  floating?: ReactNode
+  actions?: readonly KitAction[]
+  hideActions?: readonly string[]
+  backToTop?: boolean
   scrollViewId?: string
+  floating?: ReactNode
   onScrollTop?: (top: number) => void
   children?: ReactNode
 }) {
@@ -72,8 +79,11 @@ export function DemoPage({
   return (
     <DemoShell
       title={page.title}
-      floating={floating}
+      actions={actions}
+      hideActions={hideActions}
+      backToTop={backToTop}
       scrollViewId={scrollViewId}
+      floating={floating}
       onScrollTop={onScrollTop}
     >
       <View className="demo-page__head">

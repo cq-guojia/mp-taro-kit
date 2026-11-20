@@ -64,6 +64,11 @@
       "import": "./dist/ui/*/index.js",
       "require": "./dist/ui/*/index.cjs"
     },
+    "./app": {
+      "types": "./dist/app/index.d.ts",
+      "import": "./dist/app/index.js",
+      "require": "./dist/app/index.cjs"
+    },
     "./ui/*/style": "./dist/ui/*/style/index.css",
     "./styles/tokens": "./dist/styles/tokens.css",
     "./styles/theme-light": "./dist/styles/theme-light.css",

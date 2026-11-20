@@ -12,7 +12,7 @@ const release = process.argv.includes('--release')
 const errors = []
 
 const requiredExports = [
-  '.', './design', './runtime', './config', './plugin', './utils', './core', './ui',
+  '.', './design', './runtime', './config', './plugin', './utils', './core', './ui', './app',
   './ui/*', './ui/*/style', './styles/tokens', './package.json',
 ]
 

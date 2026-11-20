@@ -56,7 +56,9 @@
 
 ### 挂载点
 
-宿主在页面基座挂一次 `<OverlayHost />`。`showToast` / `showLoading` / `alert` / `confirm` 同步检查挂载状态；未挂载每次抛带修复指引的 Error。`hideToast` / `hideLoading` / `clearToasts` 不检查。`confirm` 以 Promise 解析出布尔值，`alert` 解析即关闭。
+推荐用 `app` 出口的 `createKitApp(App, options)` 在应用入口一条接入（configure + 安全区 + 主题 + 命令宿主）；细节见 [应用级接入](app.md)。
+
+命令式宿主按能力拆成三件独立组件，各自只挂需要的那份：`ToastHost`（不带遮罩）、`DialogHost`（唯一带遮罩）、`LoadingHost`（不带遮罩）。`<OverlayHost />` 是三件的兼容组合出口，新代码不必用。`showToast` / `showLoading` / `alert` / `confirm` **按能力**同步检查对应宿主是否已挂载；没挂就调对应 API 每次抛带修复指引的 Error（错误点名 `ToastHost` / `DialogHost` / `LoadingHost`）。`hideToast` / `hideLoading` / `clearToasts` 不检查。`confirm` 以 Promise 解析出布尔值，`alert` 解析即关闭。
 
 ### Cell / CellGroup 的组内行为
 

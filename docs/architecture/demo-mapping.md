@@ -26,7 +26,7 @@ demo/                                               # 仓库内的 Taro 小程�
 └── src/                                            # 演示站源码根：入口、目录数据、样式与页面
     ├── app.config.ts                               # Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
     ├── theme.json                                  # 官方 DarkMode 变量配置：明暗两档窗口/导航底色，编译后自动进产物根
-    ├── app.tsx                                     # 宿主入口：configure(faces)、setThemeMode、挂一次 <OverlayHost />、引 theme-runtime
+    ├── app.tsx                                     # 宿主入口：createKitApp 一条接入（faces/安全区/主题/命令宿主）、引 theme-runtime
     ├── catalog.ts                                  # 单一事实源：17 个展示页 + 9 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
     ├── app.scss                                    # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
     ├── components/                                 # 演示站共用组件：页面外壳、示例块与统一头部

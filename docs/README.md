@@ -13,6 +13,7 @@ docs/                                               # 项目文档库入口
 ├── guides/                                         # 具体操作步骤：接入、更新、排障
 │   └── icon-update.md                              # 平台增删图标后同步生成物与验证的操作步骤
 ├── api/                                            # 对外承诺的契约与导出
+│   ├── app.md                                      # 应用级一条接入：createKitApp、三件按需宿主、KitPage 页面壳、登录窗注册口
 │   ├── back-to-top.md                              # 阈值显隐的回顶按钮：一次节点命令回顶、duration 可配、阈值翻转才 setState
 │   ├── button.md                                   # Button 的四轴外观、品牌色派生、纯图标正方形与三档加载
 │   ├── card.md                                     # Card 的竞品对比结论、槽位与设置契约、颜色双路、与 Cell 的组合
@@ -71,5 +72,5 @@ docs/                                               # 项目文档库入口
 - 2026-11-19：overlay.md 描述补 Popup / ImagePopup，索引与文档实际内容对齐
 - 2026-11-19：索引补 api/popup.md（Popup / ImagePopup 组件契约从 overlay.md 拆出）
 - 2026-11-19：索引补 api/floating-action.md（常驻浮动按钮的两层拆分与受控显隐）
-- 2026-11-20 14:23:46：索引补 api/back-to-top.md（阈值回顶、一次节点命令、滚动位置不进 state）
-- 2026-11-20：回顶定稿——废弃逐帧（受控回弹过山车 / 发命令来回蹦），改为一次节点命令；瞬间档 duration<=0 关动画；索引同步最终契约
+- 2026-11-20 14:23:46：索引补 api/back-to-top.md（阈值回顶、一次节点命令、滚动受控喂入）
+- 2026-11-20：索引补 api/app.md（createKitApp 一条接入、三件按需宿主、KitPage 页面壳、登录窗注册口）；back-to-top 描述同步为一次节点命令

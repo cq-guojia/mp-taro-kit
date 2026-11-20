@@ -3,15 +3,57 @@ import { getKitConfig } from '../runtime/kit-config.js'
 import { uiState } from './state.js'
 import type { DialogPayload } from './state.js'
 
-const NOT_MOUNTED =
-  '[mp-taro-kit/ui] 未挂载 <OverlayHost />；请在页面基座挂一次（mp-taro-kit/ui/infra）'
+type HostKind = 'toast' | 'dialog' | 'loading'
 
-/** 开发者契约违例：没挂宿主就想用命令式能力，每次都抛并直给修复动作。 */
-function ensureMounted(): void {
-  if (!uiState().mounted) throw new Error(NOT_MOUNTED)
+const HOST_HINT: Record<HostKind, string> = {
+  toast: 'ToastHost',
+  dialog: 'DialogHost',
+  loading: 'LoadingHost',
 }
 
-/** 清掉某条 Toast 的自动消失定时器；hide / clear / reset 都走这里，不留悬空回调。 */
+/** 开发者契约违例：没挂对应能力的宿主就调命令，每次都抛并直给修复动作。 */
+function ensureMounted(kind: HostKind): void {
+  if (uiState().hosts[kind] <= 0) {
+    throw new Error(
+      `[mp-taro-kit/ui] 未挂载 <${HOST_HINT[kind]} />；请在 app 入口 createKitApp(App, { hosts: [...] }) 挂一次，或 import { ${HOST_HINT[kind]} } from 'mp-taro-kit/ui/infra' 手动挂载`,
+    )
+  }
+}
+
+/** 供各 Host 在挂载 / 卸载时调用；业务代码不要碰。计数允许多页各挂一份。 */
+export function markHostMounted(kind: HostKind): void {
+  uiState().hosts[kind] += 1
+}
+
+export function markHostUnmounted(kind: HostKind): void {
+  const hosts = uiState().hosts
+  hosts[kind] = Math.max(0, hosts[kind] - 1)
+}
+
+export function isHostMounted(kind: HostKind): boolean {
+  return uiState().hosts[kind] > 0
+}
+
+/**
+ * 兼容 shim：旧业务 / 单测手动把三件一次性标记为已挂载。
+ * 生产代码已由三件 Host 各自 mark；本函数只为不打断既有调用方保留。
+ */
+export function markOverlayHostMounted(): void {
+  markHostMounted('toast')
+  markHostMounted('dialog')
+  markHostMounted('loading')
+}
+
+export function markOverlayHostUnmounted(): void {
+  markHostUnmounted('toast')
+  markHostUnmounted('dialog')
+  markHostUnmounted('loading')
+}
+
+export function isOverlayHostMounted(): boolean {
+  return isHostMounted('toast') && isHostMounted('dialog') && isHostMounted('loading')
+}
+
 function clearToastTimer(id: number): void {
   const state = uiState()
   const timer = state.toastTimers.get(id)
@@ -21,25 +63,12 @@ function clearToastTimer(id: number): void {
   }
 }
 
-/** 供 <OverlayHost /> 在挂载 / 卸载时调用；业务代码不要碰。 */
-export function markOverlayHostMounted(): void {
-  uiState().mounted = true
-}
-
-export function markOverlayHostUnmounted(): void {
-  uiState().mounted = false
-}
-
-export function isOverlayHostMounted(): boolean {
-  return uiState().mounted
-}
-
 /**
  * 弹一条 Toast。默认关闭时间取 kit.config.mjs 的 runtime.toastDuration；
  * 单次传 duration 可覆盖，传 0 表示常驻、由业务自己 hideToast。
  */
 export function showToast(text: string, tone: NoticeTone = 'info', duration?: number): number {
-  ensureMounted()
+  ensureMounted('toast')
   const state = uiState()
   const id = state.notices.show(text, tone)
   const ms = duration ?? getKitConfig().runtime.toastDuration
@@ -48,7 +77,6 @@ export function showToast(text: string, tone: NoticeTone = 'info', duration?: nu
       state.toastTimers.delete(id)
       state.notices.dismiss(id)
     }, ms)
-    // Node 单测里不该让待触发的 Toast 定时器拖住进程退出；小程序无 unref 时静默跳过。
     ;(timer as ReturnType<typeof setTimeout> & { unref?: () => void }).unref?.()
     state.toastTimers.set(id, timer)
   }
@@ -67,7 +95,7 @@ export function clearToasts(): Notice[] {
 }
 
 export function showLoading(): number {
-  ensureMounted()
+  ensureMounted('loading')
   const state = uiState()
   const id = state.loading.show()
   state.loadingHandles.add(id)
@@ -104,15 +132,15 @@ function pushDialog(
 
 /** 解析即关闭；不返回用户选择。 */
 export function alert(message: string, options: DialogOptions = {}): Promise<void> {
-  ensureMounted()
+  ensureMounted('dialog')
   return new Promise<void>((resolve) => {
     pushDialog('alert', message, options, () => resolve())
   })
 }
 
-/** 解析 true = 确认、false = 取消；resolve(false) 也可由业务拿来「不关、重试」。 */
+/** 解析 true = 确认、false = 取消。 */
 export function confirm(message: string, options: DialogOptions = {}): Promise<boolean> {
-  ensureMounted()
+  ensureMounted('dialog')
   return new Promise<boolean>((resolve) => {
     pushDialog('confirm', message, options, resolve)
   })
@@ -127,5 +155,7 @@ export function resetUIForTests(): void {
   state.loadingHandles.clear()
   state.overlays.clear()
   state.notices.clear()
-  state.mounted = false
+  state.hosts.toast = 0
+  state.hosts.dialog = 0
+  state.hosts.loading = 0
 }

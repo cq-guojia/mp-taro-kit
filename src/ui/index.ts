@@ -3,6 +3,9 @@
 export type { DialogPayload, UIState } from './state.js'
 export { uiState } from './state.js'
 export {
+  markHostMounted,
+  markHostUnmounted,
+  isHostMounted,
   markOverlayHostMounted,
   markOverlayHostUnmounted,
   isOverlayHostMounted,

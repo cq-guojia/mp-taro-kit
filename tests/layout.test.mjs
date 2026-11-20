@@ -67,7 +67,9 @@ test('遮罩只有一份实现：Drawer / Dropdown 不再自绘遮罩，Dialog �
   for (const file of ['src/ui/navigation/Drawer.tsx', 'src/ui/navigation/Dropdown.tsx']) {
     assert.match(read(file), /<Overlay\b/, `${file} 没用 layout 的 Overlay`)
   }
-  assert.match(read('src/ui/infra/OverlayHost.tsx'), /<Overlay\s+closable=\{false\}/, '命令式 Dialog 没挂遮罩')
+  assert.match(read('src/ui/infra/DialogHost.tsx'), /<Overlay\s+closable=\{false\}/, '命令式 Dialog 没挂遮罩')
+  assert.doesNotMatch(read('src/ui/infra/ToastHost.tsx'), /<Overlay\b/, 'Toast 不许带遮罩')
+  assert.doesNotMatch(read('src/ui/infra/LoadingHost.tsx'), /<Overlay\b/, 'Loading 不许带遮罩')
 })
 
 test('遮罩组件只剩 Overlay 一个：旧的纯定位容器已删，不许再冒出来', () => {
@@ -330,11 +332,12 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
   )
   assert.doesNotMatch(runtime, /@tarojs\/taro/, 'runtime 不许 import Taro，平台能力靠宿主注入')
 
-  // demo 是 custom 导航栏，入口必须注入真值。
+  // demo 是 custom 导航栏，入口一条 createKitApp 注入真值；真值取数收在库的 app 出口里。
+  assert.match(read('demo/src/app.tsx'), /createKitApp\(/, 'demo 入口必须用 createKitApp 一条接入')
   assert.match(
-    read('demo/src/app.tsx'),
+    read('src/app/create-kit-app.tsx'),
     /configureSafeArea\(\{[\s\S]*statusBarHeight: windowInfo\.statusBarHeight \?\? 0/,
-    'demo 入口必须注入状态栏真值',
+    'createKitApp 必须注入状态栏真值',
   )
 
   // CSS 兜底：面板贴边，env() 只作为「未注入时」的状态栏近似值。
