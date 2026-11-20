@@ -109,7 +109,7 @@ function MyPage() {
 登录窗这类业务弹窗不进核心库。业务在入口注册一次 UI，并把 `LoginDialogHost` 加进 `hosts` 让它能渲染：
 
 ```tsx
-import { createKitApp, LoginDialogHost, setLoginDialog, requireLogin } from 'mp-taro-kit/app'
+import { createKitApp, ToastHost, DialogHost, LoginDialogHost, setLoginDialog, requireLogin } from 'mp-taro-kit/app'
 
 setLoginDialog(({ resolve }) => <MyLoginDialog onDone={resolve} />)
 
@@ -124,7 +124,115 @@ if (!ok) return
 
 库只调度 Promise（同一时刻只挂一个 pending，后来者会先收到 `false`；换组件/注销会兑现旧 pending），UI 与登录实现全归业务。未注册就调 `requireLogin()` 会 reject 并给修复指引——不静默放行，避免未登录继续执行业务。
 
+## 按场景接入示例
+
+下面四例覆盖「新项目怎么接、某页怎么用、某页怎么关、业务弹窗写哪」。所有 `mp-taro-kit/app` 的 import 都自带样式，不必再引 style。
+
+### 例一：新项目 app 入口（全局只写一次）
+
+```tsx
+// app.tsx
+import { createKitApp } from 'mp-taro-kit/app'
+import themeConfig from './theme.json'
+import 'mp-taro-kit/styles/theme-runtime'
+
+function App({ children }) { return <>{children}</> }
+
+export default createKitApp(App, {
+  core: { baseURL: 'https://api.example.com' },
+  theme: { mode: 'auto', themeConfig },
+})
+```
+
+这里配的是**全站共用**的东西：平台 faces（不给就用 Taro 默认实现）、core 配置、安全区、主题、命令宿主。以后要加全局能力（比如新命令宿主），改这一处，不用碰任何页面。
+
+### 例二：index 页直接用（默认回顶，什么都不用配）
+
+```tsx
+// pages/index/index.tsx
+import { ScrollView, View } from '@tarojs/components'
+import { KitPage, useKitPageScroll } from 'mp-taro-kit/app'
+
+export default function IndexPage() {
+  const onScroll = useKitPageScroll()
+  return (
+    <KitPage scrollViewId="index-scroll">
+      <ScrollView
+        id="index-scroll"
+        scrollY
+        onScroll={(e) => onScroll(e.detail.scrollTop)}
+      >
+        <View>首页内容……</View>
+      </ScrollView>
+    </KitPage>
+  )
+}
+```
+
+只要在 app 入口配过一次，这里包一层 `KitPage` 就自动有右下回顶；滚过 300px 才出现，点它回顶。这一页没加任何业务按钮，也不用引样式。
+
+### 例三：某页加自己的浮动按钮 + 关掉默认回顶
+
+```tsx
+// pages/settings/index.tsx
+import { ScrollView, View } from '@tarojs/components'
+import { KitPage, useKitPageScroll } from 'mp-taro-kit/app'
+import { showToast } from 'mp-taro-kit/ui'
+
+export default function SettingsPage() {
+  const onScroll = useKitPageScroll()
+  return (
+    <KitPage
+      scrollViewId="settings-scroll"
+      backToTop={false}
+      actions={[
+        {
+          id: 'help',
+          icon: 'common.base:bangzhu',
+          onClick: () => showToast('帮助中心'),
+        },
+      ]}
+    >
+      <ScrollView id="settings-scroll" scrollY onScroll={(e) => onScroll(e.detail.scrollTop)}>
+        <View>设置内容……</View>
+      </ScrollView>
+    </KitPage>
+  )
+}
+```
+
+`backToTop={false}` 关掉默认回顶；`actions` 加自己的按钮（如帮助入口）。id 是业务自己起的，不能叫保留字 `backToTop`。
+
+### 例四：自定义弹窗（登录窗）写哪
+
+业务 UI 和注册放业务代码，不进库：
+
+```tsx
+// app.tsx：注册 + 把渲染宿主加进 hosts
+import { createKitApp, ToastHost, DialogHost, LoginDialogHost, setLoginDialog } from 'mp-taro-kit/app'
+import MyLoginDialog from './components/MyLoginDialog'
+
+setLoginDialog(({ resolve }) => <MyLoginDialog onDone={resolve} />)
+
+export default createKitApp(App, {
+  hosts: [ToastHost, DialogHost, LoginDialogHost],
+})
+```
+
+```tsx
+// 任意业务页：需要登录的地方调协议
+import { requireLogin } from 'mp-taro-kit/app'
+
+async function submit() {
+  if (!(await requireLogin())) return
+  // 登录成功后才执行提交
+}
+```
+
+`MyLoginDialog` 是你的组件（长什么样、怎么登录都归你），只接一个 `resolve(ok)` 回调。库负责调度 Promise：同一时刻只弹一个，换组件/注销会兑现旧请求。
+
 ## 更新日志
 
 - 2026-11-20 19:34:39：新建应用级接入文档：createKitApp 一条接入、三件按需宿主、KitPage 页面壳、登录窗注册口
 - 2026-11-20 19:44:02：补样式自带契约：KitPage 浮动列定位样式随 app 出口带入，消费方不必单独引
+- 2026-11-20 19:54:32：补按场景接入示例：新项目 app 入口、index 页默认用法、某页关回顶加自定义按钮、登录窗写哪
