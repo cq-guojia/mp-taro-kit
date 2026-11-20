@@ -294,10 +294,9 @@ export default {
     "--mptk-c-layer-popover": "920",                                // 层级：锚定浮窗 / 下拉面板
     "--mptk-c-layer-host": "1000",                                  // 层级：命令式 API 挂载点，保证总在最上
     "--mptk-c-motion-duration": "300ms",                            // 浮层进出场时长，带单位；0s 表示不做动画（JS 侧 MOTION_DURATION 仍是数值 300）
-    "--mptk-c-popup-max-h": "80vh",                                 // 弹出层面板上限高：超出后面板内部滚动，不顶出屏幕
-    "--mptk-c-popup-sheet-h": "35vh",                               // 贴顶/贴底档确定高度：Skyline 下 scroll-view 要确定高才能滚，只给 max-height 会被内容撑满屏；取 35vh 不让面板过长
+    "--mptk-c-popup-max-h": "80vh",                                 // 弹出层面板上限高：超出后由调用方在 children 里包 scroll-view 滚动，不顶出屏幕
     "--mptk-c-popup-center-w": "320px",                             // 居中档默认宽：对齐 Vant Dialog 320px（antd-mobile RN 286px），375 屏两边各留 27.5px，最大不超屏
-    "--mptk-c-popup-min-h": "200px",                                // 面板最小高度：内容少时不塌成一小溜
+    "--mptk-c-popup-min-h": "0",                                    // 面板最小高度 0：高度完全由 children 撑开，不写死、内容少也不留空
     "--mptk-image-popup-action-gap": "var(--mptk-space-2)",         // 图片弹窗动作组里文字按钮 / 图片按钮之间的默认间距，站点可覆盖
     "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
@@ -356,6 +355,7 @@ export default {
   structure: {                                                      // 纯几何 / 算法结构常量：改了会影响布局，允许改但需回归渲染
     "--mptk-s-zero": "0",                                           // 零值：清零 / 无偏移
     "--mptk-s-full": "100%",                                        // 满幅：宽高铺满容器
+    "--mptk-s-full-neg": "-100%",                                   // 负满幅：向回位移自身全幅（外置关闭按钮移出面板用）
     "--mptk-s-half": "50%",                                         // 半幅：50% 尺寸或位移
     "--mptk-s-half-neg": "-50%",                                    // 负半幅：向回位移自身一半（外挂关闭按钮跨边用）
     "--mptk-s-quarter": "25%",                                      // 四分之一：25% 尺寸或位移

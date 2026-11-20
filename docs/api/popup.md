@@ -12,15 +12,15 @@
 
 ### 形态与定位
 
-`position` 取五档：`'top' | 'center' | 'bottom' | 'left' | 'right'`（默认 `bottom`）。上 / 下档通栏；左 / 右档是全高抽屉（宽度取 `--mptk-c-drawer-w`，240px，375 屏约 64%，不受面板限高影响）；居中档有默认宽 `--mptk-c-popup-center-w`（320px，375 屏两边各留 27.5px）且最大不超屏，不是通栏。Skyline 不支持 Vant 用的 `fit-content`，故居中档用 token 默认宽，消费方可覆盖。原独立 `Drawer` 已取消，左右滑入由 `left` / `right` 档承担。面板最小高 `--mptk-c-popup-min-h`（200px）。
+`position` 取五档：`'top' | 'center' | 'bottom' | 'left' | 'right'`（默认 `bottom`）。上 / 下档通栏；左 / 右档是全高抽屉（宽度取 `--mptk-c-drawer-w`，240px，375 屏约 64%，不受面板限高影响）；居中档有默认宽 `--mptk-c-popup-center-w`（320px，375 屏两边各留 27.5px）且最大不超屏，不是通栏。Skyline 不支持 Vant 用的 `fit-content`，故居中档用 token 默认宽，消费方可覆盖。原独立 `Drawer` 已取消，左右滑入由 `left` / `right` 档承担。
 
-贴顶 / 贴底档必须有确定高度：Skyline 下 `scroll-view` 拿到确定高才会滚，只给 `max-height` 会被内容撑满屏、真机上滚不动。这两档高度取 `--mptk-c-popup-sheet-h`（35vh），`--mptk-c-popup-max-h` 只作上限。
+**高度由内容撑开，不写死、不限高。** 面板高度完全由 children 决定：内容三行就三行高，不强行撑满一截，也不写 `max-height`。这是因为 Skyline 下 `max-height` 会参与 `fixed` 面板的高度计算，把内容撑高型面板顶成上限高，表现为底部一大块空白、外置关闭按钮参照错乱——所以面板不设上限，高度纯由 children 决定；内容确实超高时由调用方在 children 里包 `scroll-view` 并给确定高来滚（Skyline 下 scroll-view 要确定高才滚）。`--mptk-c-popup-min-h` 为 0，body 一律 `View` 直出（不套 `scroll-view`），`surface` 只管底色 / 内边距 / 圆角，两档模型统一。这一点对贴顶 / 贴底尤其重要——每个 sheet 内容不同，统一 35vh 必然留空。演示站里内容偏少的例子，在示例内容上给高度即可，不要反过来在核心控件钉高度。
 
 圆角按档默认：居中档四角全圆，贴边档默认平角；贴边档传 `round` 只圆内侧两角。尺寸读 `--mptk-c-popup-radius`（`--mptk-radius-md` = 12px），单次换档传 `roundSize`（`'none' | 'sm' | 'md' | 'lg'`，派生 `.mptk-popup--radius-*` 类名切同一变量）。
 
 ### 关闭按钮
 
-`closeable` 默认 `false`；开启后复用核心 `Button`，不在浮层里另造按钮皮肤。组件已把关闭按钮排在内容容器之后：Skyline 下 `scroll-view` 是原生视图、绘制在后，放前面会被盖住而点不着。
+`closeable` 默认 `false`；开启后复用核心 `Button`，不在浮层里另造按钮皮肤。默认位置统一外右上：bottom / center 落在面板外右上（`above-right`，与面板留一个间距档），top 档贴顶、上方外置档不可用，落在面板下方外置右侧（`below-right`）。组件把关闭按钮排在内容容器之后，避免被内容盖住。
 
 样式拆成三个正交轴，由 `resolveCloseStyle()`（`src/ui/layout/close-style.ts`）算出 Button 的 `variant` / `radius`：
 
@@ -38,29 +38,29 @@
 
 | 形态 | 面板内 | 跨上边一半 | 面板上方 | 面板下方 | 默认 |
 |---|---|---|---|---|---|
-| `bottom` | `top-left`、`top-right` | `edge-top-left`、`edge-top-right` | `above-right`、`above-center` | — | `top-left` |
-| `center` | `top-right` | `edge-top-right` | `above-right` | `below-center`、`below-right` | `top-right` |
-| `top` | — | — | — | `below-center`、`below-right` | `below-center` |
+| `bottom` | `top-left`、`top-right` | `edge-top-left`、`edge-top-right` | `above-right`、`above-center` | — | `above-right` |
+| `center` | `top-right` | `edge-top-right` | `above-right` | `below-center`、`below-right` | `above-right` |
+| `top` | — | — | — | `below-center`、`below-right` | `below-right` |
 | `left` / `right` | 不支持 | 不支持 | 不支持 | 不支持 | 无关闭按钮 |
 
-几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。跨边 / 外置档会临时放开面板 `overflow`，否则按钮被裁。点关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径。
+几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。外置档把按钮锚在面板边缘内侧（`top` / `bottom: 0`），再用 `transform` 按**按钮自身高度**移出面板：`above-*` 用 `--mptk-s-full-neg`（-100%）上移、`below-*` 用 `--mptk-s-full`（100%）下移。不用 `top/bottom: calc(100% + gap)`——那里的 100% 参照面板高度，Skyline 下 `fixed` 面板高度参与计算时会把按钮顶到屏幕外（表现为关闭按钮跑到屏幕左上、离面板很远），且越出面板后 `right` 失效会退回左边。`transform` 的百分比相对按钮自身，是确定量，首帧即正确。跨边 / 外置档会临时放开面板 `overflow`，否则按钮被裁。点关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径。
 
 ### 面板表面 surface
 
 | 参数 | 类型 | 默认 | 说明 |
 |---|---|---|---|
-| `surface` | `'panel' \| 'none'` | `'panel'` | `panel` 是有底色 / 内边距 / 圆角的常规面板；`none` 是裸壳——不画底色、内边距、圆角，`min-height` 归零，只留遮罩 / 进场 / 关闭按钮 / 定位 |
+| `surface` | `'panel' \| 'none'` | `'panel'` | `panel` 是有底色 / 内边距 / 圆角的常规面板；`none` 是裸壳——不画底色、内边距、圆角，只留遮罩 / 进场 / 关闭按钮 / 定位 |
 
-裸壳用于「自己画内容」：children 塞什么就显示什么，位置由内容决定；遮罩、`overlayTone` / `overlayOpacity`、关闭按钮及其位置全保留。样式上 `.mptk-popup--surface-none .mptk-popup__panel` 放样式表末尾、双类名覆盖各档位（含 `--round`），不依赖样式表顺序。主流库多是值型背景开关，这里连 padding 和圆角一起关，故取 `surface` 做档位。
+两档的**高度模型完全相同**：body 都是 `View` 直出，面板高度由 children 撑开；surface 只管底色 / 内边距 / 圆角，不再有「panel 写死高、裸壳撑高」的分裂。裸壳用于「自己画内容」：children 塞什么就显示什么，遮罩、`overlayTone` / `overlayOpacity`、关闭按钮及其位置全保留。样式上 `.mptk-popup--surface-none .mptk-popup__panel` 放样式表末尾、双类名覆盖各档位（含 `--round`），不依赖样式表顺序。主流库多是值型背景开关，这里连 padding、圆角一起关，故取 `surface` 做档位。
 
-内容容器随档位走，不另设滚动开关：
+内容容器两档一致，滚动统一交给调用方：
 
 | 档位 | 内容容器 | 高度 | 调用方设置 |
 |---|---|---|---|
-| `panel`（默认） | `ScrollView scrollY`（内容超高自己滚） | min 200px / max 80vh，面板定 | 零 |
-| `none` | `View` 直出（不套 scroll-view） | `min-height` / `max-height` / `overflow` 全撤，由 children 决定 | 零 |
+| `panel`（默认） | `View` 直出（不套 scroll-view） | min 0、不限高，完全由 children 撑开 | 要滚则自己包 `scroll-view` 并给高 |
+| `none` | `View` 直出（不套 scroll-view） | 同上，`min-height` / `max-height` / `overflow` 全撤 | 同上 |
 
-裸壳下要滚由调用方自己在 children 里包 `scroll-view` 并给明确高度。两路都保留让位注入；关闭按钮排在内容容器之后。`ImagePopup` 走 `none` 档，单图直接 `Image`、多图直接 `Swiper`，不会被 scroll-view 的 0 高度裁掉。
+需要滚动的场景（长列表 / 长图）由调用方在 children 里包 `scroll-view` 并给确定高（Skyline 下 scroll-view 要确定高才滚），`ImagePopup` 长图档就是这么做的。两路都保留让位注入；关闭按钮排在内容容器之后。`ImagePopup` 走 `none` 档，单图直接 `Image`、多图直接 `Swiper`。
 
 ### 让位与内边距
 
@@ -90,10 +90,8 @@ configureSafeArea({
 
 | 变量 | 默认 | 作用 |
 |---|---|---|
-| `--mptk-c-popup-max-h` | `80vh` | 面板限高上限 |
-| `--mptk-c-popup-sheet-h` | `35vh` | 贴顶 / 贴底档确定高度，Skyline 下 scroll-view 要确定高才能滚 |
 | `--mptk-c-popup-center-w` | `320px` | 居中档默认宽，最大不超屏 |
-| `--mptk-c-popup-min-h` | `200px` | 面板最小高度 |
+| `--mptk-c-popup-min-h` | `0` | 面板最小高度，0 = 完全由内容撑开、不留空 |
 | `--mptk-c-popup-center-rise` | `48px` | 居中档进场起始偏移：从目标位置下方 48px 上浮渐显 |
 | `--mptk-c-popup-radius` | `var(--mptk-radius-md)` | 圆角尺寸，改一处换全库 |
 | `--mptk-c-popup-close-size` | `26px` | 关闭按钮外框；叉固定 12.8px |
@@ -194,3 +192,7 @@ import 'mp-taro-kit/ui/layout/style'
 ## 更新日志
 
 - 2026-11-19：从 `docs/api/overlay.md` 拆出 Popup / ImagePopup 契约独立成篇；遮罩本体、层级链与安全区注入留在 overlay.md，历史条目也留在原文，不重复搬运。
+- 2026-11-20 21:57:03：修裸壳档错位：撤掉贴顶/贴底固定 height，高度真由内容决定
+- 2026-11-20 22:16:12：核心改造：高度由内容撑开不再写死35vh，body统一View，关闭按钮默认右上，删sheet-h token
+- 2026-11-20 22:26:58：关闭按钮默认改外右上 above-right（bottom/center）
+- 2026-11-20：规范修复关闭按钮跑屏幕左上/离面板远：面板撤掉 max-height（Skyline 下参与 fixed 面板高度计算，把内容撑高型面板顶成上限高、留底部空白）；外置关闭按钮改锚面板边缘内侧 + transform 按自身高度移出（新增 `--mptk-s-full-neg`），不再用参照面板高度的 bottom/top calc(100% + gap)

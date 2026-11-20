@@ -1,4 +1,4 @@
-import { ScrollView, View } from '@tarojs/components'
+import { View } from '@tarojs/components'
 import type { CSSProperties, ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
 import { Button } from '../actions/Button.js'
@@ -80,7 +80,7 @@ export interface PopupProps {
   panelStyle?: CSSProperties
 }
 
-/** 弹出层：遮罩 + 定位面板，面板内容走内部 scroll-view，超高自己滚。 */
+/** 弹出层：遮罩 + 定位面板，面板高度由 children 撑开；超高要滚由调用方在 children 里包 scroll-view 并给高。 */
 export function Popup({
   open,
   position = 'bottom',
@@ -162,17 +162,12 @@ export function Popup({
         />
       ) : null}
       <View className={panel.filter(Boolean).join(' ')} style={padStyle === undefined ? panelStyle : { ...padStyle, ...panelStyle }}>
-        {surface === 'none' ? (
-          /* 裸壳档内容自己画：不套 scroll-view，否则面板无固定高时它塌成 0 把内容裁没。
-             要滚由调用方自己在 children 里包 scroll-view（与 Vant / NutUI 一致）。 */
-          <View className="mptk-popup__body" style={bodyStyle}>
-            {children}
-          </View>
-        ) : (
-          <ScrollView scrollY className="mptk-popup__body" style={bodyStyle}>
-            {children}
-          </ScrollView>
-        )}
+        {/* 两档 body 都用 View 直出：面板高度由 children 撑开，不写死 35vh。
+            要滚由调用方自己在 children 里包 scroll-view 并给确定高（长列表 / 长图走这条，
+            与 ImagePopup 长图档一致）；surface 只差底色 / 内边距 / 圆角。 */}
+        <View className="mptk-popup__body" style={bodyStyle}>
+          {children}
+        </View>
         {/* 关闭按钮必须排在内容容器后面：Skyline 下 scroll-view 是原生视图、绘制在后，
             放前面会被它盖住，点上去没反应。按钮复用核心 Button 的 xs 档与按压变色。 */}
         {closeable && onClose && resolvedClosePosition !== null ? (

@@ -384,7 +384,7 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   const soft = render(h(Popup, base, h('div', null, '内容')))
   assert.match(soft, /mptk-btn--soft/, '默认档要有底色又有描边，落在 soft')
   assert.match(soft, /mptk-btn--radius-pill/, 'circle 形状走 pill 圆角')
-  assert.match(soft, /mptk-popup__close--top-left/, '底部面板默认关闭按钮在面板内左上')
+  assert.match(soft, /mptk-popup__close--above-right/, '底部面板默认关闭按钮在面板外右上')
 
   /* 关掉底色与描边、换圆角方 → solid + 半透明 class；叉色不受背景轴影响。 */
   const ghost = render(h(Popup, { ...base, closeShape: 'rounded', closeBorder: false, closeBackground: false }, h('div', null, '内容')))
@@ -399,26 +399,27 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
     assert.doesNotMatch(render(h(Popup, { ...base, position: panel }, h('div', null, '内容'))), /mptk-popup__close/, `${panel} 抽屉不支持关闭按钮`)
   }
 
-  /* 贴顶档支持面板下方外置位置，默认落面板下方居中。 */
+  /* 贴顶档支持面板下方外置位置，默认落面板下方靠右。 */
   const top = render(h(Popup, { ...base, position: 'top' }, h('div', null, '内容')))
-  assert.match(top, /mptk-popup__close--below-center/, '贴顶档默认关闭按钮落在面板下方居中')
+  assert.match(top, /mptk-popup__close--below-right/, '贴顶档默认关闭按钮落在面板下方靠右')
   assert.match(top, /mptk-popup--close-outside/, '贴顶档下方按钮要放开面板裁剪')
   const topRight = render(h(Popup, { ...base, position: 'top', closePosition: 'below-right' }, h('div', null, '内容')))
   assert.match(topRight, /mptk-popup__close--below-right/, '贴顶档可切到面板下方靠右')
 
-  /* 外置档要放开面板裁剪，否则按钮被 overflow 裁掉。 */
+  /* 外置档要放开面板裁剪，否则按钮被 overflow 裁掉；默认外右上即外置档。 */
+  assert.match(soft, /mptk-popup--close-outside/, '默认外右上按钮需要根节点放开裁剪')
   const outside = render(h(Popup, { ...base, closePosition: 'above-center' }, h('div', null, '内容')))
   assert.match(outside, /mptk-popup--close-outside/, '面板上方的按钮需要根节点放开裁剪')
 
   /* 裸壳档：面板 class 带 surface-none，浮层能力（遮罩 / 关闭按钮）仍在。 */
   const bare = render(h(Popup, { ...base, surface: 'none' }, h('div', null, '自画内容')))
   assert.match(bare, /mptk-popup--surface-none/, 'surface=none 要落裸壳 class')
-  assert.match(bare, /mptk-popup__close--top-left/, '裸壳档关闭按钮仍渲染，不随壳一起没')
+  assert.match(bare, /mptk-popup__close--above-right/, '裸壳档关闭按钮仍渲染且落在默认外右上')
   assert.match(bare, /mptk-overlay/, '裸壳档遮罩仍在')
-  assert.doesNotMatch(bare, /<scroll-view/, '裸壳档内容不能套 scroll-view，否则面板无固定高时塌成 0')
+  assert.doesNotMatch(bare, /<scroll-view/, '面板内容不该套 scroll-view，高度由 children 撑开')
   const panel = render(h(Popup, base, h('div', null, 'x')))
   assert.doesNotMatch(panel, /mptk-popup--surface-none/, '默认档不能带裸壳 class')
-  assert.match(panel, /<scroll-view/, '默认档内容仍走 scroll-view，长内容自己滚')
+  assert.doesNotMatch(panel, /<scroll-view/, '默认档内容也走 View 按内容撑高，滚动交给调用方')
 })
 
 test('ImagePopup 尺寸模型：宽/高/比例/原图/上界/滚动/不放大', () => {

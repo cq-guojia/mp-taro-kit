@@ -51,7 +51,9 @@
   display: flex;
   flex-direction: column;
   min-height: var(--mptk-c-popup-min-h);
-  max-height: var(--mptk-c-popup-max-h);
+  /* 不写 max-height：Skyline 下它会参与 fixed 面板的高度计算，把「内容撑高」的面板顶成上限高
+     （底部大块空白 + 外置关闭按钮的百分比参照错乱）。高度纯由 children 撑开；
+     内容确实超高由调用方在 children 里包 scroll-view 并给确定高来滚。 */
   overflow: hidden;
   background-color: var(--mptk-surface-1);
   padding-top: var(--mptk-space-4);
@@ -63,10 +65,12 @@
   transition-timing-function: var(--mptk-ease);
 }
 
-/* 内容区自己滚：flex 拿定高，min-height: 0 才允许压到父级 max-height 以内。 */
+/* 内容区按内容撑高：面板高度由 children 决定，不写死、不默认滚。
+   要滚的调用方（长列表 / 长图）自己在 children 里包 scroll-view 并给高，
+   与裸壳档、ImagePopup 长图档同一套模型；不在这里抢剩余空间。 */
 .mptk-popup__body {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  min-height: var(--mptk-s-zero);
 }
 
 /* 顶部让位：注入生效时由 JS 把目标位置写成内联 px，下面两条是**未注入时的兜底**。
@@ -81,12 +85,12 @@
 }
 
 /* 贴底：通栏，从底边升起；贴底两角留直角以对齐屏幕边缘。
-   必须给确定 height：Skyline 的 scroll-view 只有拿到确定高才会滚，光靠 max-height 会被内容撑满屏。 */
+   高度由 children 撑开，不写死 35vh：每个 sheet 内容不同，统一高度必然留空。
+   要滚由调用方在 children 里包 scroll-view 并给高，见 docs/api/popup.md。 */
 .mptk-popup__panel--bottom {
   bottom: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
-  height: var(--mptk-c-popup-sheet-h);
   padding-bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
   transform: translateY(100%);
   opacity: 0;
@@ -97,14 +101,13 @@
   opacity: 1;
 }
 
-/* 贴顶：通栏，从屏幕顶起；贴顶两角留直角。同样给确定高，原因见贴底档。
+/* 贴顶：通栏，从屏幕顶起；贴顶两角留直角。高度同贴底档由 children 撑开。
    面板贴边定位（top: 0），自身不写安全区 padding；让位单独加在内容区 padding-top
    （见 safe-inset.ts 与上面的 .mptk-popup--inset-* 规则）。 */
 .mptk-popup__panel--top {
   top: var(--mptk-s-zero);
   left: var(--mptk-s-zero);
   right: var(--mptk-s-zero);
-  height: var(--mptk-c-popup-sheet-h);
   transform: translateY(-100%);
   opacity: 0;
 }
@@ -267,35 +270,41 @@
   transform: translateY(var(--mptk-s-half-neg));
 }
 
-/* 面板上方 / 下方：与面板留一个间距档，不做半幅外移；靠右档留右间距，居中档水平居中。 */
+/* 面板上方 / 下方：与面板留一个间距档；靠右档留右间距，居中档水平居中。
+   定位锚在面板边缘内侧（top / bottom: 0），再用 transform 按**按钮自身高度**移出面板：
+   translateY 的百分比参照按钮自身，是确定量；不写 `bottom/top: calc(100% + gap)`——
+   那里的 100% 参照面板高度，Skyline 下 fixed 面板的高度参与计算时会把按钮顶到屏幕外，
+   且按钮越出面板后 right 失效、退回静态位置落到左边。这里只动 transform，位置首帧即正确。 */
 .mptk-popup__close--above-right {
-  bottom: calc(var(--mptk-s-full) + var(--mptk-space-3));
+  top: var(--mptk-s-zero);
   right: var(--mptk-space-3);
+  transform: translateY(calc(var(--mptk-s-full-neg) - var(--mptk-space-3)));
 }
 
 .mptk-popup__close--above-center {
-  bottom: calc(var(--mptk-s-full) + var(--mptk-space-3));
+  top: var(--mptk-s-zero);
   left: var(--mptk-s-half);
-  transform: translateX(var(--mptk-s-half-neg));
+  transform: translate(var(--mptk-s-half-neg), calc(var(--mptk-s-full-neg) - var(--mptk-space-3)));
 }
 
 .mptk-popup__close--below-center {
-  top: calc(var(--mptk-s-full) + var(--mptk-space-3));
+  bottom: var(--mptk-s-zero);
   left: var(--mptk-s-half);
-  transform: translateX(var(--mptk-s-half-neg));
+  transform: translate(var(--mptk-s-half-neg), calc(var(--mptk-s-full) + var(--mptk-space-3)));
 }
 
 .mptk-popup__close--below-right {
-  top: calc(var(--mptk-s-full) + var(--mptk-space-3));
+  bottom: var(--mptk-s-zero);
   right: var(--mptk-space-3);
+  transform: translateY(calc(var(--mptk-s-full) + var(--mptk-space-3)));
 }
 
 /* 裸壳：只留浮层能力（遮罩 / 进场 / 关闭按钮 / 定位），面板本身不画底色、内边距、圆角。
    放文件末尾、双类名压过基础面板与各档位（含 --round）声明，不依赖样式表顺序。
-   min-height 归零：否则内容少时面板仍撑到 popup-min-h 一截空白底。 */
-/* 裸壳：只留浮层能力（遮罩 / 进场 / 关闭按钮 / 定位），面板完全不干预内容。
-   min-height / max-height / overflow 全部撤掉，高度由 children 自己决定——
-   children 用 View 直出（不是 scroll-view），不会被 0 高度裁掉；要滚由调用方自己包。 */
+   min-height / max-height / overflow 全撤：高度由 children 决定，不限高、不裁切。
+   两档 body 现在都是 View 直出（见 .mptk-popup__body），高度统一由内容撑开，
+   surface 只管底色 / 内边距 / 圆角，不再出现「panel 档写死高、裸壳撑高」的分裂。
+   要滚由调用方自己在 children 里包 scroll-view 并给高。 */
 .mptk-popup--surface-none .mptk-popup__panel {
   background-color: transparent;
   min-height: var(--mptk-s-zero);

@@ -30,10 +30,12 @@ const ALLOWED: Partial<Record<PopupPosition, readonly PopupClosePosition[]>> = {
   top: ['below-center', 'below-right'],
 }
 
+/* 默认一律右上：bottom / center 取面板外右上（above-right，与面板留一个间距档）；
+   top 档贴顶、上方外置档不可用，取面板下方外置右侧（below-right）。 */
 const DEFAULT: Partial<Record<PopupPosition, PopupClosePosition>> = {
-  bottom: 'top-left',
-  center: 'top-right',
-  top: 'below-center',
+  bottom: 'above-right',
+  center: 'above-right',
+  top: 'below-right',
 }
 
 /** 左右抽屉没有关闭按钮：传任何位置都返回 null。传了本形态不支持的位置则回落到默认值。 */

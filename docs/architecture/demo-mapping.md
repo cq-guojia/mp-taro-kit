@@ -16,7 +16,7 @@
 demo/                                               # 仓库内的 Taro 小程序宿主
 ├── package.json                                    # 演示站清单：mp-taro-kit 用 workspace:*，并装宿主 peer 与 Taro Vite 编译链
 ├── app.config.ts                                   # 页面路由真源：pages 共 18 项，由 src/app.config.ts 转发给 Taro
-├── project.config.json                             # 微信开发者工具工程配置：renderer 在 Skyline 与 WebView 之间切换
+├── project.config.json                             # 微信开发者工具工程配置：工程名 / appid / 编译设置；不含 renderer
 ├── tsconfig.json                                   # 演示站 TS 配置：jsx 用 react-jsx、target 用 es2020
 ├── babel.config.js                                 # Taro React + Vite 的 babel 预设，编译期使用
 ├── config/                                         # Taro 4 工程配置文件所在目录
@@ -32,7 +32,8 @@ demo/                                               # 仓库内的 Taro 小程�
     ├── components/                                 # 演示站共用组件：页面外壳、示例块与统一头部
     │   ├── DemoBlock.tsx                           # 单个示例外壳；另导出 DemoPage 页壳，按 catalog 铺块并把正文交给 DemoShell
     │   ├── DemoNav.tsx                             # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
-    │   └── DemoShell.tsx                           # 页面外壳：固定视口高度的 View + scroll-view；导航栏在滚动区外
+    │   ├── DemoSettings.tsx                        # 站级设置面板：底部裸壳 Popup（高度按内容撑开），单组 CellGroup 放明暗模式 / 编译模式 / 当前版本；由 DemoShell 每页挂载
+    │   └── DemoShell.tsx                           # 页面外壳：固定视口高度 View + scroll-view；右侧列常驻设置入口，导航栏在滚动区外
     └── pages/                                      # 演示站页面：1 个索引页 + 18 个展示页
         ├── index/index.tsx                         # 目录页：主题三态装 Card（title + subtitle + Segmented）；menu 用 CellGroup 铺固定分组
         ├── theme-config/index.tsx                  # 主题配置：三张 Card 用 title 做标题、列表是不带标题的 CellGroup，色条上写色板名字
@@ -79,6 +80,7 @@ demo/                                               # 仓库内的 Taro 小程�
 - 分组判据按「使用者找组件时的场景」，不按 `src/ui/` 的目录；库侧路径仍是 `ui/feedback` / `ui/layout`，目录不反向约束 exports。浮层类按「用户要做什么」收进「浮层与弹出」组，组内四档顺序固定：通用容器（`Popup`，内容是消费方塞的）→ 确认对话（`Dialog`，问一个二选一）→ 操作面板（`ActionSheet` / `ShareSheet` / `DropdownMenu` / `Popover`，给一组候选挑一个）→ 轻提示（`Toast` / `Notify` / `Loading`，只告知不用回应）。`Overlay` 遮罩归基础组件——它是下拉 / 气泡 / Popup 共用的底层能力，不是弹窗专属；`Drawer` 取消，侧滑由 `Popup` 的左右档吸收，菜单不再有独立抽屉条目（Vant / antd-mobile / NutUI 均无独立 Drawer）。命令式 `alert` / `confirm` / `showToast` / `showLoading` 仍在「命令式 API」组，与组件式按调用方式分开。
 - **演示按使用者分页，被引用的下层只演自己**：遮罩不知道谁会用它，所以遮罩页只演示压暗、浓度、底色、点击策略，不出现 Popup / Dialog；Popup 用它做出来的成品归 Popup 页，下拉归导航页，Dialog / Toast / Loading 归反馈页。抽屉已从菜单移除（侧滑并入 Popup 左右档），演示页暂留、由使用者逐个调整。`tests/layout.test.mjs` 断言遮罩页不出现使用者。
 - 每个页面必须走 `DemoShell`：外壳 `height: 100vh` + `scroll-view type="custom"`，页面 json 配 `disableScroll: true`。Skyline 不支持页面全局滚动，绕开外壳写普通容器会让超屏内容滚不到；平台依据见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md)。
+- 站级设置入口由 `DemoShell` 每页固定挂进右侧浮动列（id `demo-settings`），不并入页面 `actions`、不受 `hideActions` 屏蔽；面板 `DemoSettings` 用底部 `Popup` 默认 `panel` 档（高度由三行内容撑开），单组 `CellGroup` 无标题、Cell 无副标题，去上下外框线（`border={false}`）且分隔线不内缩（`dividerInset={false}`），放明暗模式 / 编译模式 / 当前版本三项；关闭按钮用核心默认位置（外右上）。这是 demo 自己的调试能力，不进 `catalog.ts` 演示页。编译模式如实标注：`renderer` 是 `app.config.ts` 的编译期配置，运行时无切换 API；confirm 后只重启运行环境，真正切引擎靠开发者工具「开发调试 → Switch Render」或改配置重编译。
 - 控件的效果展示归演示站；props、组内行为与用法代码归 `docs/api/<组件>.md`（如 [Cell 单元格](../api/cell.md)、[Switch 开关](../api/switch.md)、[Segmented 分段选择](../api/segmented.md)），演示站不展示代码。演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
 - 各 ui 子域各有自己的 style 出口，样式由各页装配时引入，不单独成页；icon 域没有组件，样式即字体声明与类名。子域清单以源码为准，文档不写死数量。
 - 骨架屏尚未实现、归属 `feedback` / `display` 未定：目录数据预留 `skeleton` id，不生成页面。
@@ -140,3 +142,8 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-16 14:16:36：块尾规则限定到 __content 直接子，不穿透浮层；calc 乘法改减法
 - 2026-11-16 14:21:29：块底留白改成卡片壳 padding-bottom 归零、内容末项自带一档；禁用负外边距等四类写法
 - 2026-11-16 14:28:41：间距结构化为 stack 相邻兄弟给、item 不叠垂直外边距；显式分行，五类失效写法禁用
+- 2026-11-20 21:11:16：目录树补 DemoSettings，约束补站级设置入口与编译模式如实标注，修正 renderer 配置真源
+- 2026-11-20 21:34:15：设置面板改裸壳按内容撑高、关闭按钮用默认、单组无标题无副标题三项
+- 2026-11-20 21:57:03：设置面板关闭按钮改用 above-right 外置右上
+- 2026-11-20 22:16:12：设置面板改回panel档与核心默认右上关闭位
+- 2026-11-20 22:26:58：设置面板 CellGroup 去外框线、分隔线不内缩，关闭位外右上

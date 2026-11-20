@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { ScrollView, View } from '@tarojs/components'
 import { PageShell } from 'mp-taro-kit/ui/infra'
 import { KitPage, type KitAction } from 'mp-taro-kit/app'
 import type { ReactNode } from 'react'
 import { DemoNav } from './DemoNav'
+import { DemoSettings } from './DemoSettings'
 
 /**
  * 页面外壳：Skyline 不支持页面全局滚动，滚动必须由 scroll-view 承担，
@@ -44,9 +46,15 @@ export function DemoShell({
   onScrollTop?: (top: number) => void
   children: ReactNode
 }) {
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  // 设置入口是 demo 站级常驻能力，不属于任何页面的 actions，也不受 hideActions 屏蔽。
+  const allActions: readonly KitAction[] = [
+    ...actions,
+    { id: 'demo-settings', icon: 'common.base:shezhi', onClick: () => setSettingsOpen(true) },
+  ]
   return (
     <PageShell className="demo-shell">
-      <KitPage actions={actions} hideActions={hideActions} backToTop={backToTop} scrollViewId={scrollViewId}>
+      <KitPage actions={allActions} hideActions={hideActions} backToTop={backToTop} scrollViewId={scrollViewId}>
         <DemoNav title={title} logo={logo} home={home} />
         <ScrollView
           id={scrollViewId}
@@ -60,6 +68,7 @@ export function DemoShell({
         </ScrollView>
       </KitPage>
       {floating}
+      <DemoSettings open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </PageShell>
   )
 }

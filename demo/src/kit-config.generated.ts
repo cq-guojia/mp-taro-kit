@@ -1,4 +1,4 @@
-// @mptk-inputs:df5e423a3f7e
+// @mptk-inputs:401e71c3fd1d
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -2012,15 +2012,6 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "c-popup-max-h",
     },
     {
-      "key": "--mptk-c-popup-sheet-h",
-      "label": "c-popup-sheet-h",
-      "group": "component",
-      "groupLabel": "组件视觉值",
-      "value": "35vh",
-      "unit": "",
-      "note": "c-popup-sheet-h",
-    },
-    {
       "key": "--mptk-c-popup-center-w",
       "label": "c-popup-center-w",
       "group": "component",
@@ -2034,8 +2025,8 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "c-popup-min-h",
       "group": "component",
       "groupLabel": "组件视觉值",
-      "value": "200px",
-      "unit": "px",
+      "value": "0",
+      "unit": "",
       "note": "c-popup-min-h",
     },
     {
@@ -2514,6 +2505,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "100%",
       "unit": "",
       "note": "s-full",
+    },
+    {
+      "key": "--mptk-s-full-neg",
+      "label": "s-full-neg",
+      "group": "structure",
+      "groupLabel": "结构常量",
+      "value": "-100%",
+      "unit": "",
+      "note": "s-full-neg",
     },
     {
       "key": "--mptk-s-half",

@@ -546,12 +546,12 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   for (const pos of bottom) assert.equal(resolveClosePosition('bottom', pos), pos, `底部应支持 ${pos}`)
   for (const pos of center) assert.equal(resolveClosePosition('center', pos), pos, `中部应支持 ${pos}`)
   for (const pos of top) assert.equal(resolveClosePosition('top', pos), pos, `顶部应支持 ${pos}`)
-  assert.equal(resolveClosePosition('bottom', undefined), 'top-left', '底部默认内部左上')
-  assert.equal(resolveClosePosition('center', undefined), 'top-right', '中部默认内部右上')
-  assert.equal(resolveClosePosition('top', undefined), 'below-center', '顶部默认面板下方居中')
-  assert.equal(resolveClosePosition('bottom', 'below-center'), 'top-left', '底部不支持下方档，应回落默认')
-  assert.equal(resolveClosePosition('center', 'above-center'), 'top-right', '中部不支持上方居中，应回落默认')
-  assert.equal(resolveClosePosition('top', 'top-right'), 'below-center', '顶部不支持面板内档，应回落默认')
+  assert.equal(resolveClosePosition('bottom', undefined), 'above-right', '底部默认外右上')
+  assert.equal(resolveClosePosition('center', undefined), 'above-right', '中部默认外右上')
+  assert.equal(resolveClosePosition('top', undefined), 'below-right', '顶部默认面板下方外置右侧')
+  assert.equal(resolveClosePosition('bottom', 'below-center'), 'above-right', '底部不支持下方档，应回落默认外右上')
+  assert.equal(resolveClosePosition('center', 'above-center'), 'above-right', '中部不支持上方居中，应回落默认外右上')
+  assert.equal(resolveClosePosition('top', 'top-right'), 'below-right', '顶部不支持面板内档，应回落默认外置右侧')
   for (const panel of ['left', 'right']) {
     assert.equal(resolveClosePosition(panel, 'top-right'), null, `${panel} 档不该有关闭按钮，传什么都不生效`)
   }
@@ -578,14 +578,25 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   }
   assert.equal(declOf(rule('edge-top-left'), 'left'), 'var(--mptk-space-4)', '跨半左上左侧留距 16px，比其它档再往内收一档，避开圆角')
   assert.equal(declOf(rule('edge-top-right'), 'right'), 'var(--mptk-space-4)', '跨半右上右侧留距 16px，比其它档再往内收一档，避开圆角')
-  assert.match(rule('above-right'), /bottom:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '上方靠右留 12px')
-  assert.match(rule('above-center'), /bottom:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '上方居中留 12px')
-  assert.match(rule('below-center'), /top:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '下方居中留 12px')
-  assert.match(rule('below-right'), /top:\s*calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)/, '下方靠右留 12px')
+  // 外置档：锚在面板边缘内侧（top / bottom: 0），用 transform 按**按钮自身高度**移出面板。
+  // 旧写法 bottom/top: calc(100% + gap) 的 100% 参照面板高度，Skyline 下 fixed 面板高度参与计算时
+  // 会把按钮顶到屏幕外（关闭按钮跑屏幕左上、离面板很远）。这里只动 transform，位置首帧即正确。
+  assert.equal(declOf(rule('above-right'), 'top'), 'var(--mptk-s-zero)', '上方靠右锚在面板顶边内侧')
+  assert.match(rule('above-right'), /transform:\s*translateY\(calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '上方靠右按自身高度上移一个间距档')
+  assert.equal(declOf(rule('above-center'), 'top'), 'var(--mptk-s-zero)', '上方居中锚在面板顶边内侧')
+  assert.match(rule('above-center'), /transform:\s*translate\(var\(--mptk-s-half-neg\), calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '上方居中按自身高度上移并水平居中')
+  assert.equal(declOf(rule('below-center'), 'bottom'), 'var(--mptk-s-zero)', '下方居中锚在面板底边内侧')
+  assert.match(rule('below-center'), /transform:\s*translate\(var\(--mptk-s-half-neg\), calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)\)/, '下方居中按自身高度下移并水平居中')
+  assert.equal(declOf(rule('below-right'), 'bottom'), 'var(--mptk-s-zero)', '下方靠右锚在面板底边内侧')
+  assert.match(rule('below-right'), /transform:\s*translateY\(calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)\)/, '下方靠右按自身高度下移一个间距档')
+  for (const pos of ['above-right', 'above-center', 'below-center', 'below-right']) {
+    assert.doesNotMatch(rule(pos), /(?:^|[;{\s])(?:bottom|top):\s*calc\(/, `${pos} 不许再用参照面板高度的 bottom/top: calc() 外置定位`)
+  }
   assert.match(rule('above-right'), /right:\s*var\(--mptk-space-3\)/, '上方靠右档右边距 1.5 倍（12px）')
   assert.match(rule('below-right'), /right:\s*var\(--mptk-space-3\)/, '下方靠右档右边距 1.5 倍（12px）')
   assert.match(rule('above-center'), /left:\s*var\(--mptk-s-half\)/, '上方居中档水平居中')
   assert.match(rule('below-center'), /left:\s*var\(--mptk-s-half\)/, '下方居中档水平居中')
+  assert.equal(tokensOf()['--mptk-s-full-neg'], '-100%', '负满幅 token 丢了，外置关闭按钮上移会失效')
 
   // 图片弹窗专用覆盖：裸壳面板已内联贴合图片，左右档关闭按钮不再留内侧间距、与图片左右缘齐平。
   // 基础 Popup 各档间距（上面已断言）不动——覆盖只在 mptk-image-popup__panel 作用域内。
@@ -633,54 +644,50 @@ test('遮罩退场期让出命中测试：底层不接收点击，展开态才�
   assert.equal(declOf(openRule, 'pointer-events'), 'auto', '展开态必须恢复 pointer-events:auto，否则遮罩自身点不动、关不掉')
 })
 
-test('面板限高、内部自己滚，贴底贴顶避让安全区', () => {
+test('面板不限高、内容撑开，贴底贴顶避让安全区', () => {
   const css = read(LAYOUT_CSS)
+  // max-height 不再写进面板：Skyline 下它会参与 fixed 面板高度计算，把内容撑高型面板顶成上限高，
+  // 造成底部空白 + 外置关闭按钮参照错乱。高度纯由 children 决定；内容超高由调用方包 scroll-view 滚。
   assert.equal(
     declOf(/\.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)[1], 'max-height'),
-    'var(--mptk-c-popup-max-h)',
-    '面板没限高，长内容会顶出屏幕',
+    null,
+    '面板不该再写 max-height，否则内容撑高型弹窗会被顶成上限高、留一截空白',
   )
   assert.equal(
     declOf(/\.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)[1], 'min-height'),
     'var(--mptk-c-popup-min-h)',
     '面板没最小高度，内容少时会塌成一小溜',
   )
-  // 裸壳：面板不限高、不裁切，body 用 View 按内容撑高（不抢剩余空间）。
-  const barePanel = /\.mptk-popup--surface-none \.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
-  assert.equal(declOf(barePanel, 'min-height'), 'var(--mptk-s-zero)', '裸壳面板 min-height 未归零')
-  assert.equal(declOf(barePanel, 'max-height'), 'none', '裸壳面板不该限高，内容自己决定')
-  assert.equal(declOf(barePanel, 'overflow'), 'visible', '裸壳面板不该裁切内容')
+  // 高度模型：面板高度由 children 撑开，贴顶/贴底不写死 35vh；sheet-h token 删除。
+  // surface 只差底色 / 内边距 / 圆角，两档 body 都是 View 直出、内容撑高（不抢剩余空间）。
   assert.equal(
-    declOf(/\.mptk-popup--surface-none \.mptk-popup__body\s*\{([^}]*)\}/.exec(css)?.[1] ?? '', 'flex'),
-    '0 0 auto',
-    '裸壳 body 是 View，要按内容撑高不抢剩余空间',
+    /--mptk-c-popup-min-h:\s*([^;]+);/.exec(read('dist/styles/theme-light.css'))?.[1],
+    '0',
+    '面板最小高度必须是 0，否则内容少时仍留空一截',
   )
-  assert.equal(
-    /--mptk-c-popup-sheet-h:\s*([^;]+);/.exec(read('dist/styles/theme-light.css'))?.[1],
-    '35vh',
-    '贴顶/贴底档确定高度要取 35vh（原 70vh 太长）',
-  )
+  assert.doesNotMatch(read('dist/styles/theme-light.css'), /--mptk-c-popup-sheet-h/, '35vh 固定高 token 应删除')
   for (const pos of ['top', 'bottom']) {
-    assert.equal(
-      declOf(new RegExp(`\\.mptk-popup__panel--${pos}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '', 'height'),
-      'var(--mptk-c-popup-sheet-h)',
-      `${pos} 档没有确定 height，Skyline 下 scroll-view 滚不起来、会被内容撑满屏`,
+    assert.doesNotMatch(
+      new RegExp(`\\.mptk-popup__panel--${pos}\\s*\\{[^}]*\\}`).exec(css)?.[0] ?? '',
+      /height:/,
+      `${pos} 档不该写死 height，内容多高就多高`,
     )
   }
   const body = /\.mptk-popup__body\s*\{([^}]*)\}/.exec(css)
   assert.ok(body, '缺弹层内容区规则')
-  assert.equal(declOf(body[1], 'min-height'), '0', '内容区不给 min-height: 0，flex 压不进限高')
+  assert.equal(declOf(body[1], 'flex'), '0 0 auto', 'body 要按内容撑高，不抢剩余空间')
+  assert.equal(declOf(body[1], 'min-height'), 'var(--mptk-s-zero)', 'body 最小高归零')
+  const barePanel = /\.mptk-popup--surface-none \.mptk-popup__panel\s*\{([^}]*)\}/.exec(css)?.[1] ?? ''
+  assert.equal(declOf(barePanel, 'max-height'), 'none', '裸壳面板不该限高，内容自己决定')
+  assert.equal(declOf(barePanel, 'overflow'), 'visible', '裸壳面板不该裁切内容')
   const popupSrc = read('src/ui/layout/Popup.tsx')
   assert.match(
     popupSrc,
-    /surface === 'none' \? \([\s\S]*?<View className="mptk-popup__body" style=\{bodyStyle\}>/,
-    '裸壳档内容必须是 View 直出（不是 scroll-view），且注入让位真值',
+    /<View className="mptk-popup__body" style=\{bodyStyle\}>/,
+    '两档内容都必须是 View 直出（不是 scroll-view），且注入让位真值',
   )
-  assert.match(
-    popupSrc,
-    /<ScrollView scrollY className="mptk-popup__body" style=\{bodyStyle\}>/,
-    '默认档内容区还得是 scroll-view，长内容才能自己滚、让位真值也要注入',
-  )
+  assert.doesNotMatch(popupSrc, /<ScrollView/, 'Popup 不该再套 scroll-view，滚动交给调用方')
+  assert.doesNotMatch(popupSrc, /from '@tarojs\/components'[\s\S]{0,40}ScrollView/, 'Popup 不该 import ScrollView')
 
   assert.match(
     css,
