@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261120-1619-e1fb-修-popup-关闭按钮定位与安全区留白": {"category": "缺陷修复", "created": "2026-11-20 16:19:51", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-20 16:19:51", "status": "doing", "tags": ["Popup", "安全区", "关闭按钮", "Skyline", "缺陷修复"], "title": "修 Popup 关闭按钮定位与安全区留白", "updated": "2026-11-20 16:20:40", "worklog": "worklog/202611/20-1619-e1fb-修-popup-关闭按钮定位与安全区留白.md"}
+    "20261120-1619-e1fb-修-popup-关闭按钮定位与安全区留白": {"category": "缺陷修复", "created": "2026-11-20 16:19:51", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-20 16:19:51", "status": "doing", "tags": ["Popup", "安全区", "关闭按钮", "Skyline", "缺陷修复"], "title": "修 Popup 关闭按钮定位与安全区留白", "updated": "2026-11-20 17:24:59", "worklog": "worklog/202611/20-1619-e1fb-修-popup-关闭按钮定位与安全区留白.md"}
   },
   "version": "20261022000000"
 }

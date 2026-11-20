@@ -1,7 +1,7 @@
 # 20261120-1619-e1fb-修-popup-关闭按钮定位与安全区留白: 修 Popup 关闭按钮定位与安全区留白
 
 - **Tags**: Popup, 安全区, 关闭按钮, Skyline, 缺陷修复
-- **Status**: doing · 2026-11-20 16:20:40 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-20 17:24:59 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-20 16:19:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -19,13 +19,17 @@
 
 - ~~定位 × 跑偏根因~~：done，见 Process 三。
 - ~~底部留白相加改取最大~~：done，见 Process 四。
-- ~~补测试防回归~~：done，见 Process 五。
-- ~~文档同步~~：done，见 Process 六。
-- 真机验收：用户侧在 Skyline 下确认 × 在各档位回到正确位置、底部留白合理（Agent 无真机能力，不代判）。
+- ~~安全区不截短滚动可视区（外壳/drawer 尾距）~~：done，见 Process 八。
+- ~~关闭按钮视觉：描边与叉压暗、分段滑块回默认档~~：done，见 Process 九。
+- ~~关闭按钮背景默认半透明~~：done，见 Process 十。
+- ~~补测试防回归~~：done，见 Process 五、八、九、十。
+- ~~文档同步~~：done，见 Process 六、八、九、十。
+- ~~提交并推送~~：done，见 Process 十一。
+- ~~验收~~：用户 2026-11-20 确认「这是对了，下面那个间距应该也对了」；后续三轮改动用户未再报异常，结案。
 
 ## Next
 
-用户开发者工具真机验收：打开 demo 站设置面板与各 popup 演示档位，确认 × 位置；若仍不对，按新截图继续定位，不靠字符串断言下结论。
+无（已结案）。若真机再发现新现象，按新截图另建任务定位，不复用本单。
 
 ## Process
 
@@ -61,13 +65,44 @@
 
 `docs/api/popup.md` 几何口径改写为 transform 方案 + absolute 双类根因说明；`docs/api/floating-action.md` 安全区改取最大；`docs/api/app.md` 注入补 bottomInset；各篇更新日志用 docwriter 脚本追加。`docs/architecture/demo-mapping.md` 描述仍准确，未改。
 
-### 七、验证
+### 七、验证（首轮）
 
 `pnpm test` 196/196、`pnpm run build`、`pnpm run guard`、`pnpm pack --dry-run`、demo `build:weapp`、docwriter check（22 篇全过）、codelint（16 文件 L0–L5 全过）。产物核对：demo WXSS 里 `.mptk-btn.mptk-popup__close{position:absolute}`（双类生效）、`above-right` 为 transform 方案、`calc(...+env(safe-area-inset-bottom))` 叠加残留为 0。
 
+### 八、安全区不该截短可视区（用户 UX 判断）
+
+用户提出：为安全区把整页上提等于滚动区被削掉一截，滚不到底；应全高滚动、滚到底时内容末尾留尾距把横条区域滑上去。排查全仓后只两处是同类逻辑：
+
+- `demo/src/app.scss`：`.demo-shell` 去掉 `padding-bottom: env(safe-area-inset-bottom)`，外壳满高；尾距移到滚动内容 `.demo-page` 末尾。
+- `src/ui/navigation/Drawer.tsx` + `style/index.scss`：`paddingBottom` 从 `.mptk-drawer__panel` 移到 `ScrollView` 内的 `.mptk-drawer__tail`；面板 `padding-bottom: var(--mptk-s-zero)`。
+
+**不改**的同类排查结论：Popup 贴底/左右档是 fixed 定高面板、自身不滚，留白仍在面板；FAB 贴底是定位不是滚动容器；`.mptk-safe-area--bottom` 本就是内容占位块；Card/Cell/Feedback 的 padding 与安全区无关。
+
+编译产物实测：`.demo-shell` 无 bottom padding、`.demo-page` 有 `env(safe-area-inset-bottom)`、`.mptk-drawer__tail{padding-bottom:var(--mptk-space-4)}`；编译 JS 确认注入值落在 `mptk-drawer__tail` 的 style 上、且在 `ScrollView` 内。
+
+### 九、关闭按钮视觉与滑块档位
+
+用户反馈暗色下关闭按钮描边与小叉太亮、太显眼；设置面板分段滑块偏小。
+
+- 描边与小叉：`src/ui/layout/style/index.scss` 的 `--mptk-btn-fg` 从 `var(--mptk-fg-3)` 改走 `var(--mptk-gray-6)`（色板注释即「次级图标」档）。`soft` 描边继续跟随 fg，外圈与叉一起淡。软底对比度暗色 4.25→2.60、明色 3.91→2.75，两端各降一档；尺寸不动（外框 26 / 叉 12.8px）。
+- 分段滑块：`demo/src/components/DemoSettings.tsx` 两处 `Segmented` 去掉 `size="xs"`，回默认 `sm`（24→32px）。**只改库默认与调色，未改应用态**。
+
+### 十、背景半透明默认值
+
+用户反馈「半透明一点效果都没有」。根因：库默认 `closeBackground = true` → `resolveCloseStyle` 算出 `translucent: false`，半透明类从不渲染，走 Button 实底。半透明 CSS 本身是好的（`rgba(0,0,0,.55)`）。
+
+改 `src/ui/layout/Popup.tsx` 与 `src/ui/layout/ImagePopup.tsx`（文档写「同 Popup」）的默认值均为 `false`；演示站自己的「背景」开关是应用态，未改。真实级联计算验证：默认类序列匹配编译 WXSS 后按权重排序，胜出规则为三类名 `.mptk-btn.mptk-popup__close.mptk-popup__close--translucent`（0,3,0），压过 Button 实底双类名（0,2,0），最终解析到 `rgba(0, 0, 0, .55)`。
+
+### 十一、提交
+
+- `8c6d9c7`：安全区尾距 + 关闭按钮描边/叉压暗 + 滑块回默认档。
+- `f1537e3`：关闭按钮背景默认半透明（含 ImagePopup 同步）。
+
+两笔均已 commit + push。测试 196/196、build/guard/demo build:weapp/docwriter check/codelint 全过。
+
 ## Conclusion
 
-治根因修掉关闭按钮 absolute 被 Button relative 覆盖的问题（双类提权），定位方案保持 transform 不动；底部留白由相加改取最大（注入真值 + JS 计算）。静态与产物层面全绿；真机验收留用户侧，Agent 不代判。
+治根因修掉关闭按钮 absolute 被 Button relative 覆盖的问题（双类提权），定位方案保持 transform 不动；底部留白由相加改取最大；安全区从截短可视区改作滚动内容尾距；关闭按钮视觉压暗并默认半透明、尺寸不动，分段滑块回默认档。静态、产物与级联层面全绿，两笔提交已推送。用户已确认「这是对了，下面那个间距应该也对了」；Agent 无真机，未代判真机效果。
 
 ## Execution Log
 
@@ -75,3 +110,4 @@
      Backfill with: progress log --id 20261120-1619-e1fb-修-popup-关闭按钮定位与安全区留白 --note "...". -->
 - 2026-11-20 16:19:51 · new · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · created and claimed
 - 2026-11-20 16:20:40 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 根因定位：单类 .mptk-popup__close 的 absolute 被后加载 .mptk-btn 的 relative 覆盖，双类提权修复；transform 方案保持；底部留白改 max(呼吸,横条) 注入真值；test196/build/guard/demo/doclint 全绿，待用户真机验收
+- 2026-11-20 17:24:59 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 收尾补全过程：安全区改滚动内容尾距（demo 外壳/Drawer tail，面板 padding 归零）；关闭按钮描边与叉改 gray-6、尺寸不动；分段滑块回默认 sm；closeBackground 默认 false（Popup/ImagePopup），级联实测 rgba(0,0,0,.55)；两笔提交 8c6d9c7、f1537e3 已推送，196/196 全绿
