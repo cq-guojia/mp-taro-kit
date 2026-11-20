@@ -1,5 +1,6 @@
 import { createContext, useContext, useRef, type ReactNode } from 'react'
 import Taro from '@tarojs/taro'
+import { ScrollView } from '@tarojs/components'
 import {
   BackToTop,
   FloatingAction,
@@ -8,12 +9,15 @@ import {
   useBackToTop,
   type FloatingActionPosition,
 } from '../ui/layout/floating-action/index.js'
+import { injectFirstScrollView } from './scroll-inject.js'
 
 interface ScrollNode {
   scrollTo?: (option: { top: number; duration?: number; animated?: boolean }) => void
 }
 
 type ScrollReceiver = (top: number) => void
+
+let scrollIdSeq = 0
 
 /** null = 不在 KitPage 内；消费方 scroll-view 的 onScroll 调它喂回顶显隐，不触发 setState 回灌。 */
 const KitPageScrollContext = createContext<ScrollReceiver | null>(null)
@@ -39,7 +43,10 @@ export interface KitPageProps {
   children?: ReactNode
   /** 右侧列默认带 backToTop 回顶按钮；传 false 或放进 hideActions 即关。 */
   backToTop?: boolean
-  /** 回顶触发的滚动容器 id（Skyline 下滚动在消费方的 scroll-view 上）。 */
+  /**
+   * 回顶目标滚动容器的 id。不传则自动取 children 里第一个 ScrollView 并注入回顶能力；
+   * 传了就按这个 id 查节点（滚动区包在自定义组件里时用），消费方自行保证 id 匹配。
+   */
   scrollViewId?: string
   /** 回顶阈值，默认 300。 */
   visibilityHeight?: number
@@ -60,29 +67,43 @@ export interface KitPageProps {
 export function KitPage({
   children,
   backToTop = true,
-  scrollViewId = 'mptk-page-scroll',
+  scrollViewId,
   visibilityHeight = 300,
   duration = 450,
   actions = [],
   hideActions = [],
   position = 'bottom-right',
 }: KitPageProps) {
-  const nodeRef = useRef<ScrollNode | null>(null)
+  const nodeRef = useRef<{ id: string; node: ScrollNode } | null>(null)
+  const internalIdRef = useRef<string>()
+  if (internalIdRef.current === undefined) {
+    internalIdRef.current = `mptk-kit-scroll-${++scrollIdSeq}`
+  }
   const { visible, onScroll } = useBackToTop({ visibilityHeight })
 
+  // 没显式给 id 就自动认领 children 里的第一个 ScrollView：注入 id / enhanced / onScroll。
+  // 认领不到就保持原样、回顶静默无效——不报错、不隐藏按钮。
+  const auto = scrollViewId === undefined
+    ? injectFirstScrollView(children, ScrollView, { id: internalIdRef.current, onScroll })
+    : null
+  const renderedChildren = auto?.children ?? children
+  const targetId = scrollViewId ?? auto?.id ?? null
+
   const handleBack = (): void => {
+    if (targetId === null) return
     const emit = (node: ScrollNode): void => scrollViewToTop(node, duration)
-    if (nodeRef.current !== null) {
-      emit(nodeRef.current)
+    const cached = nodeRef.current
+    if (cached !== null && cached.id === targetId) {
+      emit(cached.node)
       return
     }
     Taro.createSelectorQuery()
-      .select(`#${scrollViewId}`)
+      .select(`#${targetId}`)
       .node()
       .exec((res) => {
         const node = res?.[0]?.node as ScrollNode | null | undefined
         if (node !== null && node !== undefined) {
-          nodeRef.current = node
+          nodeRef.current = { id: targetId, node }
           emit(node)
         }
       })
@@ -110,7 +131,7 @@ export function KitPage({
 
   return (
     <KitPageScrollContext.Provider value={onScroll}>
-      {children}
+      {renderedChildren}
       {items.length === 0 ? null : (
         <FloatingActionGroup position={position}>{items}</FloatingActionGroup>
       )}

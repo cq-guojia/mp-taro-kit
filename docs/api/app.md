@@ -70,34 +70,36 @@ export default createKitApp(App, {
 每页包一层，就得到右侧浮动列：默认带回顶按钮，业务按钮从 `actions` 进，不需要的项用 `hideActions` 关。**这是每页一层组件，不是"在 app 里配一次就自动出现在所有页"**——小程序没有跨页共享的 React 树，页面壳必须落在页面上。
 
 ```tsx
-import { KitPage, useKitPageScroll } from 'mp-taro-kit/app'
-import { ScrollView } from '@tarojs/components'
+import { KitPage } from 'mp-taro-kit/app'
+import { ScrollView, View } from '@tarojs/components'
 
 function MyPage() {
-  const onScroll = useKitPageScroll()
   return (
-    <KitPage
-      scrollViewId="my-scroll"
-      actions={[{ id: 'settings', icon: 'common.base:shezhi', onClick: openSettings }]}
-    >
-      <ScrollView
-        id="my-scroll"
-        scrollY
-        onScroll={(e) => onScroll(e.detail.scrollTop)}
-      >
-        ...
+    <KitPage actions={[{ id: 'settings', icon: 'common.base:shezhi', onClick: openSettings }]}>
+      <ScrollView scrollY>
+        <View>页面内容……</View>
       </ScrollView>
     </KitPage>
   )
 }
 ```
 
-`useKitPageScroll()` 必须在 `<KitPage>` 内调用，否则当场抛错。它取到的是只读回执：喂回顶显隐，**不回写 `scrollTop` 属性**。回顶走一次节点命令 `scrollTo`，不逐帧、不碰受控状态——逐帧回写是卡顿残影和"过山车"的根源。
+**不用写 `id`、不用开 `enhanced`、不用绑 `onScroll`。** 不传 `scrollViewId` 时，`KitPage` 会认领直接 children 里的第一个 `<ScrollView>`（数组会摊平；包在 `<Fragment>` 或自定义组件里的看不到），自动补上：
+
+- `id`：库内部生成；`ScrollView` 自己写了 `id` 就尊重它。
+- `enhanced: true`：`ScrollViewContext.scrollTo` 只在增强模式生效，不开则点了没反应。
+- `onScroll` 包装：只读地把 `scrollTop` 喂给回顶显隐，同时保留消费方自己写的 `onScroll`。
+
+没找到 `ScrollView`（比如滚动区包在自己的子组件里，或整页没有滚动区）就什么也不做：按钮还在，点了没反应，不报错也不隐藏。这时才需要传 `scrollViewId` 走显式路径，消费方自行保证 id 匹配、`enhanced` 已开、`onScroll` 已绑。
+
+回顶显隐的位置只读喂入，**不回写 `scrollTop` 属性**。回顶走一次节点命令 `scrollTo`，不逐帧、不碰受控状态——逐帧回写是卡顿残影和"过山车"的根源。
+
+`useKitPageScroll()` 保留给需要自己拿滚动位置的场景（如自定义浮动列）：必须在 `<KitPage>` 内调用，否则当场抛错；取到的是同一个只读回执。主路径不需要调它——`onScroll` 已由 `KitPage` 自动注入。
 
 | prop | 默认 | 说明 |
 |---|---|---|
 | `backToTop` | `true` | 默认回顶按钮；`backToTop={false}` 是关它的主口径 |
-| `scrollViewId` | `mptk-page-scroll` | 回顶目标的滚动容器 id |
+| `scrollViewId` | 不传 | 不传 = 自动认领第一个 ScrollView；传了 = 按 id 查节点的显式路径 |
 | `visibilityHeight` | `300` | 回顶按钮显隐阈值 |
 | `duration` | `450` | 回顶时长；`0` 走 `animated:false` 瞬间回顶；动画时长仅 iOS 生效（安卓平台限制） |
 | `actions` | `[]` | 业务追加的右侧按钮（如设置入口），id 不可为保留字 `backToTop` |
@@ -151,17 +153,12 @@ export default createKitApp(App, {
 ```tsx
 // pages/index/index.tsx
 import { ScrollView, View } from '@tarojs/components'
-import { KitPage, useKitPageScroll } from 'mp-taro-kit/app'
+import { KitPage } from 'mp-taro-kit/app'
 
 export default function IndexPage() {
-  const onScroll = useKitPageScroll()
   return (
-    <KitPage scrollViewId="index-scroll">
-      <ScrollView
-        id="index-scroll"
-        scrollY
-        onScroll={(e) => onScroll(e.detail.scrollTop)}
-      >
+    <KitPage>
+      <ScrollView scrollY>
         <View>首页内容……</View>
       </ScrollView>
     </KitPage>
@@ -169,21 +166,19 @@ export default function IndexPage() {
 }
 ```
 
-只要在 app 入口配过一次，这里包一层 `KitPage` 就自动有右下回顶；滚过 300px 才出现，点它回顶。这一页没加任何业务按钮，也不用引样式。
+只要在 app 入口配过一次，这里包一层 `KitPage`、里面直接放 `<ScrollView>` 就自动有右下回顶；滚过 300px 才出现，点它回顶。不用写 id、不用开 `enhanced`、不用绑 `onScroll`，也不用引样式。
 
 ### 例三：某页加自己的浮动按钮 + 关掉默认回顶
 
 ```tsx
 // pages/settings/index.tsx
 import { ScrollView, View } from '@tarojs/components'
-import { KitPage, useKitPageScroll } from 'mp-taro-kit/app'
+import { KitPage } from 'mp-taro-kit/app'
 import { showToast } from 'mp-taro-kit/ui'
 
 export default function SettingsPage() {
-  const onScroll = useKitPageScroll()
   return (
     <KitPage
-      scrollViewId="settings-scroll"
       backToTop={false}
       actions={[
         {
@@ -193,7 +188,7 @@ export default function SettingsPage() {
         },
       ]}
     >
-      <ScrollView id="settings-scroll" scrollY onScroll={(e) => onScroll(e.detail.scrollTop)}>
+      <ScrollView scrollY>
         <View>设置内容……</View>
       </ScrollView>
     </KitPage>
@@ -201,7 +196,19 @@ export default function SettingsPage() {
 }
 ```
 
-`backToTop={false}` 关掉默认回顶；`actions` 加自己的按钮（如帮助入口）。id 是业务自己起的，不能叫保留字 `backToTop`。
+`backToTop={false}` 关掉默认回顶；`actions` 加自己的按钮（如帮助入口），id 不能叫保留字 `backToTop`。关掉默认回顶后 `KitPage` 不再注入 `onScroll`，需要滚动位置的自定义列自己用 `useKitPageScroll()` 绑。
+
+### 滚动区包在自定义组件里怎么办
+
+`KitPage` 只认直接 children。如果滚动区藏在你自己的组件内部，它看不到，这时才走显式路径：
+
+```tsx
+<KitPage scrollViewId="content-scroll">
+  <MyContentShell />{/* 内部有 <ScrollView id="content-scroll" enhanced onScroll={...} /> */}
+</KitPage>
+```
+
+显式路径下 id、`enhanced`、`onScroll` 都由你负责；传了 `scrollViewId` 就不会触发自动注入。
 
 ### 例四：自定义弹窗（登录窗）写哪
 
@@ -236,3 +243,5 @@ async function submit() {
 - 2026-11-20 19:34:39：新建应用级接入文档：createKitApp 一条接入、三件按需宿主、KitPage 页面壳、登录窗注册口
 - 2026-11-20 19:44:02：补样式自带契约：KitPage 浮动列定位样式随 app 出口带入，消费方不必单独引
 - 2026-11-20 19:54:32：补按场景接入示例：新项目 app 入口、index 页默认用法、某页关回顶加自定义按钮、登录窗写哪
+- 2026-11-20：回顶免配置——不传 `scrollViewId` 时自动认领 children 里第一个 ScrollView 并注入 id / enhanced / onScroll；找不到静默无效；显式 id 仍走原路径
+- 2026-11-20 20:51:14：澄清自动认领只认直接子节点，Fragment 不摊平

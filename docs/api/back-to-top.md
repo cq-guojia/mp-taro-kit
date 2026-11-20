@@ -99,6 +99,7 @@ export default function Page() {
 
 ### 相关
 
+- `docs/api/app.md` 的 `KitPage`：应用级免配置入口——不传 `scrollViewId` 时自动认领 children 里第一个 ScrollView 并注入 id / enhanced / onScroll，多数页面不必手写本节示例里的取节点与绑回执代码。本节是底层三块的手写用法，供自定义场景使用。
 - `docs/api/floating-action.md`：壳的两层拆分、位置档、受控显隐与条件触发分工。
 - `docs/dependencies/skyline-rendering.md`：Skyline 下滚动由 scroll-view 承担。
 
@@ -106,3 +107,4 @@ export default function Page() {
 
 - 2026-11-20：四修定稿。废弃 JS 逐帧方案（改 state 会回弹过山车、发命令会来回蹦），改为一次 `scrollTo` 命令交给视图层；保留阈值变化立即重算；文档写清四版废弃原因与平台 duration 限制。
 - 2026-11-20：修瞬间档——`duration <= 0` 改传 `animated: false`，此前 `animated:true + duration:0` 在安卓被当无效值、照播默认动画。
+- 2026-11-20：相关链接补应用级入口 `KitPage` 自动认领 ScrollView，底层三块契约不变。
