@@ -1,0 +1,63 @@
+/* 常驻浮动按钮：一个 fixed 列容器承载 N 个按钮，按钮本体只管内容与显隐。
+   层级只消费浮层链上的 navbar 档（10），低于 overlay(900)：弹窗打开时按钮该被遮罩压住；
+   锚在旁边的浮窗用 popover(920)，天然盖在本按钮之上。写死 z 数字会被测试拦。 */
+
+.mptk-fab-group {
+  position: fixed;
+  z-index: var(--mptk-c-layer-navbar);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 左右两档：离边距离一致，列内按钮居中对齐。 */
+.mptk-fab-group--bottom-right,
+.mptk-fab-group--right-middle {
+  right: var(--mptk-space-4);
+}
+
+.mptk-fab-group--bottom-left,
+.mptk-fab-group--left-middle {
+  left: var(--mptk-space-4);
+}
+
+/* 贴底两档才让底部安全区；居中两档垂直居中。 */
+.mptk-fab-group--bottom-right,
+.mptk-fab-group--bottom-left {
+  bottom: calc(var(--mptk-space-4) + env(safe-area-inset-bottom));
+}
+
+.mptk-fab-group--right-middle,
+.mptk-fab-group--left-middle {
+  top: var(--mptk-s-half);
+  transform: translateY(-50%);
+}
+
+/* 多实例竖排：相邻兄弟给上距，不用 gap（老 WebView 内核不支持，双端会不一致）。 */
+.mptk-fab-group > .mptk-fab + .mptk-fab {
+  margin-top: var(--mptk-space-3);
+}
+
+.mptk-fab {
+  opacity: 0;
+  transform: translateY(var(--mptk-space-2));
+  transition-property: opacity, transform;
+  transition-duration: var(--mptk-c-motion-duration);
+  transition-timing-function: var(--mptk-ease);
+  /* 退场期节点还在 DOM 里播淡出：让出命中测试，否则透明按钮还能吃点击。 */
+  pointer-events: none;
+}
+
+.mptk-fab--open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* 半透明底：只换 --mptk-btn-bg 一个变量，描边变量(--mptk-btn-border)不动，故与描边轴正交。
+   覆盖 solid（实心底）与 outline（白底）两档的底色，ghost 无底、soft 已是浅底，不覆盖。
+   组件传 color 时不挂半透明类，由 Button 行内派生底 / 字 / 边。 */
+.mptk-fab--translucent .mptk-btn--solid,
+.mptk-fab--translucent .mptk-btn--outline {
+  --mptk-btn-bg: var(--mptk-c-fab-bg);
+}

@@ -749,3 +749,88 @@ test('细分视觉值也走 token：下拉位移与 Segmented 内缩不写死数
   assert.doesNotMatch(seg, /\+\s*3px|-\s*6px/, 'Segmented 滑块内缩写死 3px / 6px，与 SCSS 各存一份')
   assert.match(seg, /calc\(\$\{span\.width\} - var\(--mptk-seg-inset\) - var\(--mptk-seg-inset\)\)/, 'Segmented 宽度没读内缩 token')
 })
+
+test('常驻浮动按钮：两层契约、组件级与子域出口、层级不写死、演示页接入', () => {
+  // 组件级三件套 + 样式出口
+  for (const name of ['index.js', 'index.cjs', 'index.d.ts']) {
+    assert.ok(exists(`../dist/ui/layout/floating-action/${name}`), `floating-action 组件级出口缺 ${name}`)
+  }
+  assert.ok(exists('../dist/ui/layout/floating-action/style/index.css'), 'floating-action 组件级样式出口缺失')
+
+  // 子域 barrel 同时导出两层组件与类型
+  const barrel = read('../dist/ui/layout/index.js')
+  for (const name of ['FloatingAction', 'FloatingActionGroup']) {
+    assert.match(barrel, new RegExp(name), `layout barrel 缺 ${name}`)
+  }
+  assert.match(read('../dist/ui/layout/index.d.ts'), /FloatingActionPosition/, 'layout barrel 缺 FloatingActionPosition 类型')
+
+  // 两层职责：本体只做显隐，不做定位；容器做 flex 列，不渲染 Button 皮肤
+  const action = read('../src/ui/layout/floating-action/FloatingAction.tsx')
+  assert.match(action, /usePresence/, '本体缺进出场显隐')
+  assert.match(action, /<Button\b/, '本体没复用核心 Button')
+  assert.match(action, /markCardEdgeOutOfFlow/, '本体缺浮层声明')
+  assert.doesNotMatch(action, /position:\s*fixed/, '本体不许自己 fixed，定位归 Group')
+  assert.match(action, /export function FloatingActionGroup/, '缺列容器')
+  assert.match(action, /size = 'sm'/, '默认尺寸没回归 Button 的 sm')
+  assert.match(action, /type = 'default'/, '默认色不是中性灰 default，而是抢眼的品牌色')
+  assert.match(action, /variant = 'outline'/, '描边默认不是带描边的 outline')
+  assert.match(action, /radius = 'md'/, '圆角默认不是中号 md')
+  assert.match(action, /translucent = true/, '缺半透明底默认开关')
+  assert.match(action, /'bottom-right' \| 'right-middle' \| 'bottom-left' \| 'left-middle'/, '位置档不是四档')
+
+  // 样式：层级只读 token、不写死 z；进出场节点退让命中；竖排不用 gap；半透明底覆盖实心与描边档底色
+  const css = read('../dist/ui/layout/floating-action/style/index.css')
+  assert.match(css, /\.mptk-fab-group\s*\{[^}]*position:\s*fixed/, '列容器缺 fixed 定位')
+  assert.match(css, /\.mptk-fab-group\s*\{[^}]*flex-direction:\s*column/, '列容器缺竖排')
+  for (const pos of ['bottom-right', 'right-middle', 'bottom-left', 'left-middle']) {
+    assert.match(css, new RegExp(`\\.mptk-fab-group--${pos}\\b`), `样式缺位置档 ${pos}`)
+  }
+  assert.match(css, /z-index:\s*var\(--mptk-c-layer-navbar\)/, '列容器层级没走浮层链 token')
+  assert.doesNotMatch(css, /z-index:\s*\d/, '层级不许写死数字')
+  assert.match(css, /\.mptk-fab\s*\{[^}]*pointer-events:\s*none/, '退场期必须让出命中测试')
+  assert.doesNotMatch(css, /\bgap\s*:/, '竖排不许用 gap（老 WebView 内核不支持）')
+  assert.match(css, /env\(safe-area-inset-bottom\)/, '贴底档缺安全区让位')
+  assert.match(css, /\.mptk-fab--translucent \.mptk-btn--solid,\s*\.mptk-fab--translucent \.mptk-btn--outline\s*\{[^}]*--mptk-btn-bg:\s*var\(--mptk-c-fab-bg\)/, '半透明底没覆盖实心与描边档底色变量')
+  assert.doesNotMatch(css, /--mptk-btn-border:\s*var\(--mptk-c-fab-bg\)/, '半透明不许盖掉描边变量')
+  const config = read('../kit.config.mjs')
+  assert.equal((config.match(/--mptk-c-fab-bg/g) || []).length, 2, '--mptk-c-fab-bg 必须明暗各配一份')
+  assert.equal((config.match(/"--mptk-c-fab-bg": "var\(--mptk-default-soft\)"/g) || []).length, 2, '浮动按钮底必须跟随中性灰 default-soft，不许写死抢眼的品牌蓝')
+
+  // 演示页：popup 式配置界面（CellGroup + Segmented）、四档、三个真实图标、点按钮不隐藏
+  const page = read('../demo/src/pages/layout/index.tsx')
+  for (const name of ['FloatingActionGroup', 'FloatingAction', 'CellGroup', 'Segmented']) {
+    assert.match(page, new RegExp(`<${name}[\\s>]`), `演示页缺 ${name}`)
+  }
+  for (const icon of ['common.base:shezhi', 'common.base:huidingbu', 'common.base:xiugai']) {
+    assert.ok(page.includes(icon), `演示页缺真实图标 ${icon}`)
+  }
+  assert.doesNotMatch(page, /onClick=\{\(\) => setVisible\(false\)\}/, '点按钮不许连带隐藏整列')
+  assert.doesNotMatch(page, /<CellGroup title=/, '演示页分组标题不要')
+  assert.doesNotMatch(page, /demo-note/, '演示页底部说明不要')
+  for (const label of ['位置', '显隐', '大小', '描边', '圆角', '背景']) {
+    assert.ok(page.includes(`title="${label}"`), `演示页缺「${label}」配置 cell`)
+  }
+  assert.doesNotMatch(page, /title="底色"/, '底色不让选，用默认，想换色自己传 color')
+  assert.doesNotMatch(page, /ButtonType/, '演示页不该暴露 type 语义色轴')
+  for (const axis of ['variant=', 'size=', 'radius=', 'translucent=']) {
+    assert.ok(page.includes(axis), `演示页没透传 Button 轴 ${axis}`)
+  }
+  assert.match(page, /value: 'pill', label: '纯圆'/, '圆角缺纯圆档')
+  assert.match(page, /value: 'xl', label: '大'/, '圆角缺大圆角档')
+  assert.match(page, /value: 'md', label: '中'/, '圆角缺中圆角档')
+  assert.match(page, /value: 'sm', label: '小'/, '圆角缺小档')
+  assert.match(page, /useState<ButtonVariant>\('outline'\)/, '描边默认不是带描边的 outline')
+  assert.match(page, /useState<ButtonRadius>\('md'\)/, '圆角默认不是中号 md')
+  assert.match(page, /useState<ButtonSize>\('sm'\)/, '尺寸默认不是 sm')
+  assert.match(page, /useState\(true\)/, '半透明默认没开')
+  assert.match(page, /pageId="layout"/, '演示页没接自己的 catalog 页')
+  assert.match(page, /floating=\{floating\}/, '演示页没把浮层挂到滚动区外')
+  assert.ok(exists('../demo/src/pages/layout/index.config.ts'), 'layout 页缺 disableScroll 配置')
+  const catalog = read('../demo/src/catalog.ts')
+  assert.match(catalog, /id: 'layout'[\s\S]{0,80}path: 'pages\/layout\/index'/, 'catalog 缺 layout 页')
+  assert.match(catalog, /id: 'layout', label: 'FloatingAction 浮动按钮', status: 'ready', pageId: 'layout'/, 'layout 菜单没翻 ready 或没改成可识别的名字')
+
+  // 文档：API 契约已建，索引已挂
+  assert.ok(exists('../docs/api/floating-action.md'), '缺 API 文档')
+  assert.match(read('../docs/README.md'), /floating-action\.md/, '文档索引缺 floating-action')
+})

@@ -21,11 +21,14 @@ export function DemoShell({
   title,
   logo,
   home,
+  floating,
   children,
 }: {
   title: string
   logo?: boolean
   home?: boolean
+  /** 常驻浮层（如浮动按钮列）：挂滚动区外才不会被 scroll-view 裁掉或跟着滚。 */
+  floating?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -34,6 +37,7 @@ export function DemoShell({
       <ScrollView scrollY type="custom" className="demo-shell__body">
         <View className="demo-page">{children}</View>
       </ScrollView>
+      {floating}
     </PageShell>
   )
 }

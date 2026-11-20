@@ -143,6 +143,7 @@ export default {
     "--mptk-blue-hover": "#324cc0",                                 // 蓝·悬停态：色板派生出的语义色档
     "--mptk-blue-active": "#2a3fa3",                                // 蓝·按下态：色板派生出的语义色档
     "--mptk-blue-soft": "rgba(59, 91, 219, .08)",                   // 蓝·浅色底：色板派生出的语义色档
+    "--mptk-c-fab-bg": "var(--mptk-default-soft)",                   // 常驻浮动按钮底：跟随 Button 默认灰的浅底，明暗自适应，不抢眼
     "--mptk-green": "@green",                                       // 绿·主色：色板派生出的语义色档
     "--mptk-green-hover": "#1da84f",                                // 绿·悬停态：色板派生出的语义色档
     "--mptk-green-active": "#178b42",                               // 绿·按下态：色板派生出的语义色档
@@ -224,6 +225,7 @@ export default {
     "--mptk-blue-hover": "#8aa4fe",                                 // 蓝·悬停态：色板派生出的语义色档
     "--mptk-blue-active": "#a8bbff",                                // 蓝·按下态：色板派生出的语义色档
     "--mptk-blue-soft": "rgba(107, 138, 253, .12)",                 // 蓝·浅色底：色板派生出的语义色档
+    "--mptk-c-fab-bg": "var(--mptk-default-soft)",                  // 常驻浮动按钮底：暗档跟随 default-soft（gray-3），与明档同源键
     "--mptk-green": "@green",                                       // 绿·主色：色板派生出的语义色档
     "--mptk-green-hover": "#5fe0b1",                                // 绿·悬停态：色板派生出的语义色档
     "--mptk-green-active": "#8aeec8",                               // 绿·按下态：色板派生出的语义色档

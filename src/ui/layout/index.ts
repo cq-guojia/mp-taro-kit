@@ -27,3 +27,10 @@ export type {
   ImageWidthSpec,
   ResolvedImageSize,
 } from './image-size.js'
+export {
+  FloatingAction,
+  FloatingActionGroup,
+  type FloatingActionProps,
+  type FloatingActionGroupProps,
+  type FloatingActionPosition,
+} from './floating-action/index.js'

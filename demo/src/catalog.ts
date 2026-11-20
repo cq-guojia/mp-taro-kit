@@ -650,6 +650,27 @@ export const pages: CatalogPage[] = [
     ],
   },
   {
+    id: 'layout',
+    title: '布局',
+    path: 'pages/layout/index',
+    summary: '常驻浮动入口：四档位置、显隐与图标配置',
+    examples: [
+      {
+        id: 'floating-action',
+        title: '常驻浮动按钮',
+        hint: 'CellGroup 配置位置 / 显隐，入口列用 icon 的设置 / 回顶 / 修改',
+        usage: '',
+        imports: [
+          'mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style',
+          'mp-taro-kit/ui/form/segmented', 'mp-taro-kit/ui/form/segmented/style',
+          'mp-taro-kit/ui/layout/floating-action', 'mp-taro-kit/ui/layout/floating-action/style',
+          'mp-taro-kit/ui/icon/style',
+        ],
+        renderNotes: 'Skyline 下 fixed 列挂 scroll-view 外才常驻；半透明底在明暗两套主题各有一份 token',
+      },
+    ],
+  },
+  {
     id: 'overlay',
     title: '遮罩',
     path: 'pages/overlay/index',
@@ -907,7 +928,7 @@ export const menu: MenuGroup[] = [
       { id: 'config-provider', label: 'ConfigProvider 全局配置', status: 'ready', pageId: 'foundation' },
       { id: 'icon', label: 'Icon 图标', status: 'ready', pageId: 'icon' },
       { id: 'image', label: 'Image 图片', status: 'planned' },
-      { id: 'layout', label: 'Layout 布局', status: 'planned' },
+      { id: 'layout', label: 'FloatingAction 浮动按钮', status: 'ready', pageId: 'layout' },
       { id: 'overlay', label: 'Overlay 遮罩', status: 'ready', pageId: 'overlay' },
       { id: 'space', label: 'Space 间距', status: 'planned' },
       { id: 'style', label: 'Style 内置样式', status: 'ready', pageId: 'foundation' },

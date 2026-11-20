@@ -52,9 +52,11 @@ export function DemoBlock({
 export function DemoPage({
   pageId,
   render,
+  floating,
 }: {
   pageId: string
   render: (id: string) => ReactNode
+  floating?: ReactNode
 }) {
   const page = pageOf(pageId)
   const blocks = page.examples.map((example, index) => ({
@@ -62,7 +64,7 @@ export function DemoPage({
     showSection: example.section !== undefined && example.section !== page.examples[index - 1]?.section,
   }))
   return (
-    <DemoShell title={page.title}>
+    <DemoShell title={page.title} floating={floating}>
       <View className="demo-page__head">
         <Text className="demo-page__summary">{page.summary}</Text>
       </View>

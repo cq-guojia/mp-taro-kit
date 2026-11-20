@@ -1,4 +1,4 @@
-// @mptk-inputs:9ebd18367b1e
+// @mptk-inputs:df5e423a3f7e
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -716,6 +716,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "blue-soft",
     },
     {
+      "key": "--mptk-c-fab-bg",
+      "label": "c-fab-bg",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "var(--mptk-default-soft)",
+      "unit": "",
+      "note": "c-fab-bg",
+    },
+    {
       "key": "--mptk-green",
       "label": "green",
       "group": "light",
@@ -1416,6 +1425,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "rgba(107, 138, 253, .12)",
       "unit": "color",
       "note": "blue-soft",
+    },
+    {
+      "key": "--mptk-c-fab-bg",
+      "label": "c-fab-bg",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "var(--mptk-default-soft)",
+      "unit": "",
+      "note": "c-fab-bg",
     },
     {
       "key": "--mptk-green",
