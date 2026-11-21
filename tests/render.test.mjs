@@ -380,12 +380,17 @@ test('Card 里的浮层不占内容流：Popup 关着时边界提示不被它的
 test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落到真实 Button 类名', () => {
   const base = { open: true, onClose: () => {}, closeable: true, position: 'bottom' }
 
-  /* 默认 circle + 描边 + 半透明底 → soft（边）+ translucent class + pill 圆角。 */
+  /* 默认 circle + 描边 + 非实底 → soft（边）+ translucent class + pill 圆角。 */
   const soft = render(h(Popup, base, h('div', null, '内容')))
   assert.match(soft, /mptk-btn--soft/, '默认档有描边，落在 soft')
-  assert.match(soft, /mptk-popup__close--translucent/, '默认底色就是半透明：不传 closeBackground 也要挂半透明 class')
+  assert.match(soft, /mptk-popup__close--translucent/, '默认底色就是非实底：不传 closeBackground 也要挂 translucent class')
   assert.match(soft, /mptk-btn--radius-pill/, 'circle 形状走 pill 圆角')
   assert.match(soft, /mptk-popup__close--above-right/, '底部面板默认关闭按钮在面板外右上')
+  assert.match(soft, /mptk-popup__close--on-overlay/, '外右上完全落在遮罩上，挂亮灰上下文类')
+  const inside = render(h(Popup, { ...base, closePosition: 'top-left' }, h('div', null, '内容')))
+  assert.doesNotMatch(inside, /mptk-popup__close--on-overlay/, '面板内的按钮不能吃遮罩上的亮灰，否则白面板上看不见')
+  const half = render(h(Popup, { ...base, closePosition: 'edge-top-right' }, h('div', null, '内容')))
+  assert.doesNotMatch(half, /mptk-popup__close--on-overlay/, '跨半档一半压着面板，不按全在遮罩上取色')
 
   /* 显式传 true 才走实底：半透明 class 必须消失，否则默认值改了却盖不住。 */
   const solid = render(h(Popup, { ...base, closeBackground: true }, h('div', null, '内容')))
@@ -394,7 +399,7 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   /* 关掉底色与描边、换圆角方 → solid + 半透明 class；叉色不受背景轴影响。 */
   const ghost = render(h(Popup, { ...base, closeShape: 'rounded', closeBorder: false, closeBackground: false }, h('div', null, '内容')))
   assert.match(ghost, /mptk-btn--solid/, '描边关 → solid，variant 只由描边轴决定')
-  assert.match(ghost, /mptk-popup__close--translucent/, '背景「否」走半透明 class，不再是空底')
+  assert.match(ghost, /mptk-popup__close--translucent/, '背景「否」走非实底 class，不再是空底')
   assert.match(ghost, /mptk-btn--radius-sm/, 'rounded 形状走 sm 小方角（8px），不用看成正圆的 md、也不用在方块上过小的 xs')
   assert.doesNotMatch(ghost, /mptk-btn--ghost|mptk-btn--outline/, '背景「否」不能再派生 ghost / outline')
 
@@ -407,6 +412,7 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   /* 贴顶档支持面板下方外置位置，默认落面板下方靠右。 */
   const top = render(h(Popup, { ...base, position: 'top' }, h('div', null, '内容')))
   assert.match(top, /mptk-popup__close--below-right/, '贴顶档默认关闭按钮落在面板下方靠右')
+  assert.match(top, /mptk-popup__close--on-overlay/, '面板下方外置档也完全落在遮罩上')
   assert.match(top, /mptk-popup--close-outside/, '贴顶档下方按钮要放开面板裁剪')
   const topRight = render(h(Popup, { ...base, position: 'top', closePosition: 'below-right' }, h('div', null, '内容')))
   assert.match(topRight, /mptk-popup__close--below-right/, '贴顶档可切到面板下方靠右')

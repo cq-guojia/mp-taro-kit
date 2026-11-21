@@ -52,3 +52,11 @@ export function resolveClosePosition(
 export function isOutsideClosePosition(position: PopupClosePosition): boolean {
   return position !== 'top-left' && position !== 'top-right'
 }
+
+/**
+ * 是否完全落在遮罩上（面板上方 / 下方的外置档）。
+ * `edge-top-*` 虽也算 outside，但按钮跨在面板边上、一半压着面板底色，不能按「全在黑遮罩上」取色。
+ */
+export function isOnOverlayClosePosition(position: PopupClosePosition): boolean {
+  return position === 'above-right' || position === 'above-center' || position === 'below-center' || position === 'below-right'
+}

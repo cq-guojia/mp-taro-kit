@@ -108,14 +108,26 @@ test('遮罩底色不取字色：暗色下 --mptk-fg 是浅灰，会把遮罩变
   assert.doesNotMatch(overlay[1], /--mptk-fg/, '遮罩底色取了字色 token')
 })
 
-test('遮罩两轴可配：底色深/浅各一个 token，浓度三档各一个 token', () => {
-  for (const mode of ['theme-light', 'theme-dark']) {
+test('遮罩两轴可配：底色深/浅各一个 token，浓度三档按主题各配一套', () => {
+  // 同一张黑遮罩压在浅底上更显淡：明档必须比暗档深，两套主题拉出来观感才接近。
+  const opacity = {
+    'theme-light': ['\\.5', '\\.75', '\\.85'],
+    'theme-dark': ['\\.35', '\\.55', '\\.75'],
+  }
+  for (const [mode, [thin, base, thick]] of Object.entries(opacity)) {
     const css = resolveCssVars(read(`dist/styles/${mode}.css`))
     assert.match(css, /--mptk-c-overlay-color:\s*#000/, `${mode} 缺深色遮罩底色`)
     assert.match(css, /--mptk-c-overlay-color-light:\s*#fff/, `${mode} 缺浅色遮罩底色`)
-    assert.match(css, /--mptk-c-overlay-opacity-thin:\s*\.35/, `${mode} 缺薄档浓度`)
-    assert.match(css, /--mptk-c-overlay-opacity:\s*\.55/, `${mode} 缺默认浓度`)
-    assert.match(css, /--mptk-c-overlay-opacity-thick:\s*\.75/, `${mode} 缺厚档浓度`)
+    assert.match(css, new RegExp(`--mptk-c-overlay-opacity-thin:\\s*${thin}`), `${mode} 薄档浓度不对`)
+    assert.match(css, new RegExp(`--mptk-c-overlay-opacity:\\s*${base}`), `${mode} 默认浓度不对`)
+    assert.match(css, new RegExp(`--mptk-c-overlay-opacity-thick:\\s*${thick}`), `${mode} 厚档浓度不对`)
+  }
+  const alpha = (mode, tier = '') => {
+    const css = resolveCssVars(read(`dist/styles/${mode}.css`))
+    return Number(new RegExp(`--mptk-c-overlay-opacity${tier}:\\s*([\\d.]+)`).exec(css)?.[1])
+  }
+  for (const tier of ['-thin', '', '-thick']) {
+    assert.ok(alpha('theme-light', tier) > alpha('theme-dark', tier), `${tier || '默认'}档明色遮罩必须比暗色更深`)
   }
 
   const css = read(LAYOUT_CSS)
@@ -487,8 +499,11 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
     /\.mptk-btn__glyph\s*\{[^}]*color:\s*var\(--mptk-btn-fg\)/,
     '按钮把字色喂给自绘图标槽位',
   )
-  // 背景「否」= 半透明：只换 --mptk-btn-bg，不碰 --mptk-btn-fg（叉色）。
-  assert.equal(tokensOf()['--mptk-c-popup-close-bg-translucent'], 'rgba(0, 0, 0, 0.55)', '半透明底色约 55%')
+  // 背景「否」= 非实底：只换 --mptk-btn-bg，不碰 --mptk-btn-fg（叉色）。
+  // 遮罩加深后底色没有补偿作用，明暗都透明；底色若是纯色会把「透明」变成另一层实底。
+  const closeBg = (mode) => /--mptk-c-popup-close-bg-translucent:\s*([^;]+);/.exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`)))?.[1]?.trim()
+  assert.equal(closeBg('light'), 'transparent', '明色关闭按钮非实底档透明')
+  assert.equal(closeBg('dark'), 'transparent', '暗色关闭按钮非实底档也透明')
   assert.match(
     read(LAYOUT_CSS),
     /\.mptk-btn\.mptk-popup__close\.mptk-popup__close--translucent\s*\{[^}]*--mptk-btn-bg:\s*var\(--mptk-c-popup-close-bg-translucent\)/,
@@ -515,12 +530,11 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
     /\.mptk-btn\.mptk-popup__close\.mptk-btn--soft\s*\{[^}]*--mptk-btn-border:\s*var\(--mptk-btn-fg\)/,
     '关闭按钮 soft 档描边跟随叉色，三类名压过 default soft 双类名，与库内 tone 档 soft 的 fg/border 同色约定一致',
   )
-  // 叉与描边压到次级图标档 gray-6：暗色 fg-3 是浅灰，在深底上过亮、过显眼；
-  // 描边跟随 fg，一处改两处同变（外圈与叉一起淡），三类名压过 default 双类名。
+  // 叉与描边走组件私有 token：明色比 gray-6 深一档（白底看得清），暗色仍是 gray-6（不动）。
   assert.match(
     read(LAYOUT_CSS),
-    /\.mptk-btn\.mptk-popup__close\.mptk-btn--default\s*\{[^}]*--mptk-btn-fg:\s*var\(--mptk-gray-6\)/,
-    '关闭按钮 default 档字色（叉）取次级图标档 gray-6，暗底不再过亮',
+    /\.mptk-btn\.mptk-popup__close\.mptk-btn--default\s*\{[^}]*--mptk-btn-fg:\s*var\(--mptk-c-popup-close-fg\)/,
+    '关闭按钮叉色取组件私有 token，明暗各自配档',
   )
   const themeDark = resolveCssVars(read('dist/styles/theme-dark.css'))
   const lum = (hex) => {
@@ -538,6 +552,28 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   const gray6Dark = /--mptk-gray-6:\s*([^;]+);/.exec(themeDark)?.[1]?.trim()
   assert.ok(lum(gray6Light) > lum(fg3Light), '明色下 gray-6 比 fg-3 浅，关闭按钮更不显眼')
   assert.ok(lum(gray6Dark) < lum(fg3Dark), '暗色下 gray-6 比 fg-3 暗，关闭按钮不再过亮')
+  // 关闭按钮叉与描边：明色取 gray-8（浅底上对比度与暗色档相当，不再糊），暗色保持 gray-6。
+  const closeFg = (mode) => /--mptk-c-popup-close-fg:\s*([^;]+);/.exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`), mode))?.[1]?.trim()
+  const gray8Light = /--mptk-gray-8:\s*([^;]+);/.exec(theme)?.[1]?.trim()
+  const gray7Light = /--mptk-gray-7:\s*([^;]+);/.exec(theme)?.[1]?.trim()
+  const gray6DarkResolved = /--mptk-gray-6:\s*([^;]+);/.exec(resolveCssVars(read('dist/styles/theme-dark.css'), 'dark'))?.[1]?.trim()
+  assert.equal(closeFg('light'), gray8Light, '明色叉色取 gray-8，浅底上才看得清')
+  assert.equal(closeFg('dark'), gray6DarkResolved, '暗色叉色仍是 gray-6，没有跟着变')
+  assert.ok(lum(gray8Light) < lum(gray7Light), '明色叉色比 gray-7 更深，对比度足够')
+  // 外置档完全落在黑遮罩上：明暗统一亮灰（白 82%、非纯白），不吃面板内档的深色 token。
+  assert.match(
+    read(LAYOUT_CSS),
+    /\.mptk-btn\.mptk-popup__close\.mptk-popup__close--on-overlay\.mptk-btn--default\s*\{[^}]*--mptk-btn-fg:\s*var\(--mptk-c-popup-close-fg-on-overlay\)/,
+    '遮罩上的关闭按钮四类名取独立亮灰 token，压过面板内档',
+  )
+  const overlayFg = (mode) => /--mptk-c-popup-close-fg-on-overlay:\s*([^;]+);/.exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`), mode))?.[1]?.trim()
+  assert.match(overlayFg('light') ?? '', /^rgba\(255, 255, 255, 0?\.82\)$/, '遮罩上的叉是白 82%，不是纯白')
+  assert.equal(overlayFg('dark'), overlayFg('light'), '遮罩在明暗下同为黑色，叉色不分主题')
+  assert.match(
+    read('src/ui/layout/close-position.ts'),
+    /export function isOnOverlayClosePosition\([^)]*\): boolean\s*\{[^}]*above-right[^}]*above-center[^}]*below-center[^}]*below-right/s,
+    '只有面板上方 / 下方的外置档算「完全落在遮罩上」，跨半档不算',
+  )
   assert.match(
     read(LAYOUT_CSS),
     /\.mptk-btn\.mptk-popup__close\s*\{[^}]*--mptk-btn-h:\s*var\(--mptk-c-popup-close-size\)[^}]*height:\s*var\(--mptk-c-popup-close-size\)/,

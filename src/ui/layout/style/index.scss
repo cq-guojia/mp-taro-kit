@@ -223,18 +223,23 @@
   height: var(--mptk-c-popup-close-size);
 }
 
-/* 背景「否」= 半透明：只换底色变量，叉色（--mptk-btn-fg）由描边轴决定、这里不碰。
+/* 背景「否」= 非实底：只换底色变量，叉色（--mptk-btn-fg）由下面的位置轴决定、这里不碰。
+   遮罩加深后底色默认 transparent，不再靠按钮底色补偿；传 closeBackground 才走 Button 实底。
    三类名压过 .mptk-btn--default.mptk-btn--soft / --solid 的双类名，不依赖加载顺序。 */
 .mptk-btn.mptk-popup__close.mptk-popup__close--translucent {
   --mptk-btn-bg: var(--mptk-c-popup-close-bg-translucent);
 }
 
-/* 叉与描边压到次级图标档：default 档原本取 ink-2（暗色偏白），此前盖到 fg-3 仍是浅灰，
-   暗底上过亮、过显眼。改用 gray-6（色板里就是「次级图标」档），明暗两端各降一档、同步收敛；
-   soft 档描边跟随 fg，一处改两处同变（外圈和小叉一起淡）；solid 档的叉也跟着变。
-   三类名压过 .mptk-btn--default 的档位规则，不依赖表加载顺序。 */
+/* 面板内的档位（top-* / edge-top-*）：按钮压在面板底色上，叉与描边按主题取色——
+   明色 gray-8 在白面板上看得清，暗色 gray-6 不刺眼。solid 档的叉也跟着变。 */
 .mptk-btn.mptk-popup__close.mptk-btn--default {
-  --mptk-btn-fg: var(--mptk-gray-6);
+  --mptk-btn-fg: var(--mptk-c-popup-close-fg);
+}
+
+/* 面板上方 / 下方的外置档完全落在遮罩上：遮罩明暗都是黑，叉与描边统一取亮灰（白 82%，非纯白），
+   两套主题观感一致。四类名压过上面的面板内档；内部档不受影响，白面板上不会变成看不见的亮叉。 */
+.mptk-btn.mptk-popup__close.mptk-popup__close--on-overlay.mptk-btn--default {
+  --mptk-btn-fg: var(--mptk-c-popup-close-fg-on-overlay);
 }
 
 /* 描边跟随叉色：default soft 档原本描边取 gray-5、叉取 fg-2，两色不一致。

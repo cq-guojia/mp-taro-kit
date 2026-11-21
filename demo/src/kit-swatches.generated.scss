@@ -1,4 +1,4 @@
-// @mptk-inputs:401e71c3fd1d
+// @mptk-inputs:0820b3ddfd88
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -115,6 +115,26 @@
   .demo-swatch--c-fab-bg {
     --mptk-swatch: var(--mptk-c-fab-bg);
     background-color: var(--mptk-c-fab-bg);
+  }
+  .demo-swatch--c-popup-close-bg-translucent {
+    --mptk-swatch: var(--mptk-c-popup-close-bg-translucent);
+    background-color: var(--mptk-c-popup-close-bg-translucent);
+  }
+  .demo-swatch--c-popup-close-fg {
+    --mptk-swatch: var(--mptk-c-popup-close-fg);
+    background-color: var(--mptk-c-popup-close-fg);
+  }
+  .demo-swatch--c-overlay-opacity-thin {
+    --mptk-swatch: var(--mptk-c-overlay-opacity-thin);
+    background-color: var(--mptk-c-overlay-opacity-thin);
+  }
+  .demo-swatch--c-overlay-opacity {
+    --mptk-swatch: var(--mptk-c-overlay-opacity);
+    background-color: var(--mptk-c-overlay-opacity);
+  }
+  .demo-swatch--c-overlay-opacity-thick {
+    --mptk-swatch: var(--mptk-c-overlay-opacity-thick);
+    background-color: var(--mptk-c-overlay-opacity-thick);
   }
   .demo-swatch--green {
     --mptk-swatch: var(--mptk-green);

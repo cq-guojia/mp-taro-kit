@@ -144,6 +144,11 @@ export default {
     "--mptk-blue-active": "#2a3fa3",                                // 蓝·按下态：色板派生出的语义色档
     "--mptk-blue-soft": "rgba(59, 91, 219, .08)",                   // 蓝·浅色底：色板派生出的语义色档
     "--mptk-c-fab-bg": "var(--mptk-default-soft)",                   // 常驻浮动按钮底：跟随 Button 默认灰的浅底，明暗自适应，不抢眼
+    "--mptk-c-popup-close-bg-translucent": "transparent",              // 关闭按钮非实底档：遮罩加深后不需要底色，明暗都直接透明
+    "--mptk-c-popup-close-fg": "var(--mptk-gray-8)",                   // 面板内部档叉与描边：留在白面板上按主题取色
+    "--mptk-c-overlay-opacity-thin": ".5",                            // 明色遮罩薄档：同一张黑遮罩压在浅底上要更深一档
+    "--mptk-c-overlay-opacity": ".75",                                // 明色遮罩默认档：黑 .75 压浅底，观感与暗色档对齐
+    "--mptk-c-overlay-opacity-thick": ".85",                          // 明色遮罩厚档
     "--mptk-green": "@green",                                       // 绿·主色：色板派生出的语义色档
     "--mptk-green-hover": "#1da84f",                                // 绿·悬停态：色板派生出的语义色档
     "--mptk-green-active": "#178b42",                               // 绿·按下态：色板派生出的语义色档
@@ -226,6 +231,11 @@ export default {
     "--mptk-blue-active": "#a8bbff",                                // 蓝·按下态：色板派生出的语义色档
     "--mptk-blue-soft": "rgba(107, 138, 253, .12)",                 // 蓝·浅色底：色板派生出的语义色档
     "--mptk-c-fab-bg": "var(--mptk-default-soft)",                  // 常驻浮动按钮底：暗档跟随 default-soft（gray-3），与明档同源键
+    "--mptk-c-popup-close-bg-translucent": "transparent",             // 关闭按钮非实底档：遮罩已够暗，不再用底色补偿
+    "--mptk-c-popup-close-fg": "var(--mptk-gray-6)",                  // 面板内部档叉与描边：暗色保持原来的 gray-6，不动
+    "--mptk-c-overlay-opacity-thin": ".35",                           // 暗色遮罩薄档：深浅底同档黑遮罩在深底上本就显深，保留成熟库基线
+    "--mptk-c-overlay-opacity": ".55",                                // 暗色遮罩默认档：对齐 Vant / antd 的 .55~.6
+    "--mptk-c-overlay-opacity-thick": ".75",                          // 暗色遮罩厚档
     "--mptk-green": "@green",                                       // 绿·主色：色板派生出的语义色档
     "--mptk-green-hover": "#5fe0b1",                                // 绿·悬停态：色板派生出的语义色档
     "--mptk-green-active": "#8aeec8",                               // 绿·按下态：色板派生出的语义色档
@@ -280,12 +290,13 @@ export default {
   },
 
   component: {                                                      // 组件视觉取值：组件样式只读 var()，不在此处以外写死
-    /* 遮罩层：颜色与三档浓度分开配。底色不取 --mptk-fg——那是字色，暗色下会变成浅灰蒙版。 */
+    /* 遮罩层：颜色放组件组（主题无关），三档浓度放 light / dark（同一张黑遮罩压在浅底上更显淡，明档需更深）。
+       底色不取 --mptk-fg——那是字色，暗色下会变成浅灰蒙版。 */
     "--mptk-c-overlay-color": "#000",                               // 遮罩底色：深色档（纯黑，不跟随主题）
     "--mptk-c-overlay-color-light": "@white",                       // 遮罩底色：浅色档
-    "--mptk-c-overlay-opacity-thin": ".35",                         // 遮罩浓度：薄
-    "--mptk-c-overlay-opacity": ".55",                              // 遮罩浓度：默认（对齐 Vant / antd 的 .55~.6）
-    "--mptk-c-overlay-opacity-thick": ".75",                        // 遮罩浓度：厚
+    /* 关闭按钮完全落在遮罩上的档位：遮罩是黑的（明暗同色），叉与描边统一取「白而不纯白」。
+       与主题无关，故留在组件组；面板内的档位另走 light / dark 的 --mptk-c-popup-close-fg。 */
+    "--mptk-c-popup-close-fg-on-overlay": "rgba(255, 255, 255, .82)", // 遮罩上的关闭叉与描边：白 82% 叠黑遮罩 ≈ #d5d5d5，亮但不刺眼
     /* 浮层层级：一条链从下往上，组件只读不传；同档多实例按挂载顺序依次 +1。 */
     "--mptk-c-navbar-h": "44px",                                    // 导航栏内容区高度：对齐微信默认导航栏 44px（状态栏另取 env(safe-area-inset-top)）
     "--mptk-c-layer-navbar": "10",                                  // 层级：导航栏
@@ -301,7 +312,6 @@ export default {
     "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
     "--mptk-c-popup-close-size": "26px",                             // 关闭按钮外框：叉尺寸单独给（12.8px），外框与叉两轴分开
-    "--mptk-c-popup-close-bg-translucent": "rgba(0, 0, 0, 0.55)",    // 关闭按钮背景「否」档：半透明底色，只换 --mptk-btn-bg、叉色(--mptk-btn-fg)不动
     "--mptk-c-drawer-w": "240px",                                   // 抽屉宽度：滑入滑出按自身宽度算；240px 在 375 屏约 64%，比 280px 窄一档
     "--mptk-c-navbar-weight": "500",                                // 导航栏标题字重
     "--mptk-c-locked-opacity": ".5",                                // 锁定态（disabled / busy）不透明度

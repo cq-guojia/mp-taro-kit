@@ -27,7 +27,7 @@
 |---|---|---|
 | 遮罩独立组件 | 四家都有 | 取，`Overlay` |
 | 底色 | antd 的 `color`（black / white / 自定义） | 取，`tone`（`dark` / `light`）+ `color` 任取色值 |
-| 浓度 | antd 的 `opacity`（thin .35 / default .55 / thick .75 / 数字） | 取，三档 + 数字 |
+| 浓度 | antd 的 `opacity`（thin .35 / default .55 / thick .75 / 数字） | 取，三档 + 数字；三档默认值按主题配（明色更深，见样式契约） |
 | 点击关闭 | Vant `closeOnClickOverlay`、TDesign `closeOnOverlayClick` | 取，`closable` |
 | 点击回调 | Vant `click-overlay` 事件、antd `onMaskClick` | 取，`onClick`，与 `closable` 各管各的 |
 | 滚动穿透 | Vant / NutUI `lockScroll`、TDesign `preventScrollThrough` | 取，`lockScroll`，走 `catchMove` |
@@ -71,16 +71,18 @@
 
 ## 样式契约
 
-默认值全部在 `kit.config.mjs` 的 `component` 段，组件样式只读 `var()`，不在别处写死。
+默认值全部在 `kit.config.mjs`：底色在 `component` 段（主题无关），三档浓度在 `light` / `dark` 段（按主题取），组件样式只读 `var()`，不在别处写死。
 
-| 变量 | 默认 | 作用 |
-|---|---|---|
-| `--mptk-c-overlay-color` | `#000` | 遮罩底色（深色档）。**不取 `--mptk-fg`**：那是字色，暗色下是浅灰，会把遮罩变成白蒙版 |
-| `--mptk-c-overlay-color-light` | `#fff` | 遮罩底色（浅色档） |
-| `--mptk-c-overlay-opacity-thin` | `.35` | 浓度：薄 |
-| `--mptk-c-overlay-opacity` | `.55` | 浓度：默认（对齐 Vant / antd 的 .55~.6） |
-| `--mptk-c-overlay-opacity-thick` | `.75` | 浓度：厚 |
-| `--mptk-c-motion-duration` | `300ms` | 浮层进出场时长，必须带 CSS 单位（裸数字会被丢弃、动画失效）；数值与 JS 的 `MOTION_DURATION`（300，毫秒）一致，测试断言 |
+同一张黑遮罩压在浅底上比压在深底上显淡，所以明色三档各比暗色深一档，两套主题拉出来观感才接近；暗色档保留 Vant / antd 的基线值。
+
+| 变量 | 明色默认 | 暗色默认 | 作用 |
+|---|---|---|---|
+| `--mptk-c-overlay-color` | `#000` | `#000` | 遮罩底色（深色档），主题无关。**不取 `--mptk-fg`**：那是字色，暗色下是浅灰，会把遮罩变成白蒙版 |
+| `--mptk-c-overlay-color-light` | `#fff` | `#fff` | 遮罩底色（浅色档），主题无关 |
+| `--mptk-c-overlay-opacity-thin` | `.5` | `.35` | 浓度：薄 |
+| `--mptk-c-overlay-opacity` | `.75` | `.55` | 浓度：默认（暗色对齐 Vant / antd 的 .55~.6） |
+| `--mptk-c-overlay-opacity-thick` | `.85` | `.75` | 浓度：厚 |
+| `--mptk-c-motion-duration` | `300ms` | `300ms` | 浮层进出场时长，主题无关；必须带 CSS 单位（裸数字会被丢弃、动画失效）；数值与 JS 的 `MOTION_DURATION`（300，毫秒）一致，测试断言 |
 
 ## 行为契约
 
@@ -127,3 +129,4 @@
 - 2026-11-19：`width` 默认值从 `'100%'` 改为「内容区可用宽的确定像素」（单图 320px）——`'100%'` 的宽度由容器决定、`widthPx` 恒 `null`，面板拿不到像素宽无法贴合、小图还被拉满内容区；改后未给宽的图默认按面板宽显示、面板同步贴合。`'100%'` 仍可显式传。
 - 2026-11-19：尺寸引擎与图片弹窗收口一批——① 上界全档生效：`maxWidth` 不再依赖比例（原来比例未知时整段跳过）、定高档折算 `maxHeight`/`maxWidth`、scroll 档 `maxWidth` 约束视口宽（contain 档只认数字与 `px`，vh/% 折不了）；② `'100%'` 档比例已知时按内容区宽折算 `displayHeight`，多图不再拿兜底 320 硬定高；③ `'auto'` 按原图宽但不超内容区，宽图不出面板；④ `onLoad` 回灌改按 `src` 索引（换图不串比例），加 `onError` 把加载失败/0×0 标为「已定论」，图片不再永久隐藏；⑤ scroll 屏 Swiper 高度改用 `maxHeight` 原值（px / vh 都能用）、未给时 `80vh`，撤掉写死的 3×320；⑥ 图片按钮默认宽从 `'100%'` 改 `'auto'`（容器宽 200 兜底、具名常量），按钮组加 `flex-wrap` 防混排挤行；⑦ `ui/layout` 出口补 `ImageSizeInput` / `ImageWidthSpec` / `ImageHeightSpec` / `ImageFitMode` / `ImageSizeToken` / `ImageNaturalSize` / `ResolvedImageSize` 类型。文档同步：删掉已废弃的 `displayWidth` 措辞、补 `open` / `onClose` 与 `closeable` 默认 `true`、说明 `contain` 档不内置高度天花板（`80vh` 只是 scroll 档视口兜底）、「滚动条」改「滚动区域」（微信默认不显示滚动条）、样式表补 `--mptk-image-popup-action-gap`。
 - 2026-11-19：Popup / ImagePopup 组件契约拆到 api/popup.md；本文只保留遮罩本体、层级链与安全区底座，历史条目留在本篇可追溯。
+- 2026-11-21 17:51:14：三档浓度从 component 移到 light/dark，明色各深一档，使明暗遮罩观感接近

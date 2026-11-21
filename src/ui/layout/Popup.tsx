@@ -5,6 +5,7 @@ import { Button } from '../actions/Button.js'
 import { CloseGlyph } from '../feedback/close/CloseGlyph.js'
 import { resolveCloseStyle, type PopupCloseShape } from './close-style.js'
 import {
+  isOnOverlayClosePosition,
   isOutsideClosePosition,
   resolveClosePosition,
   type PopupClosePosition,
@@ -140,6 +141,7 @@ export function Popup({
   // 关闭按钮按面板形态取档：左右抽屉直接不渲染；不支持的位置回落到该形态默认值。
   const resolvedClosePosition = resolveClosePosition(position, closePosition)
   const closeOutside = resolvedClosePosition !== null && isOutsideClosePosition(resolvedClosePosition)
+  const closeOnOverlay = resolvedClosePosition !== null && isOnOverlayClosePosition(resolvedClosePosition)
   const closeStyle = resolveCloseStyle(closeShape, closeBorder, closeBackground)
 
   const names = [
@@ -186,6 +188,7 @@ export function Popup({
             className={[
               'mptk-popup__close',
               `mptk-popup__close--${resolvedClosePosition}`,
+              closeOnOverlay ? 'mptk-popup__close--on-overlay' : '',
               closeStyle.translucent ? 'mptk-popup__close--translucent' : '',
             ].filter(Boolean).join(' ')}
             onClick={onClose}
