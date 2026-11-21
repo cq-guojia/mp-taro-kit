@@ -15,11 +15,17 @@ import {
   type PopupPosition,
   type PopupRoundSize,
 } from 'mp-taro-kit/ui/layout'
+import {
+  ContentPopup,
+  type ContentPopupPosition,
+  type ContentPopupVariant,
+} from 'mp-taro-kit/ui/layout/content-popup'
 
 import 'mp-taro-kit/ui/actions/style'
 import 'mp-taro-kit/ui/display/style'
 import 'mp-taro-kit/ui/form/segmented/style'
 import 'mp-taro-kit/ui/layout/style'
+import 'mp-taro-kit/ui/layout/content-popup/style'
 import { DemoPage } from '../../components/DemoBlock'
 
 /* 垂直档：顶部 / 中部 / 底部，横排成一组。 */
@@ -205,6 +211,19 @@ export default function PopupPage() {
   const [actionKind, setActionKind] = useState<'button' | 'image'>('button')
   const [sizeMode, setSizeMode] = useState<ImageSizeMode>('width')
   const [sizeOpen, setSizeOpen] = useState(false)
+
+  /* 内容弹窗：三档头部各一个 Cell，按钮切形态与位置。 */
+  const [contentOpen, setContentOpen] = useState(false)
+  const [contentVariant, setContentVariant] = useState<ContentPopupVariant>('title')
+  const [contentPosition, setContentPosition] = useState<ContentPopupPosition>('center')
+  const [contentMode, setContentMode] = useState<'normal' | 'gradient' | 'image-bg' | 'circle' | 'square' | 'left'>('normal')
+
+  const openContent = (variant: ContentPopupVariant, position: ContentPopupPosition, mode: typeof contentMode) => {
+    setContentVariant(variant)
+    setContentPosition(position)
+    setContentMode(mode)
+    setContentOpen(true)
+  }
 
   const maskValues = MASK_VALUES[mask]
   const shared = {
@@ -434,6 +453,75 @@ export default function PopupPage() {
             overlayOpacity={maskValues.opacity}
             onClose={() => setSizeOpen(false)}
           />
+        </View>
+      )
+    }
+    if (id === 'content-popup') {
+      const gradient = contentMode === 'gradient'
+        ? { from: '#FFF3E0', to: '#FFCC80', direction: 'to-bottom' as const }
+        : undefined
+      return (
+        <View>
+          <CellGroup>
+            <Cell
+              title="文字头"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'normal')}>中部</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'bottom', 'normal')}>底部</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'gradient')}>渐变铺满</Button>
+                </View>
+              }
+            />
+            <Cell
+              title="图片头"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('image', 'center', 'normal')}>透明</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('image', 'bottom', 'image-bg')}>带背景</Button>
+                </View>
+              }
+            />
+            <Cell
+              title="外伸徽标"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'center', 'circle')}>正圆</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'center', 'square')}>圆角方</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'bottom', 'left')}>靠左</Button>
+                </View>
+              }
+            />
+          </CellGroup>
+          <ContentPopup
+            open={contentOpen}
+            variant={contentVariant}
+            position={contentPosition}
+            closeable
+            panelBackground={gradient}
+            icon={contentVariant === 'title' ? 'common.base:info' : undefined}
+            title={contentVariant === 'image' ? undefined : '是否开启相册备份'}
+            subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
+            image={contentVariant === 'image' ? GALLERY_SLIDES[0] : undefined}
+            headerBackground={contentMode === 'image-bg' ? '#fff' : undefined}
+            badgeGlyph={contentVariant === 'badge' ? <Text>徽</Text> : undefined}
+            badgeRadius={contentMode === 'square' ? 'md' : 'circle'}
+            badgeAlign={contentMode === 'left' ? 'left' : 'center'}
+            badgeOffset={contentMode === 'left' ? 20 : undefined}
+            badgeSize={72}
+            badgeOverlap="40%"
+            badgeBackground={{ from: '#FFB74D', to: '#F57C00' }}
+            badgeBorderWidth={2}
+            actions={[{ text: '知道了', onClick: () => setContentOpen(false) }]}
+            overlayTone={maskValues.tone}
+            overlayOpacity={maskValues.opacity}
+            onClose={() => setContentOpen(false)}
+          >
+            <View className="demo-stack">
+              <Text>{`内容弹窗 / ${contentVariant} / ${contentPosition}`}</Text>
+              <Text>头部、内容与按钮由库组合；完全自绘传 children 与 surface=none</Text>
+            </View>
+          </ContentPopup>
         </View>
       )
     }

@@ -738,6 +738,18 @@ export const pages: CatalogPage[] = [
         ],
         renderNotes: '单图直出 / 多图 Swiper；按钮用现成 Button，actionsAlign 控对齐；遮罩底色与浓度跟随顶部配置，关闭按钮三轴不跟随',
       },
+      {
+        id: 'content-popup',
+        title: '内容弹窗',
+        hint: '三档头部各一个 Cell：文字头（含渐变铺满）、图片头（透明/带背景）、外伸徽标（正圆/圆角方/靠左）',
+        usage: '<ContentPopup variant="badge" badgeGlyph={…} badgeRadius="circle" badgeOverlap="40%" badgeBackground={{ from, to }} actions={[…]} />',
+        imports: [
+          'mp-taro-kit/ui/layout/content-popup', 'mp-taro-kit/ui/layout/content-popup/style',
+          'mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style',
+          'mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style',
+        ],
+        renderNotes: '只支持中部/底部；头部槽位覆盖配置，按钮支持横排与纵排；徽标用绝对定位 + transform 外伸，不用负边距；关闭叉与徽标冲突时回落外置档',
+      },
     ],
   },
   {

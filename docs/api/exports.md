@@ -36,6 +36,8 @@
 
 `Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
 
+`mp-taro-kit/ui/layout/content-popup` + `/style` 是内容弹窗的组件级单元，导出 `ContentPopup` 及形态 / 位置 / 背景 / 按钮 / 徽标相关类型，见 [ContentPopup](content-popup.md)。它与 `mp-taro-kit/ui/layout` 下的 `ImagePopup` 是兄弟：都基于 `Popup` 底座，前者管通用内容组合，后者只管图片；`ui/layout` 同时转发 ContentPopup 出口作兼容。
+
 自绘转圈是另一个组件级单元：`mp-taro-kit/ui/feedback/spinner` + `/style` 导出 `Spinner`，`variant` 两档 —— `circular`（默认，TDesign `t-loading theme="circular"` 的圆锥渐变弧 + 环形遮罩）与 `chase`（SpinKit `sk-chase` 的六点追逐）。转圈只用在「没有被内容占住」的等待态：`Loader` 的 `ring`、`Loading`、光板 `Switch`（`round` 且没给 `offContent` / `onContent`）共用这一份绘制，不用图标字体，也不给单边边框上色（Skyline 下单边边框上色会让 `border-radius` 失效，见[Skyline 渲染引擎](../dependencies/skyline-rendering.md)）。有内容位的控件不盖转圈，只让「选中那块滑块」呼吸（周期 `--mptk-dur-breathe`），轨道整块与文字不跟着闪，也不挤宽、不遮字。两支关键帧同在 `src/ui/form/_busy.scss`：`Segmented` 的彩色滑块走 `mptk-control-breathe`（`opacity 1 → .2 → 1`）；`Switch` 的白滑块走 `mptk-thumb-breathe`，在 `--mptk-control-thumb` 与 `--mptk-control-thumb-dim` 之间灰白换色 —— 明色下内衬也是白的，白滑块再淡也看不出来。颜色只取 `--mptk-spinner-active`，`light` / `dark` 各给一套；`Loader` / `Spinner` / `Loading` 都接受 `color`，不给时三种形态统一用这支主色（`blocks` 不再继承页面文字色），给了就内联覆盖容器 `color`、通过 `currentColor` 生效。圆环粗细对齐 TDesign 实测：原版 `mask: radial-gradient(transparent calc(50% - 1rpx), #fff 50%)` 的径向渐变默认 `farthest-corner`，环带约占直径 17%，这里用同一比例的环形 SVG 遮罩复刻。尺寸档跟字号一一对应，取字号的 1.6 倍（20 / 22 / 24 / 28 / 36），「圈 + 文字」并排时重心才对得上；比例同样来自 TDesign（它默认 20px 圈配 12px 文案）。
 
 组件样式不随 JS 自动生效：宿主需显式引入对应单元的 `style` 出口。`sideEffects` 白名单为 `**/*.css`，保证 CSS 副作用导入不被摇掉。CJS 路径下 `require()` 不做摇树，必须用组件级细路径，不要 `require` 子域 barrel。
@@ -286,6 +288,7 @@ runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawe
 - 2026-11-14 23:43:34：补 config / plugin 出口，样式真源翻改为 kit.config.mjs
 - 2026-11-15 00:20:59：出口契约表改写真源
 - 2026-11-15 15:46:45：Card 出口补 CardVariant
+- 2026-11-21：补 ui/content-popup 组件级单元与 layout 转发出口
 - 2026-11-15：控件高度出口由三档改五档，size 取值同步为 xs|sm|md|lg|xl
 - 2026-11-15：刻度补 xxs（16）成六档；Tag 出口补 TagSize / TagRadius / TagVariant，Tag 取 xxs|xs|sm|md 子集
 - 2026-11-15：16 档改名 3xs、空出的 xxs 给新增的 20px 档，刻度成七档；Tag 的 size 变为 3xs|xxs|xs|sm|md

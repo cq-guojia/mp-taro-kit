@@ -1,4 +1,4 @@
-// @mptk-inputs:5d220c312481
+// @mptk-inputs:84ee733219f0
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -2118,6 +2118,42 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "var(--mptk-space-2)",
       "unit": "",
       "note": "image-popup-action-gap",
+    },
+    {
+      "key": "--mptk-c-content-popup-badge-size",
+      "label": "c-content-popup-badge-size",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "72px",
+      "unit": "px",
+      "note": "c-content-popup-badge-size",
+    },
+    {
+      "key": "--mptk-c-content-popup-badge-reserve",
+      "label": "c-content-popup-badge-reserve",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "36px",
+      "unit": "px",
+      "note": "c-content-popup-badge-reserve",
+    },
+    {
+      "key": "--mptk-c-content-popup-badge-border-w",
+      "label": "c-content-popup-badge-border-w",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "2px",
+      "unit": "px",
+      "note": "c-content-popup-badge-border-w",
+    },
+    {
+      "key": "--mptk-c-content-popup-action-gap",
+      "label": "c-content-popup-action-gap",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "var(--mptk-space-2)",
+      "unit": "",
+      "note": "c-content-popup-action-gap",
     },
     {
       "key": "--mptk-c-popup-center-rise",

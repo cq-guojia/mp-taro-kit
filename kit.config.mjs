@@ -311,6 +311,11 @@ export default {
     "--mptk-c-popup-center-w": "320px",                             // 居中档默认宽：对齐 Vant Dialog 320px（antd-mobile RN 286px），375 屏两边各留 27.5px，最大不超屏
     "--mptk-c-popup-min-h": "0",                                    // 面板最小高度 0：高度完全由 children 撑开，不写死、内容少也不留空
     "--mptk-image-popup-action-gap": "var(--mptk-space-2)",         // 图片弹窗动作组里文字按钮 / 图片按钮之间的默认间距，站点可覆盖
+    /* 内容弹窗：徽标外伸的几何与按钮间距，主题无关；徽标默认底色/描边色取既有主题 token。 */
+    "--mptk-c-content-popup-badge-size": "72px",                    // 外伸徽标默认尺寸（圆直径 / 方边长）
+    "--mptk-c-content-popup-badge-reserve": "36px",                 // 徽标留在面板内的默认高度，给标题/正文让位
+    "--mptk-c-content-popup-badge-border-w": "2px",                 // 外伸徽标默认描边宽度，传 0 关闭
+    "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距
     "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
     "--mptk-c-popup-close-size": "26px",                             // 关闭按钮外框：叉尺寸单独给（12.8px），外框与叉两轴分开

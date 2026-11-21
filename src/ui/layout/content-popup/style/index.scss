@@ -1,0 +1,119 @@
+/* 内容弹窗：只写本单元样式，所有取值读 --mptk-* token，不自带兜底值。 */
+
+/* 徽标要越过面板上沿，面板不能裁；双类压过 .mptk-popup__panel 的 overflow:hidden。 */
+.mptk-popup__panel.mptk-content-popup__panel {
+  overflow: visible;
+}
+
+.mptk-content-popup__head,
+.mptk-content-popup__foot {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+}
+
+.mptk-content-popup__header {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.mptk-content-popup__header--title {
+  column-gap: var(--mptk-space-2);
+  row-gap: var(--mptk-space-1);
+}
+
+.mptk-content-popup__title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--mptk-space-2);
+}
+
+.mptk-content-popup__title-icon,
+.mptk-content-popup__title-glyph {
+  flex: 0 0 auto;
+  color: var(--mptk-fg);
+}
+
+.mptk-content-popup__title {
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+  color: var(--mptk-fg);
+}
+
+.mptk-content-popup__subtitle {
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+  color: var(--mptk-fg-2);
+}
+
+.mptk-content-popup__divider {
+  flex: 0 0 auto;
+  width: 100%;
+  height: var(--mptk-c-border-w);
+  background-color: var(--mptk-border);
+}
+
+.mptk-content-popup__image {
+  display: block;
+  flex: none;
+  max-width: 100%;
+}
+
+/* 外伸徽标：容器尺寸 / 圆角 / 背景 / 描边可由 props 内联覆盖，这里只给默认值与排布。 */
+.mptk-content-popup__header--badge {
+  position: relative;
+  padding-top: var(--mptk-c-content-popup-badge-reserve);
+  align-items: center;
+}
+
+.mptk-content-popup__badge {
+  position: absolute;
+  top: var(--mptk-s-zero);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: var(--mptk-c-content-popup-badge-size);
+  height: var(--mptk-c-content-popup-badge-size);
+  border-style: solid;
+  border-width: var(--mptk-c-content-popup-badge-border-w);
+  border-color: var(--mptk-surface-1);
+  background-color: var(--mptk-default-soft);
+  z-index: var(--mptk-c-layer-popover);
+}
+
+.mptk-content-popup__badge-icon,
+.mptk-content-popup__badge-glyph {
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-xl);
+}
+
+.mptk-content-popup__badge-title {
+  font-size: var(--mptk-font-md);
+  line-height: var(--mptk-line-md);
+  color: var(--mptk-fg);
+  text-align: center;
+}
+
+.mptk-content-popup__actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  padding-top: var(--mptk-space-3);
+  column-gap: var(--mptk-c-content-popup-action-gap);
+  row-gap: var(--mptk-c-content-popup-action-gap);
+}
+
+.mptk-content-popup__actions--column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.mptk-content-popup__action-image {
+  display: block;
+  flex: 0 0 auto;
+}

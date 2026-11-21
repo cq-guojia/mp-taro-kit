@@ -98,6 +98,7 @@ const h = React.createElement
 const { Card } = await import('../dist/ui/card/index.js')
 const { CellGroup, Cell } = await import('../dist/ui/display/cell/index.js')
 const { Overlay, Popup, ImagePopup } = await import('../dist/ui/layout/index.js')
+const { ContentPopup } = await import('../dist/ui/layout/content-popup/index.js')
 const { resolveImageSize } = await import('../dist/ui/layout/image-size.js')
 const { Drawer, Dropdown } = await import('../dist/ui/navigation/index.js')
 const { Dialog, Loading, Toast } = await import('../dist/ui/feedback/index.js')
@@ -676,4 +677,74 @@ test('页面常见写法（map 数组 / 条件渲染）不改变边界归属', (
     assert.doesNotMatch(empty, /mptk-cell-group__title/, `title=${String(title)} 不该渲染标题块`)
     assert.doesNotMatch(empty, /mptk-cell-group__title-divider/, `title=${String(title)} 不该画标题线`)
   }
+})
+
+test('ContentPopup 文字头把小图标、标题、副标题渲染成一体并带分割线', () => {
+  const html = render(
+    h(ContentPopup, { open: true, variant: 'title', title: 'T', subtitle: 'S', glyph: h('span', null, 'i'), actions: [{ text: 'OK' }] }),
+    h('span', null, 'body'),
+  )
+  assert.match(html, /mptk-content-popup__header--title/)
+  assert.match(html, /mptk-content-popup__title-glyph/)
+  assert.match(html, /class="mptk-content-popup__title"/)
+  assert.match(html, /class="mptk-content-popup__subtitle"/)
+  assert.match(html, /mptk-content-popup__divider/)
+  assert.match(html, /mptk-content-popup__actions/)
+})
+
+test('ContentPopup 图片头渲染原生 Image，默认无分割线，背景走内联', () => {
+  const html = render(h(ContentPopup, { open: true, variant: 'image', image: { src: 'x.png', width: 320 }, headerBackground: '#fff' }))
+  assert.match(html, /mptk-content-popup__header--image/)
+  assert.match(html, /<image/)
+  assert.match(html, /mode="widthFix"/)
+  assert.doesNotMatch(html, /mptk-content-popup__divider/)
+  assert.match(html, /background-color:#fff/)
+})
+
+test('ContentPopup 徽标头外伸用 transform，且与面板内关闭位避让', () => {
+  const html = render(h(ContentPopup, {
+    open: true,
+    variant: 'badge',
+    badgeGlyph: h('span', null, 'b'),
+    badgeSize: 72,
+    badgeOverlap: '40%',
+    badgeAlign: 'left',
+    badgeOffset: 20,
+    badgeBorderWidth: 3,
+    closePosition: 'top-right',
+    onClose: () => {},
+    title: 'Hi',
+  }))
+  assert.match(html, /mptk-content-popup__header--badge/)
+  assert.match(html, /mptk-content-popup__badge/)
+  assert.match(html, /translateY\(-40%\)/)
+  assert.match(html, /width:72px/)
+  assert.match(html, /border-width:3px/)
+  assert.match(html, /mptk-popup__close--above-right/)
+  assert.doesNotMatch(html, /mptk-popup__close--top-right/)
+})
+
+test('ContentPopup 按钮横纵两轴生效，槽位覆盖配置', () => {
+  const column = render(h(ContentPopup, { open: true, actions: [{ text: 'A' }, { text: 'B' }], actionsLayout: 'column' }))
+  assert.match(column, /mptk-content-popup__actions--column/)
+  const row = render(h(ContentPopup, { open: true, actions: [{ text: 'A' }], actionsAlign: 'left' }))
+  assert.match(row, /justify-content:flex-start/)
+  const slots = render(h(ContentPopup, {
+    open: true,
+    variant: 'title',
+    title: '配置标题',
+    actions: [{ text: '配置按钮' }],
+    header: h('span', null, '自定义头'),
+    footer: h('span', null, '自定义脚'),
+  }))
+  assert.match(slots, /自定义头/)
+  assert.doesNotMatch(slots, /class="mptk-content-popup__title"/)
+  assert.match(slots, /自定义脚/)
+  assert.doesNotMatch(slots, /配置按钮/)
+})
+
+test('ContentPopup 越界位置回落到中部，不渲染上浮面板', () => {
+  const html = render(h(ContentPopup, { open: true, position: 'top' }))
+  assert.match(html, /mptk-popup__panel--center/)
+  assert.doesNotMatch(html, /mptk-popup__panel--top/)
 })

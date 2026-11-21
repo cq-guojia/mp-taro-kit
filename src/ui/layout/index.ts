@@ -29,6 +29,20 @@ export type {
   ResolvedImageSize,
 } from './image-size.js'
 export {
+  ContentPopup,
+  type ContentPopupProps,
+  type ContentPopupVariant,
+  type ContentPopupPosition,
+  type ContentPopupBackground,
+  type ContentPopupBackgroundDirection,
+  type ContentPopupActionsLayout,
+  type ContentPopupActionsAlign,
+  type ContentPopupBadgeAlign,
+  type ContentPopupBadgeRadius,
+  type ContentPopupImage,
+  type ContentPopupAction,
+} from './content-popup/index.js'
+export {
   FloatingAction,
   FloatingActionGroup,
   type FloatingActionProps,
