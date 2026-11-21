@@ -384,6 +384,7 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   const soft = render(h(Popup, base, h('div', null, '内容')))
   assert.match(soft, /mptk-btn--soft/, '默认档有描边，落在 soft')
   assert.match(soft, /mptk-popup__close--translucent/, '默认底色就是非实底：不传 closeBackground 也要挂 translucent class')
+  assert.doesNotMatch(soft, /mptk-popup__close--solid-bg/, '非实底档不能同时挂实底上下文类')
   assert.match(soft, /mptk-btn--radius-pill/, 'circle 形状走 pill 圆角')
   assert.match(soft, /mptk-popup__close--above-right/, '底部面板默认关闭按钮在面板外右上')
   assert.match(soft, /mptk-popup__close--on-overlay/, '外右上完全落在遮罩上，挂亮灰上下文类')
@@ -392,9 +393,14 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   const half = render(h(Popup, { ...base, closePosition: 'edge-top-right' }, h('div', null, '内容')))
   assert.doesNotMatch(half, /mptk-popup__close--on-overlay/, '跨半档一半压着面板，不按全在遮罩上取色')
 
-  /* 显式传 true 才走实底：半透明 class 必须消失，否则默认值改了却盖不住。 */
+  /* 显式传 true 才走实底：translucent 必须消失、solid-bg 必须挂上，否则底色上下文取不到。 */
   const solid = render(h(Popup, { ...base, closeBackground: true }, h('div', null, '内容')))
-  assert.doesNotMatch(solid, /mptk-popup__close--translucent/, 'closeBackground=true 是实底，不该带半透明 class')
+  assert.doesNotMatch(solid, /mptk-popup__close--translucent/, 'closeBackground=true 是实底，不该带 translucent class')
+  assert.match(solid, /mptk-popup__close--solid-bg/, '实底档挂 solid-bg，供遮罩上覆盖底色')
+  assert.match(solid, /mptk-popup__close--on-overlay/, '实底档同样保留落点上下文类')
+  const solidInside = render(h(Popup, { ...base, closeBackground: true, closePosition: 'top-left' }, h('div', null, '内容')))
+  assert.match(solidInside, /mptk-popup__close--solid-bg/, '面板内实底档也挂 solid-bg')
+  assert.doesNotMatch(solidInside, /mptk-popup__close--on-overlay/, '面板内实底档不吃遮罩上的深底')
 
   /* 关掉底色与描边、换圆角方 → solid + 半透明 class；叉色不受背景轴影响。 */
   const ghost = render(h(Popup, { ...base, closeShape: 'rounded', closeBorder: false, closeBackground: false }, h('div', null, '内容')))

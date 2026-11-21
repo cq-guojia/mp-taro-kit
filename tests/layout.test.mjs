@@ -547,18 +547,15 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   const fg3Dark = /--mptk-fg-3:\s*([^;]+);/.exec(themeDark)?.[1]?.trim()
   assert.ok(lum(fg3Light) > lum(fg2Light), '明色下 fg-3 比 fg-2 浅（不再偏深）')
   assert.ok(lum(fg3Dark) < lum(fg2Dark), '暗色下 fg-3 比 fg-2 暗（不再偏白）')
-  // 关闭按钮从 fg-3 改走 gray-6：明底更浅、暗底更暗，两端都降对比、不抢眼。
-  const gray6Light = /--mptk-gray-6:\s*([^;]+);/.exec(theme)?.[1]?.trim()
-  const gray6Dark = /--mptk-gray-6:\s*([^;]+);/.exec(themeDark)?.[1]?.trim()
-  assert.ok(lum(gray6Light) > lum(fg3Light), '明色下 gray-6 比 fg-3 浅，关闭按钮更不显眼')
-  assert.ok(lum(gray6Dark) < lum(fg3Dark), '暗色下 gray-6 比 fg-3 暗，关闭按钮不再过亮')
-  // 关闭按钮叉与描边：明色取 gray-8（浅底上对比度与暗色档相当，不再糊），暗色保持 gray-6。
+  // 面板内与跨半档的叉/描边按主题取对称的亮暗档：明色白面板取 gray-8，暗色深面板取主文字亮档。
   const closeFg = (mode) => /--mptk-c-popup-close-fg:\s*([^;]+);/.exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`), mode))?.[1]?.trim()
   const gray8Light = /--mptk-gray-8:\s*([^;]+);/.exec(theme)?.[1]?.trim()
   const gray7Light = /--mptk-gray-7:\s*([^;]+);/.exec(theme)?.[1]?.trim()
   const gray6DarkResolved = /--mptk-gray-6:\s*([^;]+);/.exec(resolveCssVars(read('dist/styles/theme-dark.css'), 'dark'))?.[1]?.trim()
-  assert.equal(closeFg('light'), gray8Light, '明色叉色取 gray-8，浅底上才看得清')
-  assert.equal(closeFg('dark'), gray6DarkResolved, '暗色叉色仍是 gray-6，没有跟着变')
+  const fgDark = /--mptk-fg:\s*([^;]+);/.exec(resolveCssVars(read('dist/styles/theme-dark.css'), 'dark'))?.[1]?.trim()
+  assert.equal(closeFg('light'), gray8Light, '明色面板内叉色取 gray-8，浅底上才看得清')
+  assert.equal(closeFg('dark'), fgDark, '暗色面板内与跨半档取主文字亮档，白边白叉与浅色主题对称')
+  assert.ok(lum(fgDark) > lum(gray6DarkResolved) * 2, '暗色叉色明显比旧 gray-6 亮，不再是灰的')
   assert.ok(lum(gray8Light) < lum(gray7Light), '明色叉色比 gray-7 更深，对比度足够')
   // 外置档完全落在黑遮罩上：明暗统一亮灰（白 82%、非纯白），不吃面板内档的深色 token。
   assert.match(
@@ -569,6 +566,32 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   const overlayFg = (mode) => /--mptk-c-popup-close-fg-on-overlay:\s*([^;]+);/.exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`), mode))?.[1]?.trim()
   assert.match(overlayFg('light') ?? '', /^rgba\(255, 255, 255, 0?\.82\)$/, '遮罩上的叉是白 82%，不是纯白')
   assert.equal(overlayFg('dark'), overlayFg('light'), '遮罩在明暗下同为黑色，叉色不分主题')
+  // 「有背景」档的底色同样按落点走：外置档在黑遮罩上必须换深底，
+  // 否则明色主题的近白实底 (#f7f8fa) 配亮灰叉只有 1.29:1，叉直接消失。
+  assert.match(
+    read(LAYOUT_CSS),
+    /\.mptk-btn\.mptk-popup__close\.mptk-popup__close--solid-bg\.mptk-popup__close--on-overlay\s*\{[^}]*--mptk-btn-bg:\s*var\(--mptk-c-popup-close-bg-solid-on-overlay\)/,
+    '实底档落在外置档时取独立深底 token，四类名压过 Button 与 translucent 规则',
+  )
+  const overlayBg = (mode) => /--mptk-c-popup-close-bg-solid-on-overlay:\s*([^;]+);/.exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`), mode))?.[1]?.trim()
+  assert.equal(overlayBg('light'), '#262b32', '明色主题下外置实底也取深色，不跟页面主题的近白灰')
+  assert.equal(overlayBg('dark'), overlayBg('light'), '外置实底明暗同值：容器同为黑遮罩')
+  const rgb = (hex) => [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16))
+  const relLum = (channels) => channels.reduce((sum, v, i) => {
+    const x = v / 255
+    const linear = x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4
+    return sum + linear * [0.2126, 0.7152, 0.0722][i]
+  }, 0)
+  const solidBgRgb = rgb(overlayBg('light'))
+  const solidFgRgb = solidBgRgb.map((v) => Math.round(255 * 0.82 + v * 0.18))
+  const solidRatio = (Math.max(relLum(solidFgRgb), relLum(solidBgRgb)) + 0.05) /
+    (Math.min(relLum(solidFgRgb), relLum(solidBgRgb)) + 0.05)
+  assert.ok(solidRatio >= 4.5, `外置有背景档叉/底对比度只有 ${solidRatio.toFixed(2)}，亮灰叉会消失`)
+  assert.doesNotMatch(
+    read(LAYOUT_CSS),
+    /\.mptk-btn\.mptk-popup__close\.mptk-popup__close--solid-bg\s*\{/,
+    '面板内有背景档仍走 Button 主题实底，不许被外置深底覆盖',
+  )
   assert.match(
     read('src/ui/layout/close-position.ts'),
     /export function isOnOverlayClosePosition\([^)]*\): boolean\s*\{[^}]*above-right[^}]*above-center[^}]*below-center[^}]*below-right/s,

@@ -232,7 +232,7 @@ export default {
     "--mptk-blue-soft": "rgba(107, 138, 253, .12)",                 // 蓝·浅色底：色板派生出的语义色档
     "--mptk-c-fab-bg": "var(--mptk-default-soft)",                  // 常驻浮动按钮底：暗档跟随 default-soft（gray-3），与明档同源键
     "--mptk-c-popup-close-bg-translucent": "transparent",             // 关闭按钮非实底档：遮罩已够暗，不再用底色补偿
-    "--mptk-c-popup-close-fg": "var(--mptk-gray-6)",                  // 面板内部档叉与描边：暗色保持原来的 gray-6，不动
+    "--mptk-c-popup-close-fg": "var(--mptk-fg)",                     // 面板内部档与跨半档叉/描边：深底上取主文字亮档，与明色白面板上的深叉对称
     "--mptk-c-overlay-opacity-thin": ".35",                           // 暗色遮罩薄档：深浅底同档黑遮罩在深底上本就显深，保留成熟库基线
     "--mptk-c-overlay-opacity": ".55",                                // 暗色遮罩默认档：对齐 Vant / antd 的 .55~.6
     "--mptk-c-overlay-opacity-thick": ".75",                          // 暗色遮罩厚档
@@ -294,9 +294,11 @@ export default {
        底色不取 --mptk-fg——那是字色，暗色下会变成浅灰蒙版。 */
     "--mptk-c-overlay-color": "#000",                               // 遮罩底色：深色档（纯黑，不跟随主题）
     "--mptk-c-overlay-color-light": "@white",                       // 遮罩底色：浅色档
-    /* 关闭按钮完全落在遮罩上的档位：遮罩是黑的（明暗同色），叉与描边统一取「白而不纯白」。
-       与主题无关，故留在组件组；面板内的档位另走 light / dark 的 --mptk-c-popup-close-fg。 */
+    /* 关闭按钮完全落在遮罩上的档位：遮罩是黑的（明暗同色），叉与描边统一取「白而不纯白」；
+       有背景档的底色也必须跟着容器走深色——否则明色主题的近白实底会把亮灰叉吃掉（实测 1.29:1）。
+       两项均与页面主题无关，故留在组件组；面板内的档位另走 light / dark 的 --mptk-c-popup-close-fg。 */
     "--mptk-c-popup-close-fg-on-overlay": "rgba(255, 255, 255, .82)", // 遮罩上的关闭叉与描边：白 82% 叠黑遮罩 ≈ #d5d5d5，亮但不刺眼
+    "--mptk-c-popup-close-bg-solid-on-overlay": "#262b32",            // 有背景档落在遮罩上时的实底：深灰，明暗主题同值，配亮灰叉约 10:1
     /* 浮层层级：一条链从下往上，组件只读不传；同档多实例按挂载顺序依次 +1。 */
     "--mptk-c-navbar-h": "44px",                                    // 导航栏内容区高度：对齐微信默认导航栏 44px（状态栏另取 env(safe-area-inset-top)）
     "--mptk-c-layer-navbar": "10",                                  // 层级：导航栏

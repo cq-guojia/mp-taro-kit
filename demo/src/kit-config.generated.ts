@@ -1,4 +1,4 @@
-// @mptk-inputs:0820b3ddfd88
+// @mptk-inputs:5d220c312481
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -1494,7 +1494,7 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "c-popup-close-fg",
       "group": "dark",
       "groupLabel": "暗色",
-      "value": "var(--mptk-gray-6)",
+      "value": "var(--mptk-fg)",
       "unit": "",
       "note": "c-popup-close-fg",
     },
@@ -2010,6 +2010,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "rgba(255, 255, 255, .82)",
       "unit": "color",
       "note": "c-popup-close-fg-on-overlay",
+    },
+    {
+      "key": "--mptk-c-popup-close-bg-solid-on-overlay",
+      "label": "c-popup-close-bg-solid-on-overlay",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "#262b32",
+      "unit": "color",
+      "note": "c-popup-close-bg-solid-on-overlay",
     },
     {
       "key": "--mptk-c-navbar-h",

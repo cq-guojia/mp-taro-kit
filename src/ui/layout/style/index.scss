@@ -242,6 +242,13 @@
   --mptk-btn-fg: var(--mptk-c-popup-close-fg-on-overlay);
 }
 
+/* 「有背景」档的底色也要按落点走，不能只按页面主题：外置档挂在黑遮罩上，若沿用明色主题的
+   近白实底，亮灰叉叠上去只有 1.29:1、等于消失。四类名带 solid-bg（与 translucent 互斥），
+   压过 Button 的 default soft/solid 双类名；面板内有背景档仍走 Button 主题实底，不在这里覆盖。 */
+.mptk-btn.mptk-popup__close.mptk-popup__close--solid-bg.mptk-popup__close--on-overlay {
+  --mptk-btn-bg: var(--mptk-c-popup-close-bg-solid-on-overlay);
+}
+
 /* 描边跟随叉色：default soft 档原本描边取 gray-5、叉取 fg-2，两色不一致。
    库内 tone 档 soft 本就是 fg / border 同色，这里让 default 档也归一——描边 = 叉色，
    细笔画的叉与边框看起来才是同一个颜色。三类名压过 .mptk-btn--default.mptk-btn--soft 的双类名。 */

@@ -30,7 +30,7 @@
 | 描边 | `closeBorder` | `true` | 有 / 无描边 |
 | 背景 | `closeBackground` | `false` | 透明底（默认）/ 实底；叉色不随这轴变 |
 
-外框走 `--mptk-c-popup-close-size`（26px），叉是自绘 `CloseGlyph`（边长固定 12.8px），两轴互不联动。有边 → `soft`，无边 → `solid`；背景轴只换底色，不改叉色——**默认透明底**（`closeBackground={false}`，底色 `--mptk-c-popup-close-bg-translucent` 明暗同为 `transparent`：遮罩已按主题加深，不再靠按钮底色补偿），传 `true` 才是实底。非实底类 `.mptk-popup__close--translucent` 是三类名，压过 Button 自己的 `.mptk-btn--default.mptk-btn--soft` 双类名，默认档不会吃回实底。`soft` 档再用三类名让描边跟随 `--mptk-btn-fg`（与库内 tone 档 soft 同色约定一致）。叉色按按钮落点分两套：面板内档（`top-*` / `edge-top-*`）取组件私有 token `--mptk-c-popup-close-fg`，明色 `gray-8`、暗色 `gray-6`；面板上方 / 下方的全外置档由 `isOnOverlayClosePosition()` 加挂 `.mptk-popup__close--on-overlay`，四类名取 `--mptk-c-popup-close-fg-on-overlay`（白 82%，亮而不纯白、明暗同值，因为遮罩在两套主题下都是黑）。跨半档一半压着面板，不算全在遮罩上。这样白面板上不会出现看不见的亮叉，黑遮罩上也不会仍是深色看不清。关闭按钮尺寸不随这个改，外框与叉仍是 26 / 12.8px。演示站自己的「背景」开关是应用态，不影响库默认值。
+外框走 `--mptk-c-popup-close-size`（26px），叉是自绘 `CloseGlyph`（边长固定 12.8px），两轴互不联动。有边 → `soft`，无边 → `solid`；背景轴只换底色，不改叉色——**默认透明底**（`closeBackground={false}`，底色 `--mptk-c-popup-close-bg-translucent` 明暗同为 `transparent`：遮罩已按主题加深，不再靠按钮底色补偿），传 `true` 才是实底。非实底类 `.mptk-popup__close--translucent` 是三类名，压过 Button 自己的 `.mptk-btn--default.mptk-btn--soft` 双类名，默认档不会吃回实底。`soft` 档再用三类名让描边跟随 `--mptk-btn-fg`（与库内 tone 档 soft 同色约定一致）。叉色按按钮落点分两套：面板内档（`top-*` / `edge-top-*`）取组件私有 token `--mptk-c-popup-close-fg`，明色 `gray-8`（白面板上的深叉）、暗色 `--mptk-fg`（深面板上的亮叉，解析为色板 `ink-1`），与面板底色对称；面板上方 / 下方的全外置档由 `isOnOverlayClosePosition()` 加挂 `.mptk-popup__close--on-overlay`，四类名取 `--mptk-c-popup-close-fg-on-overlay`（白 82%，亮而不纯白、明暗同值，因为遮罩在两套主题下都是黑）。跨半档一半压着面板，不算全在遮罩上。**有背景档（`closeBackground={true}`）同样按落点分两套底色**：面板内档沿用 Button default 的主题实底（明色近白、暗色深灰），配上面的主题叉色；全外置档改取 `--mptk-c-popup-close-bg-solid-on-overlay`（`#262b32`，明暗同值）配亮灰叉——底色必须跟着容器走，若沿用明色主题的近白实底，亮灰叉叠上去只有 1.29:1、等于消失。`solid-bg` 与 `translucent` 两类互斥，四类名压过 Button 的双类名。这样白面板上不会出现看不见的亮叉，黑遮罩上也不会仍是深色看不清。关闭按钮尺寸不随这个改，外框与叉仍是 26 / 12.8px。演示站自己的「背景」开关是应用态，不影响库默认值。
 
 叉不用字体图标：字形墨迹相对行盒偏上，且 iOS / Android 基线度量不同，固定位移无法跨端根治。自绘叉把两笔 SVG path 画在 viewBox 正中（`--mptk-c-close-mask`），几何中心即容器中心；颜色取 `currentColor`，经 Button 的 `glyph` 槽位由 `--mptk-btn-fg` 注入。
 
@@ -109,8 +109,9 @@ configureSafeArea({
 | `--mptk-c-popup-close-size` | `26px` | 关闭按钮外框；叉固定 12.8px |
 | `--mptk-c-close-mask` | SVG data URI | 自绘关闭叉遮罩，几何居中 |
 | `--mptk-c-popup-close-bg-translucent` | `transparent` | 关闭按钮非实底档底色，明暗同值；叉色不动 |
-| `--mptk-c-popup-close-fg` | 明 `var(--mptk-gray-8)` / 暗 `var(--mptk-gray-6)` | 面板内档叉与描边色，按主题取色 |
+| `--mptk-c-popup-close-fg` | 明 `var(--mptk-gray-8)` / 暗 `var(--mptk-fg)` | 面板内档与跨半档叉/描边色，按主题与面板底色取对称档 |
 | `--mptk-c-popup-close-fg-on-overlay` | `rgba(255, 255, 255, .82)` | 全外置档叉与描边色，明暗同值（遮罩同为黑） |
+| `--mptk-c-popup-close-bg-solid-on-overlay` | `#262b32` | 全外置档「有背景」实底色，明暗同值；配亮灰叉约 10:1 |
 | `--mptk-c-drawer-w` | `240px` | 抽屉宽度；滑入滑出按自身宽度算 |
 
 ## ImagePopup
@@ -220,3 +221,5 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-21 17:24:32：关闭按钮明色微调：叉与描边用私有 token 取 gray-7 深一档，半透明底 alpha 55→35；暗色不变
 - 2026-11-21 17:29:04：关闭按钮明色叉与描边 gray-7 改 gray-8：浅底对比度 1.6→3.8，与暗色档一致，不再模糊
 - 2026-11-21 17:51:14：遮罩按主题加深，关闭按钮改透明底与落点分色：面板内按主题取色，全外置档在遮罩上统一亮灰非纯白
+- 2026-11-21 18:05:37：有背景档按落点分底色：面板内沿用主题实底，全外置档改深底 #262b32 配亮灰叉，修明色近白实底吃掉亮灰叉
+- 2026-11-21 18:13:45：暗色面板内与跨半档关闭按钮叉/描边由 gray-6 改主文字亮档（--mptk-fg，解析为色板 ink-1），与浅色主题白面板上的深叉对称；demo 位置文案外上改外中上

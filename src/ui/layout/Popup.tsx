@@ -65,7 +65,7 @@ export interface PopupProps {
   closeShape?: PopupCloseShape
   /** 关闭按钮是否带描边，默认 true；与 closeBackground 组合出核心 Button 的四种底色形态 */
   closeBorder?: boolean
-  /** 关闭按钮底色，默认半透明（false）；传 true 走实底 soft，描边轴单独决定有无边 */
+  /** 关闭按钮底色，默认透明（false）；传 true 走实底，描边轴单独决定有无边 */
   closeBackground?: boolean
   /** 关闭按钮位置：按面板形态取可用档，不传用该形态默认值；左右抽屉忽略 */
   closePosition?: PopupClosePosition
@@ -189,7 +189,7 @@ export function Popup({
               'mptk-popup__close',
               `mptk-popup__close--${resolvedClosePosition}`,
               closeOnOverlay ? 'mptk-popup__close--on-overlay' : '',
-              closeStyle.translucent ? 'mptk-popup__close--translucent' : '',
+              closeStyle.translucent ? 'mptk-popup__close--translucent' : 'mptk-popup__close--solid-bg',
             ].filter(Boolean).join(' ')}
             onClick={onClose}
           />
