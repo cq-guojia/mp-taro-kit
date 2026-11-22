@@ -55,7 +55,7 @@
      （底部大块空白 + 外置关闭按钮的百分比参照错乱）。高度纯由 children 撑开；
      内容确实超高由调用方在 children 里包 scroll-view 并给确定高来滚。 */
   overflow: hidden;
-  background-color: var(--mptk-surface-1);
+  background-color: var(--mptk-surface-elevated);
   padding-top: var(--mptk-space-4);
   padding-right: var(--mptk-space-4);
   padding-bottom: var(--mptk-space-4);

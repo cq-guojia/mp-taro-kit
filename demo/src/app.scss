@@ -33,6 +33,10 @@ page {
   height: var(--mptk-s-zero);
 }
 
+/* .demo-shell__overlays 故意不写样式：它要的是一个真实的空 View 节点，
+   不设定位 / 层级 / display，免得给内部 fixed 浮层造出包含块或抹掉节点。
+   内部浮层脱离文档流，容器自身高度 0，既是稳定的节点分支又不占布局。 */
+
 /* 页面不再统一加左右内边距：普通示例块自己留 16，裸展示的组件才能真正通到底。 */
 /* 演示站纵向节奏只由四层决定，每层只管自己那一道，不再互相叠加：
    页 16（顶部给、底部由最后一个块的尾距承担）→ 页头 16 → 块间距 12 → 卡内项间距 12。
@@ -176,6 +180,11 @@ page {
   align-items: flex-start;
 }
 
+/* 弹窗内容要占满面板宽，长文本才能换行；普通 demo-stack 仍按内容宽收拢。 */
+.demo-stack--fill {
+  align-items: stretch;
+}
+
 /* 不能用 `> * + *`：wxss 不支持通配符，整条会被编译丢掉；显式列出子元素标签。 */
 .demo-stack > view:not(:first-child),
 .demo-stack > text:not(:first-child),
@@ -256,15 +265,13 @@ page {
   color: var(--mptk-c-demo-swatch-ink-white);
 }
 
-/* 主题配置页：卡片直接铺在页面上，不再套示例块卡片。 */
-.demo-cards {
-  padding-right: var(--mptk-space-4);
-  padding-left: var(--mptk-space-4);
-}
-
-/* 卡片之间与块之间同档：最后一张卡片的尾距就是块的尾距，块不再另加 margin。 */
+/* 页面级卡片：直接铺在页面底色上的 Card 统一挂这个类，左右与纵向都走同一档 space token。
+   最后一张卡片的尾距就是页尾留白，页面不再另加外边距。
+   示例块内部的 Card 不挂这个类——块壳自己给左右留白，多张之间用 .demo-stack 串。 */
 .demo-card {
+  margin-right: var(--mptk-space-4);
   margin-bottom: var(--mptk-space-4);
+  margin-left: var(--mptk-space-4);
 }
 
 /* 没有色条的行（边框）用两行小字给明暗值。 */

@@ -1,4 +1,4 @@
-// @mptk-inputs:84ee733219f0
+// @mptk-inputs:9a0d10e1547c
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -518,6 +518,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "surface-1",
     },
     {
+      "key": "--mptk-surface-elevated",
+      "label": "surface-elevated",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "#fff",
+      "unit": "color",
+      "note": "surface-elevated",
+    },
+    {
       "key": "--mptk-surface-2",
       "label": "次级面",
       "group": "light",
@@ -579,6 +588,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "rgba(0, 0, 0, .06)",
       "unit": "color",
       "note": "cell-divider",
+    },
+    {
+      "key": "--mptk-cell-press",
+      "label": "cell-press",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "rgba(0, 0, 0, .06)",
+      "unit": "color",
+      "note": "cell-press",
     },
     {
       "key": "--mptk-card-bg",
@@ -1274,6 +1292,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "surface-1",
     },
     {
+      "key": "--mptk-surface-elevated",
+      "label": "surface-elevated",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "#262b32",
+      "unit": "color",
+      "note": "surface-elevated",
+    },
+    {
       "key": "--mptk-surface-2",
       "label": "次级面",
       "group": "dark",
@@ -1335,6 +1362,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "rgba(255, 255, 255, .06)",
       "unit": "color",
       "note": "cell-divider",
+    },
+    {
+      "key": "--mptk-cell-press",
+      "label": "cell-press",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "rgba(255, 255, 255, .08)",
+      "unit": "color",
+      "note": "cell-press",
     },
     {
       "key": "--mptk-card-bg",
@@ -2154,6 +2190,15 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "var(--mptk-space-2)",
       "unit": "",
       "note": "c-content-popup-action-gap",
+    },
+    {
+      "key": "--mptk-c-content-popup-title-icon-size",
+      "label": "c-content-popup-title-icon-size",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "28px",
+      "unit": "px",
+      "note": "c-content-popup-title-icon-size",
     },
     {
       "key": "--mptk-c-popup-center-rise",

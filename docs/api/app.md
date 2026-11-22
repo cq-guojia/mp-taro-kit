@@ -94,6 +94,8 @@ function MyPage() {
 
 回顶显隐的位置只读喂入，**不回写 `scrollTop` 属性**。回顶走一次节点命令 `scrollTo`，不逐帧、不碰受控状态——逐帧回写是卡顿残影和"过山车"的根源。
 
+`KitPage` 不介入浮层与滚动位置——那是页面结构的事。Taro 把 state 更新归级到 Page 的 `setData`，浮层节点若与滚动容器同级增删，会让原生 `scroll-view` 被重建、`scrollTop` 归零。所以**浮层开合必须与滚动区分处的稳定分支**：滚动区给稳定 `key`，浮层放进一个恒定存在的容器（demo 的 `demo-shell__overlays`），开合只动容器内部。不记坐标、不切 `scroll-y`、不写受控 `scrollTop`（详见 [遮罩与浮层底座](overlay.md)）。
+
 `useKitPageScroll()` 保留给需要自己拿滚动位置的场景（如自定义浮动列）：必须在 `<KitPage>` 内调用，否则当场抛错；取到的是同一个只读回执。主路径不需要调它——`onScroll` 已由 `KitPage` 自动注入。
 
 | prop | 默认 | 说明 |
@@ -246,3 +248,6 @@ async function submit() {
 - 2026-11-20：回顶免配置——不传 `scrollViewId` 时自动认领 children 里第一个 ScrollView 并注入 id / enhanced / onScroll；找不到静默无效；显式 id 仍走原路径
 - 2026-11-20 20:51:14：澄清自动认领只认直接子节点，Fragment 不摊平
 - 2026-11-20 23:25:59：configureSafeArea 注入补底部横条真值 screenHeight - safeArea.bottom
+- 2026-11-21：KitPage 提供 ScrollKeeperContext，锁滚动浮层关闭后恢复原滚动位置
+- 2026-11-21：移除 ScrollKeeperContext，改订阅全局滚动锁并注入 `scrollY={!locked}`
+- 2026-11-22：滚动锁方案实测无效，全部撤销；KitPage 不介入滚动位置，改由页面结构保证（滚动区稳定 key + 浮层恒定隔离容器）

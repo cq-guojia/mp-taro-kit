@@ -18,7 +18,7 @@ export interface OverlayProps {
   closable?: boolean
   onClose?: () => void
   onClick?: () => void
-  /** 吞掉背后页面的滚动（滚动穿透）；页面滚动若在消费方的 scroll-view 里，还需要那边配合关掉 scroll-y */
+  /** 吞掉背后页面的滚动（滚动穿透），走 catchMove；位置保持靠页面壳的节点层级隔离，见 overlay 文档 */
   lockScroll?: boolean
   /** 进出场时长（ms），0 = 不做动画 */
   duration?: number

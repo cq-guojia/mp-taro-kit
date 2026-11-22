@@ -55,6 +55,8 @@
 
 行为约定：
 
+- **背景归环境，Cell 不铺底**：`Cell` 与 `CellGroup` 的组体、行默认 `background-color: transparent`，底色由所在环境透出——页面、`Card`、弹窗面板，或调用方通过 `className` 显式给的面。这样同一个 Cell 放进任何底色的容器都不会顶出一块异色面。需要一块面时由环境提供：套 `Card`、给容器加背景，或在 `Cell` / `CellGroup` 的 `className` 上指定背景，都不是 Cell 自己的默认行为。
+- **按压反馈叠半透明层，不换底色**：点击态用 `background-image: linear-gradient(var(--mptk-cell-press), var(--mptk-cell-press))` 叠加，不用 `background-color` 替换——否则会盖掉环境透出的底色（含调用方显式给的面），反馈与真实底色脱节。`--mptk-cell-press` 明档 `rgba(0,0,0,.06)`、暗档 `rgba(255,255,255,.08)`，真源在 `kit.config.mjs`。
 - 组内最后一格的 `border` 由 `CellGroup` 按位置注入为 `false`，不依赖结构伪类；独立使用的 `Cell` 由自身 `border` 决定。
 - 点击态由 `onClick` 派生，按压反馈走 `hoverClass`，抬手后 70ms 恢复（`PRESS_STAY_TIME`，不吃 Taro `View` 的 400ms 默认），不暴露 `clickable` prop。
 - 三种线，都是独立 1px 元素：`__border--top` / `__border--bottom` 是组的上下边界，`__title-divider` 是卡片内「标题与列表之间」那条线（同时是该组的上边界），`mptk-cell__divider` 是行与行之间的线。**组级的两条线（外框与标题线）是流内元素**，位置只由前后兄弟决定，不会因为父级 position 基准失效跑到组外叠成双线；行间线贴在每一行底部（`Cell` 内部），不参与组的边界计算。卡片形态的四边由内容区的圆角与 `overflow: hidden` 裁切。
@@ -100,7 +102,7 @@
 </Card>
 ```
 
-`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后派生 `mptk-cell-group--in-card`、组与行的底色改透明；上下外框不是一刀切关掉，而是由 `Card` 渲染期用 `ui/infra/card-edge` 按文档顺序给每组算出「上边界要不要画、下边界要不要画」两个布尔注入，据此让每段之间恒好一条线（规则见上文），显式 `border` 仍可覆盖。同时 `CellGroup` 用 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。
+`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后派生 `mptk-cell-group--in-card`、据此调整组内留白与线的归属；底色不需要 `Card` 注入——Cell 与 CellGroup 默认透明，卡片的面色直接透上来。上下外框不是一刀切关掉，而是由 `Card` 渲染期用 `ui/infra/card-edge` 按文档顺序给每组算出「上边界要不要画、下边界要不要画」两个布尔注入，据此让每段之间恒好一条线（规则见上文），显式 `border` 仍可覆盖。同时 `CellGroup` 用 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。
 
 卡片内的列表默认**左右不到头**：左右留白统一由组给一档，取卡片自己的 `var(--mptk-card-spacing)`（`sm` 8 / `md` 12 / `lg` 16），行自己不再留左右白，文字与卡片标题、底部操作区左边界对齐；贴边时 `Card` 的 body 左右留白同时归零，避免两道间距叠加。行间线的端点由 `dividerInset` 控制：默认 `true` 时随文字内缩到这一档，`false` 时用负的 `--mptk-card-spacing` 跨出 body 内距、通到卡片边——这是 `CellGroup` 在卡片内的组合层参数，不是宿主写样式。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone` / `dividerInset`）仍归 `CellGroup`，职责不重叠。
 
@@ -241,6 +243,7 @@ export const State = () => (
 - 2026-11-15 00:20:59：默认值真源改为 kit.config.mjs
 - 2026-11-15：右侧值字号默认改 `xs`（与 label 同档，原为 `sm`），新增 `valueSize="sm"` 回到标题档
 - 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME）
+- 2026-11-22：Cell / CellGroup 默认不再铺 `--mptk-surface-1` 底色，改透明、由环境透出（页面 / Card / 弹窗面板 / 调用方 className）；按压反馈从换 `background-color` 改为叠 `--mptk-cell-press` 半透明层，不盖掉环境底色。删除 `--in-card` 的透明覆盖规则（默认已透明）
 - 2026-11-17：卡片内 CellGroup 的上下外框不再一刀切关掉；Card 渲染期注入位置档（首 / 中 / 末 / 单组），首组不画上、末组不画下、中间组上下都画、单组两头都收；显式 `border` 仍优先
 - 2026-11-17：`value` 位改 flex 靠右，块级插槽（如 Segmented）也贴右，不再只靠对块级无效的 `text-align`；段控件在值位里用默认 `fit`（自然宽高），要底片撑满确定宽时才外包定宽 `View` + `width="equal"`——定宽不能写在 Segmented 自己的 className 上，会被库样式同权重覆盖（开发者工具 Skyline 下整块塌成空白）
 - 2026-11-17：线规则收敛为「一个分界处恒好一条线，底线归前一块封口」：Card 注入的不再是首 / 中 / 末 / 单的位置档，而是上 / 下边界两个布尔——每组的底线是自己的封口线（最后一个元素不画），上边界只在前面是普通内容时画（紧跟卡片标题栏 / 上一分组时让位），标题上方不再多一条；边界线与标题线统一取 `--mptk-border`，行间线才用浅一档的 `--mptk-cell-divider`；组级的两条线改成流内元素，去掉 absolute 定位

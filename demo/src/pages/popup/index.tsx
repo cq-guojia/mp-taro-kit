@@ -499,7 +499,7 @@ export default function PopupPage() {
             position={contentPosition}
             closeable
             panelBackground={gradient}
-            icon={contentVariant === 'title' ? 'common.base:info' : undefined}
+            icon={contentVariant === 'title' ? 'common.base:AIdamoxing' : undefined}
             title={contentVariant === 'image' ? undefined : '是否开启相册备份'}
             subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
             image={contentVariant === 'image' ? GALLERY_SLIDES[0] : undefined}
@@ -517,7 +517,7 @@ export default function PopupPage() {
             overlayOpacity={maskValues.opacity}
             onClose={() => setContentOpen(false)}
           >
-            <View className="demo-stack">
+            <View className="demo-stack demo-stack--fill">
               <Text>{`内容弹窗 / ${contentVariant} / ${contentPosition}`}</Text>
               <Text>头部、内容与按钮由库组合；完全自绘传 children 与 surface=none</Text>
             </View>

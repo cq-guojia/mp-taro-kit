@@ -45,29 +45,29 @@ export default function IndexPage() {
           <Tag className="demo-item" size="3xs" radius="pill">{__MTPK_BUILD_ID__}</Tag>
         </View>
       </View>
-      <View className="demo-cards">
-        <Card
-          className="demo-card"
-          title="主题模式"
-          subtitle={`当前 ${mode} · ${dark ? '暗色生效' : '明色生效'}；切换后全站样式、弹层与窗口背景立即生效`}
-        >
-          <Segmented
-            items={THEME_ITEMS}
-            value={mode}
-            onChange={(next) => { setThemeMode(next) }}
-          />
-        </Card>
-      </View>
+      <Card
+        className="demo-card"
+        title="主题模式"
+        subtitle={`当前 ${mode} · ${dark ? '暗色生效' : '明色生效'}；切换后全站样式、弹层与窗口背景立即生效`}
+      >
+        <Segmented
+          items={THEME_ITEMS}
+          value={mode}
+          onChange={(next) => { setThemeMode(next) }}
+        />
+      </Card>
       {menu.map((group) => (
-        <CellGroup key={group.id} title={group.title} inset>
-          {group.entries.map((entry) =>
-            entry.status === 'ready' ? (
-              <Cell key={entry.id} title={entry.label} isLink onClick={() => go(entry.pageId)} />
-            ) : (
-              <Cell key={entry.id} title={entry.label} disabled />
-            ),
-          )}
-        </CellGroup>
+        <Card key={group.id} className="demo-card" title={group.title}>
+          <CellGroup>
+            {group.entries.map((entry) =>
+              entry.status === 'ready' ? (
+                <Cell key={entry.id} title={entry.label} isLink onClick={() => go(entry.pageId)} />
+              ) : (
+                <Cell key={entry.id} title={entry.label} disabled />
+              ),
+            )}
+          </CellGroup>
+        </Card>
       ))}
     </DemoShell>
   )

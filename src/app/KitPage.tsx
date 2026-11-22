@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useRef, type ReactNode } from 'react'
 import Taro from '@tarojs/taro'
 import { ScrollView } from '@tarojs/components'
 import {
@@ -89,9 +89,8 @@ export function KitPage({
   const renderedChildren = auto?.children ?? children
   const targetId = scrollViewId ?? auto?.id ?? null
 
-  const handleBack = (): void => {
+  const resolveNode = useCallback((emit: (node: ScrollNode) => void): void => {
     if (targetId === null) return
-    const emit = (node: ScrollNode): void => scrollViewToTop(node, duration)
     const cached = nodeRef.current
     if (cached !== null && cached.id === targetId) {
       emit(cached.node)
@@ -107,7 +106,9 @@ export function KitPage({
           emit(node)
         }
       })
-  }
+  }, [targetId])
+
+  const handleBack = (): void => resolveNode((node) => scrollViewToTop(node, duration))
 
   // backToTop 是保留 id：业务 action 用它会在切页/屏蔽时和默认项混在一起，当场拒绝。
   for (const action of actions) {

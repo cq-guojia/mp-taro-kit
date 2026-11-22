@@ -35,8 +35,8 @@ demo/                                               # 仓库内的 Taro 小程�
     │   ├── DemoSettings.tsx                        # 站级设置面板：底部裸壳 Popup（高度按内容撑开），单组 CellGroup 放明暗模式 / 编译模式 / 当前版本；由 DemoShell 每页挂载
     │   └── DemoShell.tsx                           # 页面外壳：固定视口高度 View + scroll-view；右侧列常驻设置入口，导航栏在滚动区外
     └── pages/                                      # 演示站页面：1 个索引页 + 18 个展示页
-        ├── index/index.tsx                         # 目录页：主题三态装 Card（title + subtitle + Segmented）；menu 用 CellGroup 铺固定分组
-        ├── theme-config/index.tsx                  # 主题配置：三张 Card 用 title 做标题、列表是不带标题的 CellGroup，色条上写色板名字
+        ├── index/index.tsx                         # 目录页：主题三态与 menu 分组都用 Card 壳，页面级卡片统一挂 .demo-card 拿左右与纵向留白
+        ├── theme-config/index.tsx                  # 主题配置：三张 Card 用 title 做标题、列表是不带标题的 CellGroup，色条上写色板名字；页面级卡片同样挂 .demo-card
         ├── design-foundation/index.tsx             # 设计基础：中性灰阶、色相与明暗两套，独立成页
         ├── sizing/index.tsx                        # 尺寸：高度刻度七档与其余档位，独立成页
         ├── infra/index.tsx                         # src/ui/infra/：OverlayHost、SafeArea、use-store
@@ -66,6 +66,7 @@ demo/                                               # 仓库内的 Taro 小程�
 - 同一子域里已实现的多个组件各占一页，不混排：`form` 只放 Switch，`segmented` 只放 Segmented，`display` 只放 Cell / CellGroup，Badge 与 Divider 各自成页；`card` 是独立子域、通用卡片容器单独成页，业务向商品卡片占位改名 `ProductCard` 让出通用名；菜单条目通过 `pageId` 各自指向自己的页，点进去只看到这一件内容。`tests/ui.test.mjs` 断言 `ready` 条目指向真实展示页，并断言 Cell / Badge / Divider 三条菜单各指自己、Cell 页示例不混入别的内容。多对一仍是全站其余菜单的既有结构，不在本条约束内。
 - 演示内容之间必须留空隙，组件不许一个个贴在一起：横排用 `.demo-row`、纵向多段用 `.demo-stack`，其中的组件一律带 `.demo-item`（只带右侧外边距，取值 `--mptk-space-3`）。不用 `gap` —— 老 WebView 内核不支持，Skyline 与 WebView 会呈现两种结果。
 - **纵向节奏只有四层，每层只负责自己那一道**：页 `padding-top: --mptk-space-4`（16，页不再加 padding-bottom）→ 页头 `margin-bottom: --mptk-space-4`（16）→ 块与块 `--mptk-space-3`（12）→ 卡片与卡片 `--mptk-space-3`（12）。裸块（`bare`，无底色）不贡献垂直留白（`padding-top/bottom: 0`、`margin: 0`），块间距由块自己的 `margin-bottom` 给，因此「卡片之间」和「块与块」是同一个 12。块内留白由 Card 壳自己的内边距给，不在内容项上叠第二份。禁止在块上再叠一层 margin「看起来保险」——三层相加会得到 28 / 56 这种没人能解释的数。**间距只有一个来源，结构与留白分离**：`.demo-item` 只带右距、不带垂直外边距；纵向间距一律由容器 `.demo-stack` 的相邻兄弟 `margin-top` 给（写成 `> view/text/scroll-view/button:not(:first-child)`，不能用通配符）。多按钮组在页面里显式拆成多个 `.demo-row`、再用 stack 串成多行，`wrap` 只作窄屏兜底。块底因此只剩 Card 自己的内边距，不叠第二份 —— demo 不覆盖 Card 的 `padding-bottom`。
+- **页面级卡片的左右与纵向间距统一收口到 `.demo-card`**：首页 menu / 主题模式、主题配置页这类直接铺在页面底色上的 Card，一律挂 `.demo-card`，其左右与底部 `margin` 都取 `--mptk-space-4`（16），最后一张卡的尾距就是页尾留白，不再用额外的 `.demo-cards` 包裹层给左右 padding。好处是间距只有一处真源：换留白档只改 `.demo-card` 里的 token，全站页面级卡片一起变；宿主项目要自己的节奏就自己包一层、用同一批 `--mptk-space-*` token，库侧不为此新增 Space 抽象。裸块内部的 Card 组合（如 Cell 页「与 Card 组合」）不挂 `.demo-card`——块壳已给左右留白，多张之间用 `.demo-stack demo-stack--fill` 按上面的 12 串，避免双重缩进。
 
 五类写法禁用：**gap**（老 WebView 内核不支持，两端不一致）、**负外边距**（Skyline 丢弃，间距随浮层显隐反复跳）、**`:last-child` 收尾**（浮层挂载就失效）、**通配符选择器**（wxss 整条丢弃，`> * + *`、`+ *` 都实测过）、**calc 乘法**（WebView 支持不一致）。裸块没有卡片壳，不受影响。
 
@@ -147,3 +148,4 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-20 21:57:03：设置面板关闭按钮改用 above-right 外置右上
 - 2026-11-20 22:16:12：设置面板改回panel档与核心默认右上关闭位
 - 2026-11-20 22:26:58：设置面板 CellGroup 去外框线、分隔线不内缩，关闭位外右上
+- 2026-11-22：页面级卡片间距统一收口到 .demo-card（左右与底部均取 --mptk-space-4），删除 .demo-cards 包裹层；首页主题块与 menu、主题配置页按此对齐，Cell 页块内组合 Card 改用 .demo-stack 避免双重缩进

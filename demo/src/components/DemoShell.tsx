@@ -57,6 +57,7 @@ export function DemoShell({
       <KitPage actions={allActions} hideActions={hideActions} backToTop={backToTop} scrollViewId={scrollViewId}>
         <DemoNav title={title} logo={logo} home={home} />
         <ScrollView
+          key="demo-main-scroll"
           id={scrollViewId}
           scrollY
           type="custom"
@@ -68,7 +69,13 @@ export function DemoShell({
         </ScrollView>
       </KitPage>
       {floating}
-      <DemoSettings open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      {/* 浮层隔离层：恒定存在，浮层只在它内部增删，绝不与 ScrollView 同级插拔。
+          Taro 把 React 更新归级到 Page.setData；浮层若在页面根下直接增删，
+          渲染层 diff 会连带重建原生 scroll-view，scrollTop（实例状态）归零、回顶。
+          套这一层后 ScrollView 始终待在稳定分支上，浮层开合只动本容器内部。 */}
+      <View className="demo-shell__overlays">
+        <DemoSettings open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      </View>
     </PageShell>
   )
 }

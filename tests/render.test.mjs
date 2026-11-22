@@ -681,15 +681,25 @@ test('页面常见写法（map 数组 / 条件渲染）不改变边界归属', (
 
 test('ContentPopup 文字头把小图标、标题、副标题渲染成一体并带分割线', () => {
   const html = render(
-    h(ContentPopup, { open: true, variant: 'title', title: 'T', subtitle: 'S', glyph: h('span', null, 'i'), actions: [{ text: 'OK' }] }),
+    h(ContentPopup, { open: true, variant: 'title', title: 'T', subtitle: 'S', glyph: h('span', null, 'i'), actions: [{ text: 'OK' }], onClose: () => {} }),
     h('span', null, 'body'),
   )
   assert.match(html, /mptk-content-popup__header--title/)
+  assert.match(html, /mptk-content-popup__title-icon-slot/)
   assert.match(html, /mptk-content-popup__title-glyph/)
+  assert.match(html, /mptk-content-popup__title-text/)
   assert.match(html, /class="mptk-content-popup__title"/)
   assert.match(html, /class="mptk-content-popup__subtitle"/)
   assert.match(html, /mptk-content-popup__divider/)
+  assert.match(html, /mptk-popup__close--below-center/, '中部弹窗默认关闭叉在外下中')
   assert.match(html, /mptk-content-popup__actions/)
+})
+
+test('ContentPopup 底部弹窗默认关闭叉在外右上', () => {
+  const html = render(h(ContentPopup, { open: true, position: 'bottom', variant: 'title', title: 'T', onClose: () => {} }))
+  assert.match(html, /mptk-popup__close--above-right/)
+  assert.doesNotMatch(html, /mptk-popup__close--top-right/)
+  assert.doesNotMatch(html, /mptk-popup__close--below-center/)
 })
 
 test('ContentPopup 图片头渲染原生 Image，默认无分割线，背景走内联', () => {

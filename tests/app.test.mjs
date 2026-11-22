@@ -128,6 +128,7 @@ test('回顶自动认领第一个 ScrollView，找不到静默无效，显式 id
   assert.match(inject, /enhanced: true/, '没强制开增强模式（ScrollViewContext 才生效）')
   assert.match(inject, /injection\.onScroll\(event\.detail\.scrollTop\)/, '没把滚动位置喂给回执')
   assert.match(inject, /props\.onScroll\?\.\(event\)/, '吞掉了消费方自己的 onScroll')
+  assert.doesNotMatch(kit, /ScrollKeeper|lastTopRef|getScrollTop|useScrollLocked|scrollY/, '页面壳仍用已废弃的滚动方案')
 
   // 产物齐全：纯函数必须真进 dist，否则 app 出口运行时报错。
   assert.equal(existsSync(join(root, 'dist/app/scroll-inject.js')), true, 'dist 缺 scroll-inject.js')

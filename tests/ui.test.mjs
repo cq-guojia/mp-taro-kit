@@ -594,12 +594,30 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   )
   assert.match(resolveCssVars(css), /\.mptk-cell-group--frameless\s+\.mptk-cell-group__body--inset\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉四边描边')
 
+  /* 背景归环境，不归 Cell：组体与行默认透明，环境（页面 / 卡片 / 弹窗面板 / 调用方 className）透上来。
+     这样 Cell 才能放进任何底色的容器而不顶出一块异色面。 */
+  const body = css.match(/(?:^|\n)\.mptk-cell-group__body\s*\{([^}]*)\}/m)
+  const row = css.match(/(?:^|\n)\.mptk-cell\s*\{([^}]*)\}/m)
+  assert.ok(body, '缺组体样式')
+  assert.ok(row, '缺行样式')
+  assert.match(body[1], /background-color:\s*var\(--mptk-s-transparent\)/, '组体默认透明，不铺面')
+  assert.match(row[1], /background-color:\s*var\(--mptk-s-transparent\)/, '行默认透明，不铺面')
+  assert.doesNotMatch(body[1], /background-color:\s*var\(--mptk-surface/, '组体不许把 surface 当默认底色')
+  assert.doesNotMatch(row[1], /background-color:\s*var\(--mptk-surface/, '行不许把 surface 当默认底色')
+  /* 按压走半透明叠加层，不换底色：换色会盖掉调用方给的面，反馈与真实底色脱节。 */
+  const clickable = css.match(/(?:^|\n)\.mptk-cell--clickable\s*\{([^}]*)\}/m)
+  assert.ok(clickable, '缺按压态样式')
+  assert.match(clickable[1], /background-image:\s*linear-gradient\(var\(--mptk-cell-press\),\s*var\(--mptk-cell-press\)\)/, '按压态要叠 --mptk-cell-press 半透明层')
+  assert.doesNotMatch(clickable[1], /background-color:/, '按压不许换底色')
+
   for (const mode of ['light', 'dark']) {
     const theme = read(`../dist/styles/theme-${mode}.css`)
     const tone = theme.match(/--mptk-cell-divider:\s*rgba\([^)]*?,\s*([\d.]+)\)/)
     const frame = theme.match(/--mptk-border:\s*rgba\([^)]*?,\s*([\d.]+)\)/)
+    const press = theme.match(/--mptk-cell-press:\s*rgba\([^)]*?,\s*([\d.]+)\)/)
     assert.ok(tone, `${mode} 缺 --mptk-cell-divider`)
     assert.ok(frame, `${mode} 缺 --mptk-border`)
+    assert.ok(press, `${mode} 缺 --mptk-cell-press`)
     assert.ok(Number(tone[1]) < Number(frame[1]), `${mode} 组内分隔线默认必须比外框浅`)
   }
 

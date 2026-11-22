@@ -151,6 +151,48 @@ test('遮罩的「点击关闭」与「点击回调」是两件事，穿透另�
   assert.match(src, /backgroundColor: color/, '缺自定义底色通道')
 })
 
+test('浮层开合不回顶：靠节点层级隔离，不记位置、不切 scroll-y、不写受控 scrollTop', () => {
+  const overlay = read('src/ui/layout/Overlay.tsx')
+  assert.match(overlay, /catchMove=\{lockScroll\}/, '遮罩只管吞事件冒泡')
+  assert.doesNotMatch(overlay, /getScrollTop|scrollTo\(saved\)|acquireScrollLock|useScrollLocked/, '遮罩不许记位置跳回或切 scroll-y')
+  assert.doesNotMatch(overlay, /scrollTop=/, '不许把滚动位置写成受控属性')
+
+  // 三套无效方案（ScrollKeeper 记录跳回 / 全局锁切 scroll-y）全部删净，不留兼容残渣。
+  for (const file of [
+    'src/ui/infra/index.ts', 'src/app/KitPage.tsx',
+    'src/ui/layout/Overlay.tsx', 'src/app/scroll-inject.ts',
+  ]) {
+    assert.doesNotMatch(read(file), /ScrollKeeper|useScrollKeeper|useScrollLocked|acquireScrollLock|scroll-lock/,
+      `${file} 仍引用已废弃的滚动方案`)
+  }
+  for (const gone of [
+    'src/ui/infra/scroll-keeper.ts', 'src/runtime/scroll-lock.ts', 'src/ui/infra/use-scroll-lock.ts',
+    'dist/runtime/scroll-lock.js', 'dist/ui/infra/use-scroll-lock.js',
+  ]) {
+    assert.equal(existsSync(join(root, gone)), false, `${gone} 应删除`)
+  }
+
+  // 真修法：浮层放进恒定存在的隔离容器，绝不与 ScrollView 同级增删；滚动区给稳定 key。
+  const shell = read('demo/src/components/DemoShell.tsx')
+  assert.match(shell, /<View className="demo-shell__overlays">[\s\S]*<DemoSettings[\s\S]*<\/View>/,
+    '设置浮层必须包在恒定存在的隔离容器里')
+  assert.match(shell, /key="demo-main-scroll"/, '滚动区需要稳定 key')
+  assert.match(shell, /scrollY(?![={])/, '滚动区 scroll-y 恒开，不随浮层状态切换')
+  assert.doesNotMatch(shell, /locked|useScrollLocked|scrollY=\{!/, 'demo 不该再按锁状态切 scroll-y')
+  const appScss = read('demo/src/app.scss')
+  assert.doesNotMatch(appScss, /\.demo-shell__overlays\s*\{[^}]*display:\s*contents/,
+    '隔离容器不能是 display:contents（会抹掉节点、失去隔离作用）')
+})
+
+test('弹窗面板用抬升面 token，暗档按 iOS 分层比页面底更亮', () => {
+  const css = read('dist/ui/layout/style/index.css')
+  assert.match(css, /\.mptk-popup__panel\s*\{[^}]*background-color:\s*var\(--mptk-surface-elevated\)/, '面板底色没走抬升面')
+  const config = read('kit.config.mjs')
+  assert.match(config, /"--mptk-surface-elevated":\s*"@white"/, '明档抬升面缺失')
+  assert.match(config, /"--mptk-surface-elevated":\s*"@gray-3"/, '暗档抬升面没比页面底亮')
+  assert.match(read('src/design/_tokens.scss'), /--mptk-surface-elevated:/, '生成物没带上抬升面 token')
+})
+
 test('浮层的遮罩开关跟遮罩同名：Popup / Drawer / Dropdown 暴露 overlay，不是 mask', () => {
   for (const file of [
     'src/ui/layout/Popup.tsx',
@@ -1103,6 +1145,14 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
   const own = read('dist/ui/layout/content-popup/style/index.css')
   assert.match(own, /\.mptk-popup__panel\.mptk-content-popup__panel/, '外伸徽标需要双类放开面板 overflow')
   assert.match(own, /--mptk-c-content-popup-badge-size/, '徽标尺寸必须读 token')
+  assert.match(own, /\.mptk-content-popup__divider\s*\{[^}]*width:\s*100%[^}]*margin-top:\s*var\(--mptk-space-4\)[^}]*margin-bottom:\s*var\(--mptk-space-4\)/, '分割线必须通栏且上下留白与面板内边距同档')
+  assert.match(own, /\.mptk-content-popup__title\s*\{[^}]*font-size:\s*var\(--mptk-font-lg\)/, '主标题用大字档')
+  assert.match(own, /\.mptk-content-popup__subtitle\s*\{[^}]*font-size:\s*var\(--mptk-font-xs\)[^}]*color:\s*var\(--mptk-fg-3\)/, '副标题用更小更淡的档位')
+  assert.match(own, /\.mptk-content-popup__title-icon-slot\s*\{[^}]*font-size:\s*var\(--mptk-c-content-popup-title-icon-size\)/, '文字头图标尺寸走组件 token')
+  assert.match(own, /\.mptk-content-popup__title-text\s*\{[^}]*min-width:\s*0/, '长文案换行需要 min-width:0')
+  assert.match(own, /\.mptk-content-popup__title,\s*\.mptk-content-popup__subtitle\s*\{[^}]*white-space:\s*normal/, '标题与副标题必须允许换行')
+  assert.match(own, /\.mptk-content-popup__header--title\s*\{[^}]*column-gap:\s*var\(--mptk-space-4\)/, '图标与文字的左右间距加大')
+  assert.match(read('kit.config.mjs'), /--mptk-c-content-popup-title-icon-size/, '图标尺寸缺 token 真源')
   assert.doesNotMatch(own, /margin-top:-\d/, 'Skyline 不支持负外边距')
   assert.doesNotMatch(own, /(^|[;{\s])gap:/, 'Skyline 不支持 gap 简写')
   assert.match(read('kit.config.mjs'), /--mptk-c-content-popup-badge-border-w/, '描边宽度缺 token 真源')

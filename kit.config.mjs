@@ -120,7 +120,8 @@ export default {
     "--mptk-fg-2": "@ink-2",                                        // 二级文字色：说明与副标题
     "--mptk-fg-3": "@gray-7",                                       // 三级文字色：辅助信息
     "--mptk-fg-4": "@ink-3",                                        // 四级文字色：占位符与禁用文案
-    "--mptk-surface-1": "@white",                                   // 一级面：卡片 / 弹层底色
+    "--mptk-surface-1": "@white",                                   // 一级面：卡片底色
+    "--mptk-surface-elevated": "@white",                            // 抬升面：弹窗 / 浮层容器底色，明档与一级面同色
     "--mptk-surface-2": "@gray-1",                                  // 二级面：分组背景
     "--mptk-surface-3": "@gray-3",                                  // 三级面：内嵌区块
     "--mptk-surface-base": "@gray-2",                               // 页面底色：与 window.bgColor 同源，避免首帧白闪
@@ -128,6 +129,7 @@ export default {
     "--mptk-border": "rgba(0, 0, 0, .10)",                          // 常规描边：卡片外框 / 输入边框
     "--mptk-border-strong": "rgba(0, 0, 0, .12)",                   // 强调描边：悬停 / 聚焦
     "--mptk-cell-divider": "rgba(0, 0, 0, .06)",                    // Cell 分隔线：默认比外框浅，宿主可覆盖成同色
+    "--mptk-cell-press": "rgba(0, 0, 0, .06)",                      // Cell 按压层：叠在环境透出的底色之上，Cell 自己不画面
     "--mptk-card-bg": "var(--mptk-surface-1)",                      // 卡片底色：引用 surface-1
     "--mptk-card-border": "var(--mptk-border)",                     // 卡片描边：引用 border
     "--mptk-card-press": "rgba(0, 0, 0, .06)",                      // 卡片按压层：叠在自有底色之上，自定义色值也能看到反馈
@@ -207,7 +209,8 @@ export default {
     "--mptk-fg-2": "@ink-2",                                        // 二级文字色：说明与副标题
     "--mptk-fg-3": "@gray-7",                                       // 三级文字色：辅助信息
     "--mptk-fg-4": "@ink-3",                                        // 四级文字色：占位符与禁用文案
-    "--mptk-surface-1": "@gray-2",                                  // 一级面：卡片 / 弹层底色
+    "--mptk-surface-1": "@gray-2",                                  // 一级面：卡片底色
+    "--mptk-surface-elevated": "@gray-3",                           // 抬升面：弹窗 / 浮层容器底色，暗档比页面底与一级面更亮，按 iOS base/elevated 分层
     "--mptk-surface-2": "@gray-3",                                  // 二级面：分组背景
     "--mptk-surface-3": "@gray-4",                                  // 三级面：内嵌区块
     "--mptk-surface-base": "@gray-1",                               // 页面底色：与 window.bgColor 同源，避免首帧白闪
@@ -215,6 +218,7 @@ export default {
     "--mptk-border": "rgba(255, 255, 255, .10)",                    // 常规描边：卡片外框 / 输入边框
     "--mptk-border-strong": "rgba(255, 255, 255, .14)",             // 强调描边：悬停 / 聚焦
     "--mptk-cell-divider": "rgba(255, 255, 255, .06)",              // Cell 分隔线：默认比外框浅，宿主可覆盖成同色
+    "--mptk-cell-press": "rgba(255, 255, 255, .08)",                // Cell 按压层：暗色下改为提亮，明暗同一支键
     "--mptk-card-bg": "var(--mptk-surface-1)",                      // 卡片底色：引用 surface-1
     "--mptk-card-border": "var(--mptk-border)",                     // 卡片描边：引用 border
     "--mptk-card-press": "rgba(255, 255, 255, .08)",                // 卡片按压层：暗色下改为提亮，明暗同一支键
@@ -316,6 +320,7 @@ export default {
     "--mptk-c-content-popup-badge-reserve": "36px",                 // 徽标留在面板内的默认高度，给标题/正文让位
     "--mptk-c-content-popup-badge-border-w": "2px",                 // 外伸徽标默认描边宽度，传 0 关闭
     "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距
+    "--mptk-c-content-popup-title-icon-size": "28px",               // 文字头图标尺寸，比副标题大一个量级，便于一眼定位
     "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
     "--mptk-c-popup-close-size": "26px",                             // 关闭按钮外框：叉尺寸单独给（12.8px），外框与叉两轴分开

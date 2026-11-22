@@ -26,9 +26,11 @@
   padding-left: var(--mptk-space-4);
 }
 
+/* Cell / CellGroup 自己不铺底：它们是透明容器，底色由所在环境（页面 / 卡片 / 弹窗面板 / 调用方 className）透出。
+   盒子形态的通栏组仍画外框线与圆角，但线内、圆角内都是透的——否则嵌到任何有底容器里都会顶出一块异色面。 */
 .mptk-cell-group__body {
   position: relative;
-  background-color: var(--mptk-surface-1);
+  background-color: var(--mptk-s-transparent);
 }
 
 /* 卡片外框取 --mptk-border；组内分隔线默认更浅（--mptk-cell-divider），两者同为 1px。
@@ -90,7 +92,7 @@
   background-color: var(--mptk-border);
 }
 
-/* 设置三：frame={false} 去掉卡片四边描边，只靠圆角与底色区分。 */
+/* 设置三：frame={false} 去掉卡片四边描边，只留圆角（底色由所在环境透出，不归 Cell 管）。 */
 .mptk-cell-group--frameless .mptk-cell-group__body--inset {
   border-top-width: var(--mptk-s-zero);
   border-right-width: var(--mptk-s-zero);
@@ -122,7 +124,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: var(--mptk-surface-1);
+  background-color: var(--mptk-s-transparent);
   color: var(--mptk-fg);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
@@ -152,9 +154,11 @@
   color: var(--mptk-fg-4);
 }
 
-/* hoverClass 只在按压瞬间附加：点击态由 onClick 派生，不是公开 prop。 */
+/* hoverClass 只在按压瞬间附加：点击态由 onClick 派生，不是公开 prop。
+   用半透明层叠加、不换 background-color：这样 Cell 透出的环境底色（含调用方显式给的）
+   在按压时仍然可见，换色只会盖掉调用方的面、让反馈与真实底色脱节。 */
 .mptk-cell--clickable {
-  background-color: var(--mptk-surface-2);
+  background-image: linear-gradient(var(--mptk-cell-press), var(--mptk-cell-press));
 }
 
 .mptk-cell__icon {
@@ -253,13 +257,9 @@
   background-color: var(--mptk-cell-divider);
 }
 
-/* 装在 Card 里：壳由 Card 提供，本组不再铺不透明底。
-   上下留白由 Card 识别贴边内容后自己关掉（--edge-content），本组不做反向抵消：
-   小程序 WXSS 会静默丢弃「变量参与计算的负 margin」，拿子级抵消父级 padding 不可靠。 */
-.mptk-cell-group--in-card .mptk-cell-group__body,
-.mptk-cell-group--in-card .mptk-cell {
-  background-color: var(--mptk-s-transparent);
-}
+/* 装在 Card 里：上下留白由 Card 识别贴边内容后自己关掉（--edge-content），本组不做反向抵消：
+   小程序 WXSS 会静默丢弃「变量参与计算的负 margin」，拿子级抵消父级 padding 不可靠。
+   底色无需在这里处理——Cell / CellGroup 默认透明，卡片面色直接透上来。 */
 
 /* 卡片内列表默认左右不到头：内容与分隔线都离卡片边一档，
    左右留白统一由组给，行自己不再留（否则两处相加变成两道间距）。

@@ -4,7 +4,7 @@
 
 `mp-taro-kit/ui/layout`：`Overlay`、`OverlayProps`、`OverlayTone`、`OverlayOpacity`、`Popup`、`PopupProps`、`PopupPosition`、`PopupCloseShape`、`PopupClosePosition`、`PopupInsetTop`、`PopupRoundSize`、`PopupSurface`、`PopupContentPadding`、`ImagePopup`、`ImagePopupProps`、`ImagePopupSlide`、`ImagePopupAction`、`ImagePopupActionsAlign`、`ImageSizeInput`、`ImageWidthSpec`、`ImageHeightSpec`、`ImageFitMode`、`ImageSizeToken`、`ImageNaturalSize`、`ResolvedImageSize`、`MOTION_DURATION`
 `mp-taro-kit/ui/navigation`：`Drawer`、`Dropdown`（遮罩引用 layout 那一份）
-`mp-taro-kit/ui/infra`：`OverlayHost`（命令式 Dialog 也挂同一份遮罩）
+`mp-taro-kit/ui/infra`：`OverlayHost`（命令式 Dialog 也挂同一份遮罩）。
 `mp-taro-kit/ui/layout/style`、`mp-taro-kit/ui/navigation/style`、`mp-taro-kit/ui/infra/style`：各自组件样式出口，宿主显式引一次
 
 **全库只有一份遮罩实现**（`.mptk-overlay`），浮层只声明「要不要遮罩、点遮罩关不关」。谁的样式里再写 `position: fixed` 的全屏蒙层，就是又造了第二份，测试会拦。
@@ -50,7 +50,7 @@
 | `closable` | boolean | `true` | 点遮罩回调 `onClose`；与 `onClick` 互不影响 |
 | `onClose` | () => void | — | `closable` 为真时被调用 |
 | `onClick` | () => void | — | 任何点击都回调，不管关不关 |
-| `lockScroll` | boolean | `true` | 吞掉背后页面的滚动（`catchMove`） |
+| `lockScroll` | boolean | `true` | 遮罩挂 `catchMove` 吞掉背后页面的触摸冒泡 |
 | `duration` | number | `MOTION_DURATION`（300） | 进出场时长，`0` = 立即卸载 |
 | `className` | string | — | 追加根类名 |
 
@@ -86,7 +86,8 @@
 
 ## 行为契约
 
-- **滚动穿透**：遮罩挂 `catchMove`。**边界**：Skyline 下页面滚动由消费方自己的 `scroll-view` 承担，遮罩拦不住那个容器的原生滚动 —— 需要完全锁死时，消费方要在浮层打开期间把 `scroll-y` 关掉。这条写在这里，不做假的承诺。
+- **滚动穿透**：遮罩挂 `catchMove` 拦事件冒泡。这是事件层的兜底，不碰滚动容器的属性（切 `scroll-y` 既拦不干净、又会在 Skyline 下触发原生 scroll-view 重建）。
+- **滚动位置保持 = 节点层级隔离**：浮层开合绝不与页面滚动容器同级插拔。Taro 把 React 的 state 更新归级到 Page 的 `setData`；若浮层节点和 `ScrollView` 是同一父节点下的兄弟，浮层增删时渲染层 diff 范围扩大，原生 `scroll-view`（Skyline 的增强自建容器）被重建，它的 `scrollTop` 是实例状态、不在虚拟 DOM 里，一重建就归零——表现为关掉浮层后回顶。正确结构：滚动区待在稳定分支（带稳定 `key`），所有会增删的浮层放进一个**恒定存在**的容器（demo 里的 `demo-shell__overlays`），开合只动这个容器内部。这条是消费方的页面结构契约，库不强插容器；demo 提供可照抄的写法。**三件都不做**：不记坐标再 `scrollTo` 跳回、不切 `scroll-y`、不写受控 `scrollTop`。
 - **命令式 Dialog**：自带遮罩，`closable={false}`，点空白不关，关闭只走按钮。
 
 ## 不做什么
@@ -130,3 +131,6 @@
 - 2026-11-19：尺寸引擎与图片弹窗收口一批——① 上界全档生效：`maxWidth` 不再依赖比例（原来比例未知时整段跳过）、定高档折算 `maxHeight`/`maxWidth`、scroll 档 `maxWidth` 约束视口宽（contain 档只认数字与 `px`，vh/% 折不了）；② `'100%'` 档比例已知时按内容区宽折算 `displayHeight`，多图不再拿兜底 320 硬定高；③ `'auto'` 按原图宽但不超内容区，宽图不出面板；④ `onLoad` 回灌改按 `src` 索引（换图不串比例），加 `onError` 把加载失败/0×0 标为「已定论」，图片不再永久隐藏；⑤ scroll 屏 Swiper 高度改用 `maxHeight` 原值（px / vh 都能用）、未给时 `80vh`，撤掉写死的 3×320；⑥ 图片按钮默认宽从 `'100%'` 改 `'auto'`（容器宽 200 兜底、具名常量），按钮组加 `flex-wrap` 防混排挤行；⑦ `ui/layout` 出口补 `ImageSizeInput` / `ImageWidthSpec` / `ImageHeightSpec` / `ImageFitMode` / `ImageSizeToken` / `ImageNaturalSize` / `ResolvedImageSize` 类型。文档同步：删掉已废弃的 `displayWidth` 措辞、补 `open` / `onClose` 与 `closeable` 默认 `true`、说明 `contain` 档不内置高度天花板（`80vh` 只是 scroll 档视口兜底）、「滚动条」改「滚动区域」（微信默认不显示滚动条）、样式表补 `--mptk-image-popup-action-gap`。
 - 2026-11-19：Popup / ImagePopup 组件契约拆到 api/popup.md；本文只保留遮罩本体、层级链与安全区底座，历史条目留在本篇可追溯。
 - 2026-11-21 17:51:14：三档浓度从 component 移到 light/dark，明色各深一档，使明暗遮罩观感接近
+- 2026-11-21：`lockScroll` 在 KitPage 子树内自动保存/恢复滚动偏移，关闭浮层不再把用户带回顶部
+- 2026-11-21：废弃「记 scrollTop 再 scrollTo 跳回」（浮层在 KitPage 外拿不到 context、恢复从不执行）。改全局锁切 `scroll-y`——实测 Skyline 下仍回顶，一并废弃
+- 2026-11-22：查实真根因（Taro 更新归级到 Page.setData，浮层与 ScrollView 同级增删令原生 scroll-view 重建、scrollTop 归零）。改为节点层级隔离：滚动区带稳定 key、浮层放进恒定存在的隔离容器；撤销全局锁 / 切 scroll-y / 记位置跳回三套无效方案

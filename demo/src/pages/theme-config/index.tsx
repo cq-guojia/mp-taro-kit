@@ -114,7 +114,7 @@ export default function ThemeConfigPage() {
   const render = (id: string) => {
     if (id === 'settings') {
       return (
-        <View className="demo-cards">
+        <View>
           <Card className="demo-card" title="基础配置">
             <CellGroup>
               {BASE_ROWS.map((row) => (
@@ -184,7 +184,7 @@ export default function ThemeConfigPage() {
     }
     if (id === 'config-file') {
       return (
-        <View className="demo-cards">
+        <View>
           <Card className="demo-card" title="配置文件" subtitle="覆盖只写要改的键，没写的继续吃默认值">
             <View className="demo-code">
               {CONFIG_LINES.map((line, index) => (

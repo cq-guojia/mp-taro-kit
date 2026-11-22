@@ -134,14 +134,14 @@ export default function DisplayPage() {
     }
     if (id === 'cell-with-card') {
       return (
-        <View>
-          <Card className="demo-card" title="单组：两头收口">
+        <View className="demo-stack demo-stack--fill">
+          <Card title="单组：两头收口">
             <CellGroup>
               <Cell title="单元格" value="内容" />
               <Cell title="单元格" value="内容" label="描述信息" />
             </CellGroup>
           </Card>
-          <Card className="demo-card" title="三组：首组不画上边线，末组不画下边线">
+          <Card title="三组：首组不画上边线，末组不画下边线">
             <CellGroup>
               <Cell title="首组 · 第 1 行" value="内容" />
               <Cell title="首组 · 第 2 行" value="内容" />
@@ -153,7 +153,7 @@ export default function DisplayPage() {
               <Cell title="末组 · 第 1 行" value="内容" />
             </CellGroup>
           </Card>
-          <Card className="demo-card" title="手动 border=both：上下都画">
+          <Card title="手动 border=both：上下都画">
             <CellGroup border="both">
               <Cell title="单元格" value="内容" />
               <Cell title="单元格" value="内容" label="显式传值盖过位置推导" />

@@ -1,4 +1,4 @@
-// @mptk-inputs:51432d3c00f2
+// @mptk-inputs:561efafe2737
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -81,6 +81,7 @@
   --mptk-c-content-popup-badge-reserve: 36px;
   --mptk-c-content-popup-badge-border-w: 2px;
   --mptk-c-content-popup-action-gap: var(--mptk-space-2);
+  --mptk-c-content-popup-title-icon-size: 28px;
   --mptk-c-popup-center-rise: 48px;
   --mptk-c-popup-radius: var(--mptk-radius-md);
   --mptk-c-popup-close-size: 26px;
@@ -201,6 +202,7 @@
   --mptk-fg-3: #767d87;
   --mptk-fg-4: #9aa1ab;
   --mptk-surface-1: #fff;
+  --mptk-surface-elevated: #fff;
   --mptk-surface-2: #f7f8fa;
   --mptk-surface-3: #e9ecf1;
   --mptk-surface-base: #f2f3f5;
@@ -208,6 +210,7 @@
   --mptk-border: rgba(0, 0, 0, .10);
   --mptk-border-strong: rgba(0, 0, 0, .12);
   --mptk-cell-divider: rgba(0, 0, 0, .06);
+  --mptk-cell-press: rgba(0, 0, 0, .06);
   --mptk-card-bg: var(--mptk-surface-1);
   --mptk-card-border: var(--mptk-border);
   --mptk-card-press: rgba(0, 0, 0, .06);
@@ -290,6 +293,7 @@
   --mptk-fg-3: #858d98;
   --mptk-fg-4: #858d98;
   --mptk-surface-1: #1f2329;
+  --mptk-surface-elevated: #262b32;
   --mptk-surface-2: #262b32;
   --mptk-surface-3: #2d333b;
   --mptk-surface-base: #15181c;
@@ -297,6 +301,7 @@
   --mptk-border: rgba(255, 255, 255, .10);
   --mptk-border-strong: rgba(255, 255, 255, .14);
   --mptk-cell-divider: rgba(255, 255, 255, .06);
+  --mptk-cell-press: rgba(255, 255, 255, .08);
   --mptk-card-bg: var(--mptk-surface-1);
   --mptk-card-border: var(--mptk-border);
   --mptk-card-press: rgba(255, 255, 255, .08);

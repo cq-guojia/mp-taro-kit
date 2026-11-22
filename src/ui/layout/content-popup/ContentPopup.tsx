@@ -305,12 +305,16 @@ export function ContentPopup({
     if (variant === 'title') {
       return (
         <View className="mptk-content-popup__header mptk-content-popup__header--title" style={backgroundStyle(headerBackground)}>
-          <View className="mptk-content-popup__title-row">
-            {icon !== undefined ? <Icon name={icon} size="lg" className="mptk-content-popup__title-icon" /> : null}
-            {glyph !== undefined ? <View className="mptk-content-popup__title-glyph">{glyph}</View> : null}
+          {(icon !== undefined || glyph !== undefined) ? (
+            <View className="mptk-content-popup__title-icon-slot">
+              {icon !== undefined ? <Icon name={icon} className="mptk-content-popup__title-icon" /> : null}
+              {glyph !== undefined ? <View className="mptk-content-popup__title-glyph">{glyph}</View> : null}
+            </View>
+          ) : null}
+          <View className="mptk-content-popup__title-text">
             {title !== undefined ? <Text className="mptk-content-popup__title">{title}</Text> : null}
+            {subtitle !== undefined ? <Text className="mptk-content-popup__subtitle">{subtitle}</Text> : null}
           </View>
-          {subtitle !== undefined ? <Text className="mptk-content-popup__subtitle">{subtitle}</Text> : null}
         </View>
       )
     }
@@ -350,20 +354,26 @@ export function ContentPopup({
     return null
   })()
 
-  // 徽标外伸后，面板内 top-* 档的关闭叉会压在徽标上，回落到外置档。
-  const resolvedClosePosition: PopupClosePosition | undefined =
-    variant === 'badge' && closePosition !== undefined &&
-    (closePosition.startsWith('top-') || closePosition.startsWith('edge-top-'))
-      ? 'above-right'
-      : closePosition
+  // 徽标外伸后，面板内 top-* 档的关闭叉会压在徽标上，回落到外置档；
+  // 中部弹窗默认外下中，底部弹窗的文字头默认面板内右上，其余档沿用底座默认外置右上。
+  const resolvedClosePosition: PopupClosePosition | undefined = (() => {
+    if (closePosition !== undefined) {
+      return variant === 'badge' &&
+        (closePosition.startsWith('top-') || closePosition.startsWith('edge-top-'))
+        ? 'above-right'
+        : closePosition
+    }
+    if (resolvedPosition === 'center') return 'below-center'
+    return 'above-right'
+  })()
 
   const mergedPanelStyle: CSSProperties | undefined =
     panelBackground === undefined && panelStyle === undefined
       ? undefined
       : { ...backgroundStyle(panelBackground), ...panelStyle }
 
-  const defaultPadding: PopupContentPadding | undefined =
-    contentPadding === undefined && (variant === 'image' || variant === 'badge') ? 0 : contentPadding
+  // 面板 Padding 由本组件自己分层：分割线要通到面板两边，不能窝在底座的 16px 内边距里。
+  const contentPaddingValue: PopupContentPadding = contentPadding ?? 0
 
   return (
     <Popup
@@ -379,7 +389,7 @@ export function ContentPopup({
       surface={surface}
       round={round}
       roundSize={roundSize}
-      contentPadding={defaultPadding}
+      contentPadding={contentPaddingValue}
       panelStyle={mergedPanelStyle}
       closeable={closeable && onClose !== undefined}
       closeShape={closeShape}
@@ -389,12 +399,22 @@ export function ContentPopup({
       onClose={onClose}
     >
       {hasHeader ? (
-        <View className="mptk-content-popup__head">
+        <View className={[
+          'mptk-content-popup__head',
+          variant === 'title' ? 'mptk-content-popup__head--title' : '',
+          showDivider ? 'mptk-content-popup__head--divided' : '',
+        ].filter(Boolean).join(' ')}>
           {renderedHeader}
-          {showDivider ? <View className="mptk-content-popup__divider" /> : null}
         </View>
       ) : null}
-      {children}
+      {showDivider ? <View className="mptk-content-popup__divider" /> : null}
+      <View className={[
+        'mptk-content-popup__content',
+        showDivider ? '' : 'mptk-content-popup__content--top-gap',
+        hasFooter ? '' : 'mptk-content-popup__content--bottom-gap',
+      ].filter(Boolean).join(' ')}>
+        {children}
+      </View>
       {hasFooter ? (
         <View className="mptk-content-popup__foot">
           {footer !== undefined ? footer : renderActions(actions ?? [], actionsLayout, actionsAlign)}

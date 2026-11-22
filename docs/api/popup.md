@@ -202,6 +202,7 @@ import 'mp-taro-kit/ui/layout/style'
 
 - **进出场**：组件挂载即渲染，关闭时先置收起态、播完 `duration` 再卸载；`duration: 0` 立即卸载（低端机 / 减少动效）。贴底 / 贴顶面板上下位移进出，左右档横向位移进出，居中面板从目标位置下方 `--mptk-c-popup-center-rise`（48px）上浮并渐显，退场反向。
 - **面板层级**：面板自带 `z-index: var(--mptk-c-layer-panel)`，与遮罩同在 `.mptk-popup` 的层叠上下文内时也必须高于遮罩；缺了它面板会被遮罩盖住，表现为「点了没反应」。层级链的唯一真源见 [遮罩与浮层底座](overlay.md)。
+- **面板底色**：`panel` 档取抬升面 `--mptk-surface-elevated`，暗档比页面底与卡片面更亮（按 iOS base/elevated 分层），避免深色页面加暗遮罩后弹窗糊成一片；`none` 档仍透明。
 - **关闭路径**：关闭叉走 `onClose`，点遮罩走 `closable`，两者正交；遮罩本体行为也见上文。
 
 ## 更新日志
@@ -224,3 +225,4 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-21 18:05:37：有背景档按落点分底色：面板内沿用主题实底，全外置档改深底 #262b32 配亮灰叉，修明色近白实底吃掉亮灰叉
 - 2026-11-21 18:13:45：暗色面板内与跨半档关闭按钮叉/描边由 gray-6 改主文字亮档（--mptk-fg，解析为色板 ink-1），与浅色主题白面板上的深叉对称；demo 位置文案外上改外中上
 - 2026-11-21：补 ContentPopup 边界互链：同为 Popup 底座上的兄弟组件，本组件只管 Popup 与 ImagePopup
+- 2026-11-21：面板底色改走抬升面 token `--mptk-surface-elevated`，暗档按 iOS base/elevated 分层提亮

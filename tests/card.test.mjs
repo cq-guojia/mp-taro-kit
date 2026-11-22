@@ -85,7 +85,6 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
 
   assert.doesNotMatch(css, /mptk-card--flush/, 'Card 不该再暴露 flush 形态参数')
   const cellCss = read('../dist/ui/display/cell/style/index.css')
-  assert.match(resolveCssVars(cellCss), /background-color:\s*transparent/, '卡片内组与行底色要透明')
   assert.doesNotMatch(cellCss, /margin-(?:top|bottom):\s*(?:calc\(|-)/, '不许再用负 margin 反抵消父级 padding')
   assert.match(css, /\.mptk-card--edge-top\s*\{/, '贴边归零要按端提供，规则归 Card')
   assert.match(css, /\.mptk-card--edge-bottom\s*\{/, '贴边归零要按端提供，规则归 Card')
