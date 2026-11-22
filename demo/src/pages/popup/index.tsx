@@ -88,42 +88,68 @@ const INSETS: { value: PopupInsetTop; label: string }[] = [
 
 type CloseDemoPanel = 'bottom' | 'center' | 'top'
 
-type CloseDemoGroup = {
-  panel: CloseDemoPanel
-  title: string
+type CloseDemoCell = {
+  /** 只有该形态第一行带标题，续行留空与相邻形态区分。 */
+  title?: string
   items: { value: PopupClosePosition; label: string }[]
 }
 
-/* 关闭按钮位置按弹窗形态并成三组：一行一个形态，行内横排该形态下的代表位置。
+type CloseDemoGroup = {
+  panel: CloseDemoPanel
+  cells: CloseDemoCell[]
+}
+
+/* 关闭按钮位置按弹窗形态并成三组；一组可占多个 Cell，首行有形态标题、续行无标题。
+   这样一档按钮多时不必挤成一排（标题会被 value 挤竖排），也不额外造无标题的特例节点。
    label 口径统一：首字内 / 外，次字左 / 右 / 中，末字上 / 下；跨半档用「跨半」后缀。
    value 才是真实 API 值；底层仍保留其它位置的支持，只是不在这里演示。 */
 const CLOSE_GROUPS: CloseDemoGroup[] = [
   {
     panel: 'bottom',
-    title: '底部',
-    items: [
-      { value: 'above-right', label: '外右上' },
-      { value: 'above-center', label: '外中上' },
-      { value: 'top-right', label: '内右上' },
-      { value: 'edge-top-right', label: '右跨半' },
+    cells: [
+      {
+        title: '底部',
+        items: [
+          { value: 'above-right', label: '外右上' },
+          { value: 'above-center', label: '外右中' },
+        ],
+      },
+      {
+        items: [
+          { value: 'top-right', label: '内右上' },
+          { value: 'edge-top-right', label: '右跨半' },
+        ],
+      },
     ],
   },
   {
     panel: 'center',
-    title: '中部',
-    items: [
-      { value: 'below-center', label: '外中下' },
-      { value: 'below-right', label: '外右下' },
-      { value: 'above-right', label: '外右上' },
-      { value: 'edge-top-right', label: '右上跨半' },
+    cells: [
+      {
+        title: '中部',
+        items: [
+          { value: 'below-center', label: '外中下' },
+          { value: 'below-right', label: '外右下' },
+          { value: 'above-right', label: '外右上' },
+        ],
+      },
+      {
+        items: [
+          { value: 'edge-top-right', label: '右上跨半' },
+        ],
+      },
     ],
   },
   {
     panel: 'top',
-    title: '顶部',
-    items: [
-      { value: 'below-center', label: '外中下' },
-      { value: 'below-right', label: '外右下' },
+    cells: [
+      {
+        title: '顶部',
+        items: [
+          { value: 'below-center', label: '外中下' },
+          { value: 'below-right', label: '外右下' },
+        ],
+      },
     ],
   },
 ]
@@ -347,34 +373,36 @@ export default function PopupPage() {
       )
     }
     if (id === 'close-position') {
-      const panelTitle = CLOSE_GROUPS.find((group) => group.panel === closePanel)?.title ?? closePanel
+      const panelTitle = CLOSE_GROUPS.find((group) => group.panel === closePanel)?.cells[0]?.title ?? closePanel
       return (
         <View>
           <CellGroup>
-            {CLOSE_GROUPS.map((group) => (
-              <Cell
-                key={group.panel}
-                title={group.title}
-                value={
-                  <View className="demo-row">
-                    {group.items.map((item) => (
-                      <Button
-                        key={item.value}
-                        className="demo-item"
-                        size="xs"
-                        onClick={() => {
-                          setClosePanel(group.panel)
-                          setClosePosition(item.value)
-                          setCloseOpen(true)
-                        }}
-                      >
-                        {item.label}
-                      </Button>
-                    ))}
-                  </View>
-                }
-              />
-            ))}
+            {CLOSE_GROUPS.map((group) =>
+              group.cells.map((cell, index) => (
+                <Cell
+                  key={`${group.panel}-${index}`}
+                  title={cell.title}
+                  value={
+                    <View className="demo-row">
+                      {cell.items.map((item) => (
+                        <Button
+                          key={item.value}
+                          className="demo-item"
+                          size="xs"
+                          onClick={() => {
+                            setClosePanel(group.panel)
+                            setClosePosition(item.value)
+                            setCloseOpen(true)
+                          }}
+                        >
+                          {item.label}
+                        </Button>
+                      ))}
+                    </View>
+                  }
+                />
+              )),
+            )}
           </CellGroup>
           <Popup
             open={closeOpen}
@@ -383,7 +411,7 @@ export default function PopupPage() {
             onClose={() => setCloseOpen(false)}
             {...shared}
           >
-            <View className="demo-stack">
+            <View className="demo-stack demo-stack--fill">
               <Text>{`${panelTitle}弹窗 / ${closePosition}；形状 ${closeShape} / 描边 ${closeBorder ? '有' : '无'} / 背景 ${closeBackground ? '有' : '半透明'}`}</Text>
               {SAMPLE_LINES.map((line) => (
                 <Text key={line}>{line}</Text>

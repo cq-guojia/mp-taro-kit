@@ -1071,6 +1071,19 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   assert.match(popupPage, /position=\{position\}/, '位置档要真的切 position')
   assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮位置要真的切位置')
   assert.match(popupPage, /position=\{closePanel\}/, '关闭按钮位置要按形态切换弹窗')
+  // 弹窗内长文本容器必须 stretch：demo-stack 默认 align-items:flex-start、按内容宽收拢，
+  // 长文本不换行会从面板右侧溢出。两处弹窗都要显式 --fill（close-position 曾漏用过一次）。
+  for (const tag of ['Popup', 'ContentPopup']) {
+    const blocks = [...popupPage.matchAll(new RegExp(`<${tag}\\b[\\s\\S]*?</${tag}>`, 'g'))].map((m) => m[0])
+    assert.ok(blocks.length > 0, `${tag} 内容块没抓到，护栏失效`)
+    for (const [index, block] of blocks.entries()) {
+      assert.doesNotMatch(
+        block,
+        /<View className="demo-stack">/,
+        `${tag} 第 ${index + 1} 处漏了 demo-stack--fill：长文本会按内容宽收拢并溢出面板`,
+      )
+    }
+  }
   // 演示区只留代表位置：底部 4 + 中部 4 + 顶部 2（去重后 6 个 API 值）。
   for (const pos of ['above-center', 'above-right', 'top-right', 'edge-top-right', 'below-right', 'below-center']) {
     assert.ok(popupPage.includes(`value: '${pos}'`), `关闭按钮位置 demo 缺 ${pos} 档`)
