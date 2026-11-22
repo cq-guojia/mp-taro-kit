@@ -14,7 +14,7 @@ import {
 import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { Overlay, type OverlayOpacity, type OverlayTone } from './Overlay.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
-import { isTopAnchored, resolveBottomInset, resolveTopInset, type TopInsetLevel } from './safe-inset.js'
+import { isTopAnchored, resolveBottomInset, resolveTopInset, TOP_BREATH_PX, type TopInsetLevel } from './safe-inset.js'
 
 export type { PopupClosePosition, PopupPosition } from './close-position.js'
 export type { PopupCloseShape } from './close-style.js'
@@ -111,28 +111,29 @@ export function Popup({
 
   // 让位只对上 / 左 / 右生效：先按位置判定，center / bottom 即使传了 insetTop 也强制 none。
   const resolvedInset: PopupInsetTop = isTopAnchored(position) ? insetTop ?? 'nav-bar' : 'none'
-  // 面板贴边定位不动，让位单独加在内容上：WebView / Skyline 同一套几何。
+  // 面板贴边定位不动，让位只加在内容上：WebView / Skyline 同一套几何。
   // 未注入真值时为 0，由 CSS 的 env() 兜底。
   const inset = resolveTopInset(resolvedInset, getSafeAreaSnapshot())
-  const bodyStyle = inset.paddingTop > 0 ? { paddingTop: `${inset.paddingTop}px` } : undefined
 
   // 面板四边 padding：默认走 CSS 的 --mptk-space-4，只把显式给的边写成行内 px 覆盖。
-  // 这份是「预留内边距」，与 body 上的让位各占一层，两者相加互不替换。
   const pad: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> =
     typeof contentPadding === 'number'
       ? { top: contentPadding, right: contentPadding, bottom: contentPadding, left: contentPadding }
       : contentPadding ?? {}
-  // 贴底形态（下弹 + 左右全高抽屉）的底部内边距 = max(呼吸, 横条真值)：
-  // 两笔留白同一目的取较大者，不累加。未注入时为 0（不写行内），交 CSS 兜底。
-  // contentPadding / panelStyle 依次覆盖。top / center 贴边不占底，不加。
+  // 顶部：让位与预留内边距是同一目的（内容离顶多远），取较大者写在同一层，不累加。
+  // 让位 5 / 8px 时沿用 16px 呼吸档（它已让够）；让位 15px 时直接用让位（它已含内距）。
+  // 贴底同理：max(呼吸, 横条真值)。contentPadding / panelStyle 依次覆盖。
+  const topPad = inset.paddingTop > 0
+    ? Math.max(inset.paddingTop, pad.top ?? TOP_BREATH_PX)
+    : pad.top
   const anchoredBottom = position === 'bottom' || position === 'left' || position === 'right'
   const bottomInset = anchoredBottom ? resolveBottomInset(getSafeAreaSnapshot()).paddingBottom : 0
   const padStyle: CSSProperties | undefined =
-    pad.top === undefined && pad.right === undefined && pad.bottom === undefined && pad.left === undefined && bottomInset === 0
+    topPad === undefined && pad.right === undefined && pad.bottom === undefined && pad.left === undefined && bottomInset === 0
       ? undefined
       : {
+          ...(topPad === undefined ? null : { paddingTop: `${topPad}px` }),
           ...(bottomInset > 0 ? { paddingBottom: `${bottomInset}px` } : null),
-          ...(pad.top === undefined ? null : { paddingTop: `${pad.top}px` }),
           ...(pad.right === undefined ? null : { paddingRight: `${pad.right}px` }),
           ...(pad.bottom === undefined ? null : { paddingBottom: `${pad.bottom}px` }),
           ...(pad.left === undefined ? null : { paddingLeft: `${pad.left}px` }),
@@ -173,7 +174,7 @@ export function Popup({
         {/* 两档 body 都用 View 直出：面板高度由 children 撑开，不写死 35vh。
             要滚由调用方自己在 children 里包 scroll-view 并给确定高（长列表 / 长图走这条，
             与 ImagePopup 长图档一致）；surface 只差底色 / 内边距 / 圆角。 */}
-        <View className="mptk-popup__body" style={bodyStyle}>
+        <View className="mptk-popup__body">
           {children}
         </View>
         {/* 关闭按钮必须排在内容容器后面：Skyline 下 scroll-view 是原生视图、绘制在后，

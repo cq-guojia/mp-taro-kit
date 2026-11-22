@@ -66,9 +66,9 @@
 
 ### 让位与内边距
 
-`insetTop` 取 `'none'` / `'status-bar'` / `'nav-bar'`，**只对 `top` / `left` / `right` 生效**：这三档不传默认 `nav-bar`、传了按传入档；`bottom` / `center` 传什么都强制 `none`，不产生顶部空白。让位只加在内容区 `padding-top`，状态栏区域仍是面板底色。
+`insetTop` 取 `'none'` / `'status-bar'` / `'nav-bar'`，**只对 `top` / `left` / `right` 生效**：这三档不传默认 `nav-bar`、传了按传入档；`bottom` / `center` 传什么都强制 `none`，不产生顶部空白。让位与顶部内距写在同一层（面板 `padding-top`），状态栏区域仍是面板底色。
 
-`contentPadding` 取 `number`（四边统一）或 `{ top?, right?, bottom?, left? }`（按边给，单位 px，未给的边走默认 16px）。它**替换面板预留的 16px**，不替换让位——让位独立加在内容区，两者相加：让位 420px + `contentPadding.top = 50`，顶部总留白 470px。
+`contentPadding` 取 `number`（四边统一）或 `{ top?, right?, bottom?, left? }`（按边给，单位 px，未给的边走默认 16px）。它替换面板预留的 16px；**顶部让位与顶部内距取较大者，不累加**——两者目的相同（内容离屏幕顶多远），内距已经让够就不再叠加，让位更多就让位直接包含内距。以内距 16px 为例：让位 5 / 8 / 15px 时都用 16px；让位 20px 时直接用 20px，不是 36px。`resolveTopInset()` 内部先对呼吸 16px 取 max，再与 `contentPadding.top` 取 max。
 
 真值必须由 runtime 注入，不能只靠 CSS `env()`：`navigationStyle: 'custom'` 时微信不预留状态栏空间，`env(safe-area-inset-top)` 最多给出状态栏高度、给不出胶囊下沿。宿主在 app 入口调一次：
 
@@ -90,9 +90,9 @@ configureSafeArea({
 
 `createKitApp` 已在入口注入这两组真值，走它就不必手写上面这段。
 
-导航栏让位高度 = `statusBarHeight + 胶囊高 + max(menuButton.top - statusBarHeight, 0) × 2`，与 `NavBar.tsx` 同口径；不能写成 `(top - statusBar + height) * 2`（胶囊高乘两遍）。面板贴边定位不动，让位只加在内容上：遮罩、贴顶面板、抽屉面板一律 `top: 0`，不写负 `top`（Skyline 下会把整块顶出可视区）。未注入真值时走 CSS 兜底 `env(safe-area-inset-top)` / `calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h))`；`resolveTopInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup 与 Drawer 共用。
+导航栏让位高度 = `statusBarHeight + 胶囊高 + max(menuButton.top - statusBarHeight, 0) × 2`，与 `NavBar.tsx` 同口径；不能写成 `(top - statusBar + height) * 2`（胶囊高乘两遍）。面板贴边定位不动，让位只加在内容 padding 上：遮罩、贴顶面板、抽屉面板一律 `top: 0`，不写负 `top`（Skyline 下会把整块顶出可视区）。未注入真值时走 CSS 兜底 `env(safe-area-inset-top)` / `calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h))`，兜底同样落在面板层、不与内距相加；`resolveTopInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup 与 Drawer 共用。
 
-**底部留白取最大，不累加。** 贴底形态（`bottom` / `left` / `right`）的底部内边距 = `max(呼吸 16px, 横条高度)`：呼吸与横条是同一目的（内容离屏幕底边多远），横条已经盖过呼吸就不再相加，否则全面屏上会白留一截。横条 0 的非全面屏用呼吸 16px。横条真值同样注入（Skyline 下 `env(safe-area-inset-bottom)` 不可靠），CSS 贴底档只留一个呼吸档 `--mptk-space-4`，JS 注入真值后写行内覆盖；`resolveBottomInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup、Drawer 与贴底 [FloatingAction](floating-action.md) 共用。未注入时不猜、保持呼吸，由真机走 `createKitApp` 注入。`contentPadding.bottom` / `panelStyle` 可再次覆盖。
+**顶部与底部都取最大，不累加。** 贴底形态（`bottom` / `left` / `right`）的底部内边距 = `max(呼吸 16px, 横条高度)`：呼吸与横条是同一目的（内容离屏幕底边多远），横条已经盖过呼吸就不再相加，否则全面屏上会白留一截。横条 0 的非全面屏用呼吸 16px。横条真值同样注入（Skyline 下 `env(safe-area-inset-bottom)` 不可靠），CSS 贴底档只留一个呼吸档 `--mptk-space-4`，JS 注入真值后写行内覆盖；`resolveBottomInset()`（`src/ui/layout/safe-inset.ts`）是唯一算法，Popup、Drawer 与贴底 [FloatingAction](floating-action.md) 共用。未注入时不猜、保持呼吸，由真机走 `createKitApp` 注入。`contentPadding.bottom` / `panelStyle` 可再次覆盖。
 
 **留白落点看容器是否自身滚动。** 贴底面板是 `fixed` 定高容器、自身不滚，留白写在面板 `padding-bottom`（Popup 的 `bottom` / `left` / `right` 档）；全高抽屉是滚动容器，留白写在滚动内容末尾的尾距 View（`.mptk-drawer__tail`）上，随内容滚上去、横条区域可见，面板 `padding-bottom` 恒为 0——写在面板上会把滚动可视区截短、永远滚不到底。demo 站同理：`.demo-shell` 保持满高，安全区加在滚动内容 `.demo-page` 的末尾。
 

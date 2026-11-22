@@ -13,16 +13,21 @@ const NONE: TopInset = { paddingTop: 0 }
 /**
  * 贴顶浮层的内容让位。
  *
- * 按微信官方做法：**面板贴边定位（top: 0），安全区偏移单独加在内容 padding 上**，
+ * 按微信官方做法：**面板贴边定位（top: 0），安全区偏移加在内容 padding 上**，
  * 两者不要混在一个定位量里。面板用负 top 去「把底色探到屏顶」在 WebView 下会多让一段，
  * Skyline 下还会被页面容器裁掉、整块顶出去（真机与模拟器表现相反的根因）。
  *
  * 目标位置（以屏幕顶为 0）：`status-bar` 档 = 状态栏底，`nav-bar` 档 = 导航栏底（胶囊下沿）。
+ * **两笔留白同一目的取较大者，不累加**：让位 5 / 8px 时沿用 16px 呼吸档（它已经把状态栏让够），
+ * 让位 15px 以上时直接用让位值（它已经含了内距）。与底部 max(呼吸, 横条) 同一口径。
  * 未注入真值时返回 0，交给 CSS 的 env() 兜底，不在这里猜。
  */
+export const TOP_BREATH_PX = 16
+
 export function resolveTopInset(level: TopInsetLevel, snapshot: SafeAreaSnapshot): TopInset {
   if (level === 'none' || !snapshot.configured) return NONE
-  return { paddingTop: level === 'nav-bar' ? snapshot.top : snapshot.statusBar }
+  const target = level === 'nav-bar' ? snapshot.top : snapshot.statusBar
+  return { paddingTop: Math.max(TOP_BREATH_PX, target) }
 }
 
 /** 面板的定位档位里哪些是贴顶锚定（决定默认让位档）。 */

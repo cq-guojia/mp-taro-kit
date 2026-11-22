@@ -349,12 +349,13 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
   assert.doesNotMatch(src, /top: `\$\{/, '面板不许写内联 top 探出：Skyline 下会整块顶出可视区')
   assert.match(
     src,
-    /paddingTop: `\$\{inset\.paddingTop\}px`/,
-    '让位只加在内容 padding 上，面板贴边定位（微信官方做法）',
+    /Math\.max\(inset\.paddingTop, pad\.top \?\? TOP_BREATH_PX\)/,
+    '顶部让位与预留内距取较大者写在同一层，不累加',
   )
+  assert.doesNotMatch(src, /bodyStyle/, '让位不再单挂 body 一层，避免与面板内距相加')
 
   // 几何行为：给一组真机值（状态栏 54、胶囊 top 58 / height 32），内容起点正好落在目标位置。
-  const { resolveTopInset, isTopAnchored, resolveBottomInset, BOTTOM_BREATH_PX } = await import(
+  const { resolveTopInset, isTopAnchored, resolveBottomInset, BOTTOM_BREATH_PX, TOP_BREATH_PX } = await import(
     pathToFileURL(join(root, 'dist/ui/layout/safe-inset.js')).href
   )
   // 底部留白：呼吸与横条取最大，不累加。横条 34 > 呼吸 16 时只留 34；非全面屏横条 0 时留 16。
@@ -386,8 +387,30 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
   )
 
   const device = { statusBar: 54, navbar: 40, top: 94, configured: true }
+  assert.equal(TOP_BREATH_PX, 16, '顶部呼吸常量必须与 --mptk-space-4 同值')
   assert.deepEqual(resolveTopInset('status-bar', device), { paddingTop: 54 }, 'status-bar 档让到状态栏底')
   assert.deepEqual(resolveTopInset('nav-bar', device), { paddingTop: 94 }, 'nav-bar 档让到胶囊下沿')
+  // 用户口径：内距 10，让位 5 / 8 仍用 10（内距已让够），让位 15 直接用 15（已含内距）。
+  assert.deepEqual(
+    resolveTopInset('status-bar', { ...device, statusBar: 5 }),
+    { paddingTop: 16 },
+    '让位 5px 时沿用呼吸 16px，不叠加',
+  )
+  assert.deepEqual(
+    resolveTopInset('status-bar', { ...device, statusBar: 8 }),
+    { paddingTop: 16 },
+    '让位 8px 仍用呼吸 16px',
+  )
+  assert.deepEqual(
+    resolveTopInset('status-bar', { ...device, statusBar: 15 }),
+    { paddingTop: 16 },
+    '让位 15px 小于呼吸 16px，仍取 16',
+  )
+  assert.deepEqual(
+    resolveTopInset('status-bar', { ...device, statusBar: 20 }),
+    { paddingTop: 20 },
+    '让位 20px 已含内距，直接取 20 不再叠加',
+  )
   assert.deepEqual(resolveTopInset('none', device), { paddingTop: 0 }, 'none 档不让')
   assert.deepEqual(
     resolveTopInset('nav-bar', { statusBar: 0, navbar: 0, top: 0, configured: false }),
@@ -422,17 +445,18 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
     'createKitApp 必须注入状态栏真值',
   )
 
-  // CSS 兜底：面板贴边，env() 只作为「未注入时」的状态栏近似值。
+  // CSS 兜底：面板贴边，env() 只作为「未注入时」的状态栏近似值，且与内距同挂面板不叠加。
   assert.match(
     css,
-    /\.mptk-popup--inset-status-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*env\(safe-area-inset-top\)/,
+    /\.mptk-popup--inset-status-bar \.mptk-popup__panel\s*\{[^}]*padding-top:\s*env\(safe-area-inset-top\)/,
     '只让状态栏的兜底丢了',
   )
   assert.match(
     css,
-    /\.mptk-popup--inset-nav-bar \.mptk-popup__body\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \+ var\(--mptk-c-navbar-h\)\)/,
+    /\.mptk-popup--inset-nav-bar \.mptk-popup__panel\s*\{[^}]*padding-top:\s*calc\(env\(safe-area-inset-top\) \+ var\(--mptk-c-navbar-h\)\)/,
     '状态栏+导航栏的兜底丢了',
   )
+  assert.doesNotMatch(css, /\.mptk-popup--inset-(?:status-bar|nav-bar) \.mptk-popup__body/, '兜底不许再挂 body，避免与面板内距相加')
   assert.doesNotMatch(
     css,
     /top:\s*calc\(0px - env\(safe-area-inset-top\)\)/,
@@ -441,20 +465,20 @@ test('顶部让位：三档保留，真值靠 runtime 注入（Skyline 下 env()
   assert.doesNotMatch(
     /\.mptk-popup__panel--top\s*\{([^}]*)\}/.exec(css)?.[1] ?? '',
     /padding-top/,
-    'top 档面板不许再写 padding-top 让位，避免与 body 注入叠加',
+    'top 档基础面板不写死 padding-top，让位走 inset 派生类',
   )
   assert.doesNotMatch(
     css,
     /\.mptk-popup--inset-(?:status-bar|nav-bar) \.mptk-popup__panel\s*\{[^}]*padding-top:\s*var\(--mptk-s-zero\)/,
-    '旧「让位档面板 padding-top 归零」规则已撤：预留内边距要留给 contentPadding 覆盖并与让位相加',
+    '旧「让位档面板 padding-top 归零」规则已撤：预留内边距要与让位取较大者',
   )
-  // contentPadding：数字四边统一 / 对象按边给，写行内覆盖面板预留 16px；让位仍走 body 独立相加。
+  // contentPadding：数字四边统一 / 对象按边给，与让位取较大者后写行内覆盖面板预留 16px。
   assert.match(src, /export type PopupContentPadding = number \| Partial<Record<.*number>>/, '内容内边距类型支持数字与四边对象')
   assert.match(src, /contentPadding\?: PopupContentPadding/, 'Popup 暴露 contentPadding')
   assert.match(src, /style=\{padStyle === undefined \? panelStyle : \{ \.\.\.padStyle, \.\.\.panelStyle \}\}/, '面板内边距与传入 panelStyle 合并挂行内')
   assert.match(src, /panelStyle\?: CSSProperties/, 'Popup 暴露 panelStyle 供 ImagePopup 贴合图片宽')
-  assert.match(src, /paddingTop: `\$\{pad\.top\}px`/, 'top 边距写行内 px')
-  assert.match(src, /bodyStyle/, '让位仍走 body 的 bodyStyle，与面板 padding 各占一层')
+  assert.match(src, /paddingTop: `\$\{topPad\}px`/, 'top 边距取 max 后写行内 px')
+  assert.doesNotMatch(src, /bodyStyle/, '让位不再走 body，避免与面板 padding 相加')
   const entry = read('src/ui/layout/index.ts')
   assert.match(entry, /type PopupContentPadding/, 'layout 出口没导出 PopupContentPadding')
   // ImagePopup 与尺寸模型的类型都要从出口可达：消费者配置 slides 时要能标注类型。
@@ -827,8 +851,8 @@ test('面板不限高、内容撑开，贴底贴顶避让安全区', () => {
   const popupSrc = read('src/ui/layout/Popup.tsx')
   assert.match(
     popupSrc,
-    /<View className="mptk-popup__body" style=\{bodyStyle\}>/,
-    '两档内容都必须是 View 直出（不是 scroll-view），且注入让位真值',
+    /<View className="mptk-popup__body">/,
+    '两档内容都必须是 View 直出（不是 scroll-view）；让位已与内距合并到面板层',
   )
   assert.doesNotMatch(popupSrc, /<ScrollView/, 'Popup 不该再套 scroll-view，滚动交给调用方')
   assert.doesNotMatch(popupSrc, /from '@tarojs\/components'[\s\S]{0,40}ScrollView/, 'Popup 不该 import ScrollView')

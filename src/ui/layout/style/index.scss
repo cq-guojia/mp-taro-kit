@@ -73,14 +73,15 @@
   min-height: var(--mptk-s-zero);
 }
 
-/* 顶部让位：注入生效时由 JS 把目标位置写成内联 px，下面两条是**未注入时的兜底**。
-   面板贴边定位（top: 0），让位只加在内容 padding 上，两边同一套几何——
-   不要把安全区偏移混进 fixed 的 top：Skyline 下负 top 会把整块顶出可视区。 */
-.mptk-popup--inset-status-bar .mptk-popup__body {
+/* 顶部让位：注入生效时由 JS 把 max(呼吸 16px, 让位真值) 写进面板 padding-top 行内；
+   下面两条是**未注入时的兜底**，同样落在面板上——让位与预留内边距同一目的，占同一层取较大者，
+   不另起 body 一层相加。面板贴边定位（top: 0），不要把安全区偏移混进 fixed 的 top：
+   Skyline 下负 top 会把整块顶出可视区。 */
+.mptk-popup--inset-status-bar .mptk-popup__panel {
   padding-top: env(safe-area-inset-top);
 }
 
-.mptk-popup--inset-nav-bar .mptk-popup__body {
+.mptk-popup--inset-nav-bar .mptk-popup__panel {
   padding-top: calc(env(safe-area-inset-top) + var(--mptk-c-navbar-h));
 }
 
