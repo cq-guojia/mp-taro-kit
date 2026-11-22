@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261121-1131-654f-通用弹窗样式扩展方案": {"category": "方案设计", "created": "2026-11-21 11:31:33", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-21 11:31:33", "status": "doing", "tags": ["弹窗", "Popup", "方案调研", "组件抽象"], "title": "通用弹窗样式扩展方案", "updated": "2026-11-21 15:25:46", "worklog": "worklog/202611/21-1131-654f-通用弹窗样式扩展方案.md"}
+    "20261121-1131-654f-通用弹窗样式扩展方案": {"category": "方案设计", "created": "2026-11-21 11:31:33", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-21 11:31:33", "status": "doing", "tags": ["弹窗", "Popup", "方案调研", "组件抽象"], "title": "通用弹窗样式扩展方案", "updated": "2026-11-22 12:54:35", "worklog": "worklog/202611/21-1131-654f-通用弹窗样式扩展方案.md"}
   },
   "version": "20261022000000"
 }
