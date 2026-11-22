@@ -984,8 +984,8 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   }
   assert.doesNotMatch(overlayPage, /<Button\b/, '遮罩页不该出现按钮，只演遮罩')
   // 位置按钮按用户要求降到 xs 档（24px）：垂直 / 侧面 / 关闭按钮位置各一处 + 图片弹窗三类
-  // （图片单图/多图两处 + 带按钮库按钮/图片按钮两处 + 图片尺寸 map 一处，运行时 3 个）+ 内容弹窗三档八个入口。
-  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 16, '位置三处 + 图片弹窗五个 + 内容弹窗八个入口都显式降一档到 xs')
+  // （图片单图/多图两处 + 带按钮库按钮/图片按钮两处 + 图片尺寸 map 一处，运行时 3 个）+ 内容弹窗三档十一处入口。
+  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 19, '位置三处 + 图片弹窗五个 + 内容弹窗十一处入口都显式降一档到 xs')
 
   // 三块结构：顶部统一配置 + 位置档 + 关闭按钮位置；旧的六块全部撤掉。
   // catalog 只取 popup 页自己的 examples 段，popup / overlay 是合法的页与菜单 id，不能整篇搜。
@@ -1056,8 +1056,8 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   assert.match(popupPage, /label: '底部'/, '垂直档叫底部')
   assert.match(popupPage, /label: '左侧'/, '侧面档叫左侧')
   assert.match(popupPage, /label: '右侧'/, '侧面档叫右侧')
-  // 源码里按钮 JSX：位置三处 + 图片弹窗五处 + 内容弹窗八处 = 十六处。
-  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 16, '按钮十六处 JSX：位置三处 + 图片弹窗五处 + 内容弹窗八处')
+  // 源码里按钮 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十一处 = 十九处。
+  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 19, '按钮十九处 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十一处')
   assert.equal((popupPage.match(/VERTICAL_POSITIONS\.map/g) ?? []).length, 1, '垂直档按钮走一份数据源')
   assert.equal((popupPage.match(/SIDE_POSITIONS\.map/g) ?? []).length, 1, '侧面档按钮走一份数据源')
   assert.equal((popupPage.match(/CLOSE_GROUPS\.map/g) ?? []).length, 1, '关闭按钮位置三组走一份数据源')
@@ -1066,7 +1066,7 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
     5,
     '位置档共 5 个按钮：垂直 3 + 侧面 2',
   )
-  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 16, '按钮横排用 demo-item 控制间距（位置三处 + 图片弹窗五处 + 内容弹窗八处）')
+  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 19, '按钮横排用 demo-item 控制间距（位置三处 + 图片弹窗五处 + 内容弹窗十一处）')
   assert.match(popupPage, /size="xs"/, '按钮降到 xs 档')
   assert.match(popupPage, /position=\{position\}/, '位置档要真的切 position')
   assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮位置要真的切位置')
@@ -1145,9 +1145,13 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
   const own = read('dist/ui/layout/content-popup/style/index.css')
   assert.match(own, /\.mptk-popup__panel\.mptk-content-popup__panel/, '外伸徽标需要双类放开面板 overflow')
   assert.match(own, /--mptk-c-content-popup-badge-size/, '徽标尺寸必须读 token')
-  assert.match(own, /\.mptk-content-popup__divider\s*\{[^}]*width:\s*100%[^}]*margin-top:\s*var\(--mptk-space-4\)[^}]*margin-bottom:\s*var\(--mptk-space-4\)/, '分割线必须通栏且上下留白与面板内边距同档')
+  assert.match(own, /\.mptk-content-popup__header--divided\s*\{[^}]*border-bottom-width:\s*var\(--mptk-c-border-w\)[^}]*border-bottom-color:\s*var\(--mptk-border\)/, '分割线归 header 的下边框，随渐变铺到线')
+  assert.match(own, /\.mptk-popup__panel--center\s+\.mptk-content-popup__header\s*\{[^}]*border-top-left-radius:\s*var\(--mptk-c-popup-radius\)/, '头部按面板圆角自裁上两角，渐变不溢出')
+  assert.doesNotMatch(own, /\.mptk-content-popup__divider\s*\{/, '独立 divider 节点已移除，别留孤儿规则')
   assert.match(own, /\.mptk-content-popup__title\s*\{[^}]*font-size:\s*var\(--mptk-font-lg\)/, '主标题用大字档')
-  assert.match(own, /\.mptk-content-popup__subtitle\s*\{[^}]*font-size:\s*var\(--mptk-font-xs\)[^}]*color:\s*var\(--mptk-fg-3\)/, '副标题用更小更淡的档位')
+  assert.match(own, /\.mptk-content-popup__subtitle\s*\{[^}]*font-size:\s*var\(--mptk-font-xs\)[^}]*color:\s*var\(--mptk-c-content-popup-head-ink-2\)/, '副标题用更小字号，字色走头字 token')
+  assert.match(read('kit.config.mjs'), /--mptk-c-content-popup-head-ink/, '头部字色缺 token 真源')
+  assert.doesNotMatch(own, /mptk-content-popup__head(?!er)/, '__head 外层应已合并进 __header')
   assert.match(own, /\.mptk-content-popup__title-icon-slot\s*\{[^}]*font-size:\s*var\(--mptk-c-content-popup-title-icon-size\)/, '文字头图标尺寸走组件 token')
   assert.match(own, /\.mptk-content-popup__title-text\s*\{[^}]*min-width:\s*0/, '长文案换行需要 min-width:0')
   assert.match(own, /\.mptk-content-popup__title,\s*\.mptk-content-popup__subtitle\s*\{[^}]*white-space:\s*normal/, '标题与副标题必须允许换行')

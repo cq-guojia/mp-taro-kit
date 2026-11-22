@@ -25,12 +25,34 @@ export type ContentPopupVariant = 'title' | 'image' | 'badge'
 /** 只做中部与底部；上浮、左右抽屉由基础 Popup 承担，本组件不提供。 */
 export type ContentPopupPosition = 'center' | 'bottom'
 
-export type ContentPopupBackgroundDirection = 'to-bottom' | 'to-right' | 'to-bottom-right' | 'to-bottom-left'
+/**
+ * 头部字色/线色方案，表达「头部底色是什么明暗」，库据此反色：
+ * - normal：头部无自定义底色（跟随面板），字色跟随主题；
+ * - on-light：浅色头背景，字色与线色固定深色，不随主题翻亮；
+ * - on-dark：深色头背景，字色与线色固定浅色。
+ */
+export type ContentPopupHeaderTone = 'normal' | 'on-light' | 'on-dark'
 
-/** 纯色字符串（可写 var(--mptk-*)）或两段渐变，走内联 style，不在组件里写死色值。 */
+export type ContentPopupBackgroundDirection =
+  | 'to-bottom' | 'to-right' | 'to-bottom-right' | 'to-bottom-left'
+  | number
+
+/**
+ * 纯色字符串（可写 var(--mptk-*)）或渐变。
+ * `to` 缺省即从 from 淡出到面板底色；此时可给两个色标位置（0-100）：
+ * - `fadeFrom`：起始色保持到百分之几才开始过渡（不给则从 0% 就过渡）；
+ * - `fadeTo`：淡出到 to 色在百分之几**结束**（不给则到 100% 才结束）。
+ * 两者配合可让颜色只在顶部一段、到分割线之前就完全回到底色。双色渐变忽略这两个参数。
+ */
 export type ContentPopupBackground =
   | string
-  | { from: string; to: string; direction?: ContentPopupBackgroundDirection }
+  | {
+      from: string
+      to?: string
+      direction?: ContentPopupBackgroundDirection
+      fadeFrom?: number
+      fadeTo?: number
+    }
 
 export type ContentPopupActionsLayout = 'row' | 'column'
 export type ContentPopupActionsAlign = 'center' | 'left' | 'right'
@@ -74,7 +96,11 @@ export interface ContentPopupProps {
   // 头部通用
   header?: ReactNode
   headerBackground?: ContentPopupBackground
+  /** 头部底色的明暗：浅底传 on-light 配深字、深底传 on-dark 配浅字；normal 跟随主题。 */
+  headerTone?: ContentPopupHeaderTone
   headerDivider?: boolean
+  /** 分割线颜色，默认随 headerTone（normal 走 --mptk-border，on-light 走深线，on-dark 走浅线）。 */
+  headerDividerColor?: string
   panelBackground?: ContentPopupBackground
 
   // title 档：小图标 + 标题 + 副标题，三件一体
@@ -108,7 +134,9 @@ export interface ContentPopupProps {
 
 const DEFAULT_CONTAINER_WIDTH = 320
 
-const DIRECTION: Record<ContentPopupBackgroundDirection, string> = {
+const DEFAULT_GRADIENT_ANGLE = 165
+
+const DIRECTION: Record<Exclude<ContentPopupBackgroundDirection, number>, string> = {
   'to-bottom': '180deg',
   'to-right': '90deg',
   'to-bottom-right': '135deg',
@@ -132,8 +160,27 @@ const JUSTIFY: Record<ContentPopupActionsAlign, string> = {
 function backgroundStyle(value: ContentPopupBackground | undefined): CSSProperties | undefined {
   if (value === undefined) return undefined
   if (typeof value === 'string') return { backgroundColor: value }
-  const direction = DIRECTION[value.direction ?? 'to-bottom']
-  return { backgroundImage: `linear-gradient(${direction}, ${value.from}, ${value.to})` }
+  const direction = value.direction
+  const angle = typeof direction === 'number'
+    ? `${String(direction)}deg`
+    : direction === undefined
+      ? `${String(DEFAULT_GRADIENT_ANGLE)}deg`
+      : DIRECTION[direction]
+  // to 缺省即淡出到面板底色（明/暗各一支），真正融进环境；显式传 'transparent' 才淡出到透明。
+  const to = value.to ?? 'var(--mptk-surface-elevated)'
+  // fadeFrom / fadeTo 只作用于单色渐隐（无显式 to），都是 0-100 的位置：
+  //   fadeFrom：起始色保持到 N% 才开始过渡（缺省 0，即立刻过渡）；
+  //   fadeTo：到 M% 就淡出到 to 色（缺省 100，即到末端才淡出）。
+  // M% 之后 CSS 渐变自动保持 to 色到 100%，于是「到分割线之前已经是底色」。
+  // 双色渐变忽略这两个参数。
+  if (value.to !== undefined || (value.fadeFrom === undefined && value.fadeTo === undefined)) {
+    return { backgroundImage: `linear-gradient(${angle}, ${value.from}, ${to})` }
+  }
+  const fromEnd = value.fadeFrom ?? 0
+  const toStart = value.fadeTo ?? 100
+  return {
+    backgroundImage: `linear-gradient(${angle}, ${value.from} 0%, ${value.from} ${String(fromEnd)}%, ${to} ${String(toStart)}%)`,
+  }
 }
 
 function cssLength(value: number | string | undefined): string | undefined {
@@ -230,7 +277,9 @@ export function ContentPopup({
   closePosition,
   header,
   headerBackground,
+  headerTone = 'normal',
   headerDivider,
+  headerDividerColor,
   panelBackground,
   icon,
   glyph,
@@ -300,11 +349,13 @@ export function ContentPopup({
     setNatural(width > 0 && height > 0 ? { width, height } : undefined)
   }
 
-  const renderedHeader = (() => {
+  // 三档内容 + 自定义槽位只是「头部内容」；承载背景与留白的壳统一在下面渲染一层，
+  // 避免每档各套一层导致背景与 padding 分家、自定义槽位还拿不到背景。
+  const headerBody = (() => {
     if (header !== undefined) return header
     if (variant === 'title') {
       return (
-        <View className="mptk-content-popup__header mptk-content-popup__header--title" style={backgroundStyle(headerBackground)}>
+        <>
           {(icon !== undefined || glyph !== undefined) ? (
             <View className="mptk-content-popup__title-icon-slot">
               {icon !== undefined ? <Icon name={icon} className="mptk-content-popup__title-icon" /> : null}
@@ -315,44 +366,51 @@ export function ContentPopup({
             {title !== undefined ? <Text className="mptk-content-popup__title">{title}</Text> : null}
             {subtitle !== undefined ? <Text className="mptk-content-popup__subtitle">{subtitle}</Text> : null}
           </View>
-        </View>
+        </>
       )
     }
     if (variant === 'image' && image !== undefined && sized !== undefined) {
       return (
-        <View className="mptk-content-popup__header mptk-content-popup__header--image" style={backgroundStyle(headerBackground)}>
-          <Image
-            className="mptk-content-popup__image"
-            src={image.src}
-            mode={sized.mode}
-            style={{
-              width: sized.width,
-              ...(sized.height === null ? null : { height: `${String(sized.height)}px` }),
-              ...(sized.needsNatural && natural === undefined ? { opacity: '0' } : null),
-            }}
-            onLoad={handleLoad}
-            onError={() => setNatural(undefined)}
-            onClick={image.onClick}
-          />
-        </View>
+        <Image
+          className="mptk-content-popup__image"
+          src={image.src}
+          mode={sized.mode}
+          style={{
+            width: sized.width,
+            ...(sized.height === null ? null : { height: `${String(sized.height)}px` }),
+            ...(sized.needsNatural && natural === undefined ? { opacity: '0' } : null),
+          }}
+          onLoad={handleLoad}
+          onError={() => setNatural(undefined)}
+          onClick={image.onClick}
+        />
       )
     }
     if (variant === 'badge' && hasBadgeContent) {
       return (
-        <View
-          className="mptk-content-popup__header mptk-content-popup__header--badge"
-          style={{ ...backgroundStyle(headerBackground), ...(badgeReserve === undefined ? null : { paddingTop: badgeReserve }) }}
-        >
+        <>
           <View className="mptk-content-popup__badge" style={badgeStyle}>
             {badgeIcon !== undefined ? <Icon name={badgeIcon} size="xl" className="mptk-content-popup__badge-icon" /> : null}
             {badgeGlyph !== undefined ? <View className="mptk-content-popup__badge-glyph">{badgeGlyph}</View> : null}
           </View>
           {title !== undefined ? <Text className="mptk-content-popup__badge-title">{title}</Text> : null}
-        </View>
+        </>
       )
     }
     return null
   })()
+
+  const headerClassName = [
+    'mptk-content-popup__header',
+    `mptk-content-popup__header--${variant}`,
+    headerTone === 'normal' ? '' : `mptk-content-popup__header--${headerTone}`,
+    showDivider ? 'mptk-content-popup__header--divided' : '',
+  ].filter(Boolean).join(' ')
+  const headerStyle: CSSProperties = {
+    ...backgroundStyle(headerBackground),
+    ...(variant === 'badge' && badgeReserve !== undefined ? { paddingTop: badgeReserve } : null),
+    ...(showDivider && headerDividerColor !== undefined ? { borderBottomColor: headerDividerColor } : null),
+  }
 
   // 徽标外伸后，面板内 top-* 档的关闭叉会压在徽标上，回落到外置档；
   // 中部弹窗默认外下中，底部弹窗的文字头默认面板内右上，其余档沿用底座默认外置右上。
@@ -399,18 +457,13 @@ export function ContentPopup({
       onClose={onClose}
     >
       {hasHeader ? (
-        <View className={[
-          'mptk-content-popup__head',
-          variant === 'title' ? 'mptk-content-popup__head--title' : '',
-          showDivider ? 'mptk-content-popup__head--divided' : '',
-        ].filter(Boolean).join(' ')}>
-          {renderedHeader}
+        <View className={headerClassName} style={headerStyle}>
+          {headerBody}
         </View>
       ) : null}
-      {showDivider ? <View className="mptk-content-popup__divider" /> : null}
       <View className={[
         'mptk-content-popup__content',
-        showDivider ? '' : 'mptk-content-popup__content--top-gap',
+        'mptk-content-popup__content--top-gap',
         hasFooter ? '' : 'mptk-content-popup__content--bottom-gap',
       ].filter(Boolean).join(' ')}>
         {children}

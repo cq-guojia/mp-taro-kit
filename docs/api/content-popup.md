@@ -38,11 +38,34 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 | 参数 | 类型 | 默认 | 说明 |
 |---|---|---|---|
 | `header` | `ReactNode` | — | 头部整体槽位，传了就覆盖 `variant` 配置出来的头部 |
-| `headerBackground` | `BackgroundValue` | 透明 | 头部区底色或渐变；图片头默认无背景，要背景才传 |
-| `headerDivider` | `boolean` | `title` 档开，其余关 | 头部与内容之间的分割线，线色取 `--mptk-border` |
+| `headerBackground` | `BackgroundValue` | 透明 | 头部区底色或渐变；铺满整块头部（含左右留白）；图片头默认无背景，要背景才传 |
+| `headerTone` | `'normal' \| 'on-light' \| 'on-dark'` | `'normal'` | 头部底色的明暗：浅底传 `on-light` 配深字、深底传 `on-dark` 配浅字；`normal` 跟随主题 |
+| `headerDivider` | `boolean` | `title` 档开，其余关 | 头部与内容之间的分割线，要不要由它决定 |
+| `headerDividerColor` | `string` | 随 `headerTone` | 分割线颜色，可写 `var(--mptk-*)`；不传时 `normal` 走 `--mptk-border`、`on-light` 走深线、`on-dark` 走浅线 |
 | `panelBackground` | `BackgroundValue` | — | 整个面板底色或渐变，铺满内容区；`panelStyle` 可再覆盖 |
 
-`BackgroundValue = string | { from: string; to: string; direction?: 'to-bottom' | 'to-right' | 'to-bottom-right' | 'to-bottom-left' }`。字符串传纯色（可写 `var(--mptk-*)`），对象传两段渐变；走内联 style，组件不写死色值。
+`BackgroundValue = string | { from: string; to?: string; direction?: 'to-bottom' | 'to-right' | 'to-bottom-right' | 'to-bottom-left' | number; fadeFrom?: number; fadeTo?: number }`。字符串传纯色（可写 `var(--mptk-*)`）；对象传渐变：
+
+- `from` 必填；`to` 缺省即从 `from` 淡出到面板底色 `var(--mptk-surface-elevated)`（明/暗各一支，真正融进环境），显式给 `transparent` 则淡出到透明；显式给色值则淡出到该色。
+- `direction` 可给四档方位枚举或任意度数，缺省 **165deg**（从偏左上起色、向下收，比 180deg 正下略斜一点）。不要用到 135deg 那种对角：在 320px 宽的面板上色带会沿宽边横铺，到分割线时仍带颜色；165deg 只轻微偏斜，颜色集中在顶部一小段、到线时已回到底色。要别的角度显式传 `direction`（含度数）。
+- `fadeFrom`（0-100，只在 `to` 缺省时生效）：起始色保持到百分之几才开始过渡，不给则从 0% 立刻过渡。
+- `fadeTo`（0-100，只在 `to` 缺省时生效）：淡出到底色在百分之几**结束**，不给则到 100%（区域末端）才结束；`fadeTo` 之后 CSS 自动保持底色到末端。
+
+两者配合可以把颜色限制在顶部一段、到某处收干净。例如整体渐隐 `{ from: 'rgba(59, 91, 219, .10)', fadeFrom: 0, fadeTo: 45 }`：自面板顶部即开始平缓淡出，45% 处已完全回到底色，之后整段保持底色——不会出现颜色一直拖到中下部才消失。注意百分比是相对**渐变所作用的那一层**的高度：`headerBackground` 相对头部高度，`panelBackground` 相对整个面板高度——整体渐变（含头部与内容）用 `panelBackground`，只想在头部收干净才用 `headerBackground`。双色渐变忽略这两个参数。
+
+走内联 style，组件不写死色值。
+
+头部只有一层：`headerBackground` 与左右留白同在这一层，盒模型让渐变铺满 padding 区；不再有外层容器套住内层导致渐变缺边。
+
+头部字色是控件的**对外能力**，不是消费方的活。`headerTone` 表达的是**头部底色明暗**，库据此反色：
+
+- `normal`（默认）：头部无自定义底色，主/副字色走 `--mptk-c-content-popup-head-ink` / `-ink-2`（跟随 `fg` / `fg-3`）；
+- `on-light`：头部是浅色背景（如演示站「头部浅」），字色/线色固定明档深色——浅背景在暗档主题下仍是浅底，跟随主题翻成浅字就看不见；
+- `on-dark`：头部是深色背景（如演示站「头部深」），字色/线色固定浅色。
+
+库内部按 tone 生成 `mptk-content-popup__header--on-light` / `--on-dark` 修饰类切 token，消费方只传一个 tone，不需要知道内部类名或写 CSS 覆盖。
+
+**渐变与主题的搭配责任在消费方**：控件只负责把传入的色值和 tone 正确渲染，不替你判断底色深浅。渐变的起止色建议写成明/暗各一支的 `var(--mptk-*)` token，用 `useThemeSnapshot()` 读当前明暗后选色；头部背景是固定色时，`headerTone` 要按**底色深浅**给（浅底 `on-light` 深字、深底 `on-dark` 浅字），否则字会看不见。演示站里头部底色固定、按底色给 tone，整体渐变则随主题切明/暗两支深蓝系示例色——只为展示 API 形态，具体配色由接入项目自己定制。演示按钮分两组 Cell：`头部渐变`（浅/深）与 `整体渐变`（渐隐/渐变）。
 
 ### `title` 档：文字头
 
@@ -119,7 +142,8 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 - **位置**：只支持中部与底部；不支持上浮与左右。越界值运行时回落 `'center'`，不抛错。
 - **高度**：沿用 Popup「高度由内容撑开、不写 `max-height`」；要滚由调用方在 `children` 里包 `scroll-view` 并给确定高。
-- **分割线标准**：头部与内容之间的线在本弹窗里一律通栏（左右顶到面板边），上下间距与面板顶部/底部内边距同档（`--mptk-space-4`，16px）；线与文字不共用同一层内边距。以后本弹窗里新增任何分割线都按这条标准走。
+- **分割线标准**：头部与内容之间的线是**头部的下边框**（不是独立节点），线及以上都归 header——`headerBackground` 的渐变铺到线为止；线通栏（左右顶到面板边）。线以下的间距是**内容区的上间距**（`--mptk-space-4`，16px），由 `.mptk-content-popup__content--top-gap` 恒给，不随分割线显隐消失；线本身上方由 header 的 `padding-bottom` 留同档间距。线色走 `headerDividerColor`，默认 `--mptk-border`。以后本弹窗里新增任何分割线都按这条标准走。
+- **圆角裁切**：面板为徽标外伸开了 `overflow: visible`，不再替头部裁圆角；头部按面板档位自裁上两角（居中档恒圆、底部档仅 `round` 开启才圆，取 `--mptk-c-popup-radius`），渐变不会溢出圆角。
 - **徽标避让**：`badge` 形态下若 `closePosition` 落在面板内 `top-*` / `edge-top-*`，自动回落到 `above-right`，避免与外伸容器叠在一起。
 - **空态**：`badge` 没给图标也没给标题时不渲染头部，不出现空容器。
 - **进出场与关闭路径**：同 Popup——挂载即渲染、播完时长再卸载；关闭叉走 `onClose`，点遮罩走 `closable`，两者正交。
@@ -138,3 +162,5 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 - 2026-11-21：文字头图标跨两行并放大；主副标题按 lg/sm 分档；分割线改为通栏且与上下内容等距；文字头默认关闭叉改为面板内右上。
 - 2026-11-21：中部弹窗默认关闭叉改外下中；副标题改 xs/fg-3 且零行间距；图标尺寸独立 token 并加大左右间距；修长标题不换行溢出。
 - 2026-11-21：底部弹窗默认关闭叉改外右上；演示内容容器占满宽度，修调用方 view 内长文案不换行。
+- 2026-11-22：头部由内外两层合并为一层，背景与留白同层，渐变铺满 padding 区；背景 `to` 改为可选（缺省淡出到面板底色）、角度支持度数且默认 165deg（偏左上起色、顶部浅色到线即回底色）、新增 `fadeFrom` 起始色保持百分比与 `fadeTo` 淡出结束位置；头字色抽成 `--mptk-c-content-popup-head-ink*` token 并随明暗在 light/dark 组各自声明；分割线归 header 下边框且颜色可由 `headerDividerColor` 覆盖；线下间距恒由内容区上间距给；演示按钮拆成「头部渐变」与「整体渐变」两组 Cell。
+- 2026-11-22：`headerTone` 由 `normal`/`inverse` 改为按底色明暗的 `normal`/`on-light`/`on-dark`——浅底头固定深字（修暗档主题下浅蓝头配浅字看不见），深底头固定浅字；演示站渐隐从 `headerBackground` 改走 `panelBackground` 铺满整面板（含头部），整体渐变恢复随主题切明/暗两支深蓝系示例色。

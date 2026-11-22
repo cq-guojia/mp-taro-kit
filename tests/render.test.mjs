@@ -690,7 +690,8 @@ test('ContentPopup 文字头把小图标、标题、副标题渲染成一体并�
   assert.match(html, /mptk-content-popup__title-text/)
   assert.match(html, /class="mptk-content-popup__title"/)
   assert.match(html, /class="mptk-content-popup__subtitle"/)
-  assert.match(html, /mptk-content-popup__divider/)
+  assert.match(html, /mptk-content-popup__header--title[^"]*mptk-content-popup__header--divided|mptk-content-popup__header--divided/, '分割线归 header 的 border-bottom，不再独立成节点')
+  assert.doesNotMatch(html, /mptk-content-popup__divider/, '旧的独立 divider 节点已移除')
   assert.match(html, /mptk-popup__close--below-center/, '中部弹窗默认关闭叉在外下中')
   assert.match(html, /mptk-content-popup__actions/)
 })
@@ -707,7 +708,7 @@ test('ContentPopup 图片头渲染原生 Image，默认无分割线，背景走�
   assert.match(html, /mptk-content-popup__header--image/)
   assert.match(html, /<image/)
   assert.match(html, /mode="widthFix"/)
-  assert.doesNotMatch(html, /mptk-content-popup__divider/)
+  assert.doesNotMatch(html, /mptk-content-popup__header--divided/, '图片头默认无分割线')
   assert.match(html, /background-color:#fff/)
 })
 
@@ -732,6 +733,105 @@ test('ContentPopup 徽标头外伸用 transform，且与面板内关闭位避让
   assert.match(html, /border-width:3px/)
   assert.match(html, /mptk-popup__close--above-right/)
   assert.doesNotMatch(html, /mptk-popup__close--top-right/)
+})
+
+test('ContentPopup 背景渐变：默认 165deg、fadeFrom/fadeTo 把颜色收在分割线之前', () => {
+  const grad = (value, extra = {}) =>
+    render(h(ContentPopup, { open: true, title: 'T', ...extra, headerBackground: value }))
+  const has = (html, pattern, why) => assert.match(html, pattern, why)
+
+  has(grad({ from: '#a', to: '#b' }), /linear-gradient\(165deg,\s*#a,\s*#b\)/, '双色渐变默认 165deg（偏左起色）')
+  has(grad({ from: '#a' }), /linear-gradient\(165deg,\s*#a,\s*var\(--mptk-surface-elevated\)\)/, 'to 缺省淡出到面板底色')
+  has(grad({ from: '#a', direction: 45, to: '#b' }), /linear-gradient\(45deg,\s*#a,\s*#b\)/, '数字角度直接落成 deg')
+  has(grad({ from: '#a', to: '#b', direction: 'to-bottom' }), /linear-gradient\(180deg,\s*#a,\s*#b\)/, '方位枚举仍照旧映射')
+
+  // 只有 fadeFrom：起始色保持到 8% 才开始过渡，到末端（100%）才淡出到底色。
+  has(grad({ from: '#a', fadeFrom: 8 }), /linear-gradient\(165deg,\s*#a 0%,\s*#a 8%,\s*var\(--mptk-surface-elevated\) 100%\)/, 'fadeFrom 单独用：终点在 100%')
+  // fadeFrom + fadeTo：顶部 5% 纯色，到 70% 已淡出到底色，70%→线（100%）整段保持底色。
+  has(grad({ from: '#a', fadeFrom: 5, fadeTo: 70 }), /linear-gradient\(165deg,\s*#a 0%,\s*#a 5%,\s*var\(--mptk-surface-elevated\) 70%\)/, 'fadeTo 让淡出在 70% 就结束，到线前收干净')
+  has(grad({ from: '#a', fadeTo: 70 }), /linear-gradient\(165deg,\s*#a 0%,\s*#a 0%,\s*var\(--mptk-surface-elevated\) 70%\)/, '只给 fadeTo 则从 0% 就过渡')
+
+  const twoTone = grad({ from: '#a', to: '#b', fadeFrom: 5, fadeTo: 70 })
+  has(twoTone, /linear-gradient\(165deg,\s*#a,\s*#b\)/, '双色渐变忽略 fadeFrom/fadeTo')
+
+  const panel = render(h(ContentPopup, { open: true, panelBackground: { from: '#a', to: '#b' } }))
+  has(panel, /linear-gradient\(165deg,\s*#a,\s*#b\)/, '整面板渐变走同一套解析')
+})
+
+test('ContentPopup headerTone 按头部底色明暗反色是库内能力，消费方不写私有类名', () => {
+  const onLight = render(h(ContentPopup, { open: true, title: 'T', headerTone: 'on-light' }))
+  assert.match(onLight, /mptk-content-popup__header--on-light/, '浅底头生成 on-light 修饰类')
+  const onDark = render(h(ContentPopup, { open: true, title: 'T', headerTone: 'on-dark' }))
+  assert.match(onDark, /mptk-content-popup__header--on-dark/, '深底头生成 on-dark 修饰类')
+  const normal = render(h(ContentPopup, { open: true, title: 'T' }))
+  assert.doesNotMatch(normal, /mptk-content-popup__header--on-(light|dark)/, '默认 normal 不带反色类')
+
+  const css = readFileSync(join(root, 'src/ui/layout/content-popup/style/index.scss'), 'utf8')
+  assert.match(css, /\.mptk-content-popup__header--on-light\s*\{[^}]*--mptk-c-content-popup-head-ink:\s*var\(--mptk-c-content-popup-head-ink-on-light\)/, '浅底头切固定深字 token')
+  assert.match(css, /\.mptk-content-popup__header--on-light\.mptk-content-popup__header--divided\s*\{[^}]*border-bottom-color:\s*var\(--mptk-c-content-popup-head-divider-on-light\)/, '浅底头切深线')
+  assert.match(css, /\.mptk-content-popup__header--on-dark\s*\{[^}]*--mptk-c-content-popup-head-ink:\s*var\(--mptk-fg-on-accent\)/, '深底头切浅字 token')
+  assert.match(css, /\.mptk-content-popup__header--on-dark\.mptk-content-popup__header--divided\s*\{[^}]*border-bottom-color:\s*var\(--mptk-fg-on-accent\)/, '深底头切浅线')
+
+  const popupPage = readFileSync(join(root, 'demo/src/pages/popup/index.tsx'), 'utf8')
+  assert.match(popupPage, /useThemeSnapshot/, '整体渐变按主题切明暗配色')
+  assert.match(popupPage, /contentMode === 'head-light' \? 'on-light'/, '浅底头按底色给 on-light')
+  assert.match(popupPage, /contentMode === 'head-dark' \? 'on-dark'/, '深底头按底色给 on-dark')
+  assert.match(popupPage, /headerTone=\{headerTone\}/, '演示用语义化 prop')
+  assert.doesNotMatch(popupPage, /demo-content-popup--deep-head/, '演示不再传私有类名')
+  assert.doesNotMatch(popupPage, /headerDividerColor/, '线色由 headerTone 带出，不单独传')
+  const appScss = readFileSync(join(root, 'demo/src/app.scss'), 'utf8')
+  assert.doesNotMatch(appScss, /demo-content-popup--deep-head/, 'demo 不再写私有覆盖类')
+
+  // 演示按钮拆成「头部渐变」与「整体渐变」两组 Cell，各两个按钮。
+  assert.match(popupPage, /title="头部渐变"/, '有头部渐变 Cell')
+  assert.match(popupPage, /title="整体渐变"/, '有整体渐变 Cell')
+  assert.doesNotMatch(popupPage, /title="渐变背景"/, '旧的合并 Cell 已拆掉')
+  const headCell = popupPage.slice(popupPage.indexOf('title="头部渐变"'), popupPage.indexOf('title="整体渐变"'))
+  assert.equal((headCell.match(/>头部[浅深]</g) ?? []).length, 2, '头部渐变 Cell 只放浅/深两个按钮')
+  const wholeCell = popupPage.slice(popupPage.indexOf('title="整体渐变"'), popupPage.indexOf('title="图片头"'))
+  assert.match(wholeCell, />渐隐</, '整体渐变有渐隐')
+  assert.match(wholeCell, />渐变</, '整体渐变有渐变')
+
+  // 渐隐走 panelBackground（铺满整面板含头部），明暗各一支深蓝系色，不再限于 header。
+  const palette = popupPage.slice(popupPage.indexOf('const panelBackground'), popupPage.indexOf('const headerTone'))
+  assert.match(palette, /panel-fade[\s\S]*fadeFrom: 0, fadeTo: 45/, '渐隐自顶部即渐变、到 45% 已完全收净')
+  assert.match(palette, /dark[\s\S]*rgba\(107, 138, 253, \.18\)/, '暗档渐隐用淡蓝，左上一点即收')
+  assert.match(palette, /#1E3A8A[\s\S]*#0F172A/, '暗档整体渐变用深蓝系')
+  assert.doesNotMatch(popupPage, /#FFF3E0|#FFCC80|#FFE8CC|3A2E1E/, '没有浅橙/屎黄旧配色')
+  const headerBg = popupPage.slice(popupPage.indexOf('const headerBackground'), popupPage.indexOf('const panelBackground'))
+  assert.doesNotMatch(headerBg, /fadeFrom/, '渐隐不再放在 headerBackground')
+  assert.doesNotMatch(popupPage, /head-fade/, '不再有旧的 head-fade 模式名')
+})
+
+test('ContentPopup 分割线颜色可配，线下间距归 body 上间距恒给', () => {
+  const lineColor = render(h(ContentPopup, { open: true, title: 'T', headerDividerColor: 'var(--mptk-danger)' }))
+  assert.match(lineColor, /mptk-content-popup__header[^>]*style="[^"]*border-bottom-color:\s*var\(--mptk-danger\)/, '线色可覆盖')
+  const noColor = render(h(ContentPopup, { open: true, title: 'T' }))
+  assert.doesNotMatch(noColor, /mptk-content-popup__header[^>]*style="[^"]*border-bottom-color:/, '不传则不内联，走默认 token')
+
+  for (const divider of [true, false]) {
+    const html = render(h(ContentPopup, { open: true, title: 'T', headerDivider: divider }))
+    assert.match(html, /mptk-content-popup__content--top-gap/, `headerDivider=${String(divider)} 时 body 上间距都要在`)
+  }
+})
+
+test('ContentPopup 头部只有一层，背景与留白同层，字色走 token', () => {
+  const html = render(h(ContentPopup, { open: true, variant: 'title', title: 'T', headerBackground: { from: '#a', to: '#b' } }))
+  assert.equal((html.match(/mptk-content-popup__header(?!--)/g) ?? []).length, 1, '头部壳只能一层，别再套 __head')
+  assert.doesNotMatch(html, /mptk-content-popup__head(?!er)/, '__head 外层应已删除')
+  assert.match(html, /mptk-content-popup__header--title[^>]*background-image:/, '背景与 title 留白在同一层')
+  assert.doesNotMatch(html, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, '文字头不该带徽标预留的 padding-top')
+
+  // 徽标预留只属于 badge 档：传了 badgeSize 的文字头也不能被误加顶部留白。
+  const titleWithBadgeSize = render(h(ContentPopup, { open: true, variant: 'title', title: 'T', badgeSize: 72 }))
+  assert.doesNotMatch(titleWithBadgeSize, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, 'badgeSize 不该污染文字头')
+
+  const badge = render(h(ContentPopup, { open: true, variant: 'badge', badgeGlyph: h('span', null, 'b'), badgeSize: 72, badgeOverlap: '40%' }))
+  assert.match(badge, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, '徽标档才保留预留高度')
+
+  const css = readFileSync(join(root, 'src/ui/layout/content-popup/style/index.scss'), 'utf8')
+  assert.match(css, /\.mptk-content-popup__title\s*\{[^}]*color:\s*var\(--mptk-c-content-popup-head-ink\)/, '主字色走 token')
+  assert.match(css, /\.mptk-content-popup__subtitle\s*\{[^}]*color:\s*var\(--mptk-c-content-popup-head-ink-2\)/, '副字色走 token')
 })
 
 test('ContentPopup 按钮横纵两轴生效，槽位覆盖配置', () => {

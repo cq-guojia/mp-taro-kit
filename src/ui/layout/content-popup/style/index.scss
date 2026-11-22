@@ -5,7 +5,6 @@
   overflow: visible;
 }
 
-.mptk-content-popup__head,
 .mptk-content-popup__content,
 .mptk-content-popup__foot {
   display: flex;
@@ -20,14 +19,21 @@
   padding-right: var(--mptk-space-4);
 }
 
-.mptk-content-popup__head--title {
+/* 头部只有一层：背景铺在这层，留白也在这层，盒模型让渐变填满 padding 区。
+   文字头的内边距合到这里，不再用外层 __head 套一层。 */
+.mptk-content-popup__header--title {
   padding-top: var(--mptk-space-4);
   padding-left: var(--mptk-space-4);
   padding-right: var(--mptk-space-4);
 }
 
-.mptk-content-popup__head--divided {
-  padding-bottom: var(--mptk-s-zero);
+/* 分割线是头部的下边框：线及以上都归 header，渐变铺到线；线色与面板分割线同源。
+   线上下留白用 padding 给，不另起节点，也不依赖面板 overflow。 */
+.mptk-content-popup__header--divided {
+  padding-bottom: var(--mptk-space-4);
+  border-bottom-width: var(--mptk-c-border-w);
+  border-bottom-style: solid;
+  border-bottom-color: var(--mptk-border);
 }
 
 .mptk-content-popup__content--top-gap {
@@ -46,7 +52,46 @@
 .mptk-content-popup__header {
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
   width: 100%;
+  box-sizing: border-box;
+}
+
+/* 面板为徽标外伸开了 overflow:visible，不再替头部裁圆角；头部自己按面板档位裁上两角。
+   居中档恒圆、底部档仅 round 开启才圆，与 Popup 面板规则同源，渐变不会溢出圆角。 */
+.mptk-popup__panel--center .mptk-content-popup__header {
+  border-top-left-radius: var(--mptk-c-popup-radius);
+  border-top-right-radius: var(--mptk-c-popup-radius);
+}
+
+.mptk-popup--round .mptk-popup__panel--bottom .mptk-content-popup__header {
+  border-top-left-radius: var(--mptk-c-popup-radius);
+  border-top-right-radius: var(--mptk-c-popup-radius);
+}
+
+/* 头部底色决定字色/线色，消费方只传一个 tone，不用写私有类名。
+   线色用双类选择器（--on-* + --divided）压过单类的默认 --mptk-border；
+   调用方显式传 headerDividerColor 时走内联 style，仍优先。 */
+
+/* 浅底头（on-light）：字色/线色固定明档深色。浅背景在暗档主题下仍是浅底，
+   若跟随主题翻成浅字就看不见；三条 token 是字面量，不随主题反相。 */
+.mptk-content-popup__header--on-light {
+  --mptk-c-content-popup-head-ink: var(--mptk-c-content-popup-head-ink-on-light);
+  --mptk-c-content-popup-head-ink-2: var(--mptk-c-content-popup-head-ink-on-light-2);
+}
+
+.mptk-content-popup__header--on-light.mptk-content-popup__header--divided {
+  border-bottom-color: var(--mptk-c-content-popup-head-divider-on-light);
+}
+
+/* 深底头（on-dark）：字色/线色固定浅色。 */
+.mptk-content-popup__header--on-dark {
+  --mptk-c-content-popup-head-ink: var(--mptk-fg-on-accent);
+  --mptk-c-content-popup-head-ink-2: var(--mptk-fg-on-accent);
+}
+
+.mptk-content-popup__header--on-dark.mptk-content-popup__header--divided {
+  border-bottom-color: var(--mptk-fg-on-accent);
 }
 
 /* 文字头：图标独占一列、上下贯通主副标题；右列上下两行，字号与字色分档要一眼分得出。 */
@@ -63,7 +108,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  color: var(--mptk-fg);
+  color: var(--mptk-c-content-popup-head-ink);
   font-size: var(--mptk-c-content-popup-title-icon-size);
 }
 
@@ -93,23 +138,13 @@
 .mptk-content-popup__title {
   font-size: var(--mptk-font-lg);
   line-height: var(--mptk-line-lg);
-  color: var(--mptk-fg);
+  color: var(--mptk-c-content-popup-head-ink);
 }
 
 .mptk-content-popup__subtitle {
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
-  color: var(--mptk-fg-3);
-}
-
-/* 通栏分割线：左右顶到面板边，上下留白与面板顶部/底部内边距同一档。 */
-.mptk-content-popup__divider {
-  flex: 0 0 auto;
-  width: 100%;
-  height: var(--mptk-c-border-w);
-  margin-top: var(--mptk-space-4);
-  margin-bottom: var(--mptk-space-4);
-  background-color: var(--mptk-border);
+  color: var(--mptk-c-content-popup-head-ink-2);
 }
 
 .mptk-content-popup__image {
@@ -143,14 +178,14 @@
 
 .mptk-content-popup__badge-icon,
 .mptk-content-popup__badge-glyph {
-  color: var(--mptk-fg);
+  color: var(--mptk-c-content-popup-head-ink);
   font-size: var(--mptk-font-xl);
 }
 
 .mptk-content-popup__badge-title {
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
-  color: var(--mptk-fg);
+  color: var(--mptk-c-content-popup-head-ink);
   text-align: center;
 }
 

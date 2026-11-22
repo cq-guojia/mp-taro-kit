@@ -741,8 +741,8 @@ export const pages: CatalogPage[] = [
       {
         id: 'content-popup',
         title: '内容弹窗',
-        hint: '三档头部各一个 Cell：文字头（含渐变铺满）、图片头（透明/带背景）、外伸徽标（正圆/圆角方/靠左）',
-        usage: '<ContentPopup variant="badge" badgeGlyph={…} badgeRadius="circle" badgeOverlap="40%" badgeBackground={{ from, to }} actions={[…]} />',
+        hint: '文字头分四组 Cell：中部/底部、头部渐变（浅/深）、整体渐变（渐隐/渐变）、图片头与徽标另列；头部底色固定并按明暗反色（浅底深字/深底浅字），整体渐变随主题切深蓝系示例色，实际由接入方定制',
+        usage: '<ContentPopup headerBackground={{ from, to?, direction? }} badgeBackground={{ from, to }} actions={[…]} />',
         imports: [
           'mp-taro-kit/ui/layout/content-popup', 'mp-taro-kit/ui/layout/content-popup/style',
           'mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style',

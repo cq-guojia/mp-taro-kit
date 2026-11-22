@@ -192,6 +192,9 @@ export default {
     "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：和其他 type 的 solid 一样是深底，页面底是 gray-2，6 级才分得开
     "--mptk-tag-fg": "var(--mptk-fg-on-accent)",                    // 默认标签实心字：引用反白字键，值只维护一处
     "--mptk-fg-on-accent": "@white",                                // 强调底上的字：语义色实心块一律反白，明暗同口径（surface-1 是「面」，暗色下会变成深灰）
+    // 内容弹窗头部字色：跟随正文，必须在 light / dark 各声明一次；放 component 会在 page 上按明档 var() 解析后固定，.mptk-dark 改 --mptk-fg 不再生效。
+    "--mptk-c-content-popup-head-ink": "var(--mptk-fg)",             // 头部主字色：深渐变头由 headerTone=inverse 局部覆盖
+    "--mptk-c-content-popup-head-ink-2": "var(--mptk-fg-3)",         // 头部副字色：跟随三级文字，深渐变头一并覆盖
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -280,6 +283,9 @@ export default {
     "--mptk-tag-bg": "@gray-6",                                     // 默认标签实心底：暗底上要亮到 6 级才有边界，浅一档就陷进背景
     "--mptk-tag-fg": "var(--mptk-fg-on-accent)",                    // 默认标签实心字：与明色同口径，引用反白字键
     "--mptk-fg-on-accent": "@white",                                // 强调底上的字：与明色同口径，实心块反白
+    // 内容弹窗头部字色：与明档同名同数，在 .mptk-dark 上重新解析到暗色 --mptk-fg / --mptk-fg-3。
+    "--mptk-c-content-popup-head-ink": "var(--mptk-fg)",             // 头部主字色：深渐变头由 headerTone=inverse 局部覆盖
+    "--mptk-c-content-popup-head-ink-2": "var(--mptk-fg-3)",         // 头部副字色：跟随三级文字，深渐变头一并覆盖
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -321,6 +327,12 @@ export default {
     "--mptk-c-content-popup-badge-border-w": "2px",                 // 外伸徽标默认描边宽度，传 0 关闭
     "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距
     "--mptk-c-content-popup-title-icon-size": "28px",               // 文字头图标尺寸，比副标题大一个量级，便于一眼定位
+    /* 随主题的两条头部字色在 light / dark 组：本组的 var() 会在 page 按明档解析后固定。
+       下面三条是「浅底头」专用反色：配置别名解析成明档字面量、不随主题翻亮，
+       浅背景在暗档主题下仍是浅底，字色必须固定深色才看得清。 */
+    "--mptk-c-content-popup-head-ink-on-light": "@light:ink-1",       // 浅底头主字：固定明档深色
+    "--mptk-c-content-popup-head-ink-on-light-2": "@light:ink-2",     // 浅底头副字：固定明档次深色
+    "--mptk-c-content-popup-head-divider-on-light": "@light:gray-4",  // 浅底头分割线：明档较深灰，浅底上看得清
     "--mptk-c-popup-center-rise": "48px",                           // 居中弹窗进场起始偏移：从目标位置下方 48px 往上浮，配合渐显
     "--mptk-c-popup-radius": "var(--mptk-radius-md)",               // 圆角尺寸：居中档默认带、贴边档 round 开启才带；改这一处换尺寸
     "--mptk-c-popup-close-size": "26px",                             // 关闭按钮外框：叉尺寸单独给（12.8px），外框与叉两轴分开

@@ -56,6 +56,25 @@ test('运行时主题出口：三选一原样保留，第四份只覆盖颜色�
   }
 })
 
+test('跟随主题的颜色 token 必须在明暗两档各自声明，不能在 page 上按明档解析后固定', () => {
+  const css = read('../dist/styles/theme-runtime.css')
+  const page = css.match(/page\s*\{([^}]*)\}/)?.[1]
+  const dark = css.match(/\.mptk-dark\s*\{([^}]*)\}/)?.[1]
+  assert.ok(page && dark, '运行时出口缺 page 或 .mptk-dark 规则')
+
+  // 这两条引用 --mptk-fg / --mptk-fg-3 的 token：var() 在声明元素上解析，
+  // 只在 page 声明一次会固定在明档值，.mptk-dark 改 --mptk-fg 也带不动后代。
+  for (const [token, source] of [
+    ['c-content-popup-head-ink', 'fg'],
+    ['c-content-popup-head-ink-2', 'fg-3'],
+  ]) {
+    assert.equal(cssValue(page, token), `var(--mptk-${source})`, `page 上 ${token} 必须引用 --mptk-${source}`)
+    assert.equal(cssValue(dark, token), `var(--mptk-${source})`, `.mptk-dark 上 ${token} 必须重新声明并引用 --mptk-${source}`)
+  }
+  assert.equal(cssValue(page, 'fg'), '#1f2328', 'page 默认明档字色')
+  assert.equal(cssValue(dark, 'fg'), '#e6e8eb', '.mptk-dark 字色必须翻亮，head-ink 随之解析到亮值')
+})
+
 test('页面底色真源分层：编译期出口由 WXSS 画，运行时出口交给官方窗口配置', () => {
   for (const name of ['theme-light', 'theme-dark', 'theme-auto']) {
     const page = read(`../dist/styles/${name}.css`).match(/page\s*\{([^}]*)\}/)

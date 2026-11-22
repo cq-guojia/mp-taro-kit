@@ -1,4 +1,4 @@
-// @mptk-inputs:9a0d10e1547c
+// @mptk-inputs:cac49f0bb583
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -1148,6 +1148,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "fg-on-accent",
     },
     {
+      "key": "--mptk-c-content-popup-head-ink",
+      "label": "c-content-popup-head-ink",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "var(--mptk-fg)",
+      "unit": "",
+      "note": "c-content-popup-head-ink",
+    },
+    {
+      "key": "--mptk-c-content-popup-head-ink-2",
+      "label": "c-content-popup-head-ink-2",
+      "group": "light",
+      "groupLabel": "明色",
+      "value": "var(--mptk-fg-3)",
+      "unit": "",
+      "note": "c-content-popup-head-ink-2",
+    },
+    {
       "key": "--mptk-control-blue",
       "label": "control-blue",
       "group": "light",
@@ -1922,6 +1940,24 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "note": "fg-on-accent",
     },
     {
+      "key": "--mptk-c-content-popup-head-ink",
+      "label": "c-content-popup-head-ink",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "var(--mptk-fg)",
+      "unit": "",
+      "note": "c-content-popup-head-ink",
+    },
+    {
+      "key": "--mptk-c-content-popup-head-ink-2",
+      "label": "c-content-popup-head-ink-2",
+      "group": "dark",
+      "groupLabel": "暗色",
+      "value": "var(--mptk-fg-3)",
+      "unit": "",
+      "note": "c-content-popup-head-ink-2",
+    },
+    {
       "key": "--mptk-control-blue",
       "label": "control-blue",
       "group": "dark",
@@ -2199,6 +2235,33 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "28px",
       "unit": "px",
       "note": "c-content-popup-title-icon-size",
+    },
+    {
+      "key": "--mptk-c-content-popup-head-ink-on-light",
+      "label": "c-content-popup-head-ink-on-light",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "#1f2328",
+      "unit": "color",
+      "note": "c-content-popup-head-ink-on-light",
+    },
+    {
+      "key": "--mptk-c-content-popup-head-ink-on-light-2",
+      "label": "c-content-popup-head-ink-on-light-2",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "#5c6370",
+      "unit": "color",
+      "note": "c-content-popup-head-ink-on-light-2",
+    },
+    {
+      "key": "--mptk-c-content-popup-head-divider-on-light",
+      "label": "c-content-popup-head-divider-on-light",
+      "group": "component",
+      "groupLabel": "组件视觉值",
+      "value": "#dcdee0",
+      "unit": "color",
+      "note": "c-content-popup-head-divider-on-light",
     },
     {
       "key": "--mptk-c-popup-center-rise",

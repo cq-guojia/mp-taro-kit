@@ -3,6 +3,7 @@ export {
   type ContentPopupProps,
   type ContentPopupVariant,
   type ContentPopupPosition,
+  type ContentPopupHeaderTone,
   type ContentPopupBackground,
   type ContentPopupBackgroundDirection,
   type ContentPopupActionsLayout,

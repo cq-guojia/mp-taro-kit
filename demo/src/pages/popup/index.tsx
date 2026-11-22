@@ -3,6 +3,7 @@ import { Text, View } from '@tarojs/components'
 import { Button } from 'mp-taro-kit/ui/actions'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
+import { useThemeSnapshot } from 'mp-taro-kit/ui/infra'
 import {
   ImagePopup,
   Popup,
@@ -17,6 +18,7 @@ import {
 } from 'mp-taro-kit/ui/layout'
 import {
   ContentPopup,
+  type ContentPopupHeaderTone,
   type ContentPopupPosition,
   type ContentPopupVariant,
 } from 'mp-taro-kit/ui/layout/content-popup'
@@ -216,7 +218,9 @@ export default function PopupPage() {
   const [contentOpen, setContentOpen] = useState(false)
   const [contentVariant, setContentVariant] = useState<ContentPopupVariant>('title')
   const [contentPosition, setContentPosition] = useState<ContentPopupPosition>('center')
-  const [contentMode, setContentMode] = useState<'normal' | 'gradient' | 'image-bg' | 'circle' | 'square' | 'left'>('normal')
+  const [contentMode, setContentMode] = useState<
+    'normal' | 'head-light' | 'head-dark' | 'panel-fade' | 'panel-gradient' | 'image-bg' | 'circle' | 'square' | 'left'
+  >('normal')
 
   const openContent = (variant: ContentPopupVariant, position: ContentPopupPosition, mode: typeof contentMode) => {
     setContentVariant(variant)
@@ -457,9 +461,28 @@ export default function PopupPage() {
       )
     }
     if (id === 'content-popup') {
-      const gradient = contentMode === 'gradient'
-        ? { from: '#FFF3E0', to: '#FFCC80', direction: 'to-bottom' as const }
-        : undefined
+      const { dark } = useThemeSnapshot()
+      // 头部底色是固定示例：浅底/深底各一套，字色交给 headerTone 按底色明暗反色，不随主题翻。
+      const headerBackground =
+        contentMode === 'head-light' ? { from: '#E8F2FF', to: '#BBD7FF' } :
+        contentMode === 'head-dark' ? { from: '#1E3A8A', to: '#0F2557' } :
+        contentMode === 'image-bg' ? '#fff' :
+        undefined
+      // 整体渐变铺满整块面板（含头部）：渐隐自顶部即开始平缓淡出，到 45% 已完全回到底色（不再拖到中下部）。
+      const panelBackground =
+        contentMode === 'panel-fade'
+          ? dark
+            ? { from: 'rgba(107, 138, 253, .18)', fadeFrom: 0, fadeTo: 45 }
+            : { from: 'rgba(59, 91, 219, .10)', fadeFrom: 0, fadeTo: 45 }
+          : contentMode === 'panel-gradient'
+            ? dark
+              ? { from: '#1E3A8A', to: '#0F172A' }
+              : { from: '#E8F2FF', to: '#BBD7FF' }
+            : undefined
+      const headerTone: ContentPopupHeaderTone =
+        contentMode === 'head-light' ? 'on-light' :
+        contentMode === 'head-dark' ? 'on-dark' :
+        'normal'
       return (
         <View>
           <CellGroup>
@@ -469,7 +492,24 @@ export default function PopupPage() {
                 <View className="demo-row">
                   <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'normal')}>中部</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('title', 'bottom', 'normal')}>底部</Button>
-                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'gradient')}>渐变铺满</Button>
+                </View>
+              }
+            />
+            <Cell
+              title="头部渐变"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'head-light')}>头部浅</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'head-dark')}>头部深</Button>
+                </View>
+              }
+            />
+            <Cell
+              title="整体渐变"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'panel-fade')}>渐隐</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'panel-gradient')}>渐变</Button>
                 </View>
               }
             />
@@ -498,12 +538,13 @@ export default function PopupPage() {
             variant={contentVariant}
             position={contentPosition}
             closeable
-            panelBackground={gradient}
+            headerTone={headerTone}
+            panelBackground={panelBackground}
             icon={contentVariant === 'title' ? 'common.base:AIdamoxing' : undefined}
             title={contentVariant === 'image' ? undefined : '是否开启相册备份'}
             subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
             image={contentVariant === 'image' ? GALLERY_SLIDES[0] : undefined}
-            headerBackground={contentMode === 'image-bg' ? '#fff' : undefined}
+            headerBackground={headerBackground}
             badgeGlyph={contentVariant === 'badge' ? <Text>徽</Text> : undefined}
             badgeRadius={contentMode === 'square' ? 'md' : 'circle'}
             badgeAlign={contentMode === 'left' ? 'left' : 'center'}
