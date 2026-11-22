@@ -527,21 +527,21 @@ test('贴边留白由 Card 侧决定：渲染期识别 + 纯 CSS 归零，不靠
   assert.equal(declOf(ruleOf(cellCss, '.mptk-cell'), 'padding-bottom'), 'calc(var(--mptk-space-1) + var(--mptk-space-0))')
   assert.doesNotMatch(cellCss, /margin-(?:top|bottom):\s*calc\(/, '子级不再反抵消')
 
-  /* 卡片内列表默认左右不到头：组给一档留白、行归零，卡片 body 不再叠一道。 */
+  /* 卡片内列表的左右留白归可点击的 Cell 行：hoverClass 画在行根节点上，热区必须与视觉行宽同源。 */
   assert.equal(
-    declOf(ruleOf(cellCss, '.mptk-cell-group--in-card .mptk-cell-group__body'), 'padding-left'),
-    'var(--mptk-card-spacing)',
-    '卡片内列表的左右留白取卡片自己的分区间距',
+    resolveCssVars(declOf(ruleOf(cellCss, '.mptk-cell-group--in-card .mptk-cell-group__body'), 'padding-left')),
+    '0',
+    'CellGroup body 不再吃左右留白，否则按压底色比行窄一档',
   )
   assert.equal(
-    declOf(ruleOf(cellCss, '.mptk-cell-group--in-card .mptk-cell-group__body'), 'padding-left'),
+    declOf(ruleOf(cellCss, '.mptk-cell-group--in-card .mptk-cell'), 'padding-left'),
     declOf(ruleOf(cardCss, '.mptk-card__header'), 'padding-left'),
     '列表文字与卡片标题左边界对齐，不留 4px 错位',
   )
   assert.match(
-    resolveCssVars(cellCss),
-    /\.mptk-cell-group--in-card \.mptk-cell\s*\{[^}]*padding-left:\s*0/,
-    '卡片内的行不再自己留左右白',
+    cellCss,
+    /\.mptk-cell-group--in-card \.mptk-cell\s*\{[^}]*padding-left:\s*var\(--mptk-card-spacing\)/,
+    '留白落在可点击的行上，hover 热区才通到卡片边',
   )
   assert.equal(
     resolveCssVars(declOf(ruleOf(cardCss, '.mptk-card--edge-content .mptk-card__body'), 'padding-left')),

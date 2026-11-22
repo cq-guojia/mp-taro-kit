@@ -541,15 +541,10 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
   assert.match(titleDivider[1], /background-color:\s*var\(--mptk-border\)/, '标题线是列表上边界，取外框色而不是组内浅线')
   assert.doesNotMatch(titleDivider[1], /position:/, '组级线必须是流内元素，不许绝对定位')
   assert.doesNotMatch(titleDivider[1], /margin/, '组级线是结构线，默认形态不许自带左右内缩')
-  assert.match(
+  assert.doesNotMatch(
     css,
-    /\.mptk-cell-group--in-card\s+\.mptk-cell-group__title-divider\s*\{[^}]*margin-left:\s*calc\(-1\s*\*\s*var\(--mptk-card-spacing\)\)/,
-    '卡片内组线要负 margin 抵消 body 左右内距，通到卡片边缘',
-  )
-  assert.match(
-    css,
-    /\.mptk-cell-group--in-card\s+\.mptk-cell-group__border[^{]*\{[^}]*margin-left:\s*calc\(-1\s*\*\s*var\(--mptk-card-spacing\)\)/,
-    '卡片内外框线同样通到卡片边缘',
+    /\.mptk-cell-group--in-card\s+\.mptk-cell-group__(title-divider|border)[^{]*\{[^}]*margin-left:\s*calc\(/,
+    'body 已无左右内距，组级线不许再靠负 margin 抵消——那是旧补丁写法',
   )
   assert.match(
     css,
@@ -583,14 +578,14 @@ test('Cell 展示页只放 Cell，Badge / Divider 各占一页，外框与分隔
     'dividerInset=false：通栏行线通到屏幕边',
   )
   assert.match(
-    resolveCssVars(css),
-    /\.mptk-cell-group--in-card\.mptk-cell-group--divider-inset \.mptk-cell__divider\s*\{[^}]*left:\s*0[^}]*right:\s*0/,
-    '卡片内默认内缩：行内距归零后线归零即与文字对齐',
+    css,
+    /\.mptk-cell-group--in-card\.mptk-cell-group--divider-inset \.mptk-cell__divider\s*\{[^}]*left:\s*var\(--mptk-card-spacing\)[^}]*right:\s*var\(--mptk-card-spacing\)/,
+    '卡片内默认内缩：留白在行上，线缩一档才与文字对齐',
   )
   assert.match(
-    css,
-    /\.mptk-cell-group--in-card\.mptk-cell-group--divider-flush \.mptk-cell__divider\s*\{[^}]*left:\s*calc\(-1 \* var\(--mptk-card-spacing\)\)[^}]*right:\s*calc\(-1 \* var\(--mptk-card-spacing\)\)/,
-    '卡片内通底必须跨出 body 内距到卡片边，不能写 0 凑数',
+    resolveCssVars(css),
+    /\.mptk-cell-group--in-card\.mptk-cell-group--divider-flush \.mptk-cell__divider\s*\{[^}]*left:\s*0[^}]*right:\s*0/,
+    '卡片内通底：body 无内距后归零即到卡片边，不许负 margin',
   )
   assert.match(resolveCssVars(css), /\.mptk-cell-group--frameless\s+\.mptk-cell-group__body--inset\s*\{[^}]*border-top-width:\s*0/, '无边框档要去掉四边描边')
 

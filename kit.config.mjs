@@ -342,7 +342,7 @@ export default {
     /* 内容弹窗：徽标外伸的几何与按钮间距，主题无关；徽标默认底色/描边色取既有主题 token。 */
     "--mptk-c-content-popup-badge-size": "72px",                    // 外伸徽标默认尺寸（圆直径 / 方边长）
     "--mptk-c-content-popup-badge-reserve": "36px",                 // 徽标留在面板内的默认高度，给标题/正文让位
-    "--mptk-c-content-popup-badge-border-w": "2px",                 // 外伸徽标默认描边宽度，border:false 关闭
+    "--mptk-c-content-popup-badge-border-w": "3px",                 // 外伸徽标默认描边宽度，border:false 关闭
     "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距
     "--mptk-c-content-popup-title-icon-size": "28px",               // 文字头图标尺寸，比副标题大一个量级，便于一眼定位
     "--mptk-c-content-popup-badge-icon-size": "32px",               // 外伸徽标图标尺寸：比文字头大、比旧 36px 收敛一档，与消费端彩色图标同档

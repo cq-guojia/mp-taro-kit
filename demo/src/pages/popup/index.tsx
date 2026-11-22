@@ -131,8 +131,10 @@ const CLOSE_GROUPS: CloseDemoGroup[] = [
 /* 演示用真实图：
    IMAGE_A / IMAGE_B 是两张常规高度图，用于单图、多图翻页、带按钮与尺寸档；
    LONG_IMAGE 是超长图，只用于「长图滚动」档（不参与单图 / 多图翻页）；
-   ACTION_BTN_IMAGE 是图片按钮专用图。 */
-const IMAGE_A = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/page-main/image/popup/89483104-2293-4dc2-97bb-341cf9277a1c.png'
+   ACTION_BTN_IMAGE 是图片按钮专用图。
+   用户提供的图统一放项目 assets/popup/，并以 dsh-plugin-core 仓库 raw URL 作为 demo 图源，
+   不依赖外部 CDN；其余三张待用户提供同形式素材后按同一方式替换。 */
+const IMAGE_A = 'https://raw.githubusercontent.com/cq-guojia/dsh-plugin-core/main/assets/examples/popup/portrait.png'
 const IMAGE_B = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/checkin/image/df61b214-81f1-4e29-98b9-b38957695bb2.png.png'
 const LONG_IMAGE = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/content/image/4965/d278336e-af7d-4c83-a423-727495583650.webp'
 const ACTION_BTN_IMAGE = 'https://t-cdn-oss.qswnet.com/file/zuche/lottery-center/image/1fc1dcb1-a8f8-444f-941c-d9b5caa12003.png'
