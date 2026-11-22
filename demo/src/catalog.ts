@@ -741,14 +741,14 @@ export const pages: CatalogPage[] = [
       {
         id: 'content-popup',
         title: '内容弹窗',
-        hint: '文字头分四组 Cell：中部/底部、头部渐变（浅/深）、整体渐变（渐隐/渐变）、图片头与徽标另列；头部底色固定并按明暗反色（浅底深字/深底浅字），整体渐变随主题切深蓝系示例色，实际由接入方定制',
-        usage: '<ContentPopup headerBackground={{ from, to?, direction? }} badgeBackground={{ from, to }} actions={[…]} />',
+        hint: '头部与外伸图标按同一个 header 组合：文字头四组 Cell（中部/底部、头部渐变、整体渐变、图片头），外伸 icon 两组 Cell（正圆/圆角方/靠左 与 图片/三方图标）；正圆给蓝、圆角方给绿展示主题感知渐变（明深暗浅），徽标外圈描边默认开而 header 横向分割线默认关；title 与 badge 共用同一份图标/标题渲染，外伸档不出副标题、靠左/右不出标题；整体渐变随主题切深蓝系示例色，实际由接入方定制',
+        usage: '<ContentPopup headerBackground={{ from, to? }} headerIcon={{ kind: "icon", name }} headerImage={{ src }} badge={{ content, tone, border, offset }} actions={[…]} />',
         imports: [
           'mp-taro-kit/ui/layout/content-popup', 'mp-taro-kit/ui/layout/content-popup/style',
           'mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style',
           'mp-taro-kit/ui/display/cell', 'mp-taro-kit/ui/display/cell/style',
         ],
-        renderNotes: '只支持中部/底部；头部槽位覆盖配置，按钮支持横排与纵排；徽标用绝对定位 + transform 外伸，不用负边距；关闭叉与徽标冲突时回落外置档',
+        renderNotes: '只支持中部/底部；头部槽位覆盖配置，按钮支持横排与纵排；徽标用绝对定位 + transform 外伸、外圈描边默认开、渐变随主题反色；header 横向分割线只有文字头默认有；关闭叉与徽标冲突时回落外置档',
       },
     ],
   },

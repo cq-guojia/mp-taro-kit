@@ -47,6 +47,29 @@ test('Icon 组件出口把全量样式带进包，声明文件不残留样式 im
   assert.match(read('../dist/ui/display/icon/Icon.js'), /iconClass/)
 })
 
+test('演示站自有图标只由消费端引用，基础包不得依赖', () => {
+  // demo 是消费端：自己引图标包、把类名传给徽标的 iconClass 通道；库本体对它零引用。
+  const demoPage = read('../demo/src/pages/popup/index.tsx')
+  assert.match(demoPage, /icons\/mp-taro-kit\/demo\/color\/names/, 'demo 没从自己的图标包取类名')
+  assert.match(demoPage, /demoColorIcons\['tool-kit'\]/, '第三方图标示例没用新加的 tool-kit')
+  assert.match(read('../demo/src/app.tsx'), /icons\/mp-taro-kit\/demo\/color\/style\/index\.scss/, 'demo 没引入自有图标样式')
+  const demoColor = read('../demo/src/icons/mp-taro-kit/demo/color/names.ts')
+  assert.match(demoColor, /"tool-kit":\s*'mptk-i-demo-c mptk-i-demo-c-tool-kit'/, '新图标没生成到 demo 包')
+  assert.match(demoColor, /font_5252364_al5dryxbret/, 'demo 图标包源没更新到用户新链接')
+
+  // 库本体（源码与产物）不许出现 demo 图标的类名、源链接或 tool-kit 名字。
+  for (const file of [
+    '../src/ui/layout/content-popup/ContentPopup.tsx',
+    '../dist/ui/layout/content-popup/ContentPopup.js',
+    '../dist/ui/icon/all/index.js',
+    '../dist/ui/icon/all/style/index.css',
+    '../kit.config.mjs',
+  ]) {
+    const text = read(file)
+    assert.doesNotMatch(text, /mptk-i-demo|font_5252364|tool-kit/, `${file} 不该引用演示站自有图标`)
+  }
+})
+
 test('演示站不再手写图标样式或包级 iconClass', () => {
   for (const file of [
     '../demo/src/app.tsx',

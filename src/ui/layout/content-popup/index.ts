@@ -10,6 +10,11 @@ export {
   type ContentPopupActionsAlign,
   type ContentPopupBadgeAlign,
   type ContentPopupBadgeRadius,
+  type ContentPopupBadgeTone,
+  type ContentPopupHeaderIcon,
+  type ContentPopupHeaderImage,
+  type ContentPopupBadge,
+  type ContentPopupBadgeContent,
   type ContentPopupImage,
   type ContentPopupAction,
 } from './ContentPopup.js'

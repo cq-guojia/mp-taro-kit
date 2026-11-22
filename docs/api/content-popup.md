@@ -4,7 +4,7 @@
 
 ## 接口 / 导出
 
-`mp-taro-kit/ui/layout/content-popup` 导出 `ContentPopup` 及 `ContentPopupProps` / `ContentPopupVariant` / `ContentPopupPosition` / `ContentPopupBackground` / `ContentPopupBackgroundDirection` / `ContentPopupActionsLayout` / `ContentPopupActionsAlign` / `ContentPopupBadgeAlign` / `ContentPopupBadgeRadius` / `ContentPopupImage` / `ContentPopupAction`；`mp-taro-kit/ui/layout/content-popup/style` 是组件级样式出口，宿主显式引一次。`mp-taro-kit/ui/layout` 也转发这些出口作兼容。
+`mp-taro-kit/ui/layout/content-popup` 导出 `ContentPopup` 及 `ContentPopupProps` / `ContentPopupVariant` / `ContentPopupPosition` / `ContentPopupBackground` / `ContentPopupBackgroundDirection` / `ContentPopupHeaderIcon` / `ContentPopupHeaderImage` / `ContentPopupActionsLayout` / `ContentPopupActionsAlign` / `ContentPopupBadgeAlign` / `ContentPopupBadgeRadius` / `ContentPopupBadgeTone` / `ContentPopupBadge` / `ContentPopupBadgeContent` / `ContentPopupImage` / `ContentPopupAction`；`mp-taro-kit/ui/layout/content-popup/style` 是组件级样式出口，宿主显式引一次。`mp-taro-kit/ui/layout` 也转发这些出口作兼容。
 
 ```tsx
 import { ContentPopup } from 'mp-taro-kit/ui/layout/content-popup'
@@ -39,8 +39,10 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 |---|---|---|---|
 | `header` | `ReactNode` | — | 头部整体槽位，传了就覆盖 `variant` 配置出来的头部 |
 | `headerBackground` | `BackgroundValue` | 透明 | 头部区底色或渐变；铺满整块头部（含左右留白）；图片头默认无背景，要背景才传 |
+| `headerImage` | `{ src: string; mode?: 'cover' \| 'contain'; position?: string; repeat?: boolean }` | — | 头部图片背景，走 CSS `background-image`；与 `headerBackground` 同给时图片盖在色/渐变之上。不裁切外伸图标；字色仍按 `headerTone` 给 |
 | `headerTone` | `'normal' \| 'on-light' \| 'on-dark'` | `'normal'` | 头部底色的明暗：浅底传 `on-light` 配深字、深底传 `on-dark` 配浅字；`normal` 跟随主题 |
-| `headerDivider` | `boolean` | `title` 档开，其余关 | 头部与内容之间的分割线，要不要由它决定 |
+| `headerDivider` | `boolean` | `title` 开，`image` / `badge` 关 | 头部与内容之间**横向**的分割线；显式传值最高优先。与徽标容器外圈那道 `badge.border` 是两回事。有线的上下留白由 header 给，无线时这段留白随之消失（内容区上间距恒在） |
+| `iconColor` | `string` | 走 `headerTone` 的字色 | 图标颜色，仅单色字体图标生效（COLR/CPAL 彩色字形吃不到 `color`）；显式传入优先于 tone 的默认字色 |
 | `headerDividerColor` | `string` | 随 `headerTone` | 分割线颜色，可写 `var(--mptk-*)`；不传时 `normal` 走 `--mptk-border`、`on-light` 走深线、`on-dark` 走浅线 |
 | `panelBackground` | `BackgroundValue` | — | 整个面板底色或渐变，铺满内容区；`panelStyle` 可再覆盖 |
 
@@ -69,21 +71,26 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 ### `title` 档：文字头
 
-小图标 + 标题 + 副标题是**一体**的标题区，小图标只是标题前的附属，没有背景、不能设形状（那是 `badge` 的职责）。
+小图标 + 标题 + 副标题是**一体**的标题区。与 `badge` 档共用同一份「图标 + 文案」渲染：图标四形态、标题 `--mptk-font-lg`、副标题 `--mptk-font-xs` 在两档完全一致，差异只在图标是**内嵌在左**（本档）还是**外伸在上**（badge 档）。
 
-排布固定为：图标独占左侧一列、上下贯通右侧两行；右列上方主标题（`--mptk-font-lg` / `--mptk-fg`），下方副标题（`--mptk-font-xs` / `--mptk-fg-3`，更小更淡、与主标题零行间距），图标尺寸走组件 token `--mptk-c-content-popup-title-icon-size`，图标与文字的左右间距为 `--mptk-space-4`。长文案在标题与副标题上都会自动换行，不给单行溢出。
+排布固定为：图标独占左侧一列、上下贯通右侧两行；图标尺寸走组件 token `--mptk-c-content-popup-title-icon-size`，图标与文字的左右间距为 `--mptk-space-4`。长文案在标题与副标题上都会自动换行，不给单行溢出。
 
 默认关闭位：中部弹窗为外下中（`below-center`），底部弹窗为外右上（`above-right`）。要改就显式传 `closePosition`。
 
 | 参数 | 类型 | 说明 |
 |---|---|---|
-| `icon` | `string` | 图标名，格式 `库名:图标名` |
-| `glyph` | `ReactNode` | 自绘图标，与 `icon` 互斥、优先 |
-| `title` | `string` | 标题 |
+| `headerIcon` | `ContentPopupHeaderIcon` | 四形态图标（见 badge 档的同名类型），优先级最高 |
+| `icon` | `string` | 旧字段：内置图标名 `库名:图标名`，等价于 `{ kind:'icon', name }` |
+| `glyph` | `ReactNode` | 旧字段：自绘图标节点，等价于 `{ kind:'glyph', node }` |
+| `iconColor` | `string` | 图标颜色，优先级 `content.color` > `iconColor` > 字色 token |
+| `title` | `string` | 主标题（`font-lg`，与 badge 档同号） |
 | `subtitle` | `string` | 标题下方的小字说明 |
 
+优先级：`headerIcon > glyph > icon`。旧字段保留可用，新接入优先用 `headerIcon` 拿四形态能力。
+
 ```tsx
-<ContentPopup open variant="title" icon="common.base:info"
+<ContentPopup open variant="title"
+  headerIcon={{ kind: 'icon', name: 'common.base:AIdamoxing', color: 'var(--mptk-business)' }}
   title="相册备份已开启" subtitle="将自动备份新增照片"
   actions={[{ text: '知道了', onClick: close }]} onClose={close} />
 ```
@@ -103,27 +110,55 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 ### `badge` 档：外伸徽标头
 
-**外伸的是容器本身**，不是里面的图标浮出去。容器里放图标，容器可设背景与描边，下面可带标题、也可没有。
+**外伸的是容器本身**，不是里面的图标浮出去。徽标的全部配置收进一个 `badge` 对象（内容、容器、描边、定位四组正交），下面可带 `title`、也可没有；**没有 `badge.content` 就不渲染头部**，只传标题不会出现空容器。
 
-| 参数 | 类型 | 默认 | 说明 |
+`badge` 对象：
+
+| 字段 | 类型 | 默认 | 说明 |
 |---|---|---|---|
-| `badgeIcon` / `badgeGlyph` | `string` / `ReactNode` | — | 容器里的图标，`glyph` 优先；都没传则不渲染头部 |
-| `badgeRadius` | `'none' \| 'sm' \| 'md' \| 'lg' \| 'circle' \| number \| string` | `'circle'` | 圆角：`circle` 是 50% 正圆，档位取全库半径，数字为 px，字符串如 `'24%'` 按容器自身 |
-| `badgeSize` | `number` | token 72px | 容器尺寸：圆直径 / 方边长 |
-| `badgeAlign` | `'center' \| 'left' \| 'right'` | `'center'` | 水平锚点 |
-| `badgeOffset` | `number \| string` | `0` | 相对锚点偏移；数字为 px，`'20%'` 为面板宽百分比 |
-| `badgeOverlap` | `number \| string` | `'50%'` | 向上浮出量；数字为 px，`'40%'` 为容器自身高度的 40% |
-| `badgeBackground` | `BackgroundValue` | 中性浅底 token | 容器背景，纯色或渐变 |
-| `badgeBorderWidth` | `number` | token 2px | 描边宽度，传 0 关闭 |
-| `badgeBorderColor` | `string` | 面板 surface token | 描边色，纯色或 `var(--mptk-*)` |
-| `title` | `string` | — | 容器下方标题，可选 |
+| `content` | `ContentPopupHeaderIcon`（见下） | 必填 | 四形态图标，与 `title` 档的 `headerIcon` 同一类型、同一渲染 |
+| `tone` | `'blue' \| 'green' \| 'red' \| 'yellow'` | `'blue'` | 预设色：整条渐变随主题反色（明档深、暗档浅）；显式 `background` 盖过它 |
+| `size` | `number \| string` | token 72px | 容器尺寸：圆直径 / 方边长；数字为 px，字符串按 CSS 长度 |
+| `radius` | `'none' \| 'sm' \| 'md' \| 'lg' \| 'circle' \| number \| string` | `'circle'` | 圆角，`circle` 是 50% 正圆；数字为 px，字符串如 `'24%'` |
+| `background` | `ContentPopupBackground` | tone 渐变 | 容器背景，纯色或渐变；传纯色时自动盖掉 tone 预设渐变 |
+| `border` | `false \| { width?: number \| string; color?: string }` | 开，宽/色走 token | 徽标**外圈**这道描边默认就有，默认色跟随面板底色；`false` 关闭，传对象可覆盖宽/色。与 header 横向分割线无关 |
+| `overlap` | `number \| string` | `'50%'` | 向上浮出量，参照容器自身高度；走 transform，不接负值 |
+| `offset` | `{ x?: number \| string; y?: number \| string; anchor?: 'center' \| 'left' \| 'right' }` | `{ anchor: 'center' }` | 有符号微调：x 参照面板宽、y 走 `top`（负值向上），`center` 档 x 以 `calc(50% ± x)` 生效 |
+
+`ContentPopupHeaderIcon` 四形态（判别联合，title 档 `headerIcon` 与 badge 档 `content` 共用）：
+
+| `kind` | 字段 | 渲染方式 |
+|---|---|---|
+| `'icon'` | `name: string`、`size?: IconSize \| number`、`color?: string` | 库内置图标，`name` 必须是 `库名:图标名`；尺寸缺省由槽位 CSS 决定（inline 走 title-icon token，raised 走 xl 档） |
+| `'iconClass'` | `className: string`、`size?: number \| string`、`color?: string` | 第三方/字体图标，类名可含多个（如 `'fa fa-star'`），样式由接入方图标库自带；**不走 `Icon` 的 name 解析** |
+| `'image'` | `src: string`、`width?` / `height?`、`onClick?` | 图片，`mode="aspectFill"` 铺满容器、由外伸盒圆角 + `overflow:hidden` 裁圆 |
+| `'glyph'` | `node: ReactNode` | 自绘节点（SVG-mask 组件等），尺寸由调用方在节点里自定 |
+
+`color` 仅对单色字体图标生效；COLR/CPAL 彩色字形（如演示站的 `tool-kit`）吃不到 `color`，要换色只能换素材。显式 `color` 优先于 `iconColor` 与 `headerTone` 的默认字色，深/浅底上的对比度由调用方自行保证。
+
+**两档是同一个 header**：图标四形态、主标题（lg）、字色 token、分割线共用一份实现与类族；`badge` 只多一层「带背景/圆角/外伸位移的盒子」和标题上方间距，不是另一套标题组件。差异：副标题只在 `title` 档显示；`badge` 只有 `anchor='center'` 出标题，靠左/靠右只有图标；`badge` 外圈描边默认开，但 header 横向分割线默认关。
+
+另：顶层 `title` 只在徽标居中时作为下方主标题，靠左/靠右不出；badge 档默认有分割线（与 title 档一致）。`headerTone` 控制的是 header 区字色，徽标标题落在透明 header 上，跟随面板主题即可，不必按徽标底色传。
 
 ```tsx
-<ContentPopup open variant="badge" badgeGlyph={<MyIcon />}
-  badgeRadius="circle" badgeSize={72} badgeAlign="left" badgeOffset={20}
-  badgeOverlap="40%"
-  badgeBackground={{ from: '#FFB74D', to: '#F57C00', direction: 'to-bottom' }}
-  badgeBorderWidth={2} title="是否开启相册备份" onClose={close} />
+// 图片徽标（截图形态）：圆形容器 + 面板同色描边 + 图片裁圆，靠上偏移
+<ContentPopup open variant="badge" title="是否开启相册备份"
+  badge={{
+    content: { kind: 'image', src: avatarUrl },
+    size: 72, radius: 'circle',
+    border: { width: 2 },
+    overlap: '40%',
+    offset: { y: -8 },
+  }}
+  onClose={close} />
+
+// 第三方图标：两个类名原样透传
+<ContentPopup open variant="badge"
+  badge={{
+    content: { kind: 'iconClass', className: 'fa fa-user', size: 36 },
+    border: false,
+  }}
+  onClose={close} />
 ```
 
 ### 内容与底部
@@ -145,7 +180,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 - **分割线标准**：头部与内容之间的线是**头部的下边框**（不是独立节点），线及以上都归 header——`headerBackground` 的渐变铺到线为止；线通栏（左右顶到面板边）。线以下的间距是**内容区的上间距**（`--mptk-space-4`，16px），由 `.mptk-content-popup__content--top-gap` 恒给，不随分割线显隐消失；线本身上方由 header 的 `padding-bottom` 留同档间距。线色走 `headerDividerColor`，默认 `--mptk-border`。以后本弹窗里新增任何分割线都按这条标准走。
 - **圆角裁切**：面板为徽标外伸开了 `overflow: visible`，不再替头部裁圆角；头部按面板档位自裁上两角（居中档恒圆、底部档仅 `round` 开启才圆，取 `--mptk-c-popup-radius`），渐变不会溢出圆角。
 - **徽标避让**：`badge` 形态下若 `closePosition` 落在面板内 `top-*` / `edge-top-*`，自动回落到 `above-right`，避免与外伸容器叠在一起。
-- **空态**：`badge` 没给图标也没给标题时不渲染头部，不出现空容器。
+- **空态**：`badge` 档没给 `badge.content` 时不渲染头部，只传标题也不会出现空容器。
 - **进出场与关闭路径**：同 Popup——挂载即渲染、播完时长再卸载；关闭叉走 `onClose`，点遮罩走 `closable`，两者正交。
 - **浮出实现**：`position: absolute` + `transform` 位移，不用负 margin / `gap`（Skyline 不支持）；面板对徽标放开 `overflow`，外伸部分不被裁。
 
@@ -164,3 +199,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 - 2026-11-21：底部弹窗默认关闭叉改外右上；演示内容容器占满宽度，修调用方 view 内长文案不换行。
 - 2026-11-22：头部由内外两层合并为一层，背景与留白同层，渐变铺满 padding 区；背景 `to` 改为可选（缺省淡出到面板底色）、角度支持度数且默认 165deg（偏左上起色、顶部浅色到线即回底色）、新增 `fadeFrom` 起始色保持百分比与 `fadeTo` 淡出结束位置；头字色抽成 `--mptk-c-content-popup-head-ink*` token 并随明暗在 light/dark 组各自声明；分割线归 header 下边框且颜色可由 `headerDividerColor` 覆盖；线下间距恒由内容区上间距给；演示按钮拆成「头部渐变」与「整体渐变」两组 Cell。
 - 2026-11-22：`headerTone` 由 `normal`/`inverse` 改为按底色明暗的 `normal`/`on-light`/`on-dark`——浅底头固定深字（修暗档主题下浅蓝头配浅字看不见），深底头固定浅字；演示站渐隐从 `headerBackground` 改走 `panelBackground` 铺满整面板（含头部），整体渐变恢复随主题切明/暗两支深蓝系示例色。
+- 2026-11-22：外伸徽标 10 个平铺字段收进单一 `badge` 对象；内容扩为四形态判别联合（内置 icon / 第三方类名 / 图片 / 自绘节点，新增图片与第三方通道）；描边支持 `false` 关闭，默认色由 `surface-1` 改 `surface-elevated` 使暗档与面板同色；浮出量与有符号 x/y 微调分离（y 走 top 避免 `translateY(--n)`）；修 `badgeReserve` 对 `'20px'` 的解析与「只传标题也画空徽标」两处 bug。
+- 2026-11-22：`title` 与 `badge` 两档收敛为同一份 header 渲染——图标四形态统一 `__lead-*` 类族、文案块统一 `__title-text`，raised 档只多一层外伸盒与标题上间距修饰；主标题两档同为 `--mptk-font-lg`。新增 `headerImage` 独立图片背景入口（与纯色/渐变同层叠加，不裁切外伸图标）、`headerIcon` 与 `iconColor`（优先级 `content.color > iconColor > tone 字色`，COLR/CPAL 彩色字形不吃 `color`）。分割线默认值当时改为 title/badge 开、image 关（同日下一条再纠正为 title 开、image/badge 关）；补渲染自检覆盖以上入口。
+- 2026-11-22：外伸徽标配色收敛进库 token——新增 `badge.tone`（blue / green / red / yellow），每档整条渐变随主题反色（明档深、暗档浅）、图标色与底色配套；demo 不再写死纯色与 headerTone，正圆给 blue、圆角方给 green，不单列配色切换。外伸形态只保留一个标题：`badge.subtitle` 移除、副标题只在 title 档显示、靠左/靠右不出标题。
+- 2026-11-22：纠正两处「border」混淆——徽标**外圈**描边恢复默认开（色随面板底色），header 下方**横向**分割线改为仅 title 档默认开、image/badge 默认关，要分隔由调用方显式 `headerDivider` 打开；徽标图标 token 由 36px 收到 32px。

@@ -102,7 +102,8 @@
   column-gap: var(--mptk-space-4);
 }
 
-.mptk-content-popup__title-icon-slot {
+/* 图标槽（inline）：文字头的图标位；外伸档的盒子在下面 __badge，两者共用 __lead-* 内容类。 */
+.mptk-content-popup__lead-slot {
   display: flex;
   flex: 0 0 auto;
   flex-direction: row;
@@ -112,10 +113,20 @@
   font-size: var(--mptk-c-content-popup-title-icon-size);
 }
 
-.mptk-content-popup__title-icon,
-.mptk-content-popup__title-glyph {
+/* 四形态图标统一类族：title 与 badge 两档只靠槽位 CSS 决定几何，不再各写一套类名。 */
+.mptk-content-popup__lead-icon,
+.mptk-content-popup__lead-glyph {
   font-size: var(--mptk-c-content-popup-title-icon-size);
   line-height: var(--mptk-line-xl);
+}
+
+.mptk-content-popup__lead-iconclass {
+  line-height: 1;
+}
+
+.mptk-content-popup__lead-image {
+  display: block;
+  flex: 0 0 auto;
 }
 
 /* min-width:0 是长文案能换行的前提；flex 子项默认 min-width:auto 会顶破面板。 */
@@ -125,6 +136,14 @@
   min-width: 0;
   flex-direction: column;
   row-gap: var(--mptk-s-zero);
+}
+
+/* 外伸档的文案块：与图标留出间距并居中；字号/字色沿用 __title / __subtitle，不再另立 badge-title。 */
+.mptk-content-popup__title-text--raised {
+  align-items: center;
+  flex: none;
+  margin-top: var(--mptk-space-3);
+  text-align: center;
 }
 
 .mptk-content-popup__title,
@@ -171,22 +190,46 @@
   height: var(--mptk-c-content-popup-badge-size);
   border-style: solid;
   border-width: var(--mptk-c-content-popup-badge-border-w);
-  border-color: var(--mptk-surface-1);
-  background-color: var(--mptk-default-soft);
+  border-color: var(--mptk-surface-elevated);
+  overflow: hidden;
   z-index: var(--mptk-c-layer-popover);
 }
 
-.mptk-content-popup__badge-icon,
-.mptk-content-popup__badge-glyph {
-  color: var(--mptk-c-content-popup-head-ink);
-  font-size: var(--mptk-font-xl);
+/* 四档预设色：整条渐变与反色图标色都收在一个 token 里，随 light / dark 组切换。
+   显式 badge.background 由 JS 内联 backgroundImage:none 盖掉这里的渐变；
+   显式 iconColor 由 JS 内联 color 盖掉这里的图标色。 */
+.mptk-content-popup__badge--tone-blue {
+  background-image: var(--mptk-c-content-popup-badge-bg-blue);
+  color: var(--mptk-c-content-popup-badge-ink-blue);
 }
 
-.mptk-content-popup__badge-title {
-  font-size: var(--mptk-font-md);
-  line-height: var(--mptk-line-md);
-  color: var(--mptk-c-content-popup-head-ink);
-  text-align: center;
+.mptk-content-popup__badge--tone-green {
+  background-image: var(--mptk-c-content-popup-badge-bg-green);
+  color: var(--mptk-c-content-popup-badge-ink-green);
+}
+
+.mptk-content-popup__badge--tone-red {
+  background-image: var(--mptk-c-content-popup-badge-bg-red);
+  color: var(--mptk-c-content-popup-badge-ink-red);
+}
+
+.mptk-content-popup__badge--tone-yellow {
+  background-image: var(--mptk-c-content-popup-badge-bg-yellow);
+  color: var(--mptk-c-content-popup-badge-ink-yellow);
+}
+
+/* 外伸盒里的图标沿用 __lead-* 内容类，字号走徽标专属 token（比文字头大）；颜色继承 tone 反色。 */
+.mptk-content-popup__badge .mptk-content-popup__lead-icon,
+.mptk-content-popup__badge .mptk-content-popup__lead-glyph,
+.mptk-content-popup__badge .mptk-content-popup__lead-iconclass {
+  color: inherit;
+  font-size: var(--mptk-c-content-popup-badge-icon-size);
+}
+
+/* 图片形态：铺满容器，由徽标自身的圆角 + overflow 裁成圆/圆角。 */
+.mptk-content-popup__badge .mptk-content-popup__lead-image {
+  width: 100%;
+  height: 100%;
 }
 
 .mptk-content-popup__actions {

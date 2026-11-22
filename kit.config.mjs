@@ -193,8 +193,17 @@ export default {
     "--mptk-tag-fg": "var(--mptk-fg-on-accent)",                    // 默认标签实心字：引用反白字键，值只维护一处
     "--mptk-fg-on-accent": "@white",                                // 强调底上的字：语义色实心块一律反白，明暗同口径（surface-1 是「面」，暗色下会变成深灰）
     // 内容弹窗头部字色：跟随正文，必须在 light / dark 各声明一次；放 component 会在 page 上按明档 var() 解析后固定，.mptk-dark 改 --mptk-fg 不再生效。
-    "--mptk-c-content-popup-head-ink": "var(--mptk-fg)",             // 头部主字色：深渐变头由 headerTone=inverse 局部覆盖
+    "--mptk-c-content-popup-head-ink": "var(--mptk-fg)",             // 头部主字色：深渐变头由 headerTone=on-dark 局部覆盖
     "--mptk-c-content-popup-head-ink-2": "var(--mptk-fg-3)",         // 头部副字色：跟随三级文字，深渐变头一并覆盖
+    /* 外伸徽标四档预设色：整条渐变作一个 token，明档深、暗档浅（主题反色）；显式 badge.background 覆盖。 */
+    "--mptk-c-content-popup-badge-bg-blue": "linear-gradient(165deg, #3b5bdb, #1e3a8a)",
+    "--mptk-c-content-popup-badge-bg-green": "linear-gradient(165deg, #16a34a, #0e6b4f)",
+    "--mptk-c-content-popup-badge-bg-red": "linear-gradient(165deg, #dc2626, #991b1b)",
+    "--mptk-c-content-popup-badge-bg-yellow": "linear-gradient(165deg, #d97706, #a16207)",
+    "--mptk-c-content-popup-badge-ink-blue": "#fff",                // 徽标图标色：明档深底配白
+    "--mptk-c-content-popup-badge-ink-green": "#fff",
+    "--mptk-c-content-popup-badge-ink-red": "#fff",
+    "--mptk-c-content-popup-badge-ink-yellow": "#fff",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -284,8 +293,17 @@ export default {
     "--mptk-tag-fg": "var(--mptk-fg-on-accent)",                    // 默认标签实心字：与明色同口径，引用反白字键
     "--mptk-fg-on-accent": "@white",                                // 强调底上的字：与明色同口径，实心块反白
     // 内容弹窗头部字色：与明档同名同数，在 .mptk-dark 上重新解析到暗色 --mptk-fg / --mptk-fg-3。
-    "--mptk-c-content-popup-head-ink": "var(--mptk-fg)",             // 头部主字色：深渐变头由 headerTone=inverse 局部覆盖
+    "--mptk-c-content-popup-head-ink": "var(--mptk-fg)",             // 头部主字色：深渐变头由 headerTone=on-dark 局部覆盖
     "--mptk-c-content-popup-head-ink-2": "var(--mptk-fg-3)",         // 头部副字色：跟随三级文字，深渐变头一并覆盖
+    /* 徽标四档预设色：与明档同名，暗档浅底深字，随着 .mptk-dark 切换。 */
+    "--mptk-c-content-popup-badge-bg-blue": "linear-gradient(165deg, #8aa4fe, #5b7cdb)",
+    "--mptk-c-content-popup-badge-bg-green": "linear-gradient(165deg, #5fe0b1, #34d399)",
+    "--mptk-c-content-popup-badge-bg-red": "linear-gradient(165deg, #ff8787, #ff5c5c)",
+    "--mptk-c-content-popup-badge-bg-yellow": "linear-gradient(165deg, #fcd34d, #fbbf24)",
+    "--mptk-c-content-popup-badge-ink-blue": "#1f2328",            // 徽标图标色：暗档浅底配深字
+    "--mptk-c-content-popup-badge-ink-green": "#1f2328",
+    "--mptk-c-content-popup-badge-ink-red": "#1f2328",
+    "--mptk-c-content-popup-badge-ink-yellow": "#1f2328",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -324,9 +342,10 @@ export default {
     /* 内容弹窗：徽标外伸的几何与按钮间距，主题无关；徽标默认底色/描边色取既有主题 token。 */
     "--mptk-c-content-popup-badge-size": "72px",                    // 外伸徽标默认尺寸（圆直径 / 方边长）
     "--mptk-c-content-popup-badge-reserve": "36px",                 // 徽标留在面板内的默认高度，给标题/正文让位
-    "--mptk-c-content-popup-badge-border-w": "2px",                 // 外伸徽标默认描边宽度，传 0 关闭
+    "--mptk-c-content-popup-badge-border-w": "2px",                 // 外伸徽标默认描边宽度，border:false 关闭
     "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距
     "--mptk-c-content-popup-title-icon-size": "28px",               // 文字头图标尺寸，比副标题大一个量级，便于一眼定位
+    "--mptk-c-content-popup-badge-icon-size": "32px",               // 外伸徽标图标尺寸：比文字头大、比旧 36px 收敛一档，与消费端彩色图标同档
     /* 随主题的两条头部字色在 light / dark 组：本组的 var() 会在 page 按明档解析后固定。
        下面三条是「浅底头」专用反色：配置别名解析成明档字面量、不随主题翻亮，
        浅背景在暗档主题下仍是浅底，字色必须固定深色才看得清。 */

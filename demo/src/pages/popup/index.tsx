@@ -29,6 +29,7 @@ import 'mp-taro-kit/ui/form/segmented/style'
 import 'mp-taro-kit/ui/layout/style'
 import 'mp-taro-kit/ui/layout/content-popup/style'
 import { DemoPage } from '../../components/DemoBlock'
+import { iconMap as demoColorIcons } from '../../icons/mp-taro-kit/demo/color/names'
 
 /* 垂直档：顶部 / 中部 / 底部，横排成一组。 */
 const VERTICAL_POSITIONS: { value: PopupPosition; label: string }[] = [
@@ -219,7 +220,7 @@ export default function PopupPage() {
   const [contentVariant, setContentVariant] = useState<ContentPopupVariant>('title')
   const [contentPosition, setContentPosition] = useState<ContentPopupPosition>('center')
   const [contentMode, setContentMode] = useState<
-    'normal' | 'head-light' | 'head-dark' | 'panel-fade' | 'panel-gradient' | 'image-bg' | 'circle' | 'square' | 'left'
+    'normal' | 'head-light' | 'head-dark' | 'panel-fade' | 'panel-gradient' | 'image-bg' | 'circle' | 'square' | 'left' | 'image' | 'iconclass'
   >('normal')
 
   const openContent = (variant: ContentPopupVariant, position: ContentPopupPosition, mode: typeof contentMode) => {
@@ -482,7 +483,27 @@ export default function PopupPage() {
       const headerTone: ContentPopupHeaderTone =
         contentMode === 'head-light' ? 'on-light' :
         contentMode === 'head-dark' ? 'on-dark' :
+        // 徽标标题落在透明的 header 区，跟随面板主题即可；容器自身的反色由 badge tone token 处理。
         'normal'
+      const badge = contentVariant === 'badge'
+        ? {
+            size: 72,
+            radius: contentMode === 'square' ? 'md' as const : 'circle' as const,
+            // 正圆用蓝、圆角方用绿，两个形态各展示一档主题渐变，不必把四色都摆出来。
+            tone: contentMode === 'square' ? 'green' as const : 'blue' as const,
+            overlap: '40%',
+            offset: contentMode === 'left' ? { anchor: 'left' as const, x: 20, y: -8 } : undefined,
+            content: contentMode === 'image'
+              ? { kind: 'image' as const, src: GALLERY_SLIDES[0].src, width: '100%', height: '100%' }
+              : contentMode === 'iconclass'
+                ? { kind: 'iconClass' as const, className: demoColorIcons['tool-kit'], size: 32 }
+                : { kind: 'icon' as const, name:
+                    contentMode === 'circle' ? 'common.base:riqi' :
+                    contentMode === 'square' ? 'common.base:shuju' :
+                    contentMode === 'left' ? 'common.base:tuichu' :
+                    'common.base:AIdamoxing' },
+          }
+        : undefined
       return (
         <View>
           <CellGroup>
@@ -523,12 +544,20 @@ export default function PopupPage() {
               }
             />
             <Cell
-              title="外伸徽标"
+              title="外伸icon"
               value={
                 <View className="demo-row">
                   <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'center', 'circle')}>正圆</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'center', 'square')}>圆角方</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'bottom', 'left')}>靠左</Button>
+                </View>
+              }
+            />
+            <Cell
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'center', 'image')}>图片</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openContent('badge', 'center', 'iconclass')}>三方图标</Button>
                 </View>
               }
             />
@@ -545,14 +574,7 @@ export default function PopupPage() {
             subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
             image={contentVariant === 'image' ? GALLERY_SLIDES[0] : undefined}
             headerBackground={headerBackground}
-            badgeGlyph={contentVariant === 'badge' ? <Text>徽</Text> : undefined}
-            badgeRadius={contentMode === 'square' ? 'md' : 'circle'}
-            badgeAlign={contentMode === 'left' ? 'left' : 'center'}
-            badgeOffset={contentMode === 'left' ? 20 : undefined}
-            badgeSize={72}
-            badgeOverlap="40%"
-            badgeBackground={{ from: '#FFB74D', to: '#F57C00' }}
-            badgeBorderWidth={2}
+            badge={badge}
             actions={[{ text: '知道了', onClick: () => setContentOpen(false) }]}
             overlayTone={maskValues.tone}
             overlayOpacity={maskValues.opacity}

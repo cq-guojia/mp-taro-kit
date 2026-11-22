@@ -685,8 +685,8 @@ test('ContentPopup 文字头把小图标、标题、副标题渲染成一体并�
     h('span', null, 'body'),
   )
   assert.match(html, /mptk-content-popup__header--title/)
-  assert.match(html, /mptk-content-popup__title-icon-slot/)
-  assert.match(html, /mptk-content-popup__title-glyph/)
+  assert.match(html, /mptk-content-popup__lead-slot/)
+  assert.match(html, /mptk-content-popup__lead-glyph/)
   assert.match(html, /mptk-content-popup__title-text/)
   assert.match(html, /class="mptk-content-popup__title"/)
   assert.match(html, /class="mptk-content-popup__subtitle"/)
@@ -712,27 +712,133 @@ test('ContentPopup 图片头渲染原生 Image，默认无分割线，背景走�
   assert.match(html, /background-color:#fff/)
 })
 
-test('ContentPopup 徽标头外伸用 transform，且与面板内关闭位避让', () => {
-  const html = render(h(ContentPopup, {
+test('ContentPopup 徽标对象：四形态、描边开关、有符号偏移与关闭位避让', () => {
+  const base = {
     open: true,
     variant: 'badge',
-    badgeGlyph: h('span', null, 'b'),
-    badgeSize: 72,
-    badgeOverlap: '40%',
-    badgeAlign: 'left',
-    badgeOffset: 20,
-    badgeBorderWidth: 3,
+    title: 'Hi',
     closePosition: 'top-right',
     onClose: () => {},
-    title: 'Hi',
+  }
+  const glyph = render(h(ContentPopup, {
+    ...base,
+    badge: {
+      size: 72,
+      overlap: '40%',
+      offset: { anchor: 'left', x: 20, y: -8 },
+      border: { width: 3, color: '#fff' },
+      content: { kind: 'glyph', node: h('span', null, 'b') },
+    },
   }))
-  assert.match(html, /mptk-content-popup__header--badge/)
-  assert.match(html, /mptk-content-popup__badge/)
-  assert.match(html, /translateY\(-40%\)/)
-  assert.match(html, /width:72px/)
-  assert.match(html, /border-width:3px/)
-  assert.match(html, /mptk-popup__close--above-right/)
-  assert.doesNotMatch(html, /mptk-popup__close--top-right/)
+  assert.match(glyph, /mptk-content-popup__header--badge/)
+  assert.match(glyph, /mptk-content-popup__badge\b/)
+  assert.match(glyph, /mptk-content-popup__lead-glyph/)
+  assert.match(glyph, /translateY\(-40%\)/)
+  assert.match(glyph, /width:72px/)
+  assert.match(glyph, /border-width:3px/)
+  assert.match(glyph, /border-color:\s*#fff/)
+  assert.match(glyph, /left:20px/, '靠左档有符号 x 生效')
+  assert.match(glyph, /top:-8px/, '有符号 y 走 top，不拼进 translateY')
+  assert.match(glyph, /mptk-popup__close--above-right/)
+  assert.doesNotMatch(glyph, /mptk-popup__close--top-right/)
+  assert.doesNotMatch(glyph, /translateY\(--/, '不能拼出 --8px 非法值')
+
+  // 内置 icon：name 直接透给 Icon；size 数字档。
+  const icon = render(h(ContentPopup, { ...base, badge: { content: { kind: 'icon', name: 'common.base:AIdamoxing', size: 28 } } }))
+  assert.match(icon, /mptk-content-popup__lead-icon/, '内置 icon 形态')
+  assert.match(icon, /font-size:\s*28px/, '图标尺寸可覆盖')
+
+  // 第三方类名：两个类名一起落到 Text 的 class，不经过 Icon 的 name 解析。
+  const iconClass = render(h(ContentPopup, { ...base, badge: { content: { kind: 'iconClass', className: 'fa fa-star', size: '20px' } } }))
+  assert.match(iconClass, /mptk-content-popup__lead-iconclass fa fa-star/, '第三方两类名原样透传')
+  assert.match(iconClass, /font-size:\s*20px/)
+
+  // 图片：aspectFill + 可设宽高，空宽度时由 CSS 100% 撑满容器。
+  const image = render(h(ContentPopup, { ...base, badge: { content: { kind: 'image', src: 'a.png', width: 40, height: 40 } } }))
+  assert.match(image, /mptk-content-popup__lead-image/)
+  assert.match(image, /<image/)
+  assert.match(image, /aspectFill/)
+  assert.match(image, /width:40px/)
+
+  // 描边关闭 + 居中档自定义 x 用 calc 叠加百分比。
+  const noBorder = render(h(ContentPopup, { ...base, badge: { border: false, offset: { x: '10%' }, content: { kind: 'glyph', node: h('span') } } }))
+  assert.match(noBorder, /border-width:\s*0/)
+  assert.match(noBorder, /left:\s*calc\(50% \+ 10%\)/)
+
+  // 徽标外圈描边默认开（与 header 横向分割线是两回事）；默认 blue tone。
+  const plain = render(h(ContentPopup, { ...base, badge: { content: { kind: 'glyph', node: h('span') } } }))
+  assert.match(plain, /mptk-content-popup__badge--tone-blue/, '默认 blue 预设色')
+  assert.match(plain, /border-width:\s*var\(--mptk-c-content-popup-badge-border-w\)/, '徽标外圈描边默认开')
+  assert.doesNotMatch(plain, /mptk-content-popup__header--divided/, '徽标头默认没有 header 横向分割线')
+  const green = render(h(ContentPopup, { ...base, badge: { tone: 'green', content: { kind: 'glyph', node: h('span') } } }))
+  assert.match(green, /mptk-content-popup__badge--tone-green/, 'tone 可切色')
+  const solid = render(h(ContentPopup, { ...base, badge: { background: '#fff', content: { kind: 'glyph', node: h('span') } } }))
+  assert.match(solid, /background-color:\s*#fff/, '显式纯色生效')
+  assert.match(solid, /background-image:\s*none/, '显式纯色盖掉 tone 预设渐变')
+})
+
+test('ContentPopup headerImage 与 headerIcon 正交，iconColor 落到图标，两档标题同一类', () => {
+  // 图片背景与纯色/渐变同层叠加；不裁切外伸图标，故给 header 而非 overflow:hidden。
+  const withImage = render(h(ContentPopup, {
+    open: true,
+    title: 'T',
+    headerBackground: '#fff',
+    headerImage: { src: 'head.png', mode: 'contain', position: 'left', repeat: true },
+  }))
+  assert.match(withImage, /mptk-content-popup__header[^>]*background-color:\s*#fff/, '纯色背景仍在 header 层')
+  assert.match(withImage, /mptk-content-popup__header[^>]*background-image:\s*url\(/, '图片背景与纯色同层')
+  assert.match(withImage, /head\.png/, '图片地址落到 header')
+  assert.match(withImage, /background-size:contain/, 'mode 落到 background-size')
+  assert.match(withImage, /background-position:left/, 'position 可配')
+  assert.match(withImage, /background-repeat:repeat/, 'repeat 可配')
+
+  // title 档走与 badge 档同一份四形态渲染，iconColor 优先于 tone 字色，content.color 又优先于 iconColor。
+  const colored = render(h(ContentPopup, {
+    open: true,
+    title: 'T',
+    headerIcon: { kind: 'icon', name: 'common.base:AIdamoxing' },
+    iconColor: '#f00',
+  }))
+  assert.match(colored, /mptk-content-popup__lead-icon/, 'title 档图标并入 __lead-* 类族')
+  assert.match(colored, /color:\s*#f00/, 'iconColor 落到图标节点')
+
+  const own = render(h(ContentPopup, {
+    open: true,
+    title: 'T',
+    headerIcon: { kind: 'icon', name: 'common.base:AIdamoxing', color: '#0f0' },
+    iconColor: '#f00',
+  }))
+  assert.match(own, /color:\s*#0f0/, 'content.color 优先于 iconColor')
+  assert.doesNotMatch(own, /color:\s*#f00/, '被覆盖的 iconColor 不残留')
+
+  // 两档主标题共用 __title 类，字号同档；外伸档不出副标题，只有居中档出标题。
+  const titleHtml = render(h(ContentPopup, { open: true, title: '同一个标题' }))
+  const badgeHtml = render(h(ContentPopup, {
+    open: true,
+    variant: 'badge',
+    title: '同一个标题',
+    subtitle: '顶层副标题',
+    badge: { content: { kind: 'glyph', node: h('span') } },
+  }))
+  assert.match(titleHtml, /<text class="mptk-content-popup__title">同一个标题<\/text>/)
+  assert.match(badgeHtml, /<text class="mptk-content-popup__title">同一个标题<\/text>/, '两档标题同一类，字号同档')
+  assert.match(badgeHtml, /mptk-content-popup__title-text--raised/, '外伸档文案块加间距修饰类')
+  assert.doesNotMatch(badgeHtml, /顶层副标题/, '外伸档不显示副标题')
+
+  const left = render(h(ContentPopup, {
+    open: true,
+    variant: 'badge',
+    title: '不该出现',
+    badge: { content: { kind: 'glyph', node: h('span') }, offset: { anchor: 'left' } },
+  }))
+  assert.doesNotMatch(left, /mptk-content-popup__title-text/, '靠左档不出文案块')
+  assert.doesNotMatch(left, /不该出现/, '靠左档不出标题')
+})
+
+test('ContentPopup 徽标空内容不渲染空容器：只传 title 不再造空徽标', () => {
+  const html = render(h(ContentPopup, { open: true, variant: 'badge', title: '只有标题' }))
+  assert.doesNotMatch(html, /mptk-content-popup__header--badge/, '没有 content 连头部都不渲染')
+  assert.doesNotMatch(html, /mptk-content-popup__badge(?![-\w])/, '没有 content 就不渲染徽标容器')
 })
 
 test('ContentPopup 背景渐变：默认 165deg、fadeFrom/fadeTo 把颜色收在分割线之前', () => {
@@ -822,11 +928,11 @@ test('ContentPopup 头部只有一层，背景与留白同层，字色走 token'
   assert.match(html, /mptk-content-popup__header--title[^>]*background-image:/, '背景与 title 留白在同一层')
   assert.doesNotMatch(html, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, '文字头不该带徽标预留的 padding-top')
 
-  // 徽标预留只属于 badge 档：传了 badgeSize 的文字头也不能被误加顶部留白。
-  const titleWithBadgeSize = render(h(ContentPopup, { open: true, variant: 'title', title: 'T', badgeSize: 72 }))
-  assert.doesNotMatch(titleWithBadgeSize, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, 'badgeSize 不该污染文字头')
+  // 徽标预留只属于 badge 档：传了 badge 的文字头也不能被误加顶部留白。
+  const titleWithBadge = render(h(ContentPopup, { open: true, variant: 'title', title: 'T', badge: { size: 72, content: { kind: 'glyph', node: h('span') } } }))
+  assert.doesNotMatch(titleWithBadge, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, 'badge 不该污染文字头')
 
-  const badge = render(h(ContentPopup, { open: true, variant: 'badge', badgeGlyph: h('span', null, 'b'), badgeSize: 72, badgeOverlap: '40%' }))
+  const badge = render(h(ContentPopup, { open: true, variant: 'badge', badge: { size: 72, overlap: '40%', content: { kind: 'glyph', node: h('span', null, 'b') } } }))
   assert.match(badge, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, '徽标档才保留预留高度')
 
   const css = readFileSync(join(root, 'src/ui/layout/content-popup/style/index.scss'), 'utf8')

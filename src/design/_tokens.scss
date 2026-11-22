@@ -1,4 +1,4 @@
-// @mptk-inputs:bb75e837f8fa
+// @mptk-inputs:c454a2859120
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -82,6 +82,7 @@
   --mptk-c-content-popup-badge-border-w: 2px;
   --mptk-c-content-popup-action-gap: var(--mptk-space-2);
   --mptk-c-content-popup-title-icon-size: 28px;
+  --mptk-c-content-popup-badge-icon-size: 32px;
   --mptk-c-content-popup-head-ink-on-light: #1f2328;
   --mptk-c-content-popup-head-ink-on-light-2: #5c6370;
   --mptk-c-content-popup-head-divider-on-light: #dcdee0;
@@ -277,6 +278,14 @@
   --mptk-fg-on-accent: #fff;
   --mptk-c-content-popup-head-ink: var(--mptk-fg);
   --mptk-c-content-popup-head-ink-2: var(--mptk-fg-3);
+  --mptk-c-content-popup-badge-bg-blue: linear-gradient(165deg, #3b5bdb, #1e3a8a);
+  --mptk-c-content-popup-badge-bg-green: linear-gradient(165deg, #16a34a, #0e6b4f);
+  --mptk-c-content-popup-badge-bg-red: linear-gradient(165deg, #dc2626, #991b1b);
+  --mptk-c-content-popup-badge-bg-yellow: linear-gradient(165deg, #d97706, #a16207);
+  --mptk-c-content-popup-badge-ink-blue: #fff;
+  --mptk-c-content-popup-badge-ink-green: #fff;
+  --mptk-c-content-popup-badge-ink-red: #fff;
+  --mptk-c-content-popup-badge-ink-yellow: #fff;
   --mptk-control-blue: #3b5bdb;
   --mptk-control-green: #22c55e;
   --mptk-control-orange: #f59e0b;
@@ -370,6 +379,14 @@
   --mptk-fg-on-accent: #fff;
   --mptk-c-content-popup-head-ink: var(--mptk-fg);
   --mptk-c-content-popup-head-ink-2: var(--mptk-fg-3);
+  --mptk-c-content-popup-badge-bg-blue: linear-gradient(165deg, #8aa4fe, #5b7cdb);
+  --mptk-c-content-popup-badge-bg-green: linear-gradient(165deg, #5fe0b1, #34d399);
+  --mptk-c-content-popup-badge-bg-red: linear-gradient(165deg, #ff8787, #ff5c5c);
+  --mptk-c-content-popup-badge-bg-yellow: linear-gradient(165deg, #fcd34d, #fbbf24);
+  --mptk-c-content-popup-badge-ink-blue: #1f2328;
+  --mptk-c-content-popup-badge-ink-green: #1f2328;
+  --mptk-c-content-popup-badge-ink-red: #1f2328;
+  --mptk-c-content-popup-badge-ink-yellow: #1f2328;
   --mptk-control-blue: #6b8afd;
   --mptk-control-green: #34d399;
   --mptk-control-orange: #fbbf24;

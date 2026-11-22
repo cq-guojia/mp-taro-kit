@@ -42,7 +42,7 @@ export const SOURCES = [
   },
   {
     id: 'mp-taro-kit.demo.color',
-    source: 'https://at.alicdn.com/t/c/font_5252364_pqxmtk35gcs.css',
+    source: 'https://at.alicdn.com/t/c/font_5252364_al5dryxbret.css',
     visibility: 'demo',
   },
 ]

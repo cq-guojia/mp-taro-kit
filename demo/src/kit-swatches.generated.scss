@@ -1,4 +1,4 @@
-// @mptk-inputs:cac49f0bb583
+// @mptk-inputs:ef277564beb2
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -311,6 +311,38 @@
   .demo-swatch--c-content-popup-head-ink-2 {
     --mptk-swatch: var(--mptk-c-content-popup-head-ink-2);
     background-color: var(--mptk-c-content-popup-head-ink-2);
+  }
+  .demo-swatch--c-content-popup-badge-bg-blue {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-bg-blue);
+    background-color: var(--mptk-c-content-popup-badge-bg-blue);
+  }
+  .demo-swatch--c-content-popup-badge-bg-green {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-bg-green);
+    background-color: var(--mptk-c-content-popup-badge-bg-green);
+  }
+  .demo-swatch--c-content-popup-badge-bg-red {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-bg-red);
+    background-color: var(--mptk-c-content-popup-badge-bg-red);
+  }
+  .demo-swatch--c-content-popup-badge-bg-yellow {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-bg-yellow);
+    background-color: var(--mptk-c-content-popup-badge-bg-yellow);
+  }
+  .demo-swatch--c-content-popup-badge-ink-blue {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-ink-blue);
+    background-color: var(--mptk-c-content-popup-badge-ink-blue);
+  }
+  .demo-swatch--c-content-popup-badge-ink-green {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-ink-green);
+    background-color: var(--mptk-c-content-popup-badge-ink-green);
+  }
+  .demo-swatch--c-content-popup-badge-ink-red {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-ink-red);
+    background-color: var(--mptk-c-content-popup-badge-ink-red);
+  }
+  .demo-swatch--c-content-popup-badge-ink-yellow {
+    --mptk-swatch: var(--mptk-c-content-popup-badge-ink-yellow);
+    background-color: var(--mptk-c-content-popup-badge-ink-yellow);
   }
   .demo-swatch--control-blue {
     --mptk-swatch: var(--mptk-control-blue);
