@@ -670,7 +670,7 @@ test('演示站只演示形态：不渲染代码，通栏示例页裸展示', ()
 
 test('演示站组件之间只留一道间距：横排右距 + 纵向容器相邻距，不用 gap', () => {
   const scss = read('../demo/src/app.scss')
-  assert.match(scss, /\.demo-item\s*\{[^}]*margin-right:\s*var\(--mptk-space-3\)/, '缺 demo-item 右侧间距')
+  assert.match(scss, /\.demo-item\s*\{[^}]*margin-right:\s*var\(--mptk-space-2\)/, '缺 demo-item 右侧间距（space-2 = 8px）')
   assert.match(
     scss,
     /\.demo-stack > view:not\(:first-child\)/,
