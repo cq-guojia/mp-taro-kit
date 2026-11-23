@@ -75,7 +75,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 排布固定为：图标独占左侧一列、上下贯通右侧两行；图标尺寸走组件 token `--mptk-c-content-popup-title-icon-size`，图标与文字的左右间距为 `--mptk-space-4`。长文案在标题与副标题上都会自动换行，不给单行溢出。
 
-默认关闭位：顶部弹窗为面板下方右（`below-right`，贴顶没有上方外置位），中部弹窗为外下中（`below-center`），底部弹窗为外右上（`above-right`）。要改就显式传 `closePosition`；顶部档只接受 `below-center` / `below-right`，其余档位无效回落。
+默认关闭位统一走中线：顶部 / 中部弹窗为外下中（`below-center`，贴顶没有上方外置位），底部弹窗为外上中（`above-center`）。要改就显式传 `closePosition`；顶部档只接受 `below-center` / `below-right`，其余档位无效回落。
 
 | 参数 | 类型 | 说明 |
 |---|---|---|
@@ -201,7 +201,7 @@ interface ContentPopupFooterConfig {
 - **高度**：沿用 Popup「高度由内容撑开、不写 `max-height`」；要滚由调用方在 `children` 里包 `scroll-view` 并给确定高。
 - **分割线标准**：头部与内容之间的线是**头部的下边框**（不是独立节点），线及以上都归 header——`headerBackground` 的渐变铺到线为止；线通栏（左右顶到面板边）。线以下的间距是**内容区的上间距**（`--mptk-space-4`，16px），由 `.mptk-content-popup__content--top-gap` 恒给，不随分割线显隐消失；线本身上方由 header 的 `padding-bottom` 留同档间距。线色走 `headerDividerColor`，默认 `--mptk-border`。以后本弹窗里新增任何分割线都按这条标准走。
 - **圆角裁切**：面板为徽标外伸开了 `overflow: visible`，不再替头部裁圆角；头部按面板档位自裁上两角（居中档恒圆、底部档仅 `round` 开启才圆，取 `--mptk-c-popup-radius`），渐变不会溢出圆角。
-- **徽标避让**：`badge` 形态下若 `closePosition` 落在面板内 `top-*` / `edge-top-*`，自动回落到 `above-right`，避免与外伸容器叠在一起。
+- **徽标避让**：`badge` 形态下若 `closePosition` 落在面板内 `top-*` / `edge-top-*`，自动回落到中线外置档（底部 `above-center`、其余 `below-center`），避免与外伸容器叠在一起。
 - **空态**：`badge` 档没给 `badge.content` 时不渲染头部，只传标题也不会出现空容器。
 - **进出场与关闭路径**：同 Popup——挂载即渲染、播完时长再卸载；关闭叉走 `onClose`，点遮罩走 `closable`，两者正交。
 - **浮出实现**：`position: absolute` + `transform` 位移，不用负 margin / `gap`（Skyline 不支持）；面板对徽标放开 `overflow`，外伸部分不被裁。
@@ -230,3 +230,4 @@ interface ContentPopupFooterConfig {
 - 2026-11-23："底部按钮"配置从弹窗内容移回外层 Cell（排在分组首位，与"形状"同一处切换），去掉"打开配置"按钮与弹窗内滑块，点开即所选形态。底栏高度从 96rpx（48px）改走 `--mptk-control-h-md`（40px）。
 - 2026-11-23：修 joined 竖线上下留白与文字不居中。真正的根因是 foot 节点从未挂 `mptk-content-popup__foot--joined`，SCSS 的四边 `padding:0` 规则空转、默认上下 16px 内距一直生效——补挂类名后才真正贯通；另把 joined 格子内 Button 的左右内距归零，文字 / 图标在均分格子里居中。圆角归零同时保留，避免边框两端被圆弧吃掉。
 - 2026-11-23：撤销底栏专属高度 token `--mptk-c-content-popup-footer-h`。按钮文字区由 `size` 决定（演示站统一 md = 40 / 14）；joined 格子另设 48px（`--mptk-control-h-lg`）让分隔线比按钮略高，两轴解耦。
+- 2026-11-23：默认关闭位统一走中线（top / center 外下中、bottom 外上中），徽标内部档避让也回落到中线；演示站竖排最后一个「取消」改 ghost 纯文字无底色，与上面两个实心主操作拉开层级。

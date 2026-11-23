@@ -711,12 +711,12 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   for (const pos of bottom) assert.equal(resolveClosePosition('bottom', pos), pos, `底部应支持 ${pos}`)
   for (const pos of center) assert.equal(resolveClosePosition('center', pos), pos, `中部应支持 ${pos}`)
   for (const pos of top) assert.equal(resolveClosePosition('top', pos), pos, `顶部应支持 ${pos}`)
-  assert.equal(resolveClosePosition('bottom', undefined), 'above-right', '底部默认外右上')
-  assert.equal(resolveClosePosition('center', undefined), 'above-right', '中部默认外右上')
-  assert.equal(resolveClosePosition('top', undefined), 'below-right', '顶部默认面板下方外置右侧')
-  assert.equal(resolveClosePosition('bottom', 'below-center'), 'above-right', '底部不支持下方档，应回落默认外右上')
-  assert.equal(resolveClosePosition('center', 'above-center'), 'above-right', '中部不支持上方居中，应回落默认外右上')
-  assert.equal(resolveClosePosition('top', 'top-right'), 'below-right', '顶部不支持面板内档，应回落默认外置右侧')
+  assert.equal(resolveClosePosition('bottom', undefined), 'above-center', '底部默认外上中')
+  assert.equal(resolveClosePosition('center', undefined), 'below-center', '中部默认外下中')
+  assert.equal(resolveClosePosition('top', undefined), 'below-center', '顶部默认面板下方居中')
+  assert.equal(resolveClosePosition('bottom', 'below-center'), 'above-center', '底部不支持下方档，应回落默认外上中')
+  assert.equal(resolveClosePosition('center', 'above-center'), 'below-center', '中部不支持上方居中，应回落默认外下中')
+  assert.equal(resolveClosePosition('top', 'top-right'), 'below-center', '顶部不支持面板内档，应回落默认外下中')
   for (const panel of ['left', 'right']) {
     assert.equal(resolveClosePosition(panel, 'top-right'), null, `${panel} 档不该有关闭按钮，传什么都不生效`)
   }
@@ -1133,9 +1133,12 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   }
   // 带按钮两类：库按钮走 text、图片按钮走专用图 src（lottery-center 图）。
   assert.match(popupPage, /text: '查看详情'/, '库按钮示例用内置 Button 的文字按钮')
-  // 回归：库按钮示例不用只有边框的 soft/outline（白底太透看不清），用实心档。
-  assert.match(popupPage, /\{ text: '取消', type: 'default', size: 'md', onClick:/, '库按钮示例用实心 default，不用 soft/outline')
-  assert.doesNotMatch(popupPage, /\{ text: '取消', variant: '(?:soft|outline|ghost)'/, '库按钮示例不得用只有边框的透底档')
+  // 回归：图片弹窗的库按钮示例不用只有边框的 soft/outline（白底太透看不清），用实心档。
+  const imageActionBlock = popupPage.slice(popupPage.indexOf('const ACTION_BUTTON_SLIDE'), popupPage.indexOf('const ACTION_IMAGE_SLIDE'))
+  assert.match(imageActionBlock, /\{ text: '取消', type: 'default', size: 'md', onClick:/, '图片弹窗库按钮用实心 default，不用 soft/outline')
+  assert.doesNotMatch(imageActionBlock, /variant:/, '图片弹窗库按钮不得用透底档')
+  // 竖排最后一个「取消」是次要操作：ghost 纯文字无底色。
+  assert.match(popupPage, /\{ text: '取消', variant: 'ghost', type: 'default', size: FOOTER_BTN_SIZE, onClick:/, '竖排取消按钮走 ghost 纯文字')
   assert.match(popupPage, /ACTION_BTN_IMAGE = 'https:\/\/t-cdn-oss\.qswnet\.com\/file\/zuche\/lottery-center\/image\//, '图片按钮用指定的 lottery-center 图')
   assert.match(popupPage, /\{ src: ACTION_BTN_IMAGE, height: 36,/, '图片按钮项传 src + 定高')
   // 单图 / 多图翻页用两张正常高度图，长图不参与翻页、只用于长图滚动档。

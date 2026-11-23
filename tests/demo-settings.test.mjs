@@ -26,11 +26,11 @@ test('demo 设置面板：每页常驻入口，底部面板按内容撑高，三
   assert.doesNotMatch(panel, /surface="none"/, '普通设置面板不该用裸壳')
   assert.doesNotMatch(panel, /panelStyle/, '不该写死高度，内容多高就多高')
   assert.match(panel, /closeable/, '缺关闭叉')
-  assert.doesNotMatch(panel, /closePosition/, '关闭按钮该用核心默认值（外右上），不自己指定')
+  assert.doesNotMatch(panel, /closePosition/, '关闭按钮该用核心默认值（外上中），不自己指定')
   assert.match(
     read('src/ui/layout/close-position.ts'),
-    /bottom:\s*'above-right'/,
-    '核心默认必须是外右上（面板外上方留间距），不是面板内右上',
+    /bottom:\s*'above-center'/,
+    '核心默认必须是外上中（面板外上方居中），不是面板内右上',
   )
 
   // 根因：贴顶/贴底不写死 height，body 统一 View 按内容撑高。

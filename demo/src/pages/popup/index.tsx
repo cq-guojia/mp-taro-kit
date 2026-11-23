@@ -273,7 +273,7 @@ export default function PopupPage() {
   /* 底部四形态：单按钮拉通 / 竖排拉通 / 横排按比例 / joined 竖线分隔（带上边线）。 */
   /* 弹窗按钮统一走 md（40 / 14）：字号已到封顶点，竖线与其它形态的按钮一样高、一样大。 */
   const FOOTER_BTN_SIZE = 'md' as const
-  const FOOTER_DEMOS: Record<typeof footerKind, { actions: { text: string; type?: 'default' | 'primary'; size?: typeof FOOTER_BTN_SIZE; icon?: string; color?: string; onClick?: () => void }[]; config: ContentPopupFooterConfig }> = {
+  const FOOTER_DEMOS: Record<typeof footerKind, { actions: { text: string; type?: 'default' | 'primary'; variant?: 'solid' | 'soft' | 'outline' | 'ghost'; size?: typeof FOOTER_BTN_SIZE; icon?: string; color?: string; onClick?: () => void }[]; config: ContentPopupFooterConfig }> = {
     single: {
       actions: [{ text: '知道了', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) }],
       config: { layout: 'stack' },
@@ -282,7 +282,8 @@ export default function PopupPage() {
       actions: [
         { text: '存入相册', type: 'default', size: FOOTER_BTN_SIZE, icon: 'common.base:chazhao' },
         { text: '分享给好友', type: 'default', size: FOOTER_BTN_SIZE, icon: 'common.base:fuzhi' },
-        { text: '取消', type: 'default', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) },
+        /* 取消是次要操作：走 ghost 纯文字、无底色，与上面两个实心主操作拉开层级。 */
+        { text: '取消', variant: 'ghost', type: 'default', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) },
       ],
       config: { layout: 'stack' },
     },

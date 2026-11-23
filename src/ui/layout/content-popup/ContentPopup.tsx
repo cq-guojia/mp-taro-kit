@@ -667,19 +667,17 @@ export function ContentPopup({
   }
 
   // 徽标外伸后，面板内 top-* 档的关闭叉会压在徽标上，回落到外置档；
-  // 中部弹窗默认外下中，底部弹窗的文字头默认面板内右上，其余档沿用底座默认外置右上。
-  // top 档贴顶、上方外置档不可用：显式给 below-right，不靠底座兜底。
+  // 默认关闭位统一走中线：top / center 外下中，bottom 外上中，与底座 DEFAULT 一致。
   const resolvedClosePosition: PopupClosePosition | undefined = (() => {
     if (closePosition !== undefined) {
-      if (resolvedPosition === 'top') return 'below-right'
+      if (resolvedPosition === 'top') return 'below-center'
       return variant === 'badge' &&
         (closePosition.startsWith('top-') || closePosition.startsWith('edge-top-'))
-        ? 'above-right'
+        ? 'above-center'
         : closePosition
     }
-    if (resolvedPosition === 'top') return 'below-right'
-    if (resolvedPosition === 'center') return 'below-center'
-    return 'above-right'
+    if (variant === 'badge') return resolvedPosition === 'bottom' ? 'above-center' : 'below-center'
+    return undefined
   })()
 
   const mergedPanelStyle: CSSProperties | undefined =

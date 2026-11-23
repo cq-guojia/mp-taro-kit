@@ -387,8 +387,8 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   assert.match(soft, /mptk-popup__close--translucent/, '默认底色就是非实底：不传 closeBackground 也要挂 translucent class')
   assert.doesNotMatch(soft, /mptk-popup__close--solid-bg/, '非实底档不能同时挂实底上下文类')
   assert.match(soft, /mptk-btn--radius-pill/, 'circle 形状走 pill 圆角')
-  assert.match(soft, /mptk-popup__close--above-right/, '底部面板默认关闭按钮在面板外右上')
-  assert.match(soft, /mptk-popup__close--on-overlay/, '外右上完全落在遮罩上，挂亮灰上下文类')
+  assert.match(soft, /mptk-popup__close--above-center/, '底部面板默认关闭按钮在面板外上中')
+  assert.match(soft, /mptk-popup__close--on-overlay/, '外上中完全落在遮罩上，挂亮灰上下文类')
   const inside = render(h(Popup, { ...base, closePosition: 'top-left' }, h('div', null, '内容')))
   assert.doesNotMatch(inside, /mptk-popup__close--on-overlay/, '面板内的按钮不能吃遮罩上的亮灰，否则白面板上看不见')
   const half = render(h(Popup, { ...base, closePosition: 'edge-top-right' }, h('div', null, '内容')))
@@ -416,9 +416,9 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
     assert.doesNotMatch(render(h(Popup, { ...base, position: panel }, h('div', null, '内容'))), /mptk-popup__close/, `${panel} 抽屉不支持关闭按钮`)
   }
 
-  /* 贴顶档支持面板下方外置位置，默认落面板下方靠右。 */
+  /* 贴顶档支持面板下方外置位置，默认落面板下方居中。 */
   const top = render(h(Popup, { ...base, position: 'top' }, h('div', null, '内容')))
-  assert.match(top, /mptk-popup__close--below-right/, '贴顶档默认关闭按钮落在面板下方靠右')
+  assert.match(top, /mptk-popup__close--below-center/, '贴顶档默认关闭按钮落在面板下方居中')
   assert.match(top, /mptk-popup__close--on-overlay/, '面板下方外置档也完全落在遮罩上')
   assert.match(top, /mptk-popup--close-outside/, '贴顶档下方按钮要放开面板裁剪')
   const topRight = render(h(Popup, { ...base, position: 'top', closePosition: 'below-right' }, h('div', null, '内容')))
@@ -432,7 +432,7 @@ test('Popup 关闭按钮复用核心 Button：形状 / 描边 / 底色三轴落�
   /* 裸壳档：面板 class 带 surface-none，浮层能力（遮罩 / 关闭按钮）仍在。 */
   const bare = render(h(Popup, { ...base, surface: 'none' }, h('div', null, '自画内容')))
   assert.match(bare, /mptk-popup--surface-none/, 'surface=none 要落裸壳 class')
-  assert.match(bare, /mptk-popup__close--above-right/, '裸壳档关闭按钮仍渲染且落在默认外右上')
+  assert.match(bare, /mptk-popup__close--above-center/, '裸壳档关闭按钮仍渲染且落在默认外上中')
   assert.match(bare, /mptk-overlay/, '裸壳档遮罩仍在')
   assert.doesNotMatch(bare, /<scroll-view/, '面板内容不该套 scroll-view，高度由 children 撑开')
   const panel = render(h(Popup, base, h('div', null, 'x')))
@@ -696,11 +696,11 @@ test('ContentPopup 文字头把小图标、标题、副标题渲染成一体并�
   assert.match(html, /mptk-content-popup__actions/)
 })
 
-test('ContentPopup 底部弹窗默认关闭叉在外右上', () => {
+test('ContentPopup 底部弹窗默认关闭叉在外上中', () => {
   const html = render(h(ContentPopup, { open: true, position: 'bottom', variant: 'title', title: 'T', onClose: () => {} }))
-  assert.match(html, /mptk-popup__close--above-right/)
+  assert.match(html, /mptk-popup__close--above-center/)
   assert.doesNotMatch(html, /mptk-popup__close--top-right/)
-  assert.doesNotMatch(html, /mptk-popup__close--below-center/)
+  assert.doesNotMatch(html, /mptk-popup__close--above-right/)
 })
 
 test('ContentPopup 图片头渲染原生 Image，默认无分割线，背景走内联', () => {
@@ -739,7 +739,7 @@ test('ContentPopup 徽标对象：四形态、描边开关、有符号偏移与�
   assert.match(glyph, /border-color:\s*#fff/)
   assert.match(glyph, /left:20px/, '靠左档有符号 x 生效')
   assert.match(glyph, /top:-8px/, '有符号 y 走 top，不拼进 translateY')
-  assert.match(glyph, /mptk-popup__close--above-right/)
+  assert.match(glyph, /mptk-popup__close--below-center/)
   assert.doesNotMatch(glyph, /mptk-popup__close--top-right/)
   assert.doesNotMatch(glyph, /translateY\(--/, '不能拼出 --8px 非法值')
 

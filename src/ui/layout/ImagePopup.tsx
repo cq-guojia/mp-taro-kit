@@ -49,7 +49,7 @@ export interface ImagePopupProps {
   open: boolean
   slides: ImagePopupSlide[]
   onClose?: () => void
-  /** 关闭按钮位置，沿用 Popup 现有档；默认面板下方居中（图片 + 按钮下方） */
+  /** 关闭按钮位置，沿用 Popup 现有档；不传按形态取底座默认（top / center 外下中，bottom 外上中） */
   closePosition?: PopupClosePosition
   closeable?: boolean
   closeShape?: 'circle' | 'rounded'
@@ -213,7 +213,7 @@ export function ImagePopup({
   open,
   slides,
   onClose,
-  closePosition = 'below-center',
+  closePosition,
   closeable = true,
   closeShape = 'circle',
   closeBorder = true,

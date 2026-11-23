@@ -20,7 +20,7 @@
 
 ### 关闭按钮
 
-`closeable` 默认 `false`；开启后复用核心 `Button`，不在浮层里另造按钮皮肤。默认位置统一外右上：bottom / center 落在面板外右上（`above-right`，与面板留一个间距档），top 档贴顶、上方外置档不可用，落在面板下方外置右侧（`below-right`）。组件把关闭按钮排在内容容器之后，避免被内容盖住。
+`closeable` 默认 `false`；开启后复用核心 `Button`，不在浮层里另造按钮皮肤。默认位置统一走中线：bottom 落在面板外上中（`above-center`），top / center 落在面板外下中（`below-center`）。top 档贴顶、上方外置档不可用；居中档两侧都可放，中线最稳不左右飘。组件把关闭按钮排在内容容器之后，避免被内容盖住。
 
 样式拆成三个正交轴，由 `resolveCloseStyle()`（`src/ui/layout/close-style.ts`）算出 Button 的 `variant` / `radius`：
 
@@ -38,9 +38,9 @@
 
 | 形态 | 面板内 | 跨上边一半 | 面板上方 | 面板下方 | 默认 |
 |---|---|---|---|---|---|
-| `bottom` | `top-left`、`top-right` | `edge-top-left`、`edge-top-right` | `above-right`、`above-center` | — | `above-right` |
-| `center` | `top-right` | `edge-top-right` | `above-right` | `below-center`、`below-right` | `above-right` |
-| `top` | — | — | — | `below-center`、`below-right` | `below-right` |
+| `bottom` | `top-left`、`top-right` | `edge-top-left`、`edge-top-right` | `above-right`、`above-center` | — | `above-center` |
+| `center` | `top-right` | `edge-top-right` | `above-right` | `below-center`、`below-right` | `below-center` |
+| `top` | — | — | — | `below-center`、`below-right` | `below-center` |
 | `left` / `right` | 不支持 | 不支持 | 不支持 | 不支持 | 无关闭按钮 |
 
 几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。外置档锚在面板边缘内侧（`top` / `bottom: 0`），再用 `transform` 按**按钮自身高度**移出面板：`above-*` 用 `--mptk-s-full-neg`（-100%）上移、`below-*` 用 `--mptk-s-full`（100%）下移——百分比参照按钮自身，是确定量，不参照面板高度，面板高度变化也不影响按钮位置。
@@ -154,7 +154,7 @@ import 'mp-taro-kit/ui/layout/style'
 | `open` | boolean | 必填 | 是否显示；关闭后按 Popup 的退场时长卸载 |
 | `slides` | `ImagePopupSlide[]` | 必填 | 一屏一项：一张 `src` + 自己的尺寸字段 / `actions` / `actionsAlign` / `onClick`；一组即单图无翻页，多组出 Swiper + 红点；空数组不渲染任何东西 |
 | `onClose` | `() => void` | — | 关闭回调（关闭叉 / 点遮罩都走它）；不传则不渲染关闭叉 |
-| `closePosition` | `PopupClosePosition` | `'below-center'` | 关闭按钮位置，沿用 Popup 档；默认落在图片 + 按钮下方 |
+| `closePosition` | `PopupClosePosition` | — | 关闭按钮位置，沿用 Popup 档；不传按形态取底座默认（top / center 外下中，bottom 外上中） |
 | `showIndicators` | boolean | `true` | 多图是否显示原生红点（`indicator-dots`） |
 | `closeable` | boolean | `true` | 显示关闭叉（**默认与 Popup 的 `false` 不同**） |
 | `closeShape` / `closeBorder` / `closeBackground` / `overlayTone` / `overlayOpacity` / `closable` | 同 Popup | — | 透传给底层 Popup；`closeable` 显示叉、`closable` 点遮罩关闭，两者正交 |
@@ -210,6 +210,7 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-19：从 `docs/api/overlay.md` 拆出 Popup / ImagePopup 契约独立成篇；遮罩本体、层级链与安全区注入留在 overlay.md，历史条目也留在原文，不重复搬运。
 - 2026-11-20 21:57:03：修裸壳档错位：撤掉贴顶/贴底固定 height，高度真由内容决定
 - 2026-11-20 22:16:12：核心改造：高度由内容撑开不再写死35vh，body统一View，关闭按钮默认右上，删sheet-h token
+- 2026-11-23：默认关闭位统一走中线——bottom 外上中 above-center、top / center 外下中 below-center；ImagePopup 不传时按形态取底座默认。ContentPopup badge 形态显式内部档的避让也回落到中线。
 - 2026-11-20 22:26:58：关闭按钮默认改外右上 above-right（bottom/center）
 - 2026-11-20：规范修复关闭按钮跑屏幕左上/离面板远：面板撤掉 max-height（Skyline 下参与 fixed 面板高度计算，把内容撑高型面板顶成上限高、留底部空白），面板高度恒等于内容高，外置关闭按钮沿用 transform 按自身高度移出面板
 - 2026-11-21：修关闭按钮各档位置全错乱的根因——单类 `.mptk-popup__close{position:absolute}` 被后加载的同权重 `.mptk-btn{position:relative}` 覆盖，absolute 失效、按钮退回文档流、right 丢失；absolute 与 z-index 移入双类 `.mptk-btn.mptk-popup__close`（0,2,0）压过 Button，定位方案保持 transform 不变
