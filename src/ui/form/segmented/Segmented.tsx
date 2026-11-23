@@ -66,7 +66,8 @@ interface CellBox {
 /**
  * 指示器呈现模式——全组件唯一的决策点 `resolveIndicatorMode` 的输出：
  * - `sliding`：几何量到（或 equal 零测量），track 内一个绝对定位指示器，带过渡，切换时滑动；
- * - `static`：浮层等容器里量不到 item 几何，由选中段自绘，几何随段自身，不带过渡。
+ * - `static`：浮层等容器里量不到 item 几何，每段各画一个、靠 opacity 做交叉淡入淡出，
+ *              几何随段自身，不做位移动画。
  * 两种形态（thumb / line）共用这一个判别，不各写一套分流。
  */
 type IndicatorMode = 'sliding' | 'static'
@@ -226,8 +227,11 @@ export function Segmented<T extends string = string>({
               if (!itemDisabled && !active) change(item.value)
             }}
           >
-            {/* static 轨：只由选中段自绘，几何跟随段自身宽高，不靠实测也不做位移动画。 */}
-            {!sliding && active ? <View className={selfClassName} style={selfColorStyle} /> : null}
+            {/* static 轨：每段都常驻一个自绘指示器，靠段的选中态切 opacity 做交叉淡入淡出：
+                旧段渐隐、新段渐显，过渡只在透明度上，位置与宽高始终跟随段自身，不做位移动画。 */}
+            {!sliding ? (
+              <View className={`mptk-seg__self ${selfClassName}`} style={selfColorStyle} />
+            ) : null}
             {item.icon === undefined ? null : <View className="mptk-seg__icon">{item.icon}</View>}
             <View className="mptk-seg__text">
               <View className="mptk-seg__label">

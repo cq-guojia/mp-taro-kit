@@ -146,9 +146,23 @@
   transition-timing-function: var(--mptk-ease);
 }
 
-/* 测量不到段宽时的兜底滑块：画在选中段自己内部，四边内缩同一个 token，几何跟随段宽，
-   不靠 boundingClientRect 猜位置。段本身 position:relative、z-index 高于绝对轨滑块，
-   而这里的底色压到 0、文字/图标抬到 raised，保证 Skyline 下白字不被蓝底整块盖住。 */
+/* 测量不到段宽时的兜底指示器（thumb / line 共用）：每个段内常驻一个，默认透明，
+   只有选中段的那一个由 --on 态提到不透明。切换时旧的渐隐、新的渐显，形成交叉淡入淡出；
+   过渡只作用在 opacity 上，位置和宽高始终跟随所在段，不做任何位移。 */
+.mptk-seg__self {
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: var(--mptk-dur);
+  transition-timing-function: var(--mptk-ease);
+}
+
+.mptk-seg__item--on .mptk-seg__self {
+  opacity: 1;
+}
+
+/* 兜底滑块：四边内缩同一个 token，几何跟随段宽，不靠 boundingClientRect 猜位置。
+   段本身 position:relative、z-index 高于绝对轨滑块，而这里的底色压到 0、
+   文字/图标抬到 raised，保证 Skyline 下白字不被蓝底整块盖住。 */
 .mptk-seg__self-thumb {
   position: absolute;
   z-index: var(--mptk-s-zero);
@@ -268,9 +282,10 @@
 
 /* 等待态：滑块自己的底色呼吸，文字、段宽、指示器位置一律不动。
    下划线形态没有滑块，呼吸的就是那条线；两者同一份关键帧（见文件顶部 @use）。 */
+/* static 轨每段都常驻指示器，呼吸只给选中段那一个：用 --on 态收窄，
+   否则未选中段的透明指示器也会一起闪。 */
 .mptk-seg--busy .mptk-seg__thumb,
 .mptk-seg--busy .mptk-seg__line,
-.mptk-seg--busy .mptk-seg__self-thumb,
-.mptk-seg--busy .mptk-seg__self-line {
+.mptk-seg--busy .mptk-seg__item--on .mptk-seg__self {
   animation: mptk-control-breathe var(--mptk-dur-breathe) var(--mptk-ease) var(--mptk-s-infinite);
 }

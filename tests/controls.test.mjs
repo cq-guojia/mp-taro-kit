@@ -197,10 +197,11 @@ test('Segmented 单一入口决定指示器呈现，thumb / line 两形态各走
     /\{sliding \? <View className=\{slideClassName\} style=\{indicatorStyle\} \/> : null\}/,
     'sliding 轨只渲染一个 track 级指示器，thumb / line 通用',
   )
+  assert.match(src, /\{!sliding \? \(/, 'static 轨每段都常驻一个指示器，不再只挂选中段')
   assert.match(
     src,
-    /\{!sliding && active \? <View className=\{selfClassName\} style=\{selfColorStyle\} \/> : null\}/,
-    'static 轨只由选中段自绘，thumb / line 通用',
+    /<View className=\{`mptk-seg__self \$\{selfClassName\}`\} style=\{selfColorStyle\} \/>/,
+    'static 指示器带共用基类与形态类，thumb / line 通用',
   )
 
   /* 测量：独立 id 逐段查，任一段 null 就不采用；重试耗尽保持 null 交给 static 轨。 */
@@ -215,7 +216,7 @@ test('Segmented 单一入口决定指示器呈现，thumb / line 两形态各走
   assert.match(src, /clearTimeout\(retryTimer\.current\)/, '卸载要清重试定时器')
   assert.doesNotMatch(src, /console\.(log|warn|error)/, '诊断 log 不许留在源码里')
 
-  /* 样式契约：sliding 两形态都有位移动画，static 两形态都没有——降级就体现在这里。 */
+  /* 样式契约：sliding 两形态都有位移动画；static 没有位移动画，但用 opacity 过渡做交叉淡入淡出。 */
   const css = read('../dist/ui/form/segmented/style/index.css')
   /* 锚到行首，避免命中 .mptk-seg--radius-pill .mptk-seg__self-thumb 这类复合选择器。 */
   const rule = (selector) => {
@@ -225,13 +226,26 @@ test('Segmented 单一入口决定指示器呈现，thumb / line 两形态各走
   }
   for (const shape of ['thumb', 'line']) {
     assert.match(rule(`.mptk-seg__${shape}`), /transition-property:\s*left,\s*width/, `${shape} sliding 轨要能滑`)
-    assert.doesNotMatch(rule(`.mptk-seg__self-${shape}`), /transition/, `${shape} static 轨不许有位移动画`)
+    assert.doesNotMatch(
+      rule(`.mptk-seg__self-${shape}`),
+      /transition-property:\s*[^;]*\b(?:left|width|top|bottom|right)\b/,
+      `${shape} static 轨不许有位移动画`,
+    )
     assert.match(
       rule(`.mptk-seg__self-${shape}`),
       /z-index:\s*var\(--mptk-s-zero\)/,
       `${shape} 兜底底色必须压在文字下层`,
     )
   }
+  const selfRule = rule('.mptk-seg__self')
+  assert.match(selfRule, /opacity:\s*0/, 'static 指示器默认透明')
+  assert.match(selfRule, /transition-property:\s*opacity/, 'static 交叉淡化只过渡透明度')
+  assert.match(rule('.mptk-seg__item--on .mptk-seg__self'), /opacity:\s*1/, '选中段指示器不透明')
+  assert.match(
+    css,
+    /\.mptk-seg--busy \.mptk-seg__item--on \.mptk-seg__self\s*\{/,
+    '呼吸只作用选中段的 static 指示器，其余常驻节点不跟着闪',
+  )
   assert.match(rule('.mptk-seg__text'), /z-index:\s*var\(--mptk-s-z-raised\)/, '文字抬到兜底背景之上')
   assert.match(rule('.mptk-seg__icon'), /z-index:\s*var\(--mptk-s-z-raised\)/, '图标抬到兜底背景之上')
 
