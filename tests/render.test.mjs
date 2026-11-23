@@ -989,6 +989,9 @@ test('ContentPopup footer 四档：stack 拉通、row 按比例、joined 竖线�
   }))
   assert.match(joined, /mptk-content-popup__actions--joined/)
   assert.match(joined, /mptk-content-popup__foot--divided/)
+  // foot 必须真的挂 joined 类，否则 SCSS 的四边 padding:0 不生效，竖线上下仍留白。
+  assert.match(joined, /mptk-content-popup__foot--joined/, 'joined 底栏必须挂 foot--joined，不能只靠 SCSS 规则')
+  assert.doesNotMatch(row, /mptk-content-popup__foot--joined/, 'spaced 档不许挂 joined 类')
   // joined = 与面板融合的透明文字按钮栏：ghost 皮肤 + 格子类，第二项才带分隔线。
   assert.match(joined, /mptk-btn--ghost/)
   assert.match(joined, /mptk-content-popup__action-cell/)

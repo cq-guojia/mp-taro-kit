@@ -286,9 +286,16 @@
   row-gap: var(--mptk-s-zero);
 }
 
-/* joined 的格子撑满整栏高度（按钮本体走 ghost 皮肤，透明底无描边，由 JS 注入）。 */
+/* joined 的格子撑满整栏高度（按钮本体走 ghost 皮肤，透明底无描边，由 JS 注入）。
+   圆角必须归零：分隔线是格子的 border-left / border-top，Button 自带圆角会把线两端
+   各吃掉一个半径，看上去就是「竖线上下留了间距」；零圆角后线贯通整格，
+   面板底两角仍由 foot--joined 自己裁，不受影响。 */
 .mptk-content-popup__actions--joined .mptk-content-popup__action-cell {
+  /* 通栏文字按钮栏：格子已由 flex 均分整宽，Button 自带的左右内距会把文字推离格子中心，
+     这里归零让文字 / 图标真正居中；高度走底栏 token，圆角归零让分隔线贯通整格。 */
+  --mptk-btn-px: var(--mptk-s-zero);
   height: var(--mptk-c-content-popup-footer-h);
+  border-radius: var(--mptk-radius-none);
 }
 
 /* 中间分隔线：横排画左边框、竖排画上边框，色走 token；dividerColor 由 JS 内联覆盖。 */

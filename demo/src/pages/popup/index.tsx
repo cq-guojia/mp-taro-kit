@@ -50,6 +50,16 @@ const SHAPES: { value: PopupCloseShape; label: string }[] = [
   { value: 'rounded', label: '圆角方' },
 ]
 
+type FooterKind = 'single' | 'stack' | 'row' | 'joined'
+
+/* 底栏四形态在外层 Cell 上直接切，与上面的「形状」配置同一处；点开弹窗即是所选形态。 */
+const FOOTER_SHAPES: { value: FooterKind; label: string }[] = [
+  { value: 'single', label: '单按钮' },
+  { value: 'stack', label: '竖排' },
+  { value: 'row', label: '横排' },
+  { value: 'joined', label: '竖线' },
+]
+
 const YES_NO = [
   { value: 'yes', label: '是' },
   { value: 'no', label: '否' },
@@ -251,7 +261,7 @@ export default function PopupPage() {
   const [contentMode, setContentMode] = useState<
     'normal' | 'head-light' | 'head-dark' | 'panel-fade' | 'panel-gradient' | 'image-bg' | 'circle' | 'square' | 'left' | 'image' | 'iconclass'
   >('normal')
-  const [footerKind, setFooterKind] = useState<'single' | 'stack' | 'row' | 'joined'>('single')
+  const [footerKind, setFooterKind] = useState<FooterKind>('single')
 
   const openContent = (variant: ContentPopupVariant, position: ContentPopupPosition, mode: typeof contentMode) => {
     setContentVariant(variant)
@@ -571,20 +581,16 @@ export default function PopupPage() {
         <View>
           <CellGroup>
             <Cell
+              title="底部按钮"
+              value={<Segmented items={FOOTER_SHAPES} value={footerKind} onChange={setFooterKind} />}
+            />
+            <Cell
               title="文字头"
               value={
                 <View className="demo-row">
                   <Button className="demo-item" size="xs" onClick={() => openContent('title', 'top', 'normal')}>顶部</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'normal')}>中部</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('title', 'bottom', 'normal')}>底部</Button>
-                </View>
-              }
-            />
-            <Cell
-              title="底部按钮"
-              value={
-                <View className="demo-row">
-                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'normal')}>打开配置</Button>
                 </View>
               }
             />
@@ -654,17 +660,6 @@ export default function PopupPage() {
             onClose={() => setContentOpen(false)}
           >
             <View className="demo-stack demo-stack--fill">
-              <Segmented
-                size="xs"
-                items={[
-                  { value: 'single', label: '单按钮' },
-                  { value: 'stack', label: '竖排' },
-                  { value: 'row', label: '横排' },
-                  { value: 'joined', label: '竖线' },
-                ]}
-                value={footerKind}
-                onChange={setFooterKind}
-              />
               <Text>{`内容弹窗 / ${contentVariant} / ${contentPosition}`}</Text>
               <Text>头部、内容与按钮由库组合；完全自绘传 children 与 surface=none</Text>
             </View>

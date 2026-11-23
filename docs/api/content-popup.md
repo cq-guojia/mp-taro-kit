@@ -192,7 +192,7 @@ interface ContentPopupFooterConfig {
 ```
 
 - `spaced` 档文字/图片按钮之间走 token 间距、**默认没有 border**；只有 `joined` 档默认带上边线与中间分隔线，也可显式 `divider: false` 关掉。
-- `joined` 档是**与面板融为一体的文字按钮栏**：底栏通栏贴底、四边无留白（无左/右/下 padding），按钮默认走 `ghost` 皮肤（透明底、无描边，调用方显式传 `variant` 时尊重），文字色/icon 走 `ButtonProps` 的 `color` / `icon`。分隔线落在格子的 `border` 上（横排左边框、竖排上边框），格子高度走 `--mptk-c-content-popup-footer-h`；居中/上浮档底栏自裁底两角，底部档贴屏不裁。不用伪类、不用负 margin。
+- `joined` 档是**与面板融为一体的文字按钮栏**：底栏通栏贴底、四边无留白（无左/右/下 padding，靠 foot 节点真的挂 `mptk-content-popup__foot--joined` 让 `padding:0` 生效），按钮默认走 `ghost` 皮肤（透明底、无描边，调用方显式传 `variant` 时尊重），文字色/icon 走 `ButtonProps` 的 `color` / `icon`。分隔线落在格子的 `border` 上（横排左边框、竖排上边框），**格子圆角归零（`--mptk-radius-none`），分隔线贯通整格上下**；格子内 Button 的左右内距归零（`--mptk-btn-px`），让文字 / 图标在均分格子里真正居中。格子高度走 `--mptk-c-content-popup-footer-h`（复用控件中档 `--mptk-control-h-md`，40px）；居中/上浮档底栏自裁底两角，底部档贴屏不裁。不用伪类、不用负 margin。
 - 优先级统一为 **槽位 > `footerConfig` > 旧简写 > 默认**。要完全自绘就不传头部/按钮配置，只传 `children` + `surface='none'`；不需要新造「透明模式」。
 
 ## 行为契约
@@ -227,3 +227,5 @@ interface ContentPopupFooterConfig {
 - 2026-11-22：纠正两处「border」混淆——徽标**外圈**描边恢复默认开（色随面板底色），header 下方**横向**分割线改为仅 title 档默认开、image/badge 默认关，要分隔由调用方显式 `headerDivider` 打开；徽标图标 token 由 36px 收到 32px。
 - 2026-11-22：`position` 扩到 `top` / `center` / `bottom` 三档（左右抽屉仍排除），顶部档徽标降级为内联头、关闭叉固定 `below-right`。底栏新增 `footerConfig`（`layout: stack | row` × `separation: spaced | joined`，加 `divider` / `dividerColor` / `ratios`），支持单按钮拉通、竖排拉通、横排等分或按比例、竖线/横线分隔四形态；`actionsLayout` / `actionsAlign` 降级为兼容简写。分隔线走格子 border、joined 才默认带上边线，spaced 默认无 border。
 - 2026-11-23：修正 joined 底栏视觉——从「浅色实心圆角块 + 四周留白」改为与面板融为一体的通栏文字按钮栏（透明底、无左右下间距、上横线 + 中竖线、文字色/icon 可配）；新增 `--mptk-c-content-popup-footer-h` token。演示站改为弹窗内容第一行放 Segmented 配置控件，切档时 footer 实时响应，撤掉页面四个入口按钮。
+- 2026-11-23："底部按钮"配置从弹窗内容移回外层 Cell（排在分组首位，与"形状"同一处切换），去掉"打开配置"按钮与弹窗内滑块，点开即所选形态。底栏高度从 96rpx（48px）改走 `--mptk-control-h-md`（40px）。
+- 2026-11-23：修 joined 竖线上下留白与文字不居中。真正的根因是 foot 节点从未挂 `mptk-content-popup__foot--joined`，SCSS 的四边 `padding:0` 规则空转、默认上下 16px 内距一直生效——补挂类名后才真正贯通；另把 joined 格子内 Button 的左右内距归零，文字 / 图标在均分格子里居中。圆角归零同时保留，避免边框两端被圆弧吃掉。

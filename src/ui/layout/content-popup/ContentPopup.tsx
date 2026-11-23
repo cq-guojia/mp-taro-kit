@@ -728,7 +728,11 @@ export function ContentPopup({
       </View>
       {hasFooter ? (
         <View
-          className={['mptk-content-popup__foot', footerDivider ? 'mptk-content-popup__foot--divided' : ''].filter(Boolean).join(' ')}
+          className={[
+            'mptk-content-popup__foot',
+            footerDivider ? 'mptk-content-popup__foot--divided' : '',
+            footerJoined ? 'mptk-content-popup__foot--joined' : '',
+          ].filter(Boolean).join(' ')}
           style={footerDivider && footerDividerColor !== undefined ? { borderTopColor: footerDividerColor } : undefined}
         >
           {footer !== undefined

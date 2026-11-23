@@ -1008,9 +1008,9 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   }
   assert.doesNotMatch(overlayPage, /<Button\b/, '遮罩页不该出现按钮，只演遮罩')
   // 位置按钮按用户要求降到 xs 档（24px）：垂直 / 侧面 / 关闭按钮位置各一处 + 图片弹窗三类
-  // （图片单图/多图两处 + 带按钮库按钮/图片按钮两处 + 图片尺寸 map 一处，运行时 3 个）+ 内容弹窗十八处入口
-  // （原十三处 + 文字头顶部档一处 + 底部配置入口一处）。
-  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 24, '位置三处 + 图片弹窗五个 + 内容弹窗十五处入口 + 弹窗内配置一处都显式降一档到 xs')
+  // （图片单图/多图两处 + 带按钮库按钮/图片按钮两处 + 图片尺寸 map 一处，运行时 3 个）+ 内容弹窗十四处入口。
+  // 底栏形态切换已移到外层 Cell（与「形状」一样走默认 sm）、弹窗内滑块已撤，比上一轮少两处 xs。
+  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 22, '位置三处 + 图片弹窗五个 + 内容弹窗十四处入口都显式降一档到 xs；底栏切换与「形状」同档')
 
   // 三块结构：顶部统一配置 + 位置档 + 关闭按钮位置；旧的六块全部撤掉。
   // catalog 只取 popup 页自己的 examples 段，popup / overlay 是合法的页与菜单 id，不能整篇搜。
@@ -1081,8 +1081,9 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   assert.match(popupPage, /label: '底部'/, '垂直档叫底部')
   assert.match(popupPage, /label: '左侧'/, '侧面档叫左侧')
   assert.match(popupPage, /label: '右侧'/, '侧面档叫右侧')
-  // 源码里按钮 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十六处 = 二十四处（内容弹窗原十三 + 顶部档一 + 底栏入口一）。
-  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 23, '按钮二十三处 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十五处')
+  // 源码里按钮 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十四处 = 二十二处。
+  // 「打开配置」按钮已换成外层 Cell 上的 Segmented，比上一轮少一处 Button。
+  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 22, '按钮二十二处 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十四处')
   assert.equal((popupPage.match(/VERTICAL_POSITIONS\.map/g) ?? []).length, 1, '垂直档按钮走一份数据源')
   assert.equal((popupPage.match(/SIDE_POSITIONS\.map/g) ?? []).length, 1, '侧面档按钮走一份数据源')
   assert.equal((popupPage.match(/CLOSE_GROUPS\.map/g) ?? []).length, 1, '关闭按钮位置三组走一份数据源')
@@ -1091,7 +1092,7 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
     5,
     '位置档共 5 个按钮：垂直 3 + 侧面 2',
   )
-  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 23, '按钮横排用 demo-item 控制间距（位置三处 + 图片弹窗五处 + 内容弹窗十五处）')
+  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 22, '按钮横排用 demo-item 控制间距（位置三处 + 图片弹窗五处 + 内容弹窗十四处）')
   assert.match(popupPage, /size="xs"/, '按钮降到 xs 档')
   assert.match(popupPage, /position=\{position\}/, '位置档要真的切 position')
   assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮位置要真的切位置')
@@ -1223,7 +1224,8 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
   assert.match(own, /\.mptk-content-popup__actions--stack,\s*\.mptk-content-popup__actions--column/, 'stack 与旧 column 别名同规则')
   assert.match(own, /\.mptk-content-popup__foot--joined\s*\{[^}]*padding-top:\s*var\(--mptk-s-zero\)[^}]*padding-bottom:\s*var\(--mptk-s-zero\)/, "joined 底栏四边无留白")
   assert.match(own, /\.mptk-popup__panel--center \.mptk-content-popup__foot--joined,/, "joined 底栏居中档自裁底两角")
-  assert.match(own, /\.mptk-content-popup__actions--joined \.mptk-content-popup__action-cell\s*\{[^}]*height:\s*var\(--mptk-c-content-popup-footer-h\)/, "joined 格子高度走 token")
+  assert.match(own, /\.mptk-content-popup__actions--joined \.mptk-content-popup__action-cell\s*\{[^}]*--mptk-btn-px:\s*var\(--mptk-s-zero\)[^}]*height:\s*var\(--mptk-c-content-popup-footer-h\)[^}]*border-radius:\s*var\(--mptk-radius-none\)/, 'joined 格子内距归零、高度走 token、圆角归零，分隔线贯通且文字居中')
+  assert.match(read('kit.config.mjs'), /"--mptk-c-content-popup-footer-h":\s*"var\(--mptk-control-h-md\)"/, '底栏高度复用控件中档，不写死 rpx')
   assert.match(own, /\.mptk-content-popup__actions--joined\s*\{[^}]*column-gap:\s*var\(--mptk-s-zero\)/, 'joined 档取消列间距')
   assert.match(own, /\.mptk-content-popup__actions--row\.mptk-content-popup__actions--joined\s+\.mptk-content-popup__action--divided\s*\{[^}]*border-left-width:\s*var\(--mptk-c-border-w\)/, '横排 joined 用左边框分隔')
   assert.match(own, /\.mptk-content-popup__actions--stack\.mptk-content-popup__actions--joined\s+\.mptk-content-popup__action--divided\s*\{[^}]*border-top-width:\s*var\(--mptk-c-border-w\)/, '竖排 joined 用上边框分隔')
@@ -1252,10 +1254,14 @@ test('演示页与文档同步 ContentPopup 三档', () => {
   assert.doesNotMatch(page, /badgeBackground/, 'demo 不再写死徽标纯色，配色统一走库 token')
   assert.match(page, /tone: contentMode === 'square' \? 'green'/, 'demo 按形态给 tone 色名，不写色值')
   assert.match(page, /title="底部按钮"/, '演示页缺底栏配置入口 Cell')
-  assert.match(page, /value={footerKind}/, '底栏配置控件由弹窗内 Segmented 的 value={footerKind} 驱动')
+  assert.match(page, /title="底部按钮"\s+value=\{<Segmented items=\{FOOTER_SHAPES\} value=\{footerKind\} onChange=\{setFooterKind\} \/>\}/, '底栏形态切换直接放在 Cell 上，与「形状」同一处')
+  assert.ok(page.indexOf('title="底部按钮"') < page.indexOf('title="文字头"'), '底部按钮 Cell 必须排在分组首位')
   for (const label of ['单按钮', '竖排', '横排', '竖线']) {
-    assert.match(page, new RegExp(`value: '${label === '竖排' ? 'stack' : label === '横排' ? 'row' : label === '竖线' ? 'joined' : 'single'}', label: '${label}'`), `弹窗内配置缺 ${label} 档`)
+    assert.match(page, new RegExp(`value: '${label === '竖排' ? 'stack' : label === '横排' ? 'row' : label === '竖线' ? 'joined' : 'single'}', label: '${label}'`), `外层配置缺 ${label} 档`)
   }
+  assert.doesNotMatch(page, /打开配置/, '不保留「打开配置」按钮：切换就在 Cell 上，点开即所选形态')
+  const contentBlock = page.slice(page.indexOf("if (id === 'content-popup')"))
+  assert.doesNotMatch(contentBlock.slice(contentBlock.indexOf('<ContentPopup')), /<Segmented/, '弹窗 children 里不许再有形态切换滑块')
   assert.match(page, /onClick=\{\(\) => openContent\('title', 'top', 'normal'\)\}/, '文字头缺顶部档演示')
   assert.match(page, /separation: 'joined'/, 'demo 缺 joined 形态配置')
   assert.match(page, /ratios: \[1, 2\]/, 'demo 缺横排按比例配置')
