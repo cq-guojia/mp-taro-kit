@@ -173,6 +173,9 @@ const CLOSE_GROUPS: CloseDemoGroup[] = [
    不依赖外部 CDN；其余三张待用户提供同形式素材后按同一方式替换。 */
 const IMAGE_A = 'https://raw.githubusercontent.com/cq-guojia/dsh-plugin-core/main/assets/examples/popup/portrait.png'
 const IMAGE_B = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/checkin/image/df61b214-81f1-4e29-98b9-b38957695bb2.png.png'
+/* 图片头 + 底色档专用：用户提供的搜索功能图，与上面几张常规演示图来源一致。 */
+const HEADER_IMAGE = 'https://raw.githubusercontent.com/cq-guojia/dsh-plugin-core/main/assets/examples/popup/popup-header-search.png'
+const HEADER_IMAGE_SLIDE: { src: string; width: number } = { src: HEADER_IMAGE, width: 320 }
 const LONG_IMAGE = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/content/image/4965/d278336e-af7d-4c83-a423-727495583650.webp'
 const ACTION_BTN_IMAGE = 'https://t-cdn-oss.qswnet.com/file/zuche/lottery-center/image/1fc1dcb1-a8f8-444f-941c-d9b5caa12003.png'
 
@@ -543,7 +546,7 @@ export default function PopupPage() {
       const headerBackground =
         contentMode === 'head-light' ? { from: '#E8F2FF', to: '#BBD7FF' } :
         contentMode === 'head-dark' ? { from: '#1E3A8A', to: '#0F2557' } :
-        contentMode === 'image-bg' ? '#fff' :
+        contentMode === 'image-bg' ? '#F33' :
         undefined
       // 整体渐变铺满整块面板（含头部）：渐隐自顶部即开始平缓淡出，到 45% 已完全回到底色（不再拖到中下部）。
       const panelBackground =
@@ -653,7 +656,7 @@ export default function PopupPage() {
             icon={contentVariant === 'title' ? 'common.base:AIdamoxing' : undefined}
             title={contentVariant === 'image' ? undefined : '是否开启相册备份'}
             subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
-            image={contentVariant === 'image' ? GALLERY_SLIDES[0] : undefined}
+            image={contentVariant === 'image' ? (contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]) : undefined}
             headerBackground={headerBackground}
             badge={badge}
             actions={FOOTER_DEMOS[footerKind].actions}
