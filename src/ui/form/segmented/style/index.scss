@@ -68,7 +68,8 @@
    同特异性下后者胜出，所以 --line 一定能盖掉 --radius-pill。 */
 .mptk-seg--radius-pill { border-radius: var(--mptk-radius-pill); }
 .mptk-seg--radius-pill .mptk-seg__track { border-radius: var(--mptk-radius-pill); }
-.mptk-seg--radius-pill .mptk-seg__thumb { border-radius: var(--mptk-radius-pill); }
+.mptk-seg--radius-pill .mptk-seg__thumb,
+.mptk-seg--radius-pill .mptk-seg__self-thumb { border-radius: var(--mptk-radius-pill); }
 
 .mptk-seg--line {
   border-radius: var(--mptk-radius-none);
@@ -145,6 +146,20 @@
   transition-timing-function: var(--mptk-ease);
 }
 
+/* 测量不到段宽时的兜底滑块：画在选中段自己内部，四边内缩同一个 token，几何跟随段宽，
+   不靠 boundingClientRect 猜位置。段本身 position:relative、z-index 高于绝对轨滑块，
+   而这里的底色压到 0、文字/图标抬到 raised，保证 Skyline 下白字不被蓝底整块盖住。 */
+.mptk-seg__self-thumb {
+  position: absolute;
+  z-index: var(--mptk-s-zero);
+  top: var(--mptk-seg-inset);
+  right: var(--mptk-seg-inset);
+  bottom: var(--mptk-seg-inset);
+  left: var(--mptk-seg-inset);
+  border-radius: var(--mptk-radius-xs);
+  background-color: var(--mptk-control-active);
+}
+
 /* 段：fit 下按内容撑开（min-width 兜住触控热区），ratio 让剩余均摊，equal 严格等分。 */
 .mptk-seg__item {
   position: relative;
@@ -194,13 +209,19 @@
   color: var(--mptk-control-on);
 }
 
+/* 文字 / 图标必须压在段内兜底背景之上：两者都提升为定位元素并给正 z-index，
+   与 __self-thumb / __self-line 的 0 形成确定的前后关系，不依赖渲染引擎差异。 */
 .mptk-seg__icon {
+  position: relative;
+  z-index: var(--mptk-s-z-raised);
   display: flex;
   align-items: center;
   margin-right: var(--mptk-space-1);
 }
 
 .mptk-seg__text {
+  position: relative;
+  z-index: var(--mptk-s-z-raised);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -234,9 +255,22 @@
   transition-timing-function: var(--mptk-ease);
 }
 
+/* 下划线形态量不到时的兜底：画在选中段自己底部，左右各缩一个间距档。 */
+.mptk-seg__self-line {
+  position: absolute;
+  z-index: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  right: var(--mptk-seg-line-inset);
+  left: var(--mptk-seg-line-inset);
+  height: var(--mptk-c-seg-line-h);
+  background-color: var(--mptk-control-active);
+}
+
 /* 等待态：滑块自己的底色呼吸，文字、段宽、指示器位置一律不动。
    下划线形态没有滑块，呼吸的就是那条线；两者同一份关键帧（见文件顶部 @use）。 */
 .mptk-seg--busy .mptk-seg__thumb,
-.mptk-seg--busy .mptk-seg__line {
+.mptk-seg--busy .mptk-seg__line,
+.mptk-seg--busy .mptk-seg__self-thumb,
+.mptk-seg--busy .mptk-seg__self-line {
   animation: mptk-control-breathe var(--mptk-dur-breathe) var(--mptk-ease) var(--mptk-s-infinite);
 }

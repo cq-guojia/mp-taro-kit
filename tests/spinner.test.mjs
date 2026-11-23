@@ -141,7 +141,7 @@ test('转圈只留在光板控件里，有内容位的一律改底色呼吸', ()
   assert.match(read('dist/styles/theme-dark.css'), /--mptk-control-thumb-dim:/, '暗色缺灰值')
 
   const segCss = resolveCssVars(read('dist/ui/form/segmented/style/index.css'))
-  assert.match(segCss, /\.mptk-seg--busy \.mptk-seg__thumb[\s\S]{0,80}mptk-control-breathe/, 'Segmented 的滑块没挂呼吸')
+  assert.match(segCss, /\.mptk-seg--busy \.mptk-seg__thumb[\s\S]{0,240}mptk-control-breathe/, 'Segmented 的滑块没挂呼吸')
   assert.match(segCss, /@keyframes mptk-control-breathe/, 'Segmented 没带进彩色滑块关键帧')
   assert.match(segCss, /50%\s*\{\s*opacity:\s*0?\.2/, '彩色滑块的呼吸谷值不够明显')
   assert.doesNotMatch(segCss, /mptk-seg--busy[^{]*track\s*\{/, 'Segmented 不该让整条轨道一起呼吸')

@@ -161,15 +161,83 @@ test('控件主色与业务色解耦：默认蓝、色板齐全；明色滑轨�
   }
 })
 
-test('Segmented 测量按独立 id 逐个查：缺项即不画滑块，不把指示器画在错位置', () => {
+test('Segmented 单一入口决定指示器呈现，thumb / line 两形态各走 sliding / static 双轨', () => {
   const src = read('../src/ui/form/segmented/Segmented.tsx')
-  assert.doesNotMatch(src, /select\([^)]*#\$\{uid\}[^)]*\.mptk-seg/, '段位几何按 index 对应，不许用组合选择器批量取')
-  assert.doesNotMatch(src, /selectAll\([^)]*\.mptk-seg__item/, '每段按独立 id 逐个查，不用 selectAll + class')
-  assert.match(src, /id=\{`\$\{uid\}-track`\}/, 'track 要挂独立 id 供测量')
+
+  /* 分流只有一个入口：mode 由 resolveIndicatorMode 产出，其余渲染只读它，不各自判空。
+     equal 零测量与量到走 sliding，浮层等量不到的场景降级 static。 */
+  assert.match(src, /type IndicatorMode = 'sliding' \| 'static'/, '指示器要有 sliding / static 两种模式')
+  assert.match(
+    src,
+    /function resolveIndicatorMode\(needsMeasure: boolean, cells: CellBox\[\] \| null\): IndicatorMode/,
+    '必须有一个唯一的模式判定入口',
+  )
+  assert.match(
+    src,
+    /return !needsMeasure \|\| cells !== null \? 'sliding' : 'static'/,
+    'equal 与量到都要走 sliding，量不到才降级 static',
+  )
+  assert.equal(
+    (src.match(/resolveIndicatorMode\(/g) ?? []).length,
+    2,
+    '入口只许定义一次、调用一次；多处分流会重演各判各的',
+  )
+  assert.match(src, /const sliding = mode === 'sliding'/, '渲染只读入口结果，不再各自判断 cells')
+
+  /* thumb / line 对称：同一判别、同一几何函数，只靠 indicator 后缀换类名与内缩 token。 */
+  assert.match(src, /const slideClassName = `mptk-seg__\$\{indicator\}`/, 'sliding 类名由 indicator 派生')
+  assert.match(src, /const selfClassName = `mptk-seg__self-\$\{indicator\}`/, 'static 类名由 indicator 派生')
+  assert.match(
+    src,
+    /const indicatorStyle = indicator === 'thumb' \? thumbStyle : lineStyle/,
+    '两形态共用一套几何，只换 inset token',
+  )
+  assert.match(
+    src,
+    /\{sliding \? <View className=\{slideClassName\} style=\{indicatorStyle\} \/> : null\}/,
+    'sliding 轨只渲染一个 track 级指示器，thumb / line 通用',
+  )
+  assert.match(
+    src,
+    /\{!sliding && active \? <View className=\{selfClassName\} style=\{selfColorStyle\} \/> : null\}/,
+    'static 轨只由选中段自绘，thumb / line 通用',
+  )
+
+  /* 测量：独立 id 逐段查，任一段 null 就不采用；重试耗尽保持 null 交给 static 轨。 */
+  assert.doesNotMatch(src, /select\([^)]*#\$\{uid\}[^)]*\.mptk-seg/, '不许用组合选择器批量取段位')
+  assert.doesNotMatch(src, /selectAll\([^)]*\.mptk-seg__item/, '段位几何按独立 id 查，不用 class 批量取')
+  assert.match(src, /id=\{`\$\{uid\}-track`\}/, 'track 挂独立 id 供测量')
   assert.match(src, /query\.select\(`#\$\{uid\}-track`\)/, 'track 按独立 id 单选')
-  assert.match(src, /query\.select\(`#\$\{uid\}-i\$\{String\(index\)\}`\)/, '每段按已有独立 id 逐个查')
-  assert.match(src, /list\.some\(\(item\) => item === null\)/, '任一段量不到要整体放弃，不画错位置的滑块')
+  assert.match(src, /query\.select\(`#\$\{uid\}-i\$\{String\(index\)\}`\)/, '每段按独立 id 逐个查')
+  assert.match(src, /list\.some\(\(item\) => item === null\)/, '任一段量不到就整体不采用实测几何')
+  assert.match(src, /attempt < MAX_MEASURE_ATTEMPTS/, '量不到要按帧重试')
+  assert.match(src, /setTimeout\(\(\) => measure\(attempt \+ 1\), MEASURE_RETRY_MS\)/, '重试排下一拍且带递增次数')
+  assert.match(src, /clearTimeout\(retryTimer\.current\)/, '卸载要清重试定时器')
+  assert.doesNotMatch(src, /console\.(log|warn|error)/, '诊断 log 不许留在源码里')
+
+  /* 样式契约：sliding 两形态都有位移动画，static 两形态都没有——降级就体现在这里。 */
+  const css = read('../dist/ui/form/segmented/style/index.css')
+  /* 锚到行首，避免命中 .mptk-seg--radius-pill .mptk-seg__self-thumb 这类复合选择器。 */
+  const rule = (selector) => {
+    const hit = new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`, 'm').exec(css)
+    assert.ok(hit, `缺规则 ${selector}`)
+    return hit[1]
+  }
+  for (const shape of ['thumb', 'line']) {
+    assert.match(rule(`.mptk-seg__${shape}`), /transition-property:\s*left,\s*width/, `${shape} sliding 轨要能滑`)
+    assert.doesNotMatch(rule(`.mptk-seg__self-${shape}`), /transition/, `${shape} static 轨不许有位移动画`)
+    assert.match(
+      rule(`.mptk-seg__self-${shape}`),
+      /z-index:\s*var\(--mptk-s-zero\)/,
+      `${shape} 兜底底色必须压在文字下层`,
+    )
+  }
+  assert.match(rule('.mptk-seg__text'), /z-index:\s*var\(--mptk-s-z-raised\)/, '文字抬到兜底背景之上')
+  assert.match(rule('.mptk-seg__icon'), /z-index:\s*var\(--mptk-s-z-raised\)/, '图标抬到兜底背景之上')
+
   const dist = read('../dist/ui/form/segmented/Segmented.js')
+  assert.match(dist, /resolveIndicatorMode/, '产物里保留统一入口')
+  assert.doesNotMatch(dist, /\[SEG\]|dbgMeta/, '诊断代码不许进产物')
   assert.doesNotMatch(dist, /\.mptk-seg__track['"`]\s*\)/, '产物里不许残留组合选择器查询')
 })
 
