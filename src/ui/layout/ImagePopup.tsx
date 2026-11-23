@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Image, ScrollView, Swiper, SwiperItem, View } from '@tarojs/components'
 import { Button, type ButtonProps } from '../actions/Button.js'
+import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
 import { Popup, type PopupClosePosition, type PopupSurface } from './Popup.js'
 import {
   resolveImageSize,
@@ -323,3 +324,7 @@ export function ImagePopup({
     </Popup>
   )
 }
+
+/* 向 Card 声明：关闭时渲染 null、不占内容流。没有这条声明，Card 静态遍历 children 会把
+   面板当成排在 CellGroup 后面的可见内容，前面那组因此多补一条底线。 */
+markCardEdgeOutOfFlow(ImagePopup)
