@@ -8,9 +8,7 @@
 page {
   /* 页面底色不在 WXSS 里写死：由 app.json + theme.json 的窗口主题配置在页面创建前解析。
      写在这里会恒取 page 上的明色变量，后代 .mptk-dark 覆盖不到，转场首帧露白。 */
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-md);
-  line-height: var(--mptk-line-md);
+  /* 默认色 / 字号 / 行高由框架 base 提供（#323233 / 14 / 20），这里不再重复设，避免两处真源。 */
 }
 
 /* Skyline 不支持页面全局滚动，滚动交给 scroll-view：

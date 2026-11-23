@@ -71,7 +71,8 @@ test('跟随主题的颜色 token 必须在明暗两档各自声明，不能在 
     assert.equal(cssValue(page, token), `var(--mptk-${source})`, `page 上 ${token} 必须引用 --mptk-${source}`)
     assert.equal(cssValue(dark, token), `var(--mptk-${source})`, `.mptk-dark 上 ${token} 必须重新声明并引用 --mptk-${source}`)
   }
-  assert.equal(cssValue(page, 'fg'), '#1f2328', 'page 默认明档字色')
+  assert.equal(cssValue(page, 'fg'), '#323233', 'page 默认明档字色取 Vant 4 的 #323233，非纯黑')
+  assert.ok(/(?:^|\n)\s*color:\s*var\(--mptk-fg\);/.test(page), 'page 必须把语义字色真正应用，不能只定义变量让宿主落系统纯黑')
   assert.equal(cssValue(dark, 'fg'), '#e6e8eb', '.mptk-dark 字色必须翻亮，head-ink 随之解析到亮值')
 })
 

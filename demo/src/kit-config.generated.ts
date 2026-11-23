@@ -1,4 +1,4 @@
-// @mptk-inputs:e11fa0aa100a
+// @mptk-inputs:bf8d20bf31ad
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -30,6 +30,33 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "100%",
       "unit": "",
       "note": "height",
+    },
+    {
+      "key": "color",
+      "label": "color",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-fg)",
+      "unit": "",
+      "note": "color",
+    },
+    {
+      "key": "font-size",
+      "label": "font-size",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-font-sm)",
+      "unit": "",
+      "note": "font-size",
+    },
+    {
+      "key": "line-height",
+      "label": "line-height",
+      "group": "base",
+      "groupLabel": "基础尺寸",
+      "value": "var(--mptk-line-sm)",
+      "unit": "",
+      "note": "line-height",
     },
     {
       "key": "--mptk-radius-xs",
@@ -477,7 +504,7 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "主要文字",
       "group": "light",
       "groupLabel": "明色",
-      "value": "#1f2328",
+      "value": "#323233",
       "unit": "color",
       "note": "fg",
     },
@@ -2394,7 +2421,7 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "label": "c-content-popup-head-ink-on-light",
       "group": "component",
       "groupLabel": "组件视觉值",
-      "value": "#1f2328",
+      "value": "#323233",
       "unit": "color",
       "note": "c-content-popup-head-ink-on-light",
     },

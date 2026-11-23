@@ -108,6 +108,20 @@ test('演示站色板清单由配置生成，Sass 与页面都不再各写一份
   }
 })
 
+test('页面默认正文字号由框架统一给：四主题 page 都带 14/20，demo 不重复设', () => {
+  for (const mode of MODES) {
+    const page = /(?:^|\})\s*page\s*\{([^}]*)\}/.exec(read(`../dist/styles/${mode}.css`))?.[1]
+    assert.ok(page, `${mode} 缺 page 规则`)
+    assert.match(page, /(?:^|\n)\s*color:\s*var\(--mptk-fg\)/, `${mode} 缺默认正文色`)
+    assert.match(page, /font-size:\s*var\(--mptk-font-sm\)/, `${mode} 缺默认字号 14`)
+    assert.match(page, /line-height:\s*var\(--mptk-line-sm\)/, `${mode} 缺默认行高 20`)
+  }
+  const demo = read('../demo/src/app.scss')
+  const demoPage = /page\s*\{([^}]*)\}/.exec(demo)?.[1] ?? ''
+  assert.doesNotMatch(demoPage, /color|font-size|line-height/, 'demo 不再自带色与字号行高，避免两处真源')
+  assert.match(read('../kit.config.mjs'), /"font-size":\s*"var\(--mptk-font-sm\)"/, '默认字号真源在 kit.config')
+})
+
 test('尺寸标尺逐档吃控件高度 token，档位数值与真源一致', () => {
   const page = read('../demo/src/pages/sizing/index.tsx')
   const app = read('../demo/src/app.scss')

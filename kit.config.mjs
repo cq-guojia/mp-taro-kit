@@ -29,7 +29,7 @@ export default {
       "gray-7": "#767d87",                                          // 中性灰 7 级：三级文字
       "gray-8": "#3b434d",                                          // 中性灰 8 级：深色面 / 强调文字
       "white": "#fff",                                              // 纯白：卡片与控件底色
-      "ink-1": "#1f2328",                                           // 墨色 1 级：主文字
+      "ink-1": "#323233",                                           // 墨色 1 级：主文字，取 Vant 4 --van-text-color，避开纯黑观感
       "ink-2": "#5c6370",                                           // 墨色 2 级：次级文字
       "ink-3": "#9aa1ab",                                           // 墨色 3 级：占位符与弱文字
     },
@@ -60,6 +60,9 @@ export default {
   base: {                                                           // 布局基线：圆角 / 间距 / 控件高 / 字号行高 / 动效时长与非颜色 token
     "box-sizing": "border-box",                                     // 页面盒模型：统一 border-box，宽度含内边距与描边
     "height": "100%",                                               // 页面根高度：铺满视口，供后代百分比高度继承
+    "color": "var(--mptk-fg)",                                      // 页面默认正文色：把语义字色真正落到 page，未自带 color 的节点不再吃系统纯黑
+    "font-size": "var(--mptk-font-sm)",                             // 页面默认正文字号 14px：所有未自带字号的节点都走这档，宿主可覆盖
+    "line-height": "var(--mptk-line-sm)",                           // 页面默认行高 20px：与字号成对，避免落到系统 normal 行高
     "--mptk-radius-xs": "4px",                                      // 圆角最小档：按档位递增，控件与卡片统一引用
     "--mptk-radius-sm": "8px",                                      // 圆角小档：按档位递增，控件与卡片统一引用
     "--mptk-radius-md": "12px",                                     // 圆角中档：按档位递增，控件与卡片统一引用
