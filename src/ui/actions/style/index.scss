@@ -47,8 +47,9 @@ $button-tones: (
 }
 
 /* 尺寸档：总高逐像素等于刻度 token，最小与次小档左右收一档，否则迷你钮被内距撑成横条。
-   sm 是默认档（32 / 14，WeUI mini 口径）。字号不吃 --mptk-font-md（15）：40 高的按钮腾讯
-   （WeUI medium）也用 14，15 是这张表里字/高最胖的一档，视觉上会像老年机。 */
+   sm 是默认档（32 / 14，WeUI mini 口径）。字号到 md 封顶 14：40 高的按钮腾讯
+   （WeUI medium）也用 14，15 是这张表里字/高最胖的一档，视觉上会像老年机；md 以上的大档
+   只加高、不放大字，让按钮变大时不抢标题。 */
 
 .mptk-btn--xs {
   --mptk-btn-h: var(--mptk-control-h-xs);
@@ -72,19 +73,14 @@ $button-tones: (
   height: var(--mptk-control-h-md);
 }
 
+/* md 以上只加高：字号封顶在 14，继承根规则不覆盖。 */
 .mptk-btn--lg {
   --mptk-btn-h: var(--mptk-control-h-lg);
-  --mptk-btn-font: var(--mptk-font-lg);
-  --mptk-btn-line: var(--mptk-line-lg);
   height: var(--mptk-control-h-lg);
 }
 
-/* 特大档只加高：字已经是最上面那档，再放大会抢主标题。 */
-
 .mptk-btn--xl {
   --mptk-btn-h: var(--mptk-control-h-xl);
-  --mptk-btn-font: var(--mptk-font-lg);
-  --mptk-btn-line: var(--mptk-line-lg);
   height: var(--mptk-control-h-xl);
 }
 

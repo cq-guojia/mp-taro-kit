@@ -1134,7 +1134,7 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   // 带按钮两类：库按钮走 text、图片按钮走专用图 src（lottery-center 图）。
   assert.match(popupPage, /text: '查看详情'/, '库按钮示例用内置 Button 的文字按钮')
   // 回归：库按钮示例不用只有边框的 soft/outline（白底太透看不清），用实心档。
-  assert.match(popupPage, /\{ text: '取消', type: 'default', onClick:/, '库按钮示例用实心 default，不用 soft/outline')
+  assert.match(popupPage, /\{ text: '取消', type: 'default', size: 'md', onClick:/, '库按钮示例用实心 default，不用 soft/outline')
   assert.doesNotMatch(popupPage, /\{ text: '取消', variant: '(?:soft|outline|ghost)'/, '库按钮示例不得用只有边框的透底档')
   assert.match(popupPage, /ACTION_BTN_IMAGE = 'https:\/\/t-cdn-oss\.qswnet\.com\/file\/zuche\/lottery-center\/image\//, '图片按钮用指定的 lottery-center 图')
   assert.match(popupPage, /\{ src: ACTION_BTN_IMAGE, height: 36,/, '图片按钮项传 src + 定高')
@@ -1224,8 +1224,12 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
   assert.match(own, /\.mptk-content-popup__actions--stack,\s*\.mptk-content-popup__actions--column/, 'stack 与旧 column 别名同规则')
   assert.match(own, /\.mptk-content-popup__foot--joined\s*\{[^}]*padding-top:\s*var\(--mptk-s-zero\)[^}]*padding-bottom:\s*var\(--mptk-s-zero\)/, "joined 底栏四边无留白")
   assert.match(own, /\.mptk-popup__panel--center \.mptk-content-popup__foot--joined,/, "joined 底栏居中档自裁底两角")
-  assert.match(own, /\.mptk-content-popup__actions--joined \.mptk-content-popup__action-cell\s*\{[^}]*--mptk-btn-px:\s*var\(--mptk-s-zero\)[^}]*height:\s*var\(--mptk-c-content-popup-footer-h\)[^}]*border-radius:\s*var\(--mptk-radius-none\)/, 'joined 格子内距归零、高度走 token、圆角归零，分隔线贯通且文字居中')
-  assert.match(read('kit.config.mjs'), /"--mptk-c-content-popup-footer-h":\s*"var\(--mptk-control-h-md\)"/, '底栏高度复用控件中档，不写死 rpx')
+  const joinedCell = /\.mptk-content-popup__actions--joined \.mptk-content-popup__action-cell\s*\{([^}]*)\}/.exec(own)
+  assert.ok(joinedCell, 'joined 格子规则缺失')
+  assert.match(joinedCell[1], /--mptk-btn-px:\s*var\(--mptk-s-zero\)/, 'joined 格子内距归零，文字居中')
+  assert.match(joinedCell[1], /border-radius:\s*var\(--mptk-radius-none\)/, 'joined 格子圆角归零，分隔线贯通整格')
+  assert.match(joinedCell[1], /height:\s*var\(--mptk-control-h-lg\)/, '分隔线走格子 48（lg 档），与按钮自身 40（md 档）解耦')
+  assert.doesNotMatch(read('kit.config.mjs'), /--mptk-c-content-popup-footer-h/, '底栏高度不再有专属 token')
   assert.match(own, /\.mptk-content-popup__actions--joined\s*\{[^}]*column-gap:\s*var\(--mptk-s-zero\)/, 'joined 档取消列间距')
   assert.match(own, /\.mptk-content-popup__actions--row\.mptk-content-popup__actions--joined\s+\.mptk-content-popup__action--divided\s*\{[^}]*border-left-width:\s*var\(--mptk-c-border-w\)/, '横排 joined 用左边框分隔')
   assert.match(own, /\.mptk-content-popup__actions--stack\.mptk-content-popup__actions--joined\s+\.mptk-content-popup__action--divided\s*\{[^}]*border-top-width:\s*var\(--mptk-c-border-w\)/, '竖排 joined 用上边框分隔')
@@ -1260,6 +1264,9 @@ test('演示页与文档同步 ContentPopup 三档', () => {
     assert.match(page, new RegExp(`value: '${label === '竖排' ? 'stack' : label === '横排' ? 'row' : label === '竖线' ? 'joined' : 'single'}', label: '${label}'`), `外层配置缺 ${label} 档`)
   }
   assert.doesNotMatch(page, /打开配置/, '不保留「打开配置」按钮：切换就在 Cell 上，点开即所选形态')
+  assert.match(page, /const FOOTER_BTN_SIZE = 'md' as const/, '弹窗按钮统一 md 档（40 / 14，竖线档也一致）')
+  assert.match(page, /size: FOOTER_BTN_SIZE, onClick: \(\) => setContentOpen\(false\)/, '底栏按钮统一走 md 档')
+  assert.match(page, /\{ text: '取消', type: 'default', size: 'md', onClick: \(\) => undefined \}/, '图片弹窗的库按钮也走 md')
   const contentBlock = page.slice(page.indexOf("if (id === 'content-popup')"))
   assert.doesNotMatch(contentBlock.slice(contentBlock.indexOf('<ContentPopup')), /<Segmented/, '弹窗 children 里不许再有形态切换滑块')
   assert.match(page, /onClick=\{\(\) => openContent\('title', 'top', 'normal'\)\}/, '文字头缺顶部档演示')

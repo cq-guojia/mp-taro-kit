@@ -188,8 +188,8 @@ const ACTION_BUTTON_SLIDE: ImagePopupSlide = {
   src: IMAGE_A,
   width: 320,
   actions: [
-    { text: '取消', type: 'default', onClick: () => undefined },
-    { text: '查看详情', type: 'primary', onClick: () => undefined },
+    { text: '取消', type: 'default', size: 'md', onClick: () => undefined },
+    { text: '查看详情', type: 'primary', size: 'md', onClick: () => undefined },
   ],
 }
 const ACTION_IMAGE_SLIDE: ImagePopupSlide = {
@@ -271,31 +271,33 @@ export default function PopupPage() {
   }
 
   /* 底部四形态：单按钮拉通 / 竖排拉通 / 横排按比例 / joined 竖线分隔（带上边线）。 */
-  const FOOTER_DEMOS: Record<typeof footerKind, { actions: { text: string; type?: 'default' | 'primary'; icon?: string; onClick?: () => void }[]; config: ContentPopupFooterConfig }> = {
+  /* 弹窗按钮统一走 md（40 / 14）：字号已到封顶点，竖线与其它形态的按钮一样高、一样大。 */
+  const FOOTER_BTN_SIZE = 'md' as const
+  const FOOTER_DEMOS: Record<typeof footerKind, { actions: { text: string; type?: 'default' | 'primary'; size?: typeof FOOTER_BTN_SIZE; icon?: string; color?: string; onClick?: () => void }[]; config: ContentPopupFooterConfig }> = {
     single: {
-      actions: [{ text: '知道了', onClick: () => setContentOpen(false) }],
+      actions: [{ text: '知道了', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) }],
       config: { layout: 'stack' },
     },
     stack: {
       actions: [
-        { text: '存入相册', type: 'default', icon: 'common.base:chazhao' },
-        { text: '分享给好友', type: 'default', icon: 'common.base:fuzhi' },
-        { text: '取消', type: 'default', onClick: () => setContentOpen(false) },
+        { text: '存入相册', type: 'default', size: FOOTER_BTN_SIZE, icon: 'common.base:chazhao' },
+        { text: '分享给好友', type: 'default', size: FOOTER_BTN_SIZE, icon: 'common.base:fuzhi' },
+        { text: '取消', type: 'default', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) },
       ],
       config: { layout: 'stack' },
     },
     row: {
       actions: [
-        { text: '取消', type: 'default', onClick: () => setContentOpen(false) },
-        { text: '确定', onClick: () => setContentOpen(false) },
+        { text: '取消', type: 'default', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) },
+        { text: '确定', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) },
       ],
       config: { layout: 'row', ratios: [1, 2] },
     },
     joined: {
       // joined 是与面板融合的透明文字按钮栏：文字色走 ButtonProps.color，前置 icon 走 icon。
       actions: [
-        { text: '取消', type: 'default', onClick: () => setContentOpen(false) },
-        { text: '保存', type: 'default', color: '#E8912D', icon: 'common.base:fuzhi', onClick: () => setContentOpen(false) },
+        { text: '取消', type: 'default', size: FOOTER_BTN_SIZE, onClick: () => setContentOpen(false) },
+        { text: '保存', type: 'default', size: FOOTER_BTN_SIZE, color: '#E8912D', icon: 'common.base:fuzhi', onClick: () => setContentOpen(false) },
       ],
       config: { layout: 'row', separation: 'joined' },
     },

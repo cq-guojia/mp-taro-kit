@@ -35,12 +35,12 @@
 | `xs` | 24（`--mptk-control-h-xs`） | `--mptk-font-xs`（12） | `--mptk-space-3`（12） |
 | `sm`（默认） | 32（`--mptk-control-h-sm`） | `--mptk-font-sm`（14） | `--mptk-space-3`（12） |
 | `md` | 40（`--mptk-control-h-md`） | `--mptk-font-sm`（14） | `--mptk-space-4`（16） |
-| `lg` | 48（`--mptk-control-h-lg`） | `--mptk-font-lg`（17） | `--mptk-space-4`（16） |
-| `xl` | 56（`--mptk-control-h-xl`） | `--mptk-font-lg`（17） | `--mptk-space-4`（16） |
+| `lg` | 48（`--mptk-control-h-lg`） | `--mptk-font-sm`（14，封顶） | `--mptk-space-4`（16） |
+| `xl` | 56（`--mptk-control-h-xl`） | `--mptk-font-sm`（14，封顶） | `--mptk-space-4`（16） |
 
-总高逐像素等于刻度 token，靠 `height` 定，**上下没有内边距参与撑高**。`xl` 只加高不加字：字号已经最上面那档，再放大会抢主标题。
+总高逐像素等于刻度 token，靠 `height` 定，**上下没有内边距参与撑高**。
 
-默认档是 `sm`（32 / 14，WeUI mini 口径），不传 `size` 就取它。`md`（40）的字号同样不吃 `--mptk-font-md`（15）而取 14：40 高的按钮腾讯官方（WeUI `weui-btn_medium`）就是 14px / 40px；15 的字/高比（.375）是同行里最胖的一档，视觉会「像老年机」。其余档与行业一致：`lg` 48/17 对上 WeUI 默认，`xl` 只加高。
+默认档是 `sm`（32 / 14，WeUI mini 口径），不传 `size` 就取它。**字号到 `md` 封顶 14px，之后 `lg` / `xl` 只加高、不放大字**：40 高的按钮腾讯官方（WeUI `weui-btn_medium`）就是 14px / 40px；15 的字/高比（.375）是同行里最胖的一档，视觉会「像老年机」。大按钮再放大字会抢主标题，所以 md 以上统一继承根规则的 14px / 20px 行高，只有高度轴在变。
 
 ## 底色形态
 
@@ -146,6 +146,7 @@
 - 2026-11-15：修两处实机问题 —— 圈色不再经 `currentColor` 中转（Skyline 下圈整个消失），图标节点 `line-height` 压到 1（纯图标钮字形靠上）
 - 2026-11-15：圈径改成 `1em`（与图标同尺寸，不再比图标大）；circle 居中改用定位层，不再与旋转动画抢 `transform`
 - 2026-11-15：`md` 档字号 15 → 14（对齐 WeUI medium 的 40/14）
+- 2026-11-23：字号到 md 封顶 14px，lg / xl 只加高不放大字（去掉字号与行高覆盖）；演示站所有弹窗按钮统一 md（40 / 14），竖线档与其它形态一致
 - 2026-11-15：新增 `--mptk-c-btn-pressed-opacity` 配置项
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
 - 2026-11-15 17:05:00：实心语义块的字色统一走新增的 `--mptk-fg-on-accent`（明暗都是白），不再借用 `--mptk-surface-1`

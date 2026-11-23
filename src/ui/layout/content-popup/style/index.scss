@@ -292,9 +292,11 @@
    面板底两角仍由 foot--joined 自己裁，不受影响。 */
 .mptk-content-popup__actions--joined .mptk-content-popup__action-cell {
   /* 通栏文字按钮栏：格子已由 flex 均分整宽，Button 自带的左右内距会把文字推离格子中心，
-     这里归零让文字 / 图标真正居中；高度走底栏 token，圆角归零让分隔线贯通整格。 */
+     这里归零让文字 / 图标真正居中；圆角归零避免边框两端被吃掉。
+     格子高 48（lg 档）与按钮自身 40（md 档）解耦：文字区仍是 md 的大小，
+     分隔线作为格子 border 拉到 48，比按钮略高。 */
   --mptk-btn-px: var(--mptk-s-zero);
-  height: var(--mptk-c-content-popup-footer-h);
+  height: var(--mptk-control-h-lg);
   border-radius: var(--mptk-radius-none);
 }
 

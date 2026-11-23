@@ -108,6 +108,12 @@ test('Button 五档总高逐档等于 token，靠 height 不靠上下内边距',
     assert.ok(rule, `缺 .mptk-btn--${tier}`)
     assert.match(rule[1], new RegExp(`height:\\s*var\\(--mptk-control-h-${tier}\\)`), `${tier} 档没吃对应 token`)
   }
+  /* 字号到 md 封顶 14：md/lg/xl 都不覆盖字号与行高，继承根规则的 font-sm / line-sm。 */
+  for (const tier of ['md', 'lg', 'xl']) {
+    const rule = new RegExp(`\\.mptk-btn--${tier}\\s*\\{([^}]*)\\}`).exec(css)[1]
+    assert.doesNotMatch(rule, /--mptk-btn-(font|line)/, `${tier} 档不许放大字号，字号封顶在 md 的 14px`)
+  }
+  assert.match(root[1], /--mptk-btn-font:\s*var\(--mptk-font-sm\)/, '封顶字号落在根规则的 14px')
 })
 
 test('半圆形态用 pill token，不许写 50%', () => {

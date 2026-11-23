@@ -9,6 +9,14 @@ import 'mp-taro-kit/ui/icon/style'
 import { DemoPage } from '../../components/DemoBlock'
 
 const SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const
+/* 标签写成中文，直接看出每档按钮自己的字号；档位值仍是 size prop。 */
+const SIZE_LABELS: Record<(typeof SIZES)[number], string> = {
+  xs: 'XS 按钮',
+  sm: 'SM 按钮',
+  md: 'MD 按钮',
+  lg: 'LG 按钮',
+  xl: 'XL 按钮',
+}
 const RADII = ['xs', 'sm', 'md', 'lg', 'xl', 'pill'] as const
 
 const TYPES: readonly (readonly [ButtonType, string])[] = [
@@ -44,14 +52,14 @@ export default function ActionsPage() {
             <View className="demo-row">
               {SIZES.slice(0, 3).map((size) => (
                 <Button key={size} className="demo-item" size={size}>
-                  {size}
+                  {SIZE_LABELS[size]}
                 </Button>
               ))}
             </View>
             <View className="demo-row">
               {SIZES.slice(3).map((size) => (
                 <Button key={size} className="demo-item" size={size}>
-                  {size}
+                  {SIZE_LABELS[size]}
                 </Button>
               ))}
             </View>
