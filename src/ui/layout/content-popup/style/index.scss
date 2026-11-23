@@ -44,9 +44,37 @@
   padding-bottom: var(--mptk-space-4);
 }
 
+/* footer 上边线与 body 之间留一档呼吸位；线本体是 foot 的上边框，通到面板两边。 */
+.mptk-content-popup__content--divider-gap {
+  padding-bottom: var(--mptk-space-4);
+}
+
 .mptk-content-popup__foot {
   padding-top: var(--mptk-space-4);
   padding-bottom: var(--mptk-space-4);
+}
+
+.mptk-content-popup__foot--divided {
+  border-top-width: var(--mptk-c-border-w);
+  border-top-style: solid;
+  border-top-color: var(--mptk-border);
+}
+
+/* joined：底栏与面板连成一体 —— 通栏贴底、四边无留白，按钮是透明文字钮靠 border 分隔。 */
+.mptk-content-popup__foot--joined {
+  padding-top: var(--mptk-s-zero);
+  padding-right: var(--mptk-s-zero);
+  padding-bottom: var(--mptk-s-zero);
+  padding-left: var(--mptk-s-zero);
+}
+
+/* 面板为徽标外伸开了 overflow:visible，joined 底栏贴着面板下沿时自己裁底两角：
+   居中 / 上浮档恒圆；底部档下沿贴屏幕，不裁圆。 */
+.mptk-popup__panel--center .mptk-content-popup__foot--joined,
+.mptk-popup__panel--top .mptk-content-popup__foot--joined {
+  border-bottom-left-radius: var(--mptk-c-popup-radius);
+  border-bottom-right-radius: var(--mptk-c-popup-radius);
+  overflow: hidden;
 }
 
 .mptk-content-popup__header {
@@ -59,7 +87,9 @@
 
 /* 面板为徽标外伸开了 overflow:visible，不再替头部裁圆角；头部自己按面板档位裁上两角。
    居中档恒圆、底部档仅 round 开启才圆，与 Popup 面板规则同源，渐变不会溢出圆角。 */
-.mptk-popup__panel--center .mptk-content-popup__header {
+/* 居中档恒圆、上浮档恒圆（都贴着面板上沿）；底部档仅 round 开启才圆。 */
+.mptk-popup__panel--center .mptk-content-popup__header,
+.mptk-popup__panel--top .mptk-content-popup__header {
   border-top-left-radius: var(--mptk-c-popup-radius);
   border-top-right-radius: var(--mptk-c-popup-radius);
 }
@@ -242,9 +272,36 @@
   row-gap: var(--mptk-c-content-popup-action-gap);
 }
 
+/* stack：每项独占一行、拉通整宽。column 是旧简写别名，与 stack 同规则。 */
+.mptk-content-popup__actions--stack,
 .mptk-content-popup__actions--column {
   flex-direction: column;
   align-items: stretch;
+  flex-wrap: nowrap;
+}
+
+/* joined：无间距、整栏拉通，靠格子自身的 border 分隔；底两角圆由面板裁，不再单独做圆角块。 */
+.mptk-content-popup__actions--joined {
+  column-gap: var(--mptk-s-zero);
+  row-gap: var(--mptk-s-zero);
+}
+
+/* joined 的格子撑满整栏高度（按钮本体走 ghost 皮肤，透明底无描边，由 JS 注入）。 */
+.mptk-content-popup__actions--joined .mptk-content-popup__action-cell {
+  height: var(--mptk-c-content-popup-footer-h);
+}
+
+/* 中间分隔线：横排画左边框、竖排画上边框，色走 token；dividerColor 由 JS 内联覆盖。 */
+.mptk-content-popup__actions--row.mptk-content-popup__actions--joined .mptk-content-popup__action--divided {
+  border-left-width: var(--mptk-c-border-w);
+  border-left-style: solid;
+  border-left-color: var(--mptk-border);
+}
+
+.mptk-content-popup__actions--stack.mptk-content-popup__actions--joined .mptk-content-popup__action--divided {
+  border-top-width: var(--mptk-c-border-w);
+  border-top-style: solid;
+  border-top-color: var(--mptk-border);
 }
 
 .mptk-content-popup__action-image {

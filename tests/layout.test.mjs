@@ -1008,8 +1008,9 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   }
   assert.doesNotMatch(overlayPage, /<Button\b/, '遮罩页不该出现按钮，只演遮罩')
   // 位置按钮按用户要求降到 xs 档（24px）：垂直 / 侧面 / 关闭按钮位置各一处 + 图片弹窗三类
-  // （图片单图/多图两处 + 带按钮库按钮/图片按钮两处 + 图片尺寸 map 一处，运行时 3 个）+ 内容弹窗十三处入口。
-  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 21, '位置三处 + 图片弹窗五个 + 内容弹窗十三处入口都显式降一档到 xs')
+  // （图片单图/多图两处 + 带按钮库按钮/图片按钮两处 + 图片尺寸 map 一处，运行时 3 个）+ 内容弹窗十八处入口
+  // （原十三处 + 文字头顶部档一处 + 底部配置入口一处）。
+  assert.equal((popupPage.match(/\bsize="xs"/g) ?? []).length, 24, '位置三处 + 图片弹窗五个 + 内容弹窗十五处入口 + 弹窗内配置一处都显式降一档到 xs')
 
   // 三块结构：顶部统一配置 + 位置档 + 关闭按钮位置；旧的六块全部撤掉。
   // catalog 只取 popup 页自己的 examples 段，popup / overlay 是合法的页与菜单 id，不能整篇搜。
@@ -1024,11 +1025,11 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
     assert.doesNotMatch(popupCatalog, new RegExp(`id: '${id}'`), `目录还留着旧的 ${id} 条目`)
   }
 
-  // 配置区七个 Segmented：形状 / 描边 / 背景 / 圆角尺寸 / 遮罩 / 点遮罩 / 不让位。
+  // 配置区七个 Segmented（形状/描边/背景/圆角/遮罩/点遮罩/不让位）+ 弹窗内底栏形态一个 = 八处。
   assert.equal(
     (popupPage.match(/<Segmented\b/g) ?? []).length,
-    7,
-    '配置区七个 Segmented，下面两块演示不再各配一套滑块',
+    8,
+    '配置区七个 Segmented 加弹窗内底栏形态一个',
   )
   assert.equal(
     (popupPage.match(/items=\{YES_NO\}/g) ?? []).length,
@@ -1080,8 +1081,8 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   assert.match(popupPage, /label: '底部'/, '垂直档叫底部')
   assert.match(popupPage, /label: '左侧'/, '侧面档叫左侧')
   assert.match(popupPage, /label: '右侧'/, '侧面档叫右侧')
-  // 源码里按钮 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十三处 = 二十一处。
-  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 21, '按钮二十一处 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十三处')
+  // 源码里按钮 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十六处 = 二十四处（内容弹窗原十三 + 顶部档一 + 底栏入口一）。
+  assert.equal((popupPage.match(/<Button\b/g) ?? []).length, 23, '按钮二十三处 JSX：位置三处 + 图片弹窗五处 + 内容弹窗十五处')
   assert.equal((popupPage.match(/VERTICAL_POSITIONS\.map/g) ?? []).length, 1, '垂直档按钮走一份数据源')
   assert.equal((popupPage.match(/SIDE_POSITIONS\.map/g) ?? []).length, 1, '侧面档按钮走一份数据源')
   assert.equal((popupPage.match(/CLOSE_GROUPS\.map/g) ?? []).length, 1, '关闭按钮位置三组走一份数据源')
@@ -1090,7 +1091,7 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
     5,
     '位置档共 5 个按钮：垂直 3 + 侧面 2',
   )
-  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 21, '按钮横排用 demo-item 控制间距（位置三处 + 图片弹窗五处 + 内容弹窗十三处）')
+  assert.equal((popupPage.match(/className="demo-item"/g) ?? []).length, 23, '按钮横排用 demo-item 控制间距（位置三处 + 图片弹窗五处 + 内容弹窗十五处）')
   assert.match(popupPage, /size="xs"/, '按钮降到 xs 档')
   assert.match(popupPage, /position=\{position\}/, '位置档要真的切 position')
   assert.match(popupPage, /closePosition=\{closePosition\}/, '关闭按钮位置要真的切位置')
@@ -1170,7 +1171,11 @@ test('ContentPopup 源码与出口契约', () => {
   const source = read('src/ui/layout/content-popup/ContentPopup.tsx')
   const index = read('src/ui/layout/content-popup/index.ts')
   assert.match(source, /export type ContentPopupVariant = 'title' \| 'image' \| 'badge'/, '头部只能三档')
-  assert.match(source, /export type ContentPopupPosition = 'center' \| 'bottom'/, '位置只做中部与底部')
+  assert.match(source, /export type ContentPopupPosition = 'top' \| 'center' \| 'bottom'/, '位置只做上中下三档')
+  assert.match(source, /export type ContentPopupFooterLayout = 'stack' \| 'row'/, 'footer 排布两档')
+  assert.match(source, /export type ContentPopupFooterSeparation = 'spaced' \| 'joined'/, 'footer 分隔两档')
+  assert.match(source, /export interface ContentPopupFooterConfig/, 'footer 配置契约存在')
+  assert.match(index, /type ContentPopupFooterConfig/, 'footer 配置类型没导出')
   assert.match(source, /markCardEdgeOutOfFlow\(ContentPopup\)/, '浮层必须声明脱流，否则 Card 会误补边线')
   assert.doesNotMatch(source, /badgeShape/, '形状已收进 badgeRadius，不许复活枚举')
   assert.match(source, /translateY\(-\$\{overlap\}\)/, '徽标外伸必须走 transform')
@@ -1190,7 +1195,7 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
   assert.match(own, /border-color:\s*var\(--mptk-surface-elevated\)/, '徽标描边默认色跟面板底色，暗档才同色')
   assert.match(own, /\.mptk-content-popup__badge--tone-blue\s*\{[^}]*background-image:\s*var\(--mptk-c-content-popup-badge-bg-blue\)/, '默认色调走主题感知渐变 token')
   assert.match(own, /\.mptk-content-popup__header--divided\s*\{[^}]*border-bottom-width:\s*var\(--mptk-c-border-w\)[^}]*border-bottom-color:\s*var\(--mptk-border\)/, '分割线归 header 的下边框，随渐变铺到线')
-  assert.match(own, /\.mptk-popup__panel--center\s+\.mptk-content-popup__header\s*\{[^}]*border-top-left-radius:\s*var\(--mptk-c-popup-radius\)/, '头部按面板圆角自裁上两角，渐变不溢出')
+  assert.match(own, /\.mptk-popup__panel--center\s+\.mptk-content-popup__header,\s*\.mptk-popup__panel--top\s+\.mptk-content-popup__header\s*\{[^}]*border-top-left-radius:\s*var\(--mptk-c-popup-radius\)/, '头部按面板圆角自裁上两角，渐变不溢出')
   assert.doesNotMatch(own, /\.mptk-content-popup__divider\s*\{/, '独立 divider 节点已移除，别留孤儿规则')
   assert.match(own, /\.mptk-content-popup__title\s*\{[^}]*font-size:\s*var\(--mptk-font-lg\)/, '主标题用大字档')
   assert.match(own, /\.mptk-content-popup__subtitle\s*\{[^}]*font-size:\s*var\(--mptk-font-xs\)[^}]*color:\s*var\(--mptk-c-content-popup-head-ink-2\)/, '副标题用更小字号，字色走头字 token')
@@ -1211,6 +1216,18 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
   assert.match(read('src/design/_tokens.scss'), /--mptk-c-content-popup-badge-size/, '生成物没带上徽标尺寸 token')
   assert.match(read('kit.config.mjs'), /--mptk-c-content-popup-badge-icon-size/, '徽标图标尺寸缺 token 真源')
   assert.match(own, /\.mptk-content-popup__badge \.mptk-content-popup__lead-icon[^{]*\{[^}]*font-size:\s*var\(--mptk-c-content-popup-badge-icon-size\)/, '徽标图标尺寸走专属 token')
+
+  // footer 上边线/分隔线走 token，不用 gap 简写、不用伪类（top 圆角已被上面的断言覆盖）。
+  assert.match(own, /\.mptk-content-popup__foot--divided\s*\{[^}]*border-top-width:\s*var\(--mptk-c-border-w\)[^}]*border-top-color:\s*var\(--mptk-border\)/, 'footer 上边线走 token')
+  assert.match(own, /\.mptk-content-popup__content--divider-gap\s*\{[^}]*padding-bottom:\s*var\(--mptk-space-4\)/, '上边线外侧留呼吸位')
+  assert.match(own, /\.mptk-content-popup__actions--stack,\s*\.mptk-content-popup__actions--column/, 'stack 与旧 column 别名同规则')
+  assert.match(own, /\.mptk-content-popup__foot--joined\s*\{[^}]*padding-top:\s*var\(--mptk-s-zero\)[^}]*padding-bottom:\s*var\(--mptk-s-zero\)/, "joined 底栏四边无留白")
+  assert.match(own, /\.mptk-popup__panel--center \.mptk-content-popup__foot--joined,/, "joined 底栏居中档自裁底两角")
+  assert.match(own, /\.mptk-content-popup__actions--joined \.mptk-content-popup__action-cell\s*\{[^}]*height:\s*var\(--mptk-c-content-popup-footer-h\)/, "joined 格子高度走 token")
+  assert.match(own, /\.mptk-content-popup__actions--joined\s*\{[^}]*column-gap:\s*var\(--mptk-s-zero\)/, 'joined 档取消列间距')
+  assert.match(own, /\.mptk-content-popup__actions--row\.mptk-content-popup__actions--joined\s+\.mptk-content-popup__action--divided\s*\{[^}]*border-left-width:\s*var\(--mptk-c-border-w\)/, '横排 joined 用左边框分隔')
+  assert.match(own, /\.mptk-content-popup__actions--stack\.mptk-content-popup__actions--joined\s+\.mptk-content-popup__action--divided\s*\{[^}]*border-top-width:\s*var\(--mptk-c-border-w\)/, '竖排 joined 用上边框分隔')
+  assert.doesNotMatch(own, /mptk-content-popup__action--divided[^{]*:(?:first|last)-child/, '分隔线由渲染期类名给，不用伪类')
 
   const toneBg = (mode, tone) => new RegExp(`--mptk-c-content-popup-badge-bg-${tone}:\\s*([^;]+);`)
     .exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`)))?.[1]?.trim()
@@ -1234,6 +1251,14 @@ test('演示页与文档同步 ContentPopup 三档', () => {
   assert.doesNotMatch(page, /title="徽标配色"/, '不单独加配色 Cell，按形态各展示一档')
   assert.doesNotMatch(page, /badgeBackground/, 'demo 不再写死徽标纯色，配色统一走库 token')
   assert.match(page, /tone: contentMode === 'square' \? 'green'/, 'demo 按形态给 tone 色名，不写色值')
+  assert.match(page, /title="底部按钮"/, '演示页缺底栏配置入口 Cell')
+  assert.match(page, /value={footerKind}/, '底栏配置控件由弹窗内 Segmented 的 value={footerKind} 驱动')
+  for (const label of ['单按钮', '竖排', '横排', '竖线']) {
+    assert.match(page, new RegExp(`value: '${label === '竖排' ? 'stack' : label === '横排' ? 'row' : label === '竖线' ? 'joined' : 'single'}', label: '${label}'`), `弹窗内配置缺 ${label} 档`)
+  }
+  assert.match(page, /onClick=\{\(\) => openContent\('title', 'top', 'normal'\)\}/, '文字头缺顶部档演示')
+  assert.match(page, /separation: 'joined'/, 'demo 缺 joined 形态配置')
+  assert.match(page, /ratios: \[1, 2\]/, 'demo 缺横排按比例配置')
   assert.match(catalog, /id: 'content-popup'/, '演示站目录没登记内容弹窗')
   assert.match(read('docs/api/content-popup.md'), /## 不做什么/, '契约文档缺边界小节')
   assert.match(read('docs/README.md'), /content-popup\.md/, '文档索引缺条目')

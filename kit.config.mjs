@@ -343,7 +343,8 @@ export default {
     "--mptk-c-content-popup-badge-size": "72px",                    // 外伸徽标默认尺寸（圆直径 / 方边长）
     "--mptk-c-content-popup-badge-reserve": "36px",                 // 徽标留在面板内的默认高度，给标题/正文让位
     "--mptk-c-content-popup-badge-border-w": "3px",                 // 外伸徽标默认描边宽度，border:false 关闭
-    "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距
+    "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距（spaced 档）
+    "--mptk-c-content-popup-footer-h": "96rpx",                     // joined 档按钮栏整栏高度，格子撑满此高
     "--mptk-c-content-popup-title-icon-size": "28px",               // 文字头图标尺寸，比副标题大一个量级，便于一眼定位
     "--mptk-c-content-popup-badge-icon-size": "32px",               // 外伸徽标图标尺寸：比文字头大、比旧 36px 收敛一档，与消费端彩色图标同档
     /* 随主题的两条头部字色在 light / dark 组：本组的 var() 会在 page 按明档解析后固定。

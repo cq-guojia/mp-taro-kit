@@ -959,8 +959,68 @@ test('ContentPopup 按钮横纵两轴生效，槽位覆盖配置', () => {
   assert.doesNotMatch(slots, /配置按钮/)
 })
 
-test('ContentPopup 越界位置回落到中部，不渲染上浮面板', () => {
-  const html = render(h(ContentPopup, { open: true, position: 'top' }))
-  assert.match(html, /mptk-popup__panel--center/)
-  assert.doesNotMatch(html, /mptk-popup__panel--top/)
+test('ContentPopup footer 四档：stack 拉通、row 按比例、joined 竖线、上边线与槽位覆盖', () => {
+  const stack = render(h(ContentPopup, {
+    open: true,
+    actions: [{ text: 'A' }, { text: 'B' }, { text: 'C' }],
+    footerConfig: { layout: 'stack', divider: true, dividerColor: '#123456' },
+  }))
+  assert.match(stack, /mptk-content-popup__actions--stack/)
+  assert.match(stack, /mptk-content-popup__actions--column/)
+  assert.doesNotMatch(stack, /mptk-content-popup__action--divided/)
+  assert.match(stack, /mptk-content-popup__foot--divided/)
+  assert.match(stack, /border-top-color:\s*#123456/)
+  assert.match(stack, /mptk-content-popup__content--divider-gap/)
+
+  const row = render(h(ContentPopup, {
+    open: true,
+    actions: [{ text: '取消' }, { text: '确定' }],
+    footerConfig: { layout: 'row', ratios: [1, 2] },
+  }))
+  assert.match(row, /mptk-content-popup__actions--row/)
+  assert.match(row, /flex-grow:\s*1/)
+  assert.match(row, /flex-grow:\s*2/)
+  assert.doesNotMatch(row, /mptk-content-popup__foot--divided/)
+
+  const joined = render(h(ContentPopup, {
+    open: true,
+    actions: [{ text: '复制', icon: 'common.base:fuzhi' }, { text: '删除' }],
+    footerConfig: { layout: 'row', separation: 'joined' },
+  }))
+  assert.match(joined, /mptk-content-popup__actions--joined/)
+  assert.match(joined, /mptk-content-popup__foot--divided/)
+  // joined = 与面板融合的透明文字按钮栏：ghost 皮肤 + 格子类，第二项才带分隔线。
+  assert.match(joined, /mptk-btn--ghost/)
+  assert.match(joined, /mptk-content-popup__action-cell/)
+  assert.equal((joined.match(/mptk-content-popup__action--divided/g) ?? []).length, 1)
+  assert.doesNotMatch(joined, /border-radius/)
+  assert.match(joined, /koc-i-common-base-fuzhi/)
+
+  // 调用方显式 variant 优先：joined 档传 solid 不被强制改回 ghost。
+  const solid = render(h(ContentPopup, {
+    open: true,
+    actions: [{ text: '确定', variant: 'solid' }],
+    footerConfig: { layout: 'row', separation: 'joined' },
+  }))
+  assert.match(solid, /mptk-btn--solid/)
+  assert.doesNotMatch(solid, /mptk-btn--ghost/)
+
+  // 槽位覆盖：footer 存在时 footerConfig / actions 都不渲染。
+  const slot = render(h(ContentPopup, {
+    open: true,
+    actions: [{ text: '配置按钮' }],
+    footerConfig: { layout: 'joined' },
+    footer: h('span', null, '自定义脚'),
+  }))
+  assert.match(slot, /自定义脚/)
+  assert.doesNotMatch(slot, /mptk-content-popup__actions/)
+  assert.doesNotMatch(slot, /配置按钮/)
+})
+
+test('ContentPopup 三档位置生效，左右越界回落到中部', () => {
+  const top = render(h(ContentPopup, { open: true, position: 'top' }))
+  assert.match(top, /mptk-popup__panel--top/)
+  const left = render(h(ContentPopup, { open: true, position: 'left' }))
+  assert.match(left, /mptk-popup__panel--center/)
+  assert.doesNotMatch(left, /mptk-popup__panel--left/)
 })

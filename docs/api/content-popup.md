@@ -4,7 +4,7 @@
 
 ## 接口 / 导出
 
-`mp-taro-kit/ui/layout/content-popup` 导出 `ContentPopup` 及 `ContentPopupProps` / `ContentPopupVariant` / `ContentPopupPosition` / `ContentPopupBackground` / `ContentPopupBackgroundDirection` / `ContentPopupHeaderIcon` / `ContentPopupHeaderImage` / `ContentPopupActionsLayout` / `ContentPopupActionsAlign` / `ContentPopupBadgeAlign` / `ContentPopupBadgeRadius` / `ContentPopupBadgeTone` / `ContentPopupBadge` / `ContentPopupBadgeContent` / `ContentPopupImage` / `ContentPopupAction`；`mp-taro-kit/ui/layout/content-popup/style` 是组件级样式出口，宿主显式引一次。`mp-taro-kit/ui/layout` 也转发这些出口作兼容。
+`mp-taro-kit/ui/layout/content-popup` 导出 `ContentPopup` 及 `ContentPopupProps` / `ContentPopupVariant` / `ContentPopupPosition` / `ContentPopupBackground` / `ContentPopupBackgroundDirection` / `ContentPopupHeaderIcon` / `ContentPopupHeaderImage` / `ContentPopupActionsLayout` / `ContentPopupActionsAlign` / `ContentPopupFooterLayout` / `ContentPopupFooterSeparation` / `ContentPopupFooterConfig` / `ContentPopupBadgeAlign` / `ContentPopupBadgeRadius` / `ContentPopupBadgeTone` / `ContentPopupBadge` / `ContentPopupBadgeContent` / `ContentPopupImage` / `ContentPopupAction`；`mp-taro-kit/ui/layout/content-popup/style` 是组件级样式出口，宿主显式引一次。`mp-taro-kit/ui/layout` 也转发这些出口作兼容。
 
 ```tsx
 import { ContentPopup } from 'mp-taro-kit/ui/layout/content-popup'
@@ -13,7 +13,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 ## 设计依据
 
-成熟库（Vant Weapp `Dialog`、NutUI `Dialog`、TDesign 小程序 `Dialog`、antd-mobile `Dialog` / `Popup`）把这层叫对话框：头部 / 内容 / 底部三段，配置与槽位双通道，按钮横纵排布是独立轴；图片头是对话框的一种形态，不另立品类。本库延续这条路线，但只做 `center` / `bottom` 两档——上浮与左右抽屉由基础 `Popup` 承担，本组件不做。
+成熟库（Vant Weapp `Dialog`、NutUI `Dialog`、TDesign 小程序 `Dialog`、antd-mobile `Dialog` / `Popup`）把这层叫对话框：头部 / 内容 / 底部三段，配置与槽位双通道，按钮横纵排布是独立轴；图片头是对话框的一种形态，不另立品类。本库延续这条路线，做 `top` / `center` / `bottom` 三档——左右抽屉不属于正常弹窗（无关闭叉、footer、handler），由基础 `Popup` 的 `surface='none'` 裸壳让调用方完全自定义。
 
 与 `ImagePopup` 的边界：`ImagePopup` 是「一张图配一组按钮」的营销弹窗，多图自动 Swiper；`ContentPopup` 是「头部 + 内容 + 按钮」的通用弹窗，图片头只有一张、可以透明、可以接下方面板。两者都基于 `Popup` 裸壳能力，互不 import 实现（只复用 `ImagePopupAction` 类型）。
 
@@ -24,7 +24,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 | 参数 | 类型 | 默认 | 说明 |
 |---|---|---|---|
 | `open` | `boolean` | 必填 | 显隐；关闭后按 Popup 的退场时长卸载 |
-| `position` | `'center' \| 'bottom'` | `'center'` | 只做这两档；越界值回落 `'center'` |
+| `position` | `'top' \| 'center' \| 'bottom'` | `'center'` | 只做上中下三档；左右抽屉不支持，越界值回落 `'center'` |
 | `variant` | `'title' \| 'image' \| 'badge'` | `'title'` | 头部形态旋钮，见下 |
 | `onClose` | `() => void` | — | 关闭回调；不传则不渲染关闭叉 |
 | `closeable` | `boolean` | `true` | 显示关闭叉（与底层 Popup 默认不同） |
@@ -75,7 +75,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 排布固定为：图标独占左侧一列、上下贯通右侧两行；图标尺寸走组件 token `--mptk-c-content-popup-title-icon-size`，图标与文字的左右间距为 `--mptk-space-4`。长文案在标题与副标题上都会自动换行，不给单行溢出。
 
-默认关闭位：中部弹窗为外下中（`below-center`），底部弹窗为外右上（`above-right`）。要改就显式传 `closePosition`。
+默认关闭位：顶部弹窗为面板下方右（`below-right`，贴顶没有上方外置位），中部弹窗为外下中（`below-center`），底部弹窗为外右上（`above-right`）。要改就显式传 `closePosition`；顶部档只接受 `below-center` / `below-right`，其余档位无效回落。
 
 | 参数 | 类型 | 说明 |
 |---|---|---|
@@ -166,16 +166,38 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 | 参数 | 类型 | 默认 | 说明 |
 |---|---|---|---|
 | `children` | `ReactNode` | — | 内容区 |
-| `footer` | `ReactNode` | — | 底部整体槽位，传了就覆盖按钮配置 |
-| `actions` | `ContentPopupAction[]` | — | 复用 ImagePopup 的文字按钮 `{text} + ButtonProps` 与图片按钮 `{src}` |
-| `actionsLayout` | `'row' \| 'column'` | `'row'` | 左右排 / 上下排 |
-| `actionsAlign` | `'center' \| 'left' \| 'right'` | `'center'` | 只作用于横排，纵排忽略 |
+| `footer` | `ReactNode` | — | 底部整体槽位，传了就覆盖按钮配置与 `footerConfig` |
+| `actions` | `ContentPopupAction[]` | — | 复用 ImagePopup 的文字按钮 `{text} + ButtonProps` 与图片按钮 `{src}`；`color` / `icon` 直接走 ButtonProps |
+| `actionsLayout` | `'row' \| 'column'` | `'row'` | 旧简写：左右排 / 上下排，等价于 `footerConfig.layout` 的 `row` / `stack` |
+| `actionsAlign` | `'center' \| 'left' \| 'right'` | `'center'` | 旧简写：只在 `spaced` + `row` 档生效，其它档忽略 |
+| `footerConfig` | `ContentPopupFooterConfig` | — | 底栏排布、分隔与上边线配置，优先于上面两个简写，见下 |
 
-优先级统一为 **槽位 > 配置 > 默认**。要完全自绘就不传头部/按钮配置，只传 `children` + `surface='none'`；不需要新造「透明模式」。
+**`footerConfig` 四档形态**（`layout` × `separation` 两轴正交）：
+
+| 形态 | 配置 | 效果 |
+|---|---|---|
+| 单按钮拉通 | `{ layout: 'stack' }` + 一项 | 一项独占一行、撑满底栏 |
+| 多按钮竖排拉通 | `{ layout: 'stack' }` + 多项 | 每项一行撑满，配几项就几行 |
+| 横排等分 / 按比例 | `{ layout: 'row', ratios: [1, 2] }` | 无 `ratios` 时按内容宽 + `actionsAlign` 对齐；给 `ratios` 时按权重分配宽度 |
+| 竖线分隔（joined） | `{ layout: 'row', separation: 'joined' }` | 无间距，格子间用竖线分隔；`stack` 档的 joined 用横线分隔 |
+
+```ts
+interface ContentPopupFooterConfig {
+  layout?: 'stack' | 'row'          // 默认随 actionsLayout（row → row、column → stack）
+  separation?: 'spaced' | 'joined'  // 默认 spaced：间距分隔、无 border
+  divider?: boolean                 // footer 与 body 之间的上边线；joined 默认开、spaced 默认关
+  dividerColor?: string             // 覆盖上边线与中间分隔线颜色，缺省 --mptk-border
+  ratios?: number[]                 // 仅 row 档生效，与 actions 一一对应的 flex 权重
+}
+```
+
+- `spaced` 档文字/图片按钮之间走 token 间距、**默认没有 border**；只有 `joined` 档默认带上边线与中间分隔线，也可显式 `divider: false` 关掉。
+- `joined` 档是**与面板融为一体的文字按钮栏**：底栏通栏贴底、四边无留白（无左/右/下 padding），按钮默认走 `ghost` 皮肤（透明底、无描边，调用方显式传 `variant` 时尊重），文字色/icon 走 `ButtonProps` 的 `color` / `icon`。分隔线落在格子的 `border` 上（横排左边框、竖排上边框），格子高度走 `--mptk-c-content-popup-footer-h`；居中/上浮档底栏自裁底两角，底部档贴屏不裁。不用伪类、不用负 margin。
+- 优先级统一为 **槽位 > `footerConfig` > 旧简写 > 默认**。要完全自绘就不传头部/按钮配置，只传 `children` + `surface='none'`；不需要新造「透明模式」。
 
 ## 行为契约
 
-- **位置**：只支持中部与底部；不支持上浮与左右。越界值运行时回落 `'center'`，不抛错。
+- **位置**：只支持顶部 / 中部 / 底部；左右抽屉不支持，越界值运行时回落 `'center'`，不抛错。顶部档徽标不外伸，降级为内联图标头；关闭叉固定面板下方右（`below-right`）。
 - **高度**：沿用 Popup「高度由内容撑开、不写 `max-height`」；要滚由调用方在 `children` 里包 `scroll-view` 并给确定高。
 - **分割线标准**：头部与内容之间的线是**头部的下边框**（不是独立节点），线及以上都归 header——`headerBackground` 的渐变铺到线为止；线通栏（左右顶到面板边）。线以下的间距是**内容区的上间距**（`--mptk-space-4`，16px），由 `.mptk-content-popup__content--top-gap` 恒给，不随分割线显隐消失；线本身上方由 header 的 `padding-bottom` 留同档间距。线色走 `headerDividerColor`，默认 `--mptk-border`。以后本弹窗里新增任何分割线都按这条标准走。
 - **圆角裁切**：面板为徽标外伸开了 `overflow: visible`，不再替头部裁圆角；头部按面板档位自裁上两角（居中档恒圆、底部档仅 `round` 开启才圆，取 `--mptk-c-popup-radius`），渐变不会溢出圆角。
@@ -186,7 +208,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 ## 不做什么
 
-- 不做上浮、左右抽屉，也不做命令式 API / 浮层栈 / portal。
+- 不做左右抽屉（含 handler / footer / 关闭叉，全部交给基础 `Popup` 裸壳自定义），也不做命令式 API / 浮层栈 / portal。
 - 不做多图轮播（归 `ImagePopup`）、不做表单输入、不做曝光回调、不做页面回退自动关闭。
 - 不在组件里写死颜色与尺寸；新增视觉取值走 `kit.config.mjs`，组件只读 `var(--mptk-*)`。
 - 不给「完全自定义」另立模式，复用 Popup 的 `surface='none'`。
@@ -203,3 +225,5 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 - 2026-11-22：`title` 与 `badge` 两档收敛为同一份 header 渲染——图标四形态统一 `__lead-*` 类族、文案块统一 `__title-text`，raised 档只多一层外伸盒与标题上间距修饰；主标题两档同为 `--mptk-font-lg`。新增 `headerImage` 独立图片背景入口（与纯色/渐变同层叠加，不裁切外伸图标）、`headerIcon` 与 `iconColor`（优先级 `content.color > iconColor > tone 字色`，COLR/CPAL 彩色字形不吃 `color`）。分割线默认值当时改为 title/badge 开、image 关（同日下一条再纠正为 title 开、image/badge 关）；补渲染自检覆盖以上入口。
 - 2026-11-22：外伸徽标配色收敛进库 token——新增 `badge.tone`（blue / green / red / yellow），每档整条渐变随主题反色（明档深、暗档浅）、图标色与底色配套；demo 不再写死纯色与 headerTone，正圆给 blue、圆角方给 green，不单列配色切换。外伸形态只保留一个标题：`badge.subtitle` 移除、副标题只在 title 档显示、靠左/靠右不出标题。
 - 2026-11-22：纠正两处「border」混淆——徽标**外圈**描边恢复默认开（色随面板底色），header 下方**横向**分割线改为仅 title 档默认开、image/badge 默认关，要分隔由调用方显式 `headerDivider` 打开；徽标图标 token 由 36px 收到 32px。
+- 2026-11-22：`position` 扩到 `top` / `center` / `bottom` 三档（左右抽屉仍排除），顶部档徽标降级为内联头、关闭叉固定 `below-right`。底栏新增 `footerConfig`（`layout: stack | row` × `separation: spaced | joined`，加 `divider` / `dividerColor` / `ratios`），支持单按钮拉通、竖排拉通、横排等分或按比例、竖线/横线分隔四形态；`actionsLayout` / `actionsAlign` 降级为兼容简写。分隔线走格子 border、joined 才默认带上边线，spaced 默认无 border。
+- 2026-11-23：修正 joined 底栏视觉——从「浅色实心圆角块 + 四周留白」改为与面板融为一体的通栏文字按钮栏（透明底、无左右下间距、上横线 + 中竖线、文字色/icon 可配）；新增 `--mptk-c-content-popup-footer-h` token。演示站改为弹窗内容第一行放 Segmented 配置控件，切档时 footer 实时响应，撤掉页面四个入口按钮。

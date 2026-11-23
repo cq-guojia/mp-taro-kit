@@ -22,8 +22,8 @@ import type { ImagePopupAction } from '../ImagePopup.js'
 /** 头部形态：文字头 / 图片头 / 外伸徽标头。 */
 export type ContentPopupVariant = 'title' | 'image' | 'badge'
 
-/** 只做中部与底部；上浮、左右抽屉由基础 Popup 承担，本组件不提供。 */
-export type ContentPopupPosition = 'center' | 'bottom'
+/** 只做上浮 / 中部 / 底部；左右抽屉不属于内容弹窗，由基础 Popup 裸壳自行定义。 */
+export type ContentPopupPosition = 'top' | 'center' | 'bottom'
 
 /**
  * 头部字色/线色方案，表达「头部底色是什么明暗」，库据此反色：
@@ -56,6 +56,26 @@ export type ContentPopupBackground =
 
 export type ContentPopupActionsLayout = 'row' | 'column'
 export type ContentPopupActionsAlign = 'center' | 'left' | 'right'
+
+/** footer 排布：stack 每项拉通一行（一项即单按钮拉通、多项即竖排）；row 横排、缺省等分或按 ratios 分。 */
+export type ContentPopupFooterLayout = 'stack' | 'row'
+/** footer 分隔：spaced 用间距、默认无 border；joined 去间距、用 border 分隔，默认带上边线。 */
+export type ContentPopupFooterSeparation = 'spaced' | 'joined'
+
+/**
+ * footer 配置，优先级高于 actionsLayout / actionsAlign 简写。
+ * - divider：footer 与 body 之间的上边线；joined 默认开、spaced 默认关，显式值优先。
+ * - dividerColor：覆盖上边线与中间分隔线的颜色，缺省走 --mptk-border。
+ * - ratios：仅 row 档生效，与 actions 一一对应的 flex 权重；给了就按权重分配，不给则 spaced 档按内容宽对齐、joined 档等分。
+ */
+export interface ContentPopupFooterConfig {
+  layout?: ContentPopupFooterLayout
+  separation?: ContentPopupFooterSeparation
+  divider?: boolean
+  dividerColor?: string
+  ratios?: number[]
+}
+
 export type ContentPopupBadgeAlign = 'center' | 'left' | 'right'
 export type ContentPopupBadgeRadius = 'none' | 'sm' | 'md' | 'lg' | 'circle' | number | string
 /** 外伸徽标预设色：整条渐变随明/暗主题反色（明档深、暗档浅），显式 background 优先。 */
@@ -172,10 +192,15 @@ export interface ContentPopupProps {
 
   // 内容与底部
   children?: ReactNode
+  /** 完全自定义底栏，优先于 footerConfig / actions 配置。 */
   footer?: ReactNode
   actions?: ContentPopupAction[]
+  /** 旧简写：row | column，等价于 footerConfig.layout 的 row | stack；footerConfig 优先。 */
   actionsLayout?: ContentPopupActionsLayout
+  /** 旧简写：仅 spaced + row 档生效。 */
   actionsAlign?: ContentPopupActionsAlign
+  /** 底栏排布、分隔与上边线配置，优先于 actionsLayout / actionsAlign。 */
+  footerConfig?: ContentPopupFooterConfig
 }
 
 const DEFAULT_CONTAINER_WIDTH = 320
@@ -334,7 +359,13 @@ function isTextAction(action: ContentPopupAction): action is Extract<ContentPopu
   return 'text' in action
 }
 
-function ActionImage({ action }: { action: Extract<ContentPopupAction, { src: string }> }) {
+function ActionImage({
+  action, className, style,
+}: {
+  action: Extract<ContentPopupAction, { src: string }>
+  className?: string
+  style?: CSSProperties
+}) {
   const [natural, setNatural] = useState<ImageNaturalSize | undefined>(undefined)
   const { src, alt, onClick, ...sizeInput } = action
   const size = resolveImageSize(
@@ -350,13 +381,14 @@ function ActionImage({ action }: { action: Extract<ContentPopupAction, { src: st
   }
   return (
     <Image
-      className="mptk-content-popup__action-image"
+      className={['mptk-content-popup__action-image', className].filter(Boolean).join(' ')}
       src={src}
       aria-label={alt}
       mode={size.mode}
       style={{
         width: size.width,
         ...(size.height === null ? null : { height: `${String(size.height)}px` }),
+        ...style,
       }}
       onLoad={handleLoad}
       onClick={onClick}
@@ -364,22 +396,61 @@ function ActionImage({ action }: { action: Extract<ContentPopupAction, { src: st
   )
 }
 
-function renderActions(actions: ContentPopupAction[], layout: ContentPopupActionsLayout, align: ContentPopupActionsAlign) {
+function renderActions(
+  actions: ContentPopupAction[],
+  layout: ContentPopupFooterLayout,
+  separation: ContentPopupFooterSeparation,
+  align: ContentPopupActionsAlign,
+  ratios: number[] | undefined,
+  dividerColor: string | undefined,
+) {
   if (actions.length === 0) return null
+  const joined = separation === 'joined'
+  // joined 恒等分（无间距靠 border 分隔），spaced 有 ratios 才按比例；否则保留旧「按内容宽 + 对齐」行为。
+  const distributed = joined || ratios !== undefined
+  const containerStyle: CSSProperties | undefined =
+    layout === 'row' && !distributed ? { justifyContent: JUSTIFY[align] } : undefined
   return (
     <View
       className={[
         'mptk-content-popup__actions',
-        layout === 'column' ? 'mptk-content-popup__actions--column' : '',
+        layout === 'stack'
+          ? 'mptk-content-popup__actions--stack mptk-content-popup__actions--column'
+          : 'mptk-content-popup__actions--row',
+        joined ? 'mptk-content-popup__actions--joined' : 'mptk-content-popup__actions--spaced',
       ].filter(Boolean).join(' ')}
-      style={layout === 'row' ? { justifyContent: JUSTIFY[align] } : undefined}
+      style={containerStyle}
     >
       {actions.map((action, index) => {
+        const divided = joined && index > 0
+        const cellStyle: CSSProperties = {}
+        if (layout === 'row' && distributed) {
+          cellStyle.flexGrow = ratios?.[index] ?? 1
+          cellStyle.flexBasis = '0%'
+        }
+        if (joined && divided && dividerColor !== undefined) {
+          if (layout === 'row') cellStyle.borderLeftColor = dividerColor
+          else cellStyle.borderTopColor = dividerColor
+        }
+        const cell = Object.keys(cellStyle).length > 0 ? cellStyle : undefined
+        const cellClass = joined ? 'mptk-content-popup__action-cell' : ''
+        const dividedClass = divided ? 'mptk-content-popup__action--divided' : ''
         if (isTextAction(action)) {
           const { text, ...buttonProps } = action
-          return <Button key={index} {...buttonProps}>{text}</Button>
+          // joined 是与面板融合的文字按钮栏：缺省走 ghost（透明底、无描边），调用方显式 variant 时尊重。
+          const variant = joined && buttonProps.variant === undefined ? 'ghost' : buttonProps.variant
+          return (
+            <Button
+              key={index}
+              {...buttonProps}
+              variant={variant}
+              className={[cellClass, dividedClass, buttonProps.className].filter(Boolean).join(' ') || undefined}
+              style={cell === undefined ? buttonProps.style : { ...buttonProps.style, ...cell }}
+              block={layout === 'stack' ? true : buttonProps.block}
+            >{text}</Button>
+          )
         }
-        return <ActionImage key={index} action={action} />
+        return <ActionImage key={index} action={action} className={[cellClass, dividedClass].filter(Boolean).join(' ')} style={cell} />
       })}
     </View>
   )
@@ -431,10 +502,13 @@ export function ContentPopup({
   actions,
   actionsLayout = 'row',
   actionsAlign = 'center',
+  footerConfig,
 }: ContentPopupProps) {
   const [natural, setNatural] = useState<ImageNaturalSize | undefined>(undefined)
 
-  const resolvedPosition: ContentPopupPosition = position === 'bottom' ? 'bottom' : 'center'
+  // 三档位置按传入收敛；只排除左右抽屉，top 现在是合法档。
+  const resolvedPosition: ContentPopupPosition =
+    position === 'top' || position === 'bottom' ? position : 'center'
   const lead: ContentPopupHeaderIcon | undefined = headerIcon ??
     (glyph !== undefined ? { kind: 'glyph', node: glyph } : undefined) ??
     (icon !== undefined ? { kind: 'icon', name: icon } : undefined)
@@ -445,10 +519,21 @@ export function ContentPopup({
     (variant === 'title' && hasTitleContent) ||
     (variant === 'image' && image !== undefined) ||
     (variant === 'badge' && hasBadgeContent)
+  // top 档贴屏幕顶，徽标向上外伸会浮出屏幕，降级为 title 档内联头部（图标 + 标题），不外伸。
+  const inlineBadge = variant === 'badge' && resolvedPosition === 'top'
+  const headerVariant: ContentPopupVariant = inlineBadge ? 'title' : variant
   // header 横向分割线只有文字头默认开；图片头、外伸徽标头默认没有，要分隔由调用方显式 headerDivider 打开。
   // 这与徽标容器外圈那道描边（badge.border）是两回事。
-  const showDivider = headerDivider ?? variant === 'title'
+  const showDivider = headerDivider ?? headerVariant === 'title'
   const hasFooter = footer !== undefined || (actions !== undefined && actions.length > 0)
+
+  // footer 最终配置：专名 > 旧简写。layout 把 column 映射到 stack；joined 默认带上边线，spaced 默认不带。
+  const footerLayout: ContentPopupFooterLayout = footerConfig?.layout ?? (actionsLayout === 'column' ? 'stack' : 'row')
+  const footerSeparation: ContentPopupFooterSeparation = footerConfig?.separation ?? 'spaced'
+  const footerJoined = footerSeparation === 'joined'
+  const footerDivider = footerConfig?.divider ?? footerJoined
+  const footerDividerColor = footerConfig?.dividerColor
+  const footerRatios = footerConfig?.ratios
 
   // 徽标外伸：浮出量走 transform（百分比参照容器自身）、有符号微调走 left/right/top，不用负 margin（Skyline 不支持）。
   const badgeAnchor = badge?.offset?.anchor ?? 'center'
@@ -536,6 +621,17 @@ export function ContentPopup({
       )
     }
     if (variant === 'badge' && badge !== undefined) {
+      // top 档徽标不外伸，按内联图标头渲染：依旧只有居中档出标题、任何档不出副标题。
+      if (inlineBadge) {
+        return (
+          <HeaderContent
+            lead={badge.content}
+            raised={false}
+            title={badgeAnchor === 'center' ? title : undefined}
+            color={iconColor}
+          />
+        )
+      }
       // 外伸形态只有居中档带标题；靠左/靠右不出文案，副标题任何档都不显示。
       return (
         <HeaderContent
@@ -553,7 +649,7 @@ export function ContentPopup({
 
   const headerClassName = [
     'mptk-content-popup__header',
-    `mptk-content-popup__header--${variant}`,
+    `mptk-content-popup__header--${headerVariant}`,
     headerTone === 'normal' ? '' : `mptk-content-popup__header--${headerTone}`,
     showDivider ? 'mptk-content-popup__header--divided' : '',
   ].filter(Boolean).join(' ')
@@ -566,19 +662,22 @@ export function ContentPopup({
   const headerStyle: CSSProperties = {
     ...backgroundStyle(headerBackground),
     ...headerImageStyle,
-    ...(variant === 'badge' && badgeReserve !== undefined ? { paddingTop: badgeReserve } : null),
+    ...(!inlineBadge && variant === 'badge' && badgeReserve !== undefined ? { paddingTop: badgeReserve } : null),
     ...(showDivider && headerDividerColor !== undefined ? { borderBottomColor: headerDividerColor } : null),
   }
 
   // 徽标外伸后，面板内 top-* 档的关闭叉会压在徽标上，回落到外置档；
   // 中部弹窗默认外下中，底部弹窗的文字头默认面板内右上，其余档沿用底座默认外置右上。
+  // top 档贴顶、上方外置档不可用：显式给 below-right，不靠底座兜底。
   const resolvedClosePosition: PopupClosePosition | undefined = (() => {
     if (closePosition !== undefined) {
+      if (resolvedPosition === 'top') return 'below-right'
       return variant === 'badge' &&
         (closePosition.startsWith('top-') || closePosition.startsWith('edge-top-'))
         ? 'above-right'
         : closePosition
     }
+    if (resolvedPosition === 'top') return 'below-right'
     if (resolvedPosition === 'center') return 'below-center'
     return 'above-right'
   })()
@@ -623,12 +722,18 @@ export function ContentPopup({
         'mptk-content-popup__content',
         'mptk-content-popup__content--top-gap',
         hasFooter ? '' : 'mptk-content-popup__content--bottom-gap',
+        hasFooter && footerDivider ? 'mptk-content-popup__content--divider-gap' : '',
       ].filter(Boolean).join(' ')}>
         {children}
       </View>
       {hasFooter ? (
-        <View className="mptk-content-popup__foot">
-          {footer !== undefined ? footer : renderActions(actions ?? [], actionsLayout, actionsAlign)}
+        <View
+          className={['mptk-content-popup__foot', footerDivider ? 'mptk-content-popup__foot--divided' : ''].filter(Boolean).join(' ')}
+          style={footerDivider && footerDividerColor !== undefined ? { borderTopColor: footerDividerColor } : undefined}
+        >
+          {footer !== undefined
+            ? footer
+            : renderActions(actions ?? [], footerLayout, footerSeparation, actionsAlign, footerRatios, footerDividerColor)}
         </View>
       ) : null}
     </Popup>

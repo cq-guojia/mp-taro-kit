@@ -18,6 +18,7 @@ import {
 } from 'mp-taro-kit/ui/layout'
 import {
   ContentPopup,
+  type ContentPopupFooterConfig,
   type ContentPopupHeaderTone,
   type ContentPopupPosition,
   type ContentPopupVariant,
@@ -250,12 +251,44 @@ export default function PopupPage() {
   const [contentMode, setContentMode] = useState<
     'normal' | 'head-light' | 'head-dark' | 'panel-fade' | 'panel-gradient' | 'image-bg' | 'circle' | 'square' | 'left' | 'image' | 'iconclass'
   >('normal')
+  const [footerKind, setFooterKind] = useState<'single' | 'stack' | 'row' | 'joined'>('single')
 
   const openContent = (variant: ContentPopupVariant, position: ContentPopupPosition, mode: typeof contentMode) => {
     setContentVariant(variant)
     setContentPosition(position)
     setContentMode(mode)
     setContentOpen(true)
+  }
+
+  /* 底部四形态：单按钮拉通 / 竖排拉通 / 横排按比例 / joined 竖线分隔（带上边线）。 */
+  const FOOTER_DEMOS: Record<typeof footerKind, { actions: { text: string; type?: 'default' | 'primary'; icon?: string; onClick?: () => void }[]; config: ContentPopupFooterConfig }> = {
+    single: {
+      actions: [{ text: '知道了', onClick: () => setContentOpen(false) }],
+      config: { layout: 'stack' },
+    },
+    stack: {
+      actions: [
+        { text: '存入相册', type: 'default', icon: 'common.base:chazhao' },
+        { text: '分享给好友', type: 'default', icon: 'common.base:fuzhi' },
+        { text: '取消', type: 'default', onClick: () => setContentOpen(false) },
+      ],
+      config: { layout: 'stack' },
+    },
+    row: {
+      actions: [
+        { text: '取消', type: 'default', onClick: () => setContentOpen(false) },
+        { text: '确定', onClick: () => setContentOpen(false) },
+      ],
+      config: { layout: 'row', ratios: [1, 2] },
+    },
+    joined: {
+      // joined 是与面板融合的透明文字按钮栏：文字色走 ButtonProps.color，前置 icon 走 icon。
+      actions: [
+        { text: '取消', type: 'default', onClick: () => setContentOpen(false) },
+        { text: '保存', type: 'default', color: '#E8912D', icon: 'common.base:fuzhi', onClick: () => setContentOpen(false) },
+      ],
+      config: { layout: 'row', separation: 'joined' },
+    },
   }
 
   const maskValues = MASK_VALUES[mask]
@@ -541,8 +574,17 @@ export default function PopupPage() {
               title="文字头"
               value={
                 <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'top', 'normal')}>顶部</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'normal')}>中部</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('title', 'bottom', 'normal')}>底部</Button>
+                </View>
+              }
+            />
+            <Cell
+              title="底部按钮"
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openContent('title', 'center', 'normal')}>打开配置</Button>
                 </View>
               }
             />
@@ -605,12 +647,24 @@ export default function PopupPage() {
             image={contentVariant === 'image' ? GALLERY_SLIDES[0] : undefined}
             headerBackground={headerBackground}
             badge={badge}
-            actions={[{ text: '知道了', onClick: () => setContentOpen(false) }]}
+            actions={FOOTER_DEMOS[footerKind].actions}
+            footerConfig={FOOTER_DEMOS[footerKind].config}
             overlayTone={maskValues.tone}
             overlayOpacity={maskValues.opacity}
             onClose={() => setContentOpen(false)}
           >
             <View className="demo-stack demo-stack--fill">
+              <Segmented
+                size="xs"
+                items={[
+                  { value: 'single', label: '单按钮' },
+                  { value: 'stack', label: '竖排' },
+                  { value: 'row', label: '横排' },
+                  { value: 'joined', label: '竖线' },
+                ]}
+                value={footerKind}
+                onChange={setFooterKind}
+              />
               <Text>{`内容弹窗 / ${contentVariant} / ${contentPosition}`}</Text>
               <Text>头部、内容与按钮由库组合；完全自绘传 children 与 surface=none</Text>
             </View>
