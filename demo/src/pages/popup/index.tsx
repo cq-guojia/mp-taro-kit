@@ -557,7 +557,6 @@ export default function PopupPage() {
       const { dark } = useThemeSnapshot()
       // 头部底色是固定示例：浅底/深底各一套，字色交给 headerTone 按底色明暗反色，不随主题翻。
       const headerBackground =
-        imageGeom === 'rise' || imageGeom === 'both' ? '#F33' :
         contentMode === 'head-light' ? { from: '#E8F2FF', to: '#BBD7FF' } :
         contentMode === 'head-dark' ? { from: '#1E3A8A', to: '#0F2557' } :
         contentMode === 'image-bg' ? '#F33' :
