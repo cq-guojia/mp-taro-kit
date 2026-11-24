@@ -675,11 +675,13 @@ export function ContentPopup({
 
   useEffect(() => {
     cancelMeasure()
+    /* 关闭只是冻结几何：退场动画期间节点仍在，复位宽/失败会撤掉 header 高度并把图片藏起来，
+       表现为弹窗跳一下。复位只在真正开启新一轮测量时做。 */
+    if (!insetEnabled || !open) return undefined
     setMeasuredWidth(null)
     setMeasureFailed(false)
     /* 图片节点由 Popup 的 usePresence 在 open 变 true 后才挂载；open=false 时量必然扑空，
        还会白耗掉重试预算。open / src / 宽度变化都是新一轮，统一从此入口重启。 */
-    if (!insetEnabled || !open) return undefined
     const timer = setTimeout(measure, 0)
     return () => {
       clearTimeout(timer)

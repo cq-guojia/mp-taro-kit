@@ -1270,6 +1270,8 @@ test('ContentPopup 源码与出口契约', () => {
   // 图片头量宽调度：必须随 open 重启、旧代次回调作废、onLoad 只是补充触发。
   assert.match(source, /const measureGen = useRef\(0\)/, '测量要有代次，隔离上一轮已发出的 query 回调')
   assert.match(source, /if \(!insetEnabled \|\| !open\) return/, '未打开时不量，避免空耗重试预算')
+  assert.match(source, /if \(!insetEnabled \|\| !open\) return undefined\s*\n\s*setMeasuredWidth\(null\)/,
+    '关闭只冻结几何，复位宽度必须在 open 门控之后，否则退场动画期间弹窗会跳')
   assert.match(source, /if \(gen !== measureGen\.current\) return/, '旧代次的 query 回调不许写状态')
   assert.match(source, /clearTimeout\(retryTimer\.current\)[\s\S]{0,120}setMeasuredWidth\(width\)/, '量成功后清掉排队中的旧重试，防止失败标记被盖回')
   assert.match(source, /}, \[image\?\.src, sized\?\.width, measure, insetEnabled, open, cancelMeasure\]\)/, 'open 变化必须重启测量周期')
