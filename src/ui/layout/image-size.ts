@@ -83,8 +83,10 @@ const pxNumber = (value: ImageSizeToken | undefined): number | null =>
       ? parseFloat(value)
       : null
 
-/** 宽 / 高比例，来源优先级：显式 ratio > 声明的 original > onLoad 真实尺寸。 */
-function resolveRatio(input: ImageSizeInput, ctx: ImageSizeContext): number | null {
+/** 宽 / 高比例，来源优先级：显式 ratio > 声明的 original > onLoad 真实尺寸。
+ *  导出供"按真实渲染宽反推显示高"复用——必须与 resolver 同口径，否则原生 widthFix 的
+ *  实际高度与 JS 算出的高度会差一倍（声明比例与 onLoad 真实比例不一致时）。 */
+export function resolveRatio(input: ImageSizeInput, ctx: ImageSizeContext): number | null {
   if (input.ratio !== undefined && input.ratio > 0) return input.ratio
   if (
     input.naturalWidth !== undefined &&

@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
 import { Button } from '../actions/Button.js'
 import { CloseGlyph } from '../feedback/close/CloseGlyph.js'
+import { closeOffsetVars, type EdgeOffset } from './edge-offset.js'
 import { resolveCloseStyle, type PopupCloseShape } from './close-style.js'
 import {
   isOnOverlayClosePosition,
@@ -69,6 +70,8 @@ export interface PopupProps {
   closeBackground?: boolean
   /** 关闭按钮位置：按面板形态取可用档，不传用该形态默认值；左右抽屉忽略 */
   closePosition?: PopupClosePosition
+  /** 关闭按钮四向微调，叠加在 closePosition 档位之上；正=向内收、负=向外伸。 */
+  closeOffset?: EdgeOffset
   /**
    * 顶部让位：status-bar 只让状态栏，nav-bar 再让导航栏（避开胶囊）。
    * 不传时按位置推导：top/left/right 默认 nav-bar，bottom/center 默认 none。
@@ -102,6 +105,7 @@ export function Popup({
   closeBorder = true,
   closeBackground = false,
   closePosition,
+  closeOffset,
   insetTop,
   contentPadding,
   panelStyle,
@@ -192,6 +196,7 @@ export function Popup({
               closeOnOverlay ? 'mptk-popup__close--on-overlay' : '',
               closeStyle.translucent ? 'mptk-popup__close--translucent' : 'mptk-popup__close--solid-bg',
             ].filter(Boolean).join(' ')}
+            style={closeOffsetVars(closeOffset) as CSSProperties}
             onClick={onClose}
           />
         ) : null}

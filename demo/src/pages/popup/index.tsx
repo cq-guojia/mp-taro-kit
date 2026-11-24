@@ -265,13 +265,23 @@ export default function PopupPage() {
     'normal' | 'head-light' | 'head-dark' | 'panel-fade' | 'panel-gradient' | 'image-bg' | 'circle' | 'square' | 'left' | 'image' | 'iconclass'
   >('normal')
   const [footerKind, setFooterKind] = useState<FooterKind>('single')
+  /* 图片头几何档：铺满 / 超宽居中 / 上伸异形 / 关闭叉避让。 */
+  const [imageGeom, setImageGeom] = useState<'full' | 'wide' | 'raise' | 'close-shift'>('full')
 
-  const openContent = (variant: ContentPopupVariant, position: ContentPopupPosition, mode: typeof contentMode) => {
+  const openContent = (
+    variant: ContentPopupVariant,
+    position: ContentPopupPosition,
+    mode: typeof contentMode,
+    geom: typeof imageGeom = 'full',
+  ) => {
+    setImageGeom(geom)
     setContentVariant(variant)
     setContentPosition(position)
     setContentMode(mode)
     setContentOpen(true)
   }
+
+  const openImageGeom = (geom: typeof imageGeom) => openContent('image', 'center', 'normal', geom)
 
   /* 底部四形态：单按钮拉通 / 竖排拉通 / 横排按比例 / joined 竖线分隔（带上边线）。 */
   /* 弹窗按钮统一走 md（40 / 14）：字号已到封顶点，竖线与其它形态的按钮一样高、一样大。 */
@@ -624,6 +634,9 @@ export default function PopupPage() {
                 <View className="demo-row">
                   <Button className="demo-item" size="xs" onClick={() => openContent('image', 'center', 'normal')}>透明</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('image', 'bottom', 'image-bg')}>带背景</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('wide')}>超宽居中</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('raise')}>上下双伸</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('close-shift')}>叉偏移</Button>
                 </View>
               }
             />
@@ -656,7 +669,14 @@ export default function PopupPage() {
             icon={contentVariant === 'title' ? 'common.base:AIdamoxing' : undefined}
             title={contentVariant === 'image' ? undefined : '是否开启相册备份'}
             subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
-            image={contentVariant === 'image' ? (contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]) : undefined}
+            image={contentVariant === 'image'
+              ? imageGeom === 'wide'
+                ? { src: HEADER_IMAGE, width: 400, align: 'center' }
+                : imageGeom === 'raise'
+                  ? { src: HEADER_IMAGE, offset: { top: -50, bottom: -20 } }
+                  : contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]
+              : undefined}
+            closeOffset={imageGeom === 'close-shift' ? { top: -10, right: 12 } : undefined}
             headerBackground={headerBackground}
             badge={badge}
             actions={FOOTER_DEMOS[footerKind].actions}

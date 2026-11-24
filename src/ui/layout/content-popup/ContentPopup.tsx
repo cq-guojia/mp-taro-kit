@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Image, Text, View } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import type { CSSProperties, ReactNode } from 'react'
 import { Button } from '../../actions/Button.js'
 import { Icon, type IconSize } from '../../display/icon/Icon.js'
@@ -13,7 +14,14 @@ import {
   type PopupSurface,
 } from '../Popup.js'
 import {
+  needsImageInset,
+  resolveImageHeaderHeight,
+  resolveImageShift,
+  type EdgeOffset,
+} from '../edge-offset.js'
+import {
   resolveImageSize,
+  resolveRatio,
   type ImageNaturalSize,
   type ImageSizeInput,
 } from '../image-size.js'
@@ -123,10 +131,14 @@ export interface ContentPopupBadge {
   offset?: { x?: number | string; y?: number | string; anchor?: ContentPopupBadgeAlign }
 }
 
-/** 图片头：图片尺寸与 ImagePopup 共用同一套解析模型。 */
+/** 图片头：尺寸解析与 ImagePopup 共用一套，几何控制（对齐/偏移）收在图片对象自身。 */
 export interface ContentPopupImage extends ImageSizeInput {
   src: string
   onClick?: () => void
+  /** 自定义宽度时的水平对齐，默认 center；宽度超出头部时仍按此对齐居中溢出，不被裁。 */
+  align?: ContentPopupBadgeAlign
+  /** 四向有符号偏移：正=向内收、负=向外伸；数字 px，字符串按 CSS 长度。 */
+  offset?: EdgeOffset
 }
 
 /** 按钮直接复用 ImagePopup 的文字按钮 / 图片按钮，不另立一套。 */
@@ -156,6 +168,8 @@ export interface ContentPopupProps {
   closeBorder?: boolean
   closeBackground?: boolean
   closePosition?: PopupClosePosition
+  /** 关闭按钮四向微调，叠加在 closePosition 档位之上；正=向内收、负=向外伸。 */
+  closeOffset?: EdgeOffset
 
   // 头部通用
   header?: ReactNode
@@ -205,6 +219,13 @@ export interface ContentPopupProps {
 
 const DEFAULT_CONTAINER_WIDTH = 320
 
+/** 图片头量真实宽的有限重试：与 Segmented 同一套常数，首帧量不到就下一拍，耗尽则退回自然高。 */
+const MEASURE_ATTEMPTS = 30
+const MEASURE_RETRY_MS = 32
+
+/** 多实例同时在页面上时选择器会互相命中，用自增序号拼唯一前缀。 */
+let imageUidSeed = 0
+
 const DEFAULT_GRADIENT_ANGLE = 165
 
 const DIRECTION: Record<Exclude<ContentPopupBackgroundDirection, number>, string> = {
@@ -223,6 +244,13 @@ const RADIUS: Record<string, string> = {
 }
 
 const JUSTIFY: Record<ContentPopupActionsAlign, string> = {
+  center: 'center',
+  left: 'flex-start',
+  right: 'flex-end',
+}
+
+/** 图片头水平对齐：header 是 column flex，交叉轴用 align-self；超宽时 flex 居中天然两边溢出。 */
+const IMAGE_ALIGN: Record<ContentPopupBadgeAlign, string> = {
   center: 'center',
   left: 'flex-start',
   right: 'flex-end',
@@ -482,6 +510,7 @@ export function ContentPopup({
   closeBorder,
   closeBackground,
   closePosition,
+  closeOffset,
   header,
   headerBackground,
   headerImage,
@@ -505,6 +534,15 @@ export function ContentPopup({
   footerConfig,
 }: ContentPopupProps) {
   const [natural, setNatural] = useState<ImageNaturalSize | undefined>(undefined)
+  /* 垂直外伸要按图片真实渲染宽反推显示高——JS 拿不到 100% 档的实际像素宽，只能量节点。
+     多实例各挂唯一 id；量宽状态与"放弃量"分开，量不到时退回图片自然高、绝不永久隐藏。 */
+  const [imageUid] = useState(() => {
+    imageUidSeed += 1
+    return `mptk-cp-img-${String(imageUidSeed)}`
+  })
+  const [measuredWidth, setMeasuredWidth] = useState<number | null>(null)
+  const [measureFailed, setMeasureFailed] = useState(false)
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 三档位置按传入收敛；只排除左右抽屉，top 现在是合法档。
   const resolvedPosition: ContentPopupPosition =
@@ -587,7 +625,72 @@ export function ContentPopup({
     badgeReserve = `${Math.max(sizePx - overlapPx + shiftY, 0)}px`
   }
 
-  const sized = image === undefined ? undefined : resolveImageSize(image, { containerWidth: DEFAULT_CONTAINER_WIDTH, natural })
+  /* 图片头默认铺满头部内容区（'100%'，高度仍由原生按比例撑）；这一默认只在调用点给，
+     不改 resolveImageSize 的全局默认——那会让 ImagePopup 主体图与图片按钮的面板贴合一起失效。
+     调用方显式给 width（含超宽像素）时原样透传，走同一套 resolver，不另起分支。 */
+  const sized = image === undefined
+    ? undefined
+    : resolveImageSize({ ...image, width: image.width ?? '100%' }, { containerWidth: DEFAULT_CONTAINER_WIDTH, natural })
+
+  /* 垂直外伸链路：仅 px 数字偏移启用。量图片真实渲染宽（不是面板 320 假宽），配合与 resolver
+     同口径的比例算出显示高，再收窄 header。两条件（宽、比例）各自可能先到，都在渲染期派生，
+     不需要事件互相触发；量不到时有限重试，耗尽后放弃收窄、图片按自然高显示。 */
+  const insetEnabled = variant === 'image' && header === undefined && needsImageInset(image?.offset)
+  const imageRatio = image === undefined
+    ? null
+    : resolveRatio(image, { containerWidth: DEFAULT_CONTAINER_WIDTH, natural })
+  const measure = useCallback((attempt = 0) => {
+    if (!insetEnabled) return
+    const query = Taro.createSelectorQuery()
+    query.select(`#${imageUid}`).boundingClientRect()
+    query.exec((res) => {
+      const box = (res[0] ?? null) as { width?: number } | null
+      const width = box?.width
+      if (width === undefined || width === null || width <= 0) {
+        if (attempt < MEASURE_ATTEMPTS) {
+          retryTimer.current = setTimeout(() => measure(attempt + 1), MEASURE_RETRY_MS)
+        } else {
+          setMeasureFailed(true)
+        }
+        return
+      }
+      setMeasuredWidth(width)
+      setMeasureFailed(false)
+    })
+  }, [imageUid, insetEnabled])
+
+  useEffect(() => {
+    if (!insetEnabled) {
+      setMeasuredWidth(null)
+      setMeasureFailed(false)
+      return undefined
+    }
+    /* 首帧布局未完成量不到，下一拍再量；image.src/宽度变化会改变渲染宽，需要重量。 */
+    const timer = setTimeout(measure, 0)
+    return () => {
+      clearTimeout(timer)
+      if (retryTimer.current !== null) {
+        clearTimeout(retryTimer.current)
+        retryTimer.current = null
+      }
+    }
+  }, [image?.src, sized?.width, measure, insetEnabled])
+
+  useEffect(() => {
+    if (!insetEnabled) return undefined
+    const onResize = (): void => { measure() }
+    Taro.onWindowResize(onResize)
+    return () => { Taro.offWindowResize(onResize) }
+  }, [measure, insetEnabled])
+
+  const imageHeaderHeight = insetEnabled && !measureFailed
+    ? resolveImageHeaderHeight(image?.offset, measuredWidth, imageRatio)
+    : undefined
+  const imageHidden = image !== undefined && sized !== undefined && (
+    (sized.needsNatural && natural === undefined) ||
+    (insetEnabled && !measureFailed && imageHeaderHeight === undefined)
+  )
+
   const handleLoad = (event: { detail: { width: string | number; height: string | number } }) => {
     const width = Number(event.detail.width)
     const height = Number(event.detail.height)
@@ -606,16 +709,23 @@ export function ContentPopup({
     if (variant === 'image' && image !== undefined && sized !== undefined) {
       return (
         <Image
+          id={insetEnabled ? imageUid : undefined}
           className="mptk-content-popup__image"
           src={image.src}
           mode={sized.mode}
           style={{
             width: sized.width,
+            ...(image.align === undefined ? null : { alignSelf: IMAGE_ALIGN[image.align] }),
+            ...(image.offset === undefined ? null : resolveImageShift(image.offset)),
             ...(sized.height === null ? null : { height: `${String(sized.height)}px` }),
-            ...(sized.needsNatural && natural === undefined ? { opacity: '0' } : null),
+            ...(imageHidden ? { opacity: '0' } : null),
           }}
           onLoad={handleLoad}
-          onError={() => setNatural(undefined)}
+          onError={() => {
+            setNatural(undefined)
+            /* 加载失败也是一次定论：放弃收窄，图片按自然高显示，绝不因等测量而永久隐藏。 */
+            setMeasureFailed(true)
+          }}
           onClick={image.onClick}
         />
       )
@@ -662,6 +772,7 @@ export function ContentPopup({
   const headerStyle: CSSProperties = {
     ...backgroundStyle(headerBackground),
     ...headerImageStyle,
+    ...(imageHeaderHeight === undefined ? null : { height: imageHeaderHeight }),
     ...(!inlineBadge && variant === 'badge' && badgeReserve !== undefined ? { paddingTop: badgeReserve } : null),
     ...(showDivider && headerDividerColor !== undefined ? { borderBottomColor: headerDividerColor } : null),
   }
@@ -709,6 +820,7 @@ export function ContentPopup({
       closeBorder={closeBorder}
       closeBackground={closeBackground}
       closePosition={resolvedClosePosition}
+      closeOffset={closeOffset}
       onClose={onClose}
     >
       {hasHeader ? (

@@ -45,6 +45,14 @@
 
 几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。外置档锚在面板边缘内侧（`top` / `bottom: 0`），再用 `transform` 按**按钮自身高度**移出面板：`above-*` 用 `--mptk-s-full-neg`（-100%）上移、`below-*` 用 `--mptk-s-full`（100%）下移——百分比参照按钮自身，是确定量，不参照面板高度，面板高度变化也不影响按钮位置。
 
+`closeOffset` 在档位之上做像素级微调（类型 `EdgeOffset`，与 `ContentPopup` 的 `image.offset` 共用）：四个字段 `top` / `right` / `bottom` / `left` 都是**正=向内收、负=向外伸**，数字按 px、字符串按 CSS 长度。实现只叠加到档位的 `top` / `right` / `bottom` / `left` 定位值（`calc(档位值 + 偏移变量)`），**不碰 `transform`**——外置档靠 transform 按按钮自身高度移出面板，覆盖会让按钮飞走。未给时四向补 0，原档位位置一字不变。同一轴同时给两边时按 CSS 自身规则取 `top` / `left`。
+
+```tsx
+<Popup open position="bottom" closePosition="top-right"
+  closeOffset={{ top: -10, right: 12 }} onClose={close} />
+// 在 top-right 档基础上上移 10px 避开图片头，再往里收 12px
+```
+
 **绝对定位的前提**：关闭按钮复用核心 `Button`，而 `.mptk-btn` 带 `position:relative`。所以 `position:absolute` 与 `z-index` 必须写在**双类** `.mptk-btn.mptk-popup__close`（权重 0,2,0）上压过它；若写在单类 `.mptk-popup__close`（0,1,0），会被后加载的同权重 `.mptk-btn` 覆盖，absolute 失效、按钮退回文档流、`right` 丢失、各档位置全部错乱（实测 × 落到左侧中部）。这与主流库（Vant 等）关闭图标直接 `position:absolute` 是同一诉求，只是本库复用 Button 需要额外提权。跨边 / 外置档会临时放开面板 `overflow`，否则按钮被裁。点关闭按钮走 `onClose`，与点遮罩关闭（`closable`）是两条独立路径。
 
 ### 面板表面 surface

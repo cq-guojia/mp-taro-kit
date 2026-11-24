@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Image, ScrollView, Swiper, SwiperItem, View } from '@tarojs/components'
 import { Button, type ButtonProps } from '../actions/Button.js'
 import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
+import { type EdgeOffset } from './edge-offset.js'
 import { Popup, type PopupClosePosition, type PopupSurface } from './Popup.js'
 import {
   resolveImageSize,
@@ -52,6 +53,8 @@ export interface ImagePopupProps {
   onClose?: () => void
   /** 关闭按钮位置，沿用 Popup 现有档；不传按形态取底座默认（top / center 外下中，bottom 外上中） */
   closePosition?: PopupClosePosition
+  /** 关闭按钮四向微调，叠加在 closePosition 档位之上；正=向内收、负=向外伸。 */
+  closeOffset?: EdgeOffset
   closeable?: boolean
   closeShape?: 'circle' | 'rounded'
   closeBorder?: boolean
@@ -215,6 +218,7 @@ export function ImagePopup({
   slides,
   onClose,
   closePosition,
+  closeOffset,
   closeable = true,
   closeShape = 'circle',
   closeBorder = true,
@@ -288,6 +292,7 @@ export function ImagePopup({
       panelStyle={panelStyle}
       closeable={closeable && onClose !== undefined}
       closePosition={closePosition}
+      closeOffset={closeOffset}
       closeShape={closeShape}
       closeBorder={closeBorder}
       closeBackground={closeBackground}

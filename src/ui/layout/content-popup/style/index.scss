@@ -196,10 +196,19 @@
   color: var(--mptk-c-content-popup-head-ink-2);
 }
 
+/* 图片头默认水平居中：header 是 column flex，交叉轴居中后超宽图自然两边溢出（面板已 overflow:visible）。
+   调用方给 align 时由行内 align-self 覆盖；不给就是 center。 */
+.mptk-content-popup__header--image {
+  align-items: center;
+}
+
 .mptk-content-popup__image {
   display: block;
   flex: none;
-  max-width: 100%;
+  /* 不压回容器宽：自定义宽度超出头部时按 align 居中溢出，不被裁。 */
+  max-width: none;
+  /* 四向偏移用相对定位承载，不碰 transform（关闭叉外置档靠它移出面板）。 */
+  position: relative;
 }
 
 /* 外伸徽标：容器尺寸 / 圆角 / 背景 / 描边可由 props 内联覆盖，这里只给默认值与排布。 */

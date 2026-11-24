@@ -19,6 +19,7 @@ export {
   type ImagePopupAction,
   type ImagePopupActionsAlign,
 } from './ImagePopup.js'
+export type { EdgeOffset } from './edge-offset.js'
 export type {
   ImageFitMode,
   ImageHeightSpec,

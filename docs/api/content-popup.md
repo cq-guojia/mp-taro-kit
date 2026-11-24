@@ -29,6 +29,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 | `onClose` | `() => void` | — | 关闭回调；不传则不渲染关闭叉 |
 | `closeable` | `boolean` | `true` | 显示关闭叉（与底层 Popup 默认不同） |
 | `closePosition` / `closeShape` / `closeBorder` / `closeBackground` | 同 Popup | 同 Popup | 关闭按钮四轴，完全沿用 |
+| `closeOffset` | `EdgeOffset` | `{}` | 关闭按钮四向微调，叠加在 `closePosition` 档位之上；正=向内收、负=向外伸，与 `image.offset` 同一类型 |
 | `overlay` / `overlayTone` / `overlayOpacity` / `closable` / `lockScroll` / `duration` | 同 Popup | 同 Popup | 遮罩、点遮罩关闭与进出场 |
 | `surface` | `'panel' \| 'none'` | `'panel'` | `'none'` 是完全自绘的裸壳 |
 | `round` / `roundSize` / `contentPadding` / `panelStyle` / `className` | 同 Popup | 同 Popup | 面板几何；`image` / `badge` 未给内边距时默认 0，让头图贴边 |
@@ -99,13 +100,46 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 | 参数 | 类型 | 说明 |
 |---|---|---|
-| `image` | `ContentPopupImage` | `{ src } & ImageSizeInput & { onClick? }`，尺寸走同一套 `resolveImageSize` |
+| `image` | `ContentPopupImage` | `{ src } & ImageSizeInput & { onClick?, align?, offset? }`，尺寸走同一套 `resolveImageSize` |
 | `headerBackground` | `BackgroundValue` | 默认透明；异形透明图靠面板底色接上，明暗主题各走各的 token |
 
+`ContentPopupImage` 的几何字段：
+
+| 字段 | 类型 | 默认 | 说明 |
+|---|---|---|---|
+| `width` | `number \| '100%' \| 'auto'` | `'100%'` | 默认铺满头部内容区、高度由原生按图片比例撑开；数字为定宽（px），超出头部时按 `align` 居中溢出不被裁；`'auto'` 按原图宽不放大 |
+| `align` | `'center' \| 'left' \| 'right'` | `'center'` | 自定义宽度时图片在头部内的水平对齐；超宽也按此对齐，弹窗 300 / 图 400 时两边各伸 50 |
+| `offset` | `EdgeOffset` | `{}` | 四向有符号偏移，见下 |
+
+`EdgeOffset` 是图片头与关闭按钮共用的类型：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `top` / `right` / `bottom` / `left` | `number \| string` | **正=向内收、负=向外伸**；数字按 px，字符串按 CSS 长度（`'10%'`、`'2vh'` 等）。关闭按钮同一轴取 `top` / `left`；图片头纵向例外（`bottom` 只进高度计算，见下） |
+
+图片头用 `position:relative` + 定位属性承载偏移，不占 `transform`；面板已放开 `overflow`，负向外伸不会被裁。横向偏移（`left`/`right`）只改视觉位置，靠 flex 居中 + `max-width:none` 自然溢出，不需要测量。
+
+**上下同时外伸**：`top` 与 `bottom` 同为负值时，组件用 Taro 官方 API `Taro.createSelectorQuery().select(id).boundingClientRect()` 量图片**真实渲染宽**（不是猜的容器宽），结合 `onLoad` 回灌的比例算出显示高 H，把 header 收窄到 `H + top + bottom`，从而实现上下同时伸出（例：H=100、top=-50、bottom=-20 → header 高 30，上伸 50、下伸 20）。此时 `bottom` 只参与高度计算、不写进 CSS 位移（relative 同时写 top/bottom 会被 CSS 丢弃）。
+
+这套测量**仅当垂直偏移（top/bottom）为 px 数字时启用**；只给横向偏移、或垂直偏移是 `%`/`vh`/`var()` 字符串时，都不测量、不收窄，图片按原样撑高。量宽有限重试（30 次 × 32ms），耗尽或加载失败则放弃收窄、退回图片自然高（不外伸），绝不永久隐藏。
+
 ```tsx
-<ContentPopup open position="bottom" variant="image"
-  image={{ src: kv, width: 320 }} headerBackground="#fff"
-  actions={[{ text: '查看详情', onClick: openDetail }]} onClose={close} />
+// 默认铺满弹窗宽，高度按比例
+<ContentPopup open variant="image" image={{ src: kv }} onClose={close} />
+
+// 超宽仍居中溢出：弹窗 300、图 400 → 两边各伸 50，无需手算负偏移
+<ContentPopup open variant="image" image={{ src: kv, width: 400, align: 'center' }} onClose={close} />
+
+// 异形图上部伸出 40px，下部自然露出白色头部底色
+<ContentPopup open variant="image" headerBackground="#fff"
+  image={{ src: kv, offset: { top: -40 } }} onClose={close} />
+
+// 上下同时外伸：上部出弹窗 50，下部进 body 20，header 自动收窄到 H-70
+<ContentPopup open variant="image"
+  image={{ src: kv, offset: { top: -50, bottom: -20 } }} onClose={close} />
+
+// 非对称图左侧伸出 12px
+<ContentPopup open variant="image" image={{ src: kv, offset: { left: -12 } }} onClose={close} />
 ```
 
 ### `badge` 档：外伸徽标头

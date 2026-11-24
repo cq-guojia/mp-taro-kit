@@ -22,6 +22,8 @@ export {
   type ContentPopupAction,
 } from './ContentPopup.js'
 
+export type { EdgeOffset } from '../edge-offset.js'
+
 export type {
   ImagePopupAction,
   ImagePopupImageAction,
