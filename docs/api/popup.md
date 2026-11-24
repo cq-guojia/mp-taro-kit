@@ -168,7 +168,7 @@ import 'mp-taro-kit/ui/layout/style'
 | `onClose` | `() => void` | — | 关闭回调（关闭叉 / 点遮罩都走它）；不传则不渲染关闭叉 |
 | `closePosition` | `PopupClosePosition` | — | 关闭按钮位置，沿用 Popup 档；不传按形态取底座默认（top / center 外下中，bottom 外上中） |
 | `showIndicators` | boolean | `true` | 多图是否显示原生红点（`indicator-dots`） |
-| `closeable` | boolean | `true` | 显示关闭叉（**默认与 Popup 的 `false` 不同**） |
+| `closeable` | boolean | `true` | 显示关闭叉（**默认与 Popup 的 `false` 不同**）；底部弹出的徽标头默认 `false`，显式传 `true` 可覆盖 |
 | `closeShape` / `closeBorder` / `closeBackground` / `overlayTone` / `overlayOpacity` / `closable` | 同 Popup | — | 透传给底层 Popup；`closeable` 显示叉、`closable` 点遮罩关闭，两者正交 |
 
 `actions` 支持两类、可混排，共用默认间距（token `--mptk-image-popup-action-gap`，默认 `--mptk-space-2`，站点可覆盖）：

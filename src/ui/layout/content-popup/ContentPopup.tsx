@@ -501,7 +501,7 @@ export function ContentPopup({
   roundSize,
   contentPadding,
   panelStyle,
-  closeable = true,
+  closeable,
   closeShape,
   closeBorder,
   closeBackground,
@@ -818,6 +818,9 @@ export function ContentPopup({
     return undefined
   })()
 
+  /* 底部弹出的徽标头，关闭叉落在徽标上方会跟 icon 打架；默认隐藏，显式传 closeable 可覆盖。 */
+  const showClose = closeable ?? !(variant === 'badge' && resolvedPosition === 'bottom')
+
   const mergedPanelStyle: CSSProperties | undefined =
     panelBackground === undefined && panelStyle === undefined
       ? undefined
@@ -842,7 +845,7 @@ export function ContentPopup({
       roundSize={roundSize}
       contentPadding={contentPaddingValue}
       panelStyle={mergedPanelStyle}
-      closeable={closeable && onClose !== undefined}
+      closeable={showClose && onClose !== undefined}
       closeShape={closeShape}
       closeBorder={closeBorder}
       closeBackground={closeBackground}

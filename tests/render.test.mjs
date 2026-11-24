@@ -719,6 +719,30 @@ test('ContentPopup 底部弹窗默认关闭叉在外上中', () => {
   assert.doesNotMatch(html, /mptk-popup__close--above-right/)
 })
 
+test('ContentPopup 底部徽标头默认隐藏关闭叉，显式 closeable 可覆盖', () => {
+  const badge = { content: { kind: 'icon', name: 'common.base:AIdamoxing' } }
+  const cases = [
+    { radius: 'circle', anchor: 'center' },
+    { radius: 'md', anchor: 'left' },
+    { radius: 'sm', anchor: 'right' },
+    { radius: 999, anchor: 'right' },
+  ]
+  for (const { radius, anchor } of cases) {
+    const props = {
+      open: true, position: 'bottom', variant: 'badge', onClose: () => {},
+      badge: { ...badge, radius, offset: { anchor } },
+    }
+    const html = render(h(ContentPopup, props))
+    assert.doesNotMatch(html, /mptk-popup__close/, `底部徽标 ${String(radius)}/${anchor} 默认不显示关闭叉`)
+    const forced = render(h(ContentPopup, { ...props, closeable: true }))
+    assert.match(forced, /mptk-popup__close--above-center/, '显式 closeable=true 仍可显示')
+  }
+  const center = render(h(ContentPopup, {
+    open: true, position: 'center', variant: 'badge', badge, onClose: () => {},
+  }))
+  assert.match(center, /mptk-popup__close--below-center/, '中部徽标头不受影响')
+})
+
 test('ContentPopup 图片头渲染原生 Image，默认无分割线，背景走内联', () => {
   const html = render(h(ContentPopup, { open: true, variant: 'image', image: { src: 'x.png', width: 320 }, headerBackground: '#fff' }))
   assert.match(html, /mptk-content-popup__header--image/)

@@ -672,7 +672,6 @@ export default function PopupPage() {
             open={contentOpen}
             variant={contentVariant}
             position={contentPosition}
-            closeable
             headerTone={headerTone}
             panelBackground={panelBackground}
             icon={contentVariant === 'title' ? 'common.base:AIdamoxing' : undefined}

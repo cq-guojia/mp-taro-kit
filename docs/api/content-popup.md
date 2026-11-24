@@ -27,7 +27,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 | `position` | `'top' \| 'center' \| 'bottom'` | `'center'` | 只做上中下三档；左右抽屉不支持，越界值回落 `'center'` |
 | `variant` | `'title' \| 'image' \| 'badge'` | `'title'` | 头部形态旋钮，见下 |
 | `onClose` | `() => void` | — | 关闭回调；不传则不渲染关闭叉 |
-| `closeable` | `boolean` | `true` | 显示关闭叉（与底层 Popup 默认不同） |
+| `closeable` | `boolean` | `true` | 显示关闭叉（与底层 Popup 默认不同）；**底部弹出的徽标头默认 `false`**——关闭叉落在徽标上方会和 icon 打架，显式传 `true` 可覆盖 |
 | `closePosition` / `closeShape` / `closeBorder` / `closeBackground` | 同 Popup | 同 Popup | 关闭按钮四轴，完全沿用 |
 | `closeOffset` | `EdgeOffset` | `{}` | 关闭按钮四向微调，叠加在 `closePosition` 档位之上；正=向内收、负=向外伸，与 `image.offset` 同一类型。实现走 WXSS 档位基线变量 + 内联标准定位属性，口径详见 [Popup](popup.md#参数) |
 | `overlay` / `overlayTone` / `overlayOpacity` / `closable` / `lockScroll` / `duration` | 同 Popup | 同 Popup | 遮罩、点遮罩关闭与进出场 |
@@ -273,3 +273,4 @@ interface ContentPopupFooterConfig {
 - 2026-11-24 11:22:04：closeOffset 跟随 Popup 改为 CSS 变量通道，JS 不再换算定位
 - 2026-11-24 21:37:30：修慢加载时上下双伸失效：量宽改为 open 门控、按打开/换图重启并隔离旧回调，onLoad 补量
 - 2026-11-24 22:25:46：关闭图片头弹窗时冻结几何：复位只在新一轮测量开启时做，退场动画不再跳
+- 2026-11-24 22:40:37：底部弹出的徽标头默认隐藏关闭叉，避免与外伸 icon 冲突；显式 closeable=true 可覆盖
