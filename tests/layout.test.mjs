@@ -1266,6 +1266,17 @@ test('ContentPopup 源码与出口契约', () => {
   assert.match(source, /kind:\s*'icon'\s*\|\s*\{ kind:\s*'iconClass'|kind: 'iconClass'/, '第三方类名有独立内容形态')
   assert.match(index, /type ContentPopupBadge(?:Radius|,|\n)/, '徽标类型没导出')
   assert.match(read('src/ui/layout/index.ts'), /from '\.\/content-popup\/index\.js'/, 'layout 出口没转发 ContentPopup')
+
+  // 图片头量宽调度：必须随 open 重启、旧代次回调作废、onLoad 只是补充触发。
+  assert.match(source, /const measureGen = useRef\(0\)/, '测量要有代次，隔离上一轮已发出的 query 回调')
+  assert.match(source, /if \(!insetEnabled \|\| !open\) return/, '未打开时不量，避免空耗重试预算')
+  assert.match(source, /if \(gen !== measureGen\.current\) return/, '旧代次的 query 回调不许写状态')
+  assert.match(source, /clearTimeout\(retryTimer\.current\)[\s\S]{0,120}setMeasuredWidth\(width\)/, '量成功后清掉排队中的旧重试，防止失败标记被盖回')
+  assert.match(source, /}, \[image\?\.src, sized\?\.width, measure, insetEnabled, open, cancelMeasure\]\)/, 'open 变化必须重启测量周期')
+  assert.match(source, /setNatural\(\{ width, height \}\)\s*\n\s*\/\*[\s\S]*?\*\/\s*\n\s*if \(insetEnabled\) \{\s*\n\s*cancelMeasure\(\)\s*\n\s*measure\(\)/,
+    'onLoad 拿到真实尺寸后重启量宽，且不在成功前清失败标记')
+  assert.match(source, /onError=\{\(\) => \{\s*\n\s*cancelMeasure\(\)/, 'onError 取消本轮测量，防止旧回调改回成功')
+  assert.match(source, /useEffect\(\(\) => \{\s*\n\s*setNatural\(undefined\)\s*\n\s*\}, \[image\?\.src\]\)/, '换图要复位原图尺寸，不拿上一张的比例算高度')
 })
 
 test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', () => {

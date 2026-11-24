@@ -539,6 +539,9 @@ export function ContentPopup({
   const [measuredWidth, setMeasuredWidth] = useState<number | null>(null)
   const [measureFailed, setMeasureFailed] = useState(false)
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /* 每轮测量一个代次：重开 / 换图 / onLoad 重启后，上一轮已发出的 query 回调一律丢弃，
+     否则旧重试会把失败标记盖回成功状态。 */
+  const measureGen = useRef(0)
 
   // 三档位置按传入收敛；只排除左右抽屉，top 现在是合法档。
   const resolvedPosition: ContentPopupPosition =
@@ -635,11 +638,22 @@ export function ContentPopup({
   const imageRatio = image === undefined
     ? null
     : resolveRatio(image, { containerWidth: DEFAULT_CONTAINER_WIDTH, natural })
+  const cancelMeasure = useCallback(() => {
+    measureGen.current += 1
+    if (retryTimer.current !== null) {
+      clearTimeout(retryTimer.current)
+      retryTimer.current = null
+    }
+  }, [])
+
   const measure = useCallback((attempt = 0) => {
-    if (!insetEnabled) return
+    if (!insetEnabled || !open) return
+    /* 捕获本轮代次：重试与 query 回调跨帧，旧轮次的结果不能再写状态。 */
+    const gen = measureGen.current
     const query = Taro.createSelectorQuery()
     query.select(`#${imageUid}`).boundingClientRect()
     query.exec((res) => {
+      if (gen !== measureGen.current) return
       const box = (res[0] ?? null) as { width?: number } | null
       const width = box?.width
       if (width === undefined || width === null || width <= 0) {
@@ -650,27 +664,32 @@ export function ContentPopup({
         }
         return
       }
-      setMeasuredWidth(width)
-      setMeasureFailed(false)
-    })
-  }, [imageUid, insetEnabled])
-
-  useEffect(() => {
-    if (!insetEnabled) {
-      setMeasuredWidth(null)
-      setMeasureFailed(false)
-      return undefined
-    }
-    /* 首帧布局未完成量不到，下一拍再量；image.src/宽度变化会改变渲染宽，需要重量。 */
-    const timer = setTimeout(measure, 0)
-    return () => {
-      clearTimeout(timer)
       if (retryTimer.current !== null) {
         clearTimeout(retryTimer.current)
         retryTimer.current = null
       }
+      setMeasuredWidth(width)
+      setMeasureFailed(false)
+    })
+  }, [imageUid, insetEnabled, open])
+
+  useEffect(() => {
+    cancelMeasure()
+    setMeasuredWidth(null)
+    setMeasureFailed(false)
+    /* 图片节点由 Popup 的 usePresence 在 open 变 true 后才挂载；open=false 时量必然扑空，
+       还会白耗掉重试预算。open / src / 宽度变化都是新一轮，统一从此入口重启。 */
+    if (!insetEnabled || !open) return undefined
+    const timer = setTimeout(measure, 0)
+    return () => {
+      clearTimeout(timer)
+      cancelMeasure()
     }
-  }, [image?.src, sized?.width, measure, insetEnabled])
+  }, [image?.src, sized?.width, measure, insetEnabled, open, cancelMeasure])
+
+  useEffect(() => {
+    setNatural(undefined)
+  }, [image?.src])
 
   useEffect(() => {
     if (!insetEnabled) return undefined
@@ -690,7 +709,16 @@ export function ContentPopup({
   const handleLoad = (event: { detail: { width: string | number; height: string | number } }) => {
     const width = Number(event.detail.width)
     const height = Number(event.detail.height)
-    setNatural(width > 0 && height > 0 ? { width, height } : undefined)
+    if (width <= 0 || height <= 0) {
+      setNatural(undefined)
+      return
+    }
+    setNatural({ width, height })
+    /* 图片晚到时量宽可能已耗尽重试；拿到真实尺寸再量一次，成功回调自己清失败标记。 */
+    if (insetEnabled) {
+      cancelMeasure()
+      measure()
+    }
   }
 
   // 三档内容 + 自定义槽位只是「头部内容」；承载背景与留白的壳统一在下面渲染一层。
@@ -718,6 +746,7 @@ export function ContentPopup({
           }}
           onLoad={handleLoad}
           onError={() => {
+            cancelMeasure()
             setNatural(undefined)
             /* 加载失败也是一次定论：放弃收窄，图片按自然高显示，绝不因等测量而永久隐藏。 */
             setMeasureFailed(true)

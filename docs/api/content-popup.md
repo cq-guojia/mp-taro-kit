@@ -123,6 +123,8 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 这套测量**仅当垂直偏移（top/bottom）为 px 数字时启用**；只给横向偏移、或垂直偏移是 `%`/`vh`/`var()` 字符串时，都不测量、不收窄，图片按原样撑高。量宽有限重试（30 次 × 32ms），耗尽或加载失败则放弃收窄、退回图片自然高（不外伸），绝不永久隐藏。
 
+测量周期跟随弹窗生命周期：关闭 / 换图 / 宽度变化时废弃上一轮（含已发出的异步查询回调）并重启，避免关闭期间把重试预算耗光；`open` 变 true 后才开始量。图片晚到时 `onLoad` 会补一次量宽，慢加载也能正确收窄。
+
 ```tsx
 // 默认铺满弹窗宽，高度按比例
 <ContentPopup open variant="image" image={{ src: kv }} onClose={close} />
@@ -269,3 +271,4 @@ interface ContentPopupFooterConfig {
 
 - 2026-11-24：`closeOffset` 改按档位锚点换算生效边，修演示站「叉偏移」看不到位移；`CLOSE_ANCHOR` 与 CSS 基线逐档做一致性校验。
 - 2026-11-24 11:22:04：closeOffset 跟随 Popup 改为 CSS 变量通道，JS 不再换算定位
+- 2026-11-24 21:37:30：修慢加载时上下双伸失效：量宽改为 open 门控、按打开/换图重启并隔离旧回调，onLoad 补量
