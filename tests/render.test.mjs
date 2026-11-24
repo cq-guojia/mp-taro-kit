@@ -744,6 +744,14 @@ test('ContentPopup 底部徽标头默认隐藏关闭叉，显式 closeable 可�
 })
 
 test('ContentPopup 图片头渲染原生 Image，默认无分割线，背景走内联', () => {
+  const transparent = render(h(ContentPopup, {
+    open: true, variant: 'image', image: { src: 'x.png' }, headerBackground: 'transparent', onClose: () => {},
+  }))
+  assert.match(transparent, /mptk-content-popup__panel--transparent-header/, 'transparent 字面量给面板打透明头标记')
+  assert.match(transparent, /background-color:transparent/, 'header 自身底色为透明')
+  const normal = render(h(ContentPopup, { open: true, variant: 'image', image: { src: 'x.png' }, onClose: () => {} }))
+  assert.doesNotMatch(normal, /mptk-content-popup__panel--transparent-header/, '未指定时面板保持原底色')
+
   const html = render(h(ContentPopup, { open: true, variant: 'image', image: { src: 'x.png', width: 320 }, headerBackground: '#fff' }))
   assert.match(html, /mptk-content-popup__header--image/)
   assert.match(html, /<image/)
@@ -1007,7 +1015,8 @@ test('ContentPopup headerTone 按头部底色明暗反色是库内能力，消�
   assert.match(palette, /#1E3A8A[\s\S]*#0F172A/, '暗档整体渐变用深蓝系')
   assert.doesNotMatch(popupPage, /#FFF3E0|#FFCC80|#FFE8CC|3A2E1E/, '没有浅橙/屎黄旧配色')
   const headerBg = popupPage.slice(popupPage.indexOf('const headerBackground'), popupPage.indexOf('const panelBackground'))
-  assert.doesNotMatch(headerBg, /imageGeom/, '图片头几何档不决定头部底色，延伸演示走默认背景')
+  assert.match(headerBg, /imageGeom === 'transparent' \? 'transparent'/, '只有透明档由几何档决定头部透明')
+  assert.doesNotMatch(headerBg, /imageGeom === '(rise|both|wide)'/, '上延伸/双伸/超宽档仍走默认头部底色')
   assert.doesNotMatch(headerBg, /fadeFrom/, '渐隐不再放在 headerBackground')
   assert.doesNotMatch(popupPage, /head-fade/, '不再有旧的 head-fade 模式名')
 })

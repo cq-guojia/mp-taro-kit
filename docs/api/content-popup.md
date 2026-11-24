@@ -119,6 +119,8 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 图片头用 `position:relative` + 定位属性承载偏移，不占 `transform`；面板已放开 `overflow`，负向外伸不会被裁。横向偏移（`left`/`right`）只改视觉位置，靠 flex 居中 + `max-width:none` 自然溢出，不需要测量。
 
+**透明头（异形图）**：`headerBackground: 'transparent'` 时，面板底色下沉到内容与底栏，头部那段不带底色，异形图上方的透明区直接露出遮罩；不需要设置上下偏移。只有这个字面量触发，其他取值（含不传）外观不变。
+
 **上下同时外伸**：`top` 与 `bottom` 同为负值时，组件用 Taro 官方 API `Taro.createSelectorQuery().select(id).boundingClientRect()` 量图片**真实渲染宽**（不是猜的容器宽），结合 `onLoad` 回灌的比例算出显示高 H，把 header 收窄到 `H + top + bottom`，从而实现上下同时伸出（例：H=100、top=-50、bottom=-20 → header 高 30，上伸 50、下伸 20）。此时 `bottom` 只参与高度计算、不写进 CSS 位移（relative 同时写 top/bottom 会被 CSS 丢弃）。
 
 这套测量**仅当垂直偏移（top/bottom）为 px 数字时启用**；只给横向偏移、或垂直偏移是 `%`/`vh`/`var()` 字符串时，都不测量、不收窄，图片按原样撑高。量宽有限重试（30 次 × 32ms），耗尽或加载失败则放弃收窄、退回图片自然高（不外伸），绝不永久隐藏。
@@ -274,3 +276,4 @@ interface ContentPopupFooterConfig {
 - 2026-11-24 21:37:30：修慢加载时上下双伸失效：量宽改为 open 门控、按打开/换图重启并隔离旧回调，onLoad 补量
 - 2026-11-24 22:25:46：关闭图片头弹窗时冻结几何：复位只在新一轮测量开启时做，退场动画不再跳
 - 2026-11-24 22:40:37：底部弹出的徽标头默认隐藏关闭叉，避免与外伸 icon 冲突；显式 closeable=true 可覆盖
+- 2026-11-24 23:03:59：新增头部透明档：headerBackground:'transparent' 时面板底色下沉到内容与底栏，头部那段透出遮罩，异形图上方透明区直接可见，不需要上下偏移；演示站用用户提供的透明火箭图落在「透明」按钮

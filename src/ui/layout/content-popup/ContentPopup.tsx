@@ -820,6 +820,9 @@ export function ContentPopup({
 
   /* 底部弹出的徽标头，关闭叉落在徽标上方会跟 icon 打架；默认隐藏，显式传 closeable 可覆盖。 */
   const showClose = closeable ?? !(variant === 'badge' && resolvedPosition === 'bottom')
+  /* headerBackground 显式 'transparent' 时，面板底色下沉到 content/foot，header 那段透出遮罩。
+     只认这个字面量；其他值（含 undefined）保持原样，老调用方零影响。 */
+  const transparentHeader = headerBackground === 'transparent'
 
   const mergedPanelStyle: CSSProperties | undefined =
     panelBackground === undefined && panelStyle === undefined
@@ -839,7 +842,10 @@ export function ContentPopup({
       closable={closable}
       lockScroll={lockScroll}
       duration={duration}
-      className={[className, 'mptk-content-popup__panel', `mptk-content-popup__panel--${variant}`].filter(Boolean).join(' ')}
+      className={[
+        className, 'mptk-content-popup__panel', `mptk-content-popup__panel--${variant}`,
+        transparentHeader ? 'mptk-content-popup__panel--transparent-header' : '',
+      ].filter(Boolean).join(' ')}
       surface={surface}
       round={round}
       roundSize={roundSize}

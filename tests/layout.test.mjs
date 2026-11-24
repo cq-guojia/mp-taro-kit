@@ -1284,6 +1284,10 @@ test('ContentPopup 源码与出口契约', () => {
 test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', () => {
   const own = read('dist/ui/layout/content-popup/style/index.css')
   assert.match(own, /\.mptk-popup__panel\.mptk-content-popup__panel/, '外伸徽标需要双类放开面板 overflow')
+  assert.match(own, /\.mptk-popup__panel\.mptk-content-popup__panel--transparent-header\s*\{[^}]*background-color:\s*transparent/,
+    '透明头档面板底色必须去掉')
+  assert.match(own, /mptk-content-popup__panel--transparent-header \.mptk-content-popup__content[\s\S]{0,200}background-color:\s*var\(--mptk-surface-elevated\)/,
+    '透明头档身体与底栏必须自带面板底色')
   assert.match(own, /--mptk-c-content-popup-badge-size/, '徽标尺寸必须读 token')
   assert.match(own, /\.mptk-content-popup__badge\s*\{[^}]*overflow:\s*hidden/, '徽标要裁圆图片')
   assert.match(own, /\.mptk-content-popup__badge\s*\{[^}]*border-width:\s*var\(--mptk-c-content-popup-badge-border-w\)/, '徽标外圈描边默认开')

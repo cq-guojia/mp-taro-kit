@@ -178,6 +178,8 @@ const HEADER_IMAGE = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/ma
 /* 图片头延伸演示：两张异形图各自放进 assets/popup，按老规矩走仓库 raw 地址。 */
 const HEADER_RISE_UP = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-rise-up.png'
 const HEADER_RISE_BOTH = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-rise-both.png'
+/* 尚未入库的新素材走产物本地路径（由 config/index.js 的 copy 拷入），不依赖远端 raw 地址。 */
+const HEADER_TRANSPARENT = '/assets/popup-header-transparent-rocket.png'
 const HEADER_IMAGE_SLIDE: { src: string; width: number } = { src: HEADER_IMAGE, width: 320 }
 const LONG_IMAGE = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/content/image/4965/d278336e-af7d-4c83-a423-727495583650.webp'
 const ACTION_BTN_IMAGE = 'https://t-cdn-oss.qswnet.com/file/zuche/lottery-center/image/1fc1dcb1-a8f8-444f-941c-d9b5caa12003.png'
@@ -269,7 +271,7 @@ export default function PopupPage() {
   >('normal')
   const [footerKind, setFooterKind] = useState<FooterKind>('single')
   /* 图片头几何档：铺满 / 超宽居中 / 上延伸 / 上下双伸。 */
-  const [imageGeom, setImageGeom] = useState<'full' | 'wide' | 'rise' | 'both'>('full')
+  const [imageGeom, setImageGeom] = useState<'full' | 'wide' | 'rise' | 'both' | 'transparent'>('full')
 
   const openContent = (
     variant: ContentPopupVariant,
@@ -557,6 +559,7 @@ export default function PopupPage() {
       const { dark } = useThemeSnapshot()
       // 头部底色是固定示例：浅底/深底各一套，字色交给 headerTone 按底色明暗反色，不随主题翻。
       const headerBackground =
+        imageGeom === 'transparent' ? 'transparent' :
         contentMode === 'head-light' ? { from: '#E8F2FF', to: '#BBD7FF' } :
         contentMode === 'head-dark' ? { from: '#1E3A8A', to: '#0F2557' } :
         contentMode === 'image-bg' ? '#F33' :
@@ -635,7 +638,7 @@ export default function PopupPage() {
               title="图片头"
               value={
                 <View className="demo-row">
-                  <Button className="demo-item" size="xs" onClick={() => openContent('image', 'center', 'normal')}>透明</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('transparent')}>透明</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('image', 'bottom', 'image-bg')}>带背景</Button>
                   <Button className="demo-item" size="xs" onClick={() => openImageGeom('wide')}>超宽居中</Button>
                 </View>
@@ -678,13 +681,15 @@ export default function PopupPage() {
             title={contentVariant === 'image' ? undefined : '是否开启相册备份'}
             subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
             image={contentVariant === 'image'
-              ? imageGeom === 'wide'
-                ? { src: HEADER_IMAGE, width: 400, align: 'center' }
-                : imageGeom === 'rise'
-                  ? { src: HEADER_RISE_UP, offset: { top: -30 } }
-                  : imageGeom === 'both'
-                    ? { src: HEADER_RISE_BOTH, offset: { top: -30, bottom: -50 } }
-                    : contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]
+              ? imageGeom === 'transparent'
+                ? { src: HEADER_TRANSPARENT }
+                : imageGeom === 'wide'
+                  ? { src: HEADER_IMAGE, width: 400, align: 'center' }
+                  : imageGeom === 'rise'
+                    ? { src: HEADER_RISE_UP, offset: { top: -30 } }
+                    : imageGeom === 'both'
+                      ? { src: HEADER_RISE_BOTH, offset: { top: -30, bottom: -50 } }
+                      : contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]
               : undefined}
             headerBackground={headerBackground}
             badge={badge}

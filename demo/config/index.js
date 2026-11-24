@@ -44,7 +44,11 @@ export default {
     __MTPK_RENDERER__: JSON.stringify(rendererLabel),
   },
   copy: {
-    patterns: [],
+    // 未入库的新素材随产物本地可见：头部透明异形图尚未推送到远端 raw 地址，
+    // 先直接拷进产物，让 demo 用小程序本地路径加载，不依赖服务器。
+    patterns: [
+      { from: '../assets/popup/popup-header-transparent-rocket.png', to: 'assets/popup-header-transparent-rocket.png' },
+    ],
     options: {},
   },
   mini: {

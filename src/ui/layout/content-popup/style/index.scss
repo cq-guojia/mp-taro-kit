@@ -5,6 +5,17 @@
   overflow: visible;
 }
 
+/* 透明头档：面板底色下沉到 content / foot，header 那段留出遮罩，露出异形图的透明区。
+   只由 headerBackground:'transparent' 触发，其他档底色仍在面板上，外观不变。 */
+.mptk-popup__panel.mptk-content-popup__panel--transparent-header {
+  background-color: transparent;
+}
+
+.mptk-content-popup__panel--transparent-header .mptk-content-popup__content,
+.mptk-content-popup__panel--transparent-header .mptk-content-popup__foot {
+  background-color: var(--mptk-surface-elevated);
+}
+
 .mptk-content-popup__content,
 .mptk-content-popup__foot {
   display: flex;
