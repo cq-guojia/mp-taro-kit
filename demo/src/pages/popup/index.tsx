@@ -122,13 +122,13 @@ const CLOSE_GROUPS: CloseDemoGroup[] = [
         title: '底部',
         items: [
           { value: 'above-right', label: '外右上' },
-          { value: 'above-center', label: '外右中' },
+          { value: 'above-center', label: '外中上' },
         ],
       },
       {
         items: [
           { value: 'top-right', label: '内右上' },
-          { value: 'edge-top-right', label: '右跨半' },
+          { value: 'edge-top-right', label: '右上跨半' },
         ],
       },
     ],

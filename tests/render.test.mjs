@@ -115,7 +115,7 @@ const { CellGroup, Cell } = await import('../dist/ui/display/cell/index.js')
 const { Overlay, Popup, ImagePopup } = await import('../dist/ui/layout/index.js')
 const { ContentPopup } = await import('../dist/ui/layout/content-popup/index.js')
 const { resolveImageSize } = await import('../dist/ui/layout/image-size.js')
-const { resolveEdgeShift, closeOffsetVars } = await import('../dist/ui/layout/edge-offset.js')
+const { closeOffsetStyle } = await import('../dist/ui/layout/edge-offset.js')
 const { Drawer, Dropdown } = await import('../dist/ui/navigation/index.js')
 const { Dialog, Loading, Toast } = await import('../dist/ui/feedback/index.js')
 const { CARD_EDGE_OUT_OF_FLOW } = await import('../dist/ui/infra/card-edge.js')
@@ -743,32 +743,42 @@ test('图片头几何：默认铺满、超宽原样透传、对齐与四向偏�
   assert.match(wide, /top:-40px/, '负向上偏移=向外伸')
   assert.match(wide, /left:24px/, '正向左偏移=向内收')
 
-  // 同轴同时给两边时取上/左，与 CSS 自身规则一致，不产生第二套结果
-  assert.deepEqual(resolveEdgeShift({ top: 1, bottom: 2, left: 3, right: 4 }), { top: '1px', left: '3px' })
-  assert.deepEqual(resolveEdgeShift({ bottom: '10%', right: '2vh' }), { bottom: '10%', right: '2vh' }, '字符串按 CSS 长度原样')
-  assert.deepEqual(resolveEdgeShift(undefined), {}, '无偏移不产生任何定位声明')
 })
 
-test('关闭按钮偏移：CSS 变量落到真实按钮节点，档位与 DOM 后置顺序不变', () => {
+test('关闭按钮偏移：标准定位属性落到真实按钮节点，档位与 DOM 后置顺序不变', () => {
   const html = render(h(ContentPopup, {
     open: true, position: 'bottom', variant: 'title', title: 'T',
     closePosition: 'top-right', closeOffset: { top: -10, right: 12 }, onClose: () => {},
   }))
-  assert.match(html, /--mptk-popup-close-offset-top:-10px/, '负向上偏移向外伸')
-  assert.match(html, /--mptk-popup-close-offset-right:12px/, '正向右偏移向内收')
+  assert.match(html, /top:calc\(var\(--mptk-popup-close-base-top\) - 10px\)/, '负向上偏移向外伸，走标准属性内联')
+  assert.match(html, /right:calc\(var\(--mptk-popup-close-base-right\) \+ 12px\)/, '正向右偏移向内收')
+  assert.doesNotMatch(html, /--mptk-popup-close-offset-/, '不再注入行内自定义属性')
   assert.match(html, /mptk-popup__close--top-right/, '原档位类不变')
   assert.ok(html.indexOf('mptk-popup__close') > html.indexOf('mptk-popup__body'), '按钮仍在内容之后，层级不被图片盖住')
-  assert.deepEqual(closeOffsetVars(undefined), {
-    '--mptk-popup-close-offset-top': '0px',
-    '--mptk-popup-close-offset-right': '0px',
-    '--mptk-popup-close-offset-bottom': '0px',
-    '--mptk-popup-close-offset-left': '0px',
-  }, '未给偏移时四向补 0，原档位位置一字不变')
+  assert.deepEqual(closeOffsetStyle(undefined, 'top-right'), {}, '未给偏移不产任何声明，原档位位置一字不变')
+
+  // 演示站「叉偏移」的真实场景：center + 默认 below-center，锚点是 bottom+left。
+  // 传 top/right 必须落到 bottom/left 上；否则内联声明引用不存在的基线变量，被 WXSS 静默丢弃。
+  const shifted = render(h(ContentPopup, {
+    open: true, position: 'center', variant: 'image', image: { src: 'a.png' },
+    closeOffset: { top: -10, right: 12 }, onClose: () => {},
+  }))
+  assert.match(shifted, /mptk-popup__close--below-center/, '默认档位为下方居中')
+  assert.match(shifted, /bottom:calc\(var\(--mptk-popup-close-base-bottom\) \+ 10px\)/, 'top 偏移换算到 bottom 并生效')
+  assert.match(shifted, /left:calc\(var\(--mptk-popup-close-base-left\) - 12px\)/, 'right 偏移换算到 left 并生效')
+  assert.doesNotMatch(shifted, /(?:top|right):calc\(var\(--mptk-popup-close-base-/, '不写档位未使用的边')
 
   const viaImage = render(h(ImagePopup, {
     open: true, slides: [{ src: 'a.png', width: 200 }], closeOffset: { bottom: 20 }, onClose: () => {},
   }))
-  assert.match(viaImage, /--mptk-popup-close-offset-bottom:20px/, 'ImagePopup 同样透传底座偏移')
+  assert.match(viaImage, /bottom:calc\(var\(--mptk-popup-close-base-bottom\) \+ 20px\)/, 'ImagePopup 同样透传底座偏移')
+
+  // 演示站入口不能是死演示：默认档位下这组偏移必须有实际输出。
+  const demoPage = readFileSync(join(root, 'demo/src/pages/popup/index.tsx'), 'utf8')
+  assert.match(demoPage, />叉偏移</, '保留叉偏移演示入口')
+  assert.match(demoPage, /closeOffset=\{imageGeom === 'close-shift' \? \{ top: -10, right: 12 \} : undefined\}/, '演示偏移量固定')
+  assert.deepEqual(Object.keys(closeOffsetStyle({ top: -10, right: 12 }, 'below-center')).sort(), ['bottom', 'left'],
+    '演示按钮的偏移在默认档位上确实落到生效边')
 })
 
 test('ContentPopup 徽标对象：四形态、描边开关、有符号偏移与关闭位避让', () => {

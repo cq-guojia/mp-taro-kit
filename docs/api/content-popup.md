@@ -29,7 +29,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 | `onClose` | `() => void` | — | 关闭回调；不传则不渲染关闭叉 |
 | `closeable` | `boolean` | `true` | 显示关闭叉（与底层 Popup 默认不同） |
 | `closePosition` / `closeShape` / `closeBorder` / `closeBackground` | 同 Popup | 同 Popup | 关闭按钮四轴，完全沿用 |
-| `closeOffset` | `EdgeOffset` | `{}` | 关闭按钮四向微调，叠加在 `closePosition` 档位之上；正=向内收、负=向外伸，与 `image.offset` 同一类型 |
+| `closeOffset` | `EdgeOffset` | `{}` | 关闭按钮四向微调，叠加在 `closePosition` 档位之上；正=向内收、负=向外伸，与 `image.offset` 同一类型。实现走 WXSS 档位基线变量 + 内联标准定位属性，口径详见 [Popup](popup.md#参数) |
 | `overlay` / `overlayTone` / `overlayOpacity` / `closable` / `lockScroll` / `duration` | 同 Popup | 同 Popup | 遮罩、点遮罩关闭与进出场 |
 | `surface` | `'panel' \| 'none'` | `'panel'` | `'none'` 是完全自绘的裸壳 |
 | `round` / `roundSize` / `contentPadding` / `panelStyle` / `className` | 同 Popup | 同 Popup | 面板几何；`image` / `badge` 未给内边距时默认 0，让头图贴边 |
@@ -265,3 +265,6 @@ interface ContentPopupFooterConfig {
 - 2026-11-23：修 joined 竖线上下留白与文字不居中。真正的根因是 foot 节点从未挂 `mptk-content-popup__foot--joined`，SCSS 的四边 `padding:0` 规则空转、默认上下 16px 内距一直生效——补挂类名后才真正贯通；另把 joined 格子内 Button 的左右内距归零，文字 / 图标在均分格子里居中。圆角归零同时保留，避免边框两端被圆弧吃掉。
 - 2026-11-23：撤销底栏专属高度 token `--mptk-c-content-popup-footer-h`。按钮文字区由 `size` 决定（演示站统一 md = 40 / 14）；joined 格子另设 48px（`--mptk-control-h-lg`）让分隔线比按钮略高，两轴解耦。
 - 2026-11-23：默认关闭位统一走中线（top / center 外下中、bottom 外上中），徽标内部档避让也回落到中线；演示站竖排最后一个「取消」改 ghost 纯文字无底色，与上面两个实心主操作拉开层级。
+- 2026-11-24：修所有关闭叉错位——档位几何收进 WXSS `--mptk-popup-close-base-*` 基线变量，定位属性用裸 `var()`；`closeOffset` 改由组件内联标准定位属性叠加，去掉 WXSS 里带 fallback 的 `var()`（该项在 Skyline 下会让整条定位声明失效）。
+
+- 2026-11-24：`closeOffset` 改按档位锚点换算生效边，修演示站「叉偏移」看不到位移；`CLOSE_ANCHOR` 与 CSS 基线逐档做一致性校验。

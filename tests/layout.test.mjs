@@ -508,13 +508,25 @@ test('抽屉顶部让位：与 Popup 左右档同一口径', () => {
 
 test('四向偏移模型与图片头几何：纯函数、产物样式、类型出口与不变量', async () => {
   const {
-    resolveEdgeShift, resolveImageShift, resolveImageHeaderHeight, needsImageInset, closeOffsetVars,
+    resolveImageShift, resolveImageHeaderHeight, needsImageInset, closeOffsetStyle,
   } = await import(pathToFileURL(join(root, 'dist/ui/layout/edge-offset.js')).href)
-  assert.deepEqual(resolveEdgeShift({ top: -40, right: '2vh' }), { top: '-40px', right: '2vh' })
-  assert.deepEqual(resolveEdgeShift({ top: 1, bottom: 2, left: 3, right: 4 }), { top: '1px', left: '3px' }, '同轴取上/左，与 CSS 自身规则一致')
-  assert.deepEqual(resolveEdgeShift(undefined), {}, '无偏移不产生定位声明')
-  assert.equal(closeOffsetVars({ bottom: -12 })['--mptk-popup-close-offset-bottom'], '-12px')
-  assert.equal(closeOffsetVars({})['--mptk-popup-close-offset-top'], '0px', '未给方向补 0，原档位不受影响')
+  const { CLOSE_ANCHOR } = await import(pathToFileURL(join(root, 'dist/ui/layout/close-position.js')).href)
+  assert.equal(closeOffsetStyle({ bottom: -12 }, 'below-center').bottom, 'calc(var(--mptk-popup-close-base-bottom) - 12px)', '负向外伸')
+  assert.equal(closeOffsetStyle({ top: 10 }, 'top-left').top, 'calc(var(--mptk-popup-close-base-top) + 10px)', '正向内收')
+  assert.deepEqual(closeOffsetStyle(undefined, 'top-left'), {}, '未给偏移不产任何声明，原档位不受影响')
+  assert.deepEqual(closeOffsetStyle({ top: 1, bottom: 2 }, 'top-left'), { top: 'calc(var(--mptk-popup-close-base-top) + 1px)' }, '同轴取先者')
+  assert.deepEqual(closeOffsetStyle({ top: -10, right: 12 }, 'below-center'), {
+    bottom: 'calc(var(--mptk-popup-close-base-bottom) + 10px)',
+    left: 'calc(var(--mptk-popup-close-base-left) - 12px)',
+  }, '下方居中档锚 bottom+left，传 top/right 也必须换算到生效边')
+  assert.deepEqual(closeOffsetStyle({ bottom: 8, left: 4 }, 'top-right'), {
+    top: 'calc(var(--mptk-popup-close-base-top) - 8px)',
+    right: 'calc(var(--mptk-popup-close-base-right) - 4px)',
+  }, '反向边换算：bottom/left 的 inset 增量在 top/right 上取反')
+  assert.deepEqual(closeOffsetStyle({ top: '10%', left: '2vh' }, 'below-right'), {
+    bottom: 'calc(var(--mptk-popup-close-base-bottom) - 10%)',
+    right: 'calc(var(--mptk-popup-close-base-right) - 2vh)',
+  }, '字符串长度照常换算，不产生 WXSS 不认的双负号')
 
   // 图片头专用：垂直只写 top，bottom 不进 CSS（靠 header 收窄体现），避免双重位移
   assert.deepEqual(resolveImageShift({ top: -50, bottom: -20, left: -12 }), { top: '-50px', left: '-12px' }, 'bottom 永不写进图片定位，只参与高度')
@@ -538,7 +550,26 @@ test('四向偏移模型与图片头几何：纯函数、产物样式、类型�
   assert.doesNotMatch(css, /\.mptk-content-popup__image[^}]*margin[^:]*:\s*-/, '不许用负 margin（Skyline 会丢弃）')
 
   const layoutCss = read(LAYOUT_CSS)
-  assert.equal((layoutCss.match(/var\(--mptk-popup-close-offset-/g) ?? []).length, 18, '八个关闭档位各两个定位属性，再加图片弹窗左右两处覆盖，全部叠加偏移变量')
+  assert.equal((layoutCss.match(/var\(--mptk-popup-close-base-/g) ?? []).length, 18, '八个档位每档两处引用（基值定义 + 定位），加图片弹窗两处覆盖，共 18 处基线变量')
+  assert.doesNotMatch(layoutCss, /var\(--mptk-popup-close-offset-/, '不再有任何行内偏移变量（Skyline 未核实）')
+  const closeRules = layoutCss.match(/\.mptk-popup__close--[a-z-]+\s*\{[^}]*\}/g) ?? []
+  assert.ok(closeRules.length >= 8, '八个关闭档位规则齐全')
+  assert.ok(closeRules.every((rule) => !/var\([^)]*,/.test(rule)), '关闭档位内不许出现带 fallback 的 var()（WXSS 会整条丢弃）')
+
+  // 行为级校验：CLOSE_ANCHOR 说的生效边，必须真是该档位在 CSS 里定义并用于定位的边。
+  // 少了这一层，closeOffsetStyle 会写到未定义的基线变量上，声明被 WXSS 静默丢弃、肉眼看不出偏移。
+  for (const [position, anchor] of Object.entries(CLOSE_ANCHOR)) {
+    const rule = new RegExp(`\\.mptk-popup__close--${position}\\s*\\{([^}]*)\\}`).exec(layoutCss)?.[1] ?? ''
+    const defined = [...rule.matchAll(/--mptk-popup-close-base-(top|right|bottom|left):/g)].map((m) => m[1]).sort()
+    assert.deepEqual(defined, [anchor.y, anchor.x].sort(), `${position} 的基线变量与 CLOSE_ANCHOR 一致`)
+    for (const edge of [anchor.y, anchor.x]) {
+      assert.match(rule, new RegExp(`(?:^|;)\\s*${edge}:\\s*var\\(--mptk-popup-close-base-${edge}\\)`),
+        `${position} 的定位必须读 ${edge} 基线`)
+    }
+    const styled = closeOffsetStyle({ top: -7, right: 7 }, position)
+    assert.deepEqual(Object.keys(styled).sort(), [anchor.y, anchor.x].sort(), `${position} 的偏移只落在生效边上`)
+  }
+
   assert.match(read('src/ui/layout/index.ts'), /export type \{ EdgeOffset \}/, '公共出口要导出偏移类型')
   assert.match(read('src/ui/layout/content-popup/index.ts'), /export type \{ EdgeOffset \}/, '子路径出口也要导出')
 })
@@ -714,7 +745,7 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   // 半跨左右距比其它档再往内收一档：12 → 16（space-3 → space-4），更远离面板圆角。
   for (const name of ['edge-top-left', 'edge-top-right']) {
     const rule = new RegExp(`\\.mptk-popup__close--${name}\\s*\\{([^}]*)\\}`).exec(read(LAYOUT_CSS))?.[1] ?? ''
-    assert.match(rule, /(?:left|right):\s*calc\(var\(--mptk-space-4\)\s*\+\s*var\(--mptk-popup-close-offset-(?:left|right),\s*0px\)\)/, `${name} 左右距要收到 space-4（16px），且叠加四向偏移变量`)
+    assert.match(rule, /--mptk-popup-close-base-(?:left|right):\s*var\(--mptk-space-4\)/, `${name} 左右距基线要收到 space-4（16px）`)
   }
   assert.match(
     read('src/ui/actions/Button.tsx'),
@@ -770,16 +801,20 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
     '底形不写在 popup 样式里，交给 Button 的 variant / radius',
   )
   const rule = (name) => new RegExp(`\\.mptk-popup__close--${name}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
-  assert.equal(declOf(rule('top-left'), 'top'), 'calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-top, 0px))', '内部左上离上边 12px，叠加偏移变量')
-  assert.equal(declOf(rule('top-left'), 'left'), 'calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-left, 0px))', '内部左上离左边 12px')
-  assert.equal(declOf(rule('top-right'), 'top'), 'calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-top, 0px))', '内部右上离上边 12px')
-  assert.equal(declOf(rule('top-right'), 'right'), 'calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-right, 0px))', '内部右上离右边 12px')
+  assert.equal(declOf(rule('top-left'), 'top'), 'var(--mptk-popup-close-base-top)', '内部左上定位只读基线变量')
+  assert.equal(declOf(rule('top-left'), 'left'), 'var(--mptk-popup-close-base-left)', '内部左上定位只读基线变量')
+  assert.match(rule('top-left'), /--mptk-popup-close-base-top:\s*var\(--mptk-space-3\)/, '内部左上离上边 12px')
+  assert.match(rule('top-left'), /--mptk-popup-close-base-left:\s*var\(--mptk-space-3\)/, '内部左上离左边 12px')
+  assert.equal(declOf(rule('top-right'), 'top'), 'var(--mptk-popup-close-base-top)', '内部右上定位只读基线变量')
+  assert.equal(declOf(rule('top-right'), 'right'), 'var(--mptk-popup-close-base-right)', '内部右上定位只读基线变量')
+  assert.match(rule('top-right'), /--mptk-popup-close-base-right:\s*var\(--mptk-space-3\)/, '内部右上离右边 12px')
   for (const pos of ['edge-top-left', 'edge-top-right']) {
-    assert.equal(declOf(rule(pos), 'top'), 'calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-top, 0px))', `${pos} 顶边贴面板上沿`)
+    assert.equal(declOf(rule(pos), 'top'), 'var(--mptk-popup-close-base-top)', `${pos} 顶边定位只读基线`)
+    assert.match(rule(pos), /--mptk-popup-close-base-top:\s*var\(--mptk-s-zero\)/, `${pos} 顶边贴面板上沿`)
     assert.match(rule(pos), /transform:\s*translateY\(var\(--mptk-s-half-neg\)\)/, `${pos} 只垂直跨半`)
   }
-  assert.equal(declOf(rule('edge-top-left'), 'left'), 'calc(var(--mptk-space-4) + var(--mptk-popup-close-offset-left, 0px))', '跨半左上左侧留距 16px，比其它档再往内收一档，避开圆角')
-  assert.equal(declOf(rule('edge-top-right'), 'right'), 'calc(var(--mptk-space-4) + var(--mptk-popup-close-offset-right, 0px))', '跨半右上右侧留距 16px，比其它档再往内收一档，避开圆角')
+  assert.match(rule('edge-top-left'), /--mptk-popup-close-base-left:\s*var\(--mptk-space-4\)/, '跨半左上左侧留距 16px，避开圆角')
+  assert.match(rule('edge-top-right'), /--mptk-popup-close-base-right:\s*var\(--mptk-space-4\)/, '跨半右上右侧留距 16px，避开圆角')
   // 根因防回归：关闭按钮 absolute 必须写在双类上，权重压过 .mptk-btn{position:relative}。
   // 单类 .mptk-popup__close{position:absolute} 会被后加载的同权重 .mptk-btn 覆盖 → 按钮退回
   // 文档流、right 丢失、各档位置全部错乱（实测截图 × 落到左侧中部）。
@@ -789,18 +824,20 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
 
   // 外置档：锚在面板边缘内侧（top/bottom: 0），用 transform 按按钮自身高度移出面板。
   // translateY 百分比参照按钮自身（确定量），不参照面板高度；前提是上面的 absolute 真生效。
-  assert.equal(declOf(rule('above-right'), 'top'), 'calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-top, 0px))', '上方靠右锚在面板顶边内侧')
+  assert.equal(declOf(rule('above-right'), 'top'), 'var(--mptk-popup-close-base-top)', '上方靠右定位只读基线')
+  assert.match(rule('above-right'), /--mptk-popup-close-base-top:\s*var\(--mptk-s-zero\)/, '上方靠右锚在面板顶边内侧')
   assert.match(rule('above-right'), /transform:\s*translateY\(calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '上方靠右按自身高度上移一个间距档')
-  assert.equal(declOf(rule('above-center'), 'top'), 'calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-top, 0px))', '上方居中锚在面板顶边内侧')
+  assert.equal(declOf(rule('above-center'), 'top'), 'var(--mptk-popup-close-base-top)', '上方居中定位只读基线')
   assert.match(rule('above-center'), /transform:\s*translate\(var\(--mptk-s-half-neg\), calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '上方居中按自身高度上移并水平居中')
-  assert.equal(declOf(rule('below-center'), 'bottom'), 'calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-bottom, 0px))', '下方居中锚在面板底边内侧')
+  assert.equal(declOf(rule('below-center'), 'bottom'), 'var(--mptk-popup-close-base-bottom)', '下方居中定位只读基线')
+  assert.match(rule('below-center'), /--mptk-popup-close-base-bottom:\s*var\(--mptk-s-zero\)/, '下方居中锚在面板底边内侧')
   assert.match(rule('below-center'), /transform:\s*translate\(var\(--mptk-s-half-neg\), calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)\)/, '下方居中按自身高度下移并水平居中')
-  assert.equal(declOf(rule('below-right'), 'bottom'), 'calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-bottom, 0px))', '下方靠右锚在面板底边内侧')
+  assert.equal(declOf(rule('below-right'), 'bottom'), 'var(--mptk-popup-close-base-bottom)', '下方靠右定位只读基线')
   assert.match(rule('below-right'), /transform:\s*translateY\(calc\(var\(--mptk-s-full\) \+ var\(--mptk-space-3\)\)\)/, '下方靠右按自身高度下移一个间距档')
-  assert.match(rule('above-right'), /right:\s*calc\(var\(--mptk-space-3\)\s*\+\s*var\(--mptk-popup-close-offset-right,\s*0px\)\)/, '上方靠右档右边距 12px 且叠加偏移')
-  assert.match(rule('below-right'), /right:\s*calc\(var\(--mptk-space-3\)\s*\+\s*var\(--mptk-popup-close-offset-right,\s*0px\)\)/, '下方靠右档右边距 12px 且叠加偏移')
-  assert.match(rule('above-center'), /left:\s*calc\(var\(--mptk-s-half\)\s*\+\s*var\(--mptk-popup-close-offset-left,\s*0px\)\)/, '上方居中档水平居中且叠加偏移')
-  assert.match(rule('below-center'), /left:\s*calc\(var\(--mptk-s-half\)\s*\+\s*var\(--mptk-popup-close-offset-left,\s*0px\)\)/, '下方居中档水平居中且叠加偏移')
+  assert.match(rule('above-right'), /--mptk-popup-close-base-right:\s*var\(--mptk-space-3\)/, '上方靠右档右边距 12px')
+  assert.match(rule('below-right'), /--mptk-popup-close-base-right:\s*var\(--mptk-space-3\)/, '下方靠右档右边距 12px')
+  assert.match(rule('above-center'), /--mptk-popup-close-base-left:\s*var\(--mptk-s-half\)/, '上方居中档水平居中')
+  assert.match(rule('below-center'), /--mptk-popup-close-base-left:\s*var\(--mptk-s-half\)/, '下方居中档水平居中')
   assert.equal(tokensOf()['--mptk-s-full-neg'], '-100%', '负满幅 token 丢了，外置关闭按钮上移会失效')
 
   // 图片弹窗专用覆盖：裸壳面板已内联贴合图片，左右档关闭按钮不再留内侧间距、与图片左右缘齐平。
@@ -808,10 +845,12 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   const imagePanelRule = (name) =>
     new RegExp(`\\.mptk-image-popup__panel\\s+\\.mptk-popup__close--${name}\\s*(?:,[^}]*?)?\\{([^}]*)\\}`).exec(css)?.[1] ?? ''
   for (const pos of ['top-right', 'edge-top-right', 'above-right', 'below-right']) {
-    assert.equal(declOf(imagePanelRule(pos), 'right'), 'calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-right, 0px))', `${pos} 在图片弹窗里右缘贴图片，且保留偏移叠加`)
+    assert.match(imagePanelRule(pos), /--mptk-popup-close-base-right:\s*var\(--mptk-s-zero\)/, `${pos} 在图片弹窗里右缘贴图片（改基线而非覆盖定位）`)
+    assert.equal(declOf(imagePanelRule(pos), 'right'), 'var(--mptk-popup-close-base-right)', `${pos} 定位仍只读基线`)
   }
   for (const pos of ['top-left', 'edge-top-left']) {
-    assert.equal(declOf(imagePanelRule(pos), 'left'), 'calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-left, 0px))', `${pos} 在图片弹窗里左缘贴图片，且保留偏移叠加`)
+    assert.match(imagePanelRule(pos), /--mptk-popup-close-base-left:\s*var\(--mptk-s-zero\)/, `${pos} 在图片弹窗里左缘贴图片（改基线而非覆盖定位）`)
+    assert.equal(declOf(imagePanelRule(pos), 'left'), 'var(--mptk-popup-close-base-left)', `${pos} 定位仍只读基线`)
   }
   assert.match(
     css,

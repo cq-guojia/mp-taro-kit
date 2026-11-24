@@ -19,6 +19,22 @@ export type PopupClosePosition =
   | 'below-right'
 
 /**
+ * 各档位真正用于绝对定位的两条边，与 style/index.scss 的 --mptk-popup-close-base-* 一一对应。
+ * 档位几何（间距、transform 位移）全在 CSS；这里只记「锚在哪条边」，供 closeOffset 把调用方
+ * 给的边偏移换算到生效边上——传 top 而档位锚 bottom 时，写 top 会被 CSS 整条丢弃。
+ */
+export const CLOSE_ANCHOR: Record<PopupClosePosition, { y: 'top' | 'bottom'; x: 'left' | 'right' }> = {
+  'top-left': { y: 'top', x: 'left' },
+  'top-right': { y: 'top', x: 'right' },
+  'edge-top-left': { y: 'top', x: 'left' },
+  'edge-top-right': { y: 'top', x: 'right' },
+  'above-right': { y: 'top', x: 'right' },
+  'above-center': { y: 'top', x: 'left' },
+  'below-center': { y: 'bottom', x: 'left' },
+  'below-right': { y: 'bottom', x: 'right' },
+}
+
+/**
  * 各形态允许的位置。左右抽屉不进表：传什么都不渲染关闭按钮。
  * - bottom / center：内部档与跨半档左右两侧都支持（top-left/top-right、edge-top-left/edge-top-right），面板上方外置档通用；
  * - center 另支持面板下方外置档；

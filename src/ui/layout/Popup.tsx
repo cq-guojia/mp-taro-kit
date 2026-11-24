@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
 import { Button } from '../actions/Button.js'
 import { CloseGlyph } from '../feedback/close/CloseGlyph.js'
-import { closeOffsetVars, type EdgeOffset } from './edge-offset.js'
+import { closeOffsetStyle, type EdgeOffset } from './edge-offset.js'
 import { resolveCloseStyle, type PopupCloseShape } from './close-style.js'
 import {
   isOnOverlayClosePosition,
@@ -132,14 +132,14 @@ export function Popup({
     : pad.top
   const anchoredBottom = position === 'bottom' || position === 'left' || position === 'right'
   const bottomInset = anchoredBottom ? resolveBottomInset(getSafeAreaSnapshot()).paddingBottom : 0
+  const bottomPad = bottomInset > 0 ? Math.max(bottomInset, pad.bottom ?? 0) : pad.bottom
   const padStyle: CSSProperties | undefined =
-    topPad === undefined && pad.right === undefined && pad.bottom === undefined && pad.left === undefined && bottomInset === 0
+    topPad === undefined && pad.right === undefined && bottomPad === undefined && pad.left === undefined
       ? undefined
       : {
           ...(topPad === undefined ? null : { paddingTop: `${topPad}px` }),
-          ...(bottomInset > 0 ? { paddingBottom: `${bottomInset}px` } : null),
+          ...(bottomPad === undefined ? null : { paddingBottom: `${bottomPad}px` }),
           ...(pad.right === undefined ? null : { paddingRight: `${pad.right}px` }),
-          ...(pad.bottom === undefined ? null : { paddingBottom: `${pad.bottom}px` }),
           ...(pad.left === undefined ? null : { paddingLeft: `${pad.left}px` }),
         }
 
@@ -147,6 +147,7 @@ export function Popup({
   const resolvedClosePosition = resolveClosePosition(position, closePosition)
   const closeOutside = resolvedClosePosition !== null && isOutsideClosePosition(resolvedClosePosition)
   const closeOnOverlay = resolvedClosePosition !== null && isOnOverlayClosePosition(resolvedClosePosition)
+  const closeOffsetCss = resolvedClosePosition === null ? {} : closeOffsetStyle(closeOffset, resolvedClosePosition)
   const closeStyle = resolveCloseStyle(closeShape, closeBorder, closeBackground)
 
   const names = [
@@ -196,7 +197,7 @@ export function Popup({
               closeOnOverlay ? 'mptk-popup__close--on-overlay' : '',
               closeStyle.translucent ? 'mptk-popup__close--translucent' : 'mptk-popup__close--solid-bg',
             ].filter(Boolean).join(' ')}
-            style={closeOffsetVars(closeOffset) as CSSProperties}
+            style={closeOffsetCss}
             onClick={onClose}
           />
         ) : null}

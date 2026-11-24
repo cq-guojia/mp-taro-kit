@@ -218,7 +218,7 @@
 .mptk-btn.mptk-popup__close {
   position: absolute;
   z-index: var(--mptk-c-layer-popover);
-  /* 外框走 popup 私有的 30px，只覆盖高度轴；叉是自绘 CloseGlyph（边长 1em，继承 Button xs 的 12px 字号），
+  /* 外框走 popup 私有的尺寸 token，只覆盖高度轴；叉由 Popup.tsx 传固定的 CloseGlyph size，
      不随外框放大——「圆变大、叉不变」。 */
   --mptk-btn-h: var(--mptk-c-popup-close-size);
   height: var(--mptk-c-popup-close-size);
@@ -257,19 +257,26 @@
   --mptk-btn-border: var(--mptk-btn-fg);
 }
 
-/* 各档定位值都叠加调用方的四向偏移变量（未给时 0px，原位置一字不变）。
-   偏移只加在 top / right / bottom / left 上，绝不碰 transform——外置档靠它按按钮自身高度移出面板，
-   覆盖 transform 会让按钮飞走。正负语义：正=向内收、负=向外伸（见 edge-offset.ts）。 */
+/* 几何基线只在这里定义、定位只读基线：档位类给 --base-* 赋值，top/right/bottom/left 用裸 var 引用。
+   调用方的偏移由 closeOffsetStyle 按 CLOSE_ANCHOR 换算到档位实际锚定的那条边，以内联标准属性
+   calc(var(--base-*) ± 偏移) 叠加——不写 var fallback（WXSS 会整条丢弃），不靠行内自定义属性
+   （Skyline 未核实）。绝不碰 transform——外置档靠它按按钮自身高度移出面板。
+   基线变量只在档位类自身定义：公共双类权重更高，在那里定义会盖掉档位值。
+   CLOSE_ANCHOR 与本文件各档位使用的边必须一致，tests/layout.test.mjs 做结构性校验。 */
 
 /* 内部档：离上边与离左右边都一个 space-3（12px），四边等距、看着才对称。 */
 .mptk-popup__close--top-left {
-  top: calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-top, 0px));
-  left: calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-left, 0px));
+  --mptk-popup-close-base-top: var(--mptk-space-3);
+  --mptk-popup-close-base-left: var(--mptk-space-3);
+  top: var(--mptk-popup-close-base-top);
+  left: var(--mptk-popup-close-base-left);
 }
 
 .mptk-popup__close--top-right {
-  top: calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-top, 0px));
-  right: calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-right, 0px));
+  --mptk-popup-close-base-top: var(--mptk-space-3);
+  --mptk-popup-close-base-right: var(--mptk-space-3);
+  top: var(--mptk-popup-close-base-top);
+  right: var(--mptk-popup-close-base-right);
 }
 
 /* 外挂档要越过面板边界，面板不能再裁切它；按钮自身水平位置仍保留内侧间距。 */
@@ -280,14 +287,18 @@
 /* 跨半：只向面板外跨自身高度的一半，左右离边 16px（space-4，比其它档再往内收一档），
    避免盖住面板圆角——半跨只出现在 bottom / center，这两档常带圆角。 */
 .mptk-popup__close--edge-top-left {
-  top: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-top, 0px));
-  left: calc(var(--mptk-space-4) + var(--mptk-popup-close-offset-left, 0px));
+  --mptk-popup-close-base-top: var(--mptk-s-zero);
+  --mptk-popup-close-base-left: var(--mptk-space-4);
+  top: var(--mptk-popup-close-base-top);
+  left: var(--mptk-popup-close-base-left);
   transform: translateY(var(--mptk-s-half-neg));
 }
 
 .mptk-popup__close--edge-top-right {
-  top: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-top, 0px));
-  right: calc(var(--mptk-space-4) + var(--mptk-popup-close-offset-right, 0px));
+  --mptk-popup-close-base-top: var(--mptk-s-zero);
+  --mptk-popup-close-base-right: var(--mptk-space-4);
+  top: var(--mptk-popup-close-base-top);
+  right: var(--mptk-popup-close-base-right);
   transform: translateY(var(--mptk-s-half-neg));
 }
 
@@ -296,26 +307,34 @@
    translateY 的百分比参照按钮自身（确定量），不参照面板高度，面板高度变化也不影响按钮位置。
    位置是否正确的前提是 absolute 生效（见 .mptk-btn.mptk-popup__close 的双类声明）。 */
 .mptk-popup__close--above-right {
-  top: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-top, 0px));
-  right: calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-right, 0px));
+  --mptk-popup-close-base-top: var(--mptk-s-zero);
+  --mptk-popup-close-base-right: var(--mptk-space-3);
+  top: var(--mptk-popup-close-base-top);
+  right: var(--mptk-popup-close-base-right);
   transform: translateY(calc(var(--mptk-s-full-neg) - var(--mptk-space-3)));
 }
 
 .mptk-popup__close--above-center {
-  top: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-top, 0px));
-  left: calc(var(--mptk-s-half) + var(--mptk-popup-close-offset-left, 0px));
+  --mptk-popup-close-base-top: var(--mptk-s-zero);
+  --mptk-popup-close-base-left: var(--mptk-s-half);
+  top: var(--mptk-popup-close-base-top);
+  left: var(--mptk-popup-close-base-left);
   transform: translate(var(--mptk-s-half-neg), calc(var(--mptk-s-full-neg) - var(--mptk-space-3)));
 }
 
 .mptk-popup__close--below-center {
-  bottom: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-bottom, 0px));
-  left: calc(var(--mptk-s-half) + var(--mptk-popup-close-offset-left, 0px));
+  --mptk-popup-close-base-bottom: var(--mptk-s-zero);
+  --mptk-popup-close-base-left: var(--mptk-s-half);
+  bottom: var(--mptk-popup-close-base-bottom);
+  left: var(--mptk-popup-close-base-left);
   transform: translate(var(--mptk-s-half-neg), calc(var(--mptk-s-full) + var(--mptk-space-3)));
 }
 
 .mptk-popup__close--below-right {
-  bottom: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-bottom, 0px));
-  right: calc(var(--mptk-space-3) + var(--mptk-popup-close-offset-right, 0px));
+  --mptk-popup-close-base-bottom: var(--mptk-s-zero);
+  --mptk-popup-close-base-right: var(--mptk-space-3);
+  bottom: var(--mptk-popup-close-base-bottom);
+  right: var(--mptk-popup-close-base-right);
   transform: translateY(calc(var(--mptk-s-full) + var(--mptk-space-3)));
 }
 
@@ -395,12 +414,14 @@
 .mptk-image-popup__panel .mptk-popup__close--edge-top-right,
 .mptk-image-popup__panel .mptk-popup__close--above-right,
 .mptk-image-popup__panel .mptk-popup__close--below-right {
-  right: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-right, 0px));
+  --mptk-popup-close-base-right: var(--mptk-s-zero);
+  right: var(--mptk-popup-close-base-right);
 }
 
 .mptk-image-popup__panel .mptk-popup__close--top-left,
 .mptk-image-popup__panel .mptk-popup__close--edge-top-left {
-  left: calc(var(--mptk-s-zero) + var(--mptk-popup-close-offset-left, 0px));
+  --mptk-popup-close-base-left: var(--mptk-s-zero);
+  left: var(--mptk-popup-close-base-left);
 }
 
 .mptk-image-popup__actions {

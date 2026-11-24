@@ -45,7 +45,18 @@
 
 几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。外置档锚在面板边缘内侧（`top` / `bottom: 0`），再用 `transform` 按**按钮自身高度**移出面板：`above-*` 用 `--mptk-s-full-neg`（-100%）上移、`below-*` 用 `--mptk-s-full`（100%）下移——百分比参照按钮自身，是确定量，不参照面板高度，面板高度变化也不影响按钮位置。
 
-`closeOffset` 在档位之上做像素级微调（类型 `EdgeOffset`，与 `ContentPopup` 的 `image.offset` 共用）：四个字段 `top` / `right` / `bottom` / `left` 都是**正=向内收、负=向外伸**，数字按 px、字符串按 CSS 长度。实现只叠加到档位的 `top` / `right` / `bottom` / `left` 定位值（`calc(档位值 + 偏移变量)`），**不碰 `transform`**——外置档靠 transform 按按钮自身高度移出面板，覆盖会让按钮飞走。未给时四向补 0，原档位位置一字不变。同一轴同时给两边时按 CSS 自身规则取 `top` / `left`。
+`closeOffset` 在档位之上做像素级微调（类型 `EdgeOffset`，与 `ContentPopup` 的 `image.offset` 共用）：四个字段 `top` / `right` / `bottom` / `left` 表示**对应边 inset 的增量**——正=该边向内收、负=向外伸；数字按 px、字符串按 CSS 长度。同一轴同时给两边时取 `top` / `left`。
+
+档位几何全在 CSS：每档只锚两条边，基线写在 WXSS 的 `--mptk-popup-close-base-*` 上、定位属性用裸 `var()` 引用。调用方给的边未必是生效边，`closeOffsetStyle` 按 `CLOSE_ANCHOR` 把增量换算到档位真正锚定的边上，再以内联**标准定位属性** `calc(var(--mptk-popup-close-base-*) ± 偏移)` 叠加。例如 `below-center` 锚 `bottom` + `left`，给它 `{ top: -10, right: 12 }` 实际写出 `bottom: calc(var(--mptk-popup-close-base-bottom) + 10px)` 与 `left: calc(var(--mptk-popup-close-base-left) - 12px)`。**四个字段在任意档位都生效**，不会写出 CSS 未使用的边。
+
+| 档位 | 锚定边 |
+|---|---|
+| `top-left` / `edge-top-left` / `above-center` | `top` + `left` |
+| `top-right` / `edge-top-right` / `above-right` | `top` + `right` |
+| `below-center` | `bottom` + `left` |
+| `below-right` | `bottom` + `right` |
+
+不写 `var(--x, fallback)`（WXSS 会整条丢弃定位声明）、不注入行内自定义属性（Skyline 未核实）、不靠负号字符串拼出双负号的 `calc`。**不碰 `transform`**——外置档靠 transform 按按钮自身高度移出面板，覆盖会让按钮飞走。未给偏移时不产任何内联声明，原档位位置一字不变。`CLOSE_ANCHOR` 与 CSS 基线的一致性由 `tests/layout.test.mjs` 逐档校验。
 
 ```tsx
 <Popup open position="bottom" closePosition="top-right"
@@ -235,3 +246,5 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-21 18:13:45：暗色面板内与跨半档关闭按钮叉/描边由 gray-6 改主文字亮档（--mptk-fg，解析为色板 ink-1），与浅色主题白面板上的深叉对称；demo 位置文案外上改外中上
 - 2026-11-21：补 ContentPopup 边界互链：同为 Popup 底座上的兄弟组件，本组件只管 Popup 与 ImagePopup
 - 2026-11-21：面板底色改走抬升面 token `--mptk-surface-elevated`，暗档按 iOS base/elevated 分层提亮
+
+- 2026-11-24：关闭叉错位根因修复——档位几何收进 WXSS `--mptk-popup-close-base-*` 基线变量、定位读裸 `var()`，去掉带 fallback 的 `var()`（WXSS 会整条丢弃定位声明）。修「叉偏移」无效果：`closeOffset` 现按 `CLOSE_ANCHOR` 换算到档位实际锚定的边，四向字段在任意档位都生效；删未用的 `resolveEdgeShift`、去重复 `cssLength`，并修贴底安全区被 `contentPadding.bottom` 覆盖。

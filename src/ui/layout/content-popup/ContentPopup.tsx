@@ -14,6 +14,7 @@ import {
   type PopupSurface,
 } from '../Popup.js'
 import {
+  cssLength,
   needsImageInset,
   resolveImageHeaderHeight,
   resolveImageShift,
@@ -280,11 +281,6 @@ function backgroundStyle(value: ContentPopupBackground | undefined): CSSProperti
   return {
     backgroundImage: `linear-gradient(${angle}, ${value.from} 0%, ${value.from} ${String(fromEnd)}%, ${to} ${String(toStart)}%)`,
   }
-}
-
-function cssLength(value: number | string | undefined): string | undefined {
-  if (value === undefined) return undefined
-  return typeof value === 'number' ? `${value}px` : value
 }
 
 function addToPercent(base: string, value: number | string): string {
