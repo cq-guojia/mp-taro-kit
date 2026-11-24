@@ -3,12 +3,9 @@
  *
  * 图片头与关闭按钮共用这个类型，但各有一套位移写法：
  * - 图片头用 position:relative + 定位属性承载位移，不碰 transform（关闭叉外置档要用它）；
- * - 关闭按钮的档位基线与 transform 全在 CSS，偏移由本文件换算到档位实际锚定的边上，
- *   以内联标准定位属性 calc(var(--mptk-popup-close-base-*) ± 偏移) 叠加。
+ * - 关闭按钮的档位基线、偏移换算与 transform 全在 CSS；本文件只把调用方给的四向值
+ *   原样写成行内 CSS 变量 --mptk-popup-close-shift-*，零默认值由公共档位类提供。
  */
-
-import type { CSSProperties } from 'react'
-import { CLOSE_ANCHOR, type PopupClosePosition } from './close-position.js'
 
 export interface EdgeOffset {
   top?: number | string
@@ -72,43 +69,15 @@ export function resolveImageHeaderHeight(
   return `${Math.max(imageHeight + top + bottom, 0)}px`
 }
 
-type CloseEdge = 'top' | 'right' | 'bottom' | 'left'
-
 /**
- * 把一条边偏移拼成 calc(基线 ± 长度)。invert 表示「这条边的 inset 与调用方给的边方向相反」
- * （例如档位锚 bottom、调用方给 top：top 增大是下移，bottom 就要减小）。
- * 先拆负号再选运算符，避免生成 calc(0px - -10px) 这种 WXSS 不接受的双负号。
+ * 关闭按钮偏移：只把调用方给的四向值原样交给 CSS，零默认值写在公共档位类里。
+ * 档位自己用 calc(基线 + 正向 - 反向) 算最终定位，JS 不判断哪条边生效、不拼 calc、不碰 transform。
  */
-function withBase(edge: CloseEdge, value: number | string, invert: boolean): string {
-  const length = cssLength(value)
-  const negative = length.startsWith('-')
-  const magnitude = negative ? length.slice(1) : length
-  const plus = invert ? negative : !negative
-  return `calc(var(--mptk-popup-close-base-${edge}) ${plus ? '+' : '-'} ${magnitude})`
-}
-
-/**
- * 关闭按钮偏移：档位几何与 transform 全在 CSS，这里只把调用方给的四向 inset 增量换算到
- * 档位真正锚定的边上，内联成标准定位属性。不写 var fallback（WXSS 整条丢弃），
- * 也不注入行内自定义属性（Skyline 未核实）。未给偏移不产任何声明。
- */
-export function closeOffsetStyle(
-  offset: EdgeOffset | undefined,
-  position: PopupClosePosition,
-): Pick<CSSProperties, CloseEdge> {
-  if (offset === undefined) return {}
-  const anchor = CLOSE_ANCHOR[position]
-  const out: Pick<CSSProperties, CloseEdge> = {}
-
-  if (offset.top !== undefined) {
-    out[anchor.y] = withBase(anchor.y, offset.top, anchor.y === 'bottom')
-  } else if (offset.bottom !== undefined) {
-    out[anchor.y] = withBase(anchor.y, offset.bottom, anchor.y === 'top')
+export function closeOffsetVars(offset: EdgeOffset | undefined): Record<string, string> {
+  return {
+    '--mptk-popup-close-shift-top': cssLength(offset?.top) ?? '0px',
+    '--mptk-popup-close-shift-right': cssLength(offset?.right) ?? '0px',
+    '--mptk-popup-close-shift-bottom': cssLength(offset?.bottom) ?? '0px',
+    '--mptk-popup-close-shift-left': cssLength(offset?.left) ?? '0px',
   }
-  if (offset.left !== undefined) {
-    out[anchor.x] = withBase(anchor.x, offset.left, anchor.x === 'right')
-  } else if (offset.right !== undefined) {
-    out[anchor.x] = withBase(anchor.x, offset.right, anchor.x === 'left')
-  }
-  return out
 }

@@ -115,7 +115,7 @@ const { CellGroup, Cell } = await import('../dist/ui/display/cell/index.js')
 const { Overlay, Popup, ImagePopup } = await import('../dist/ui/layout/index.js')
 const { ContentPopup } = await import('../dist/ui/layout/content-popup/index.js')
 const { resolveImageSize } = await import('../dist/ui/layout/image-size.js')
-const { closeOffsetStyle } = await import('../dist/ui/layout/edge-offset.js')
+const { closeOffsetVars } = await import('../dist/ui/layout/edge-offset.js')
 const { Drawer, Dropdown } = await import('../dist/ui/navigation/index.js')
 const { Dialog, Loading, Toast } = await import('../dist/ui/feedback/index.js')
 const { CARD_EDGE_OUT_OF_FLOW } = await import('../dist/ui/infra/card-edge.js')
@@ -745,40 +745,49 @@ test('图片头几何：默认铺满、超宽原样透传、对齐与四向偏�
 
 })
 
-test('关闭按钮偏移：标准定位属性落到真实按钮节点，档位与 DOM 后置顺序不变', () => {
+test('关闭按钮偏移：四向值作为 CSS 变量落到真实按钮节点，定位仍由档位 CSS 计算', () => {
   const html = render(h(ContentPopup, {
     open: true, position: 'bottom', variant: 'title', title: 'T',
     closePosition: 'top-right', closeOffset: { top: -10, right: 12 }, onClose: () => {},
   }))
-  assert.match(html, /top:calc\(var\(--mptk-popup-close-base-top\) - 10px\)/, '负向上偏移向外伸，走标准属性内联')
-  assert.match(html, /right:calc\(var\(--mptk-popup-close-base-right\) \+ 12px\)/, '正向右偏移向内收')
-  assert.doesNotMatch(html, /--mptk-popup-close-offset-/, '不再注入行内自定义属性')
+  assert.match(html, /--mptk-popup-close-shift-top:-10px/, '调用方数值原样写成 CSS 变量')
+  assert.match(html, /--mptk-popup-close-shift-right:12px/, '右向同理')
+  assert.match(html, /--mptk-popup-close-shift-bottom:0px/, '未给的轴显式给 0px 零值')
+  assert.doesNotMatch(html, /(?:top|right|bottom|left):calc\(var\(--mptk-popup-close-base-/, 'JS 不内联定位属性，定位只在 CSS 档位里')
   assert.match(html, /mptk-popup__close--top-right/, '原档位类不变')
   assert.ok(html.indexOf('mptk-popup__close') > html.indexOf('mptk-popup__body'), '按钮仍在内容之后，层级不被图片盖住')
-  assert.deepEqual(closeOffsetStyle(undefined, 'top-right'), {}, '未给偏移不产任何声明，原档位位置一字不变')
+  assert.deepEqual(closeOffsetVars(undefined), {
+    '--mptk-popup-close-shift-top': '0px',
+    '--mptk-popup-close-shift-right': '0px',
+    '--mptk-popup-close-shift-bottom': '0px',
+    '--mptk-popup-close-shift-left': '0px',
+  }, '未给偏移时四个变量都是 0px，原档位位置一字不变')
 
-  // 演示站「叉偏移」的真实场景：center + 默认 below-center，锚点是 bottom+left。
-  // 传 top/right 必须落到 bottom/left 上；否则内联声明引用不存在的基线变量，被 WXSS 静默丢弃。
+  // center + 默认 below-center：四向变量由档位自己的 calc 消费，JS 不猜锚点。
   const shifted = render(h(ContentPopup, {
     open: true, position: 'center', variant: 'image', image: { src: 'a.png' },
     closeOffset: { top: -10, right: 12 }, onClose: () => {},
   }))
   assert.match(shifted, /mptk-popup__close--below-center/, '默认档位为下方居中')
-  assert.match(shifted, /bottom:calc\(var\(--mptk-popup-close-base-bottom\) \+ 10px\)/, 'top 偏移换算到 bottom 并生效')
-  assert.match(shifted, /left:calc\(var\(--mptk-popup-close-base-left\) - 12px\)/, 'right 偏移换算到 left 并生效')
-  assert.doesNotMatch(shifted, /(?:top|right):calc\(var\(--mptk-popup-close-base-/, '不写档位未使用的边')
+  assert.match(shifted, /--mptk-popup-close-shift-top:-10px/, '偏移原样落到按钮节点')
+  assert.match(shifted, /--mptk-popup-close-shift-right:12px/, '右向同理')
+  assert.doesNotMatch(shifted, /(?:top|right|bottom|left):calc\(var\(--mptk-popup-close-base-/, '不在 JS 里算定位')
 
   const viaImage = render(h(ImagePopup, {
     open: true, slides: [{ src: 'a.png', width: 200 }], closeOffset: { bottom: 20 }, onClose: () => {},
   }))
-  assert.match(viaImage, /bottom:calc\(var\(--mptk-popup-close-base-bottom\) \+ 20px\)/, 'ImagePopup 同样透传底座偏移')
+  assert.match(viaImage, /--mptk-popup-close-shift-bottom:20px/, 'ImagePopup 同样透传底座偏移')
 
-  // 演示站入口不能是死演示：默认档位下这组偏移必须有实际输出。
   const demoPage = readFileSync(join(root, 'demo/src/pages/popup/index.tsx'), 'utf8')
-  assert.match(demoPage, />叉偏移</, '保留叉偏移演示入口')
-  assert.match(demoPage, /closeOffset=\{imageGeom === 'close-shift' \? \{ top: -10, right: 12 \} : undefined\}/, '演示偏移量固定')
-  assert.deepEqual(Object.keys(closeOffsetStyle({ top: -10, right: 12 }, 'below-center')).sort(), ['bottom', 'left'],
-    '演示按钮的偏移在默认档位上确实落到生效边')
+  assert.doesNotMatch(demoPage, /叉偏移|closeOffset=/, '演示站不再展示关闭叉偏移')
+  assert.match(demoPage, />上延伸</, '新增上延伸入口')
+  assert.match(demoPage, /imageGeom === 'rise'\s*\n?\s*\? \{ src: HEADER_RISE_UP, offset: \{ top: -30 \} \}/, '上延伸：红色头部 + 上伸 30')
+  assert.match(demoPage, /imageGeom === 'both'\s*\n?\s*\? \{ src: HEADER_RISE_BOTH, offset: \{ top: -30, bottom: -50 \} \}/, '上下双伸：上 30 下 50')
+  assert.match(demoPage, /popup-header-rise-up\.png/, '上延伸图片走仓库 raw 地址')
+  assert.match(demoPage, /popup-header-rise-both\.png/, '上下双伸图片走仓库 raw 地址')
+  for (const name of ['popup-header-rise-up.png', 'popup-header-rise-both.png']) {
+    assert.ok(existsSync(join(root, 'assets/popup', name)), `${name} 必须落在 assets/popup`)
+  }
 })
 
 test('ContentPopup 徽标对象：四形态、描边开关、有符号偏移与关闭位避让', () => {

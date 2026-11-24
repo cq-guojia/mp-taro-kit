@@ -268,3 +268,4 @@ interface ContentPopupFooterConfig {
 - 2026-11-24：修所有关闭叉错位——档位几何收进 WXSS `--mptk-popup-close-base-*` 基线变量，定位属性用裸 `var()`；`closeOffset` 改由组件内联标准定位属性叠加，去掉 WXSS 里带 fallback 的 `var()`（该项在 Skyline 下会让整条定位声明失效）。
 
 - 2026-11-24：`closeOffset` 改按档位锚点换算生效边，修演示站「叉偏移」看不到位移；`CLOSE_ANCHOR` 与 CSS 基线逐档做一致性校验。
+- 2026-11-24 11:22:04：closeOffset 跟随 Popup 改为 CSS 变量通道，JS 不再换算定位

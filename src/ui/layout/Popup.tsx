@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { getSafeAreaSnapshot } from '../../runtime/safe-area.js'
 import { Button } from '../actions/Button.js'
 import { CloseGlyph } from '../feedback/close/CloseGlyph.js'
-import { closeOffsetStyle, type EdgeOffset } from './edge-offset.js'
+import { closeOffsetVars, type EdgeOffset } from './edge-offset.js'
 import { resolveCloseStyle, type PopupCloseShape } from './close-style.js'
 import {
   isOnOverlayClosePosition,
@@ -147,7 +147,6 @@ export function Popup({
   const resolvedClosePosition = resolveClosePosition(position, closePosition)
   const closeOutside = resolvedClosePosition !== null && isOutsideClosePosition(resolvedClosePosition)
   const closeOnOverlay = resolvedClosePosition !== null && isOnOverlayClosePosition(resolvedClosePosition)
-  const closeOffsetCss = resolvedClosePosition === null ? {} : closeOffsetStyle(closeOffset, resolvedClosePosition)
   const closeStyle = resolveCloseStyle(closeShape, closeBorder, closeBackground)
 
   const names = [
@@ -197,7 +196,7 @@ export function Popup({
               closeOnOverlay ? 'mptk-popup__close--on-overlay' : '',
               closeStyle.translucent ? 'mptk-popup__close--translucent' : 'mptk-popup__close--solid-bg',
             ].filter(Boolean).join(' ')}
-            style={closeOffsetCss}
+            style={closeOffsetVars(closeOffset) as CSSProperties}
             onClick={onClose}
           />
         ) : null}

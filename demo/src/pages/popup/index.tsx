@@ -175,6 +175,9 @@ const IMAGE_A = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/as
 const IMAGE_B = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/checkin/image/df61b214-81f1-4e29-98b9-b38957695bb2.png.png'
 /* 图片头 + 底色档专用：用户提供的搜索功能图，与 IMAGE_A 同走本项目 raw URL。 */
 const HEADER_IMAGE = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-search.png'
+/* 图片头延伸演示：两张异形图各自放进 assets/popup，按老规矩走仓库 raw 地址。 */
+const HEADER_RISE_UP = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-rise-up.png'
+const HEADER_RISE_BOTH = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-rise-both.png'
 const HEADER_IMAGE_SLIDE: { src: string; width: number } = { src: HEADER_IMAGE, width: 320 }
 const LONG_IMAGE = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/content/image/4965/d278336e-af7d-4c83-a423-727495583650.webp'
 const ACTION_BTN_IMAGE = 'https://t-cdn-oss.qswnet.com/file/zuche/lottery-center/image/1fc1dcb1-a8f8-444f-941c-d9b5caa12003.png'
@@ -265,8 +268,8 @@ export default function PopupPage() {
     'normal' | 'head-light' | 'head-dark' | 'panel-fade' | 'panel-gradient' | 'image-bg' | 'circle' | 'square' | 'left' | 'image' | 'iconclass'
   >('normal')
   const [footerKind, setFooterKind] = useState<FooterKind>('single')
-  /* 图片头几何档：铺满 / 超宽居中 / 上伸异形 / 关闭叉避让。 */
-  const [imageGeom, setImageGeom] = useState<'full' | 'wide' | 'raise' | 'close-shift'>('full')
+  /* 图片头几何档：铺满 / 超宽居中 / 上延伸 / 上下双伸。 */
+  const [imageGeom, setImageGeom] = useState<'full' | 'wide' | 'rise' | 'both'>('full')
 
   const openContent = (
     variant: ContentPopupVariant,
@@ -554,6 +557,7 @@ export default function PopupPage() {
       const { dark } = useThemeSnapshot()
       // 头部底色是固定示例：浅底/深底各一套，字色交给 headerTone 按底色明暗反色，不随主题翻。
       const headerBackground =
+        imageGeom === 'rise' || imageGeom === 'both' ? '#F33' :
         contentMode === 'head-light' ? { from: '#E8F2FF', to: '#BBD7FF' } :
         contentMode === 'head-dark' ? { from: '#1E3A8A', to: '#0F2557' } :
         contentMode === 'image-bg' ? '#F33' :
@@ -635,8 +639,14 @@ export default function PopupPage() {
                   <Button className="demo-item" size="xs" onClick={() => openContent('image', 'center', 'normal')}>透明</Button>
                   <Button className="demo-item" size="xs" onClick={() => openContent('image', 'bottom', 'image-bg')}>带背景</Button>
                   <Button className="demo-item" size="xs" onClick={() => openImageGeom('wide')}>超宽居中</Button>
-                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('raise')}>上下双伸</Button>
-                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('close-shift')}>叉偏移</Button>
+                </View>
+              }
+            />
+            <Cell
+              value={
+                <View className="demo-row">
+                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('rise')}>上延伸</Button>
+                  <Button className="demo-item" size="xs" onClick={() => openImageGeom('both')}>上下双伸</Button>
                 </View>
               }
             />
@@ -672,11 +682,12 @@ export default function PopupPage() {
             image={contentVariant === 'image'
               ? imageGeom === 'wide'
                 ? { src: HEADER_IMAGE, width: 400, align: 'center' }
-                : imageGeom === 'raise'
-                  ? { src: HEADER_IMAGE, offset: { top: -50, bottom: -20 } }
-                  : contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]
+                : imageGeom === 'rise'
+                  ? { src: HEADER_RISE_UP, offset: { top: -30 } }
+                  : imageGeom === 'both'
+                    ? { src: HEADER_RISE_BOTH, offset: { top: -30, bottom: -50 } }
+                    : contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]
               : undefined}
-            closeOffset={imageGeom === 'close-shift' ? { top: -10, right: 12 } : undefined}
             headerBackground={headerBackground}
             badge={badge}
             actions={FOOTER_DEMOS[footerKind].actions}

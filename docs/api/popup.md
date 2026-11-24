@@ -45,18 +45,11 @@
 
 几何口径：`top-left` / `top-right` 离上边与左右边各 `--mptk-space-3`（12px），四边等距；`edge-top-*` 只**垂直**跨自身高度一半，左右留 `--mptk-space-4`（16px），不整体横向出界；`above-*` / `below-*` 与面板上下留 12px，靠右档右侧同样 12px，居中档水平居中。外置档锚在面板边缘内侧（`top` / `bottom: 0`），再用 `transform` 按**按钮自身高度**移出面板：`above-*` 用 `--mptk-s-full-neg`（-100%）上移、`below-*` 用 `--mptk-s-full`（100%）下移——百分比参照按钮自身，是确定量，不参照面板高度，面板高度变化也不影响按钮位置。
 
-`closeOffset` 在档位之上做像素级微调（类型 `EdgeOffset`，与 `ContentPopup` 的 `image.offset` 共用）：四个字段 `top` / `right` / `bottom` / `left` 表示**对应边 inset 的增量**——正=该边向内收、负=向外伸；数字按 px、字符串按 CSS 长度。同一轴同时给两边时取 `top` / `left`。
+`closeOffset` 是在 `closePosition` 档位基础上的**增量微调**（类型 `EdgeOffset`，与 `ContentPopup` 的 `image.offset` 共用）：四个字段 `top` / `right` / `bottom` / `left` 表示对应边 inset 的增量——正=该边向内收、负=向外伸；数字按 px、字符串按 CSS 长度。例如 `below-center` 档给 `{ top: 20 }`，按钮相对默认「外中下」位置下移 20px；给 `{ bottom: 20 }` 则上移 20px。同一轴同时给两边时按差值生效（`top - bottom`、`left - right`）。
 
-档位几何全在 CSS：每档只锚两条边，基线写在 WXSS 的 `--mptk-popup-close-base-*` 上、定位属性用裸 `var()` 引用。调用方给的边未必是生效边，`closeOffsetStyle` 按 `CLOSE_ANCHOR` 把增量换算到档位真正锚定的边上，再以内联**标准定位属性** `calc(var(--mptk-popup-close-base-*) ± 偏移)` 叠加。例如 `below-center` 锚 `bottom` + `left`，给它 `{ top: -10, right: 12 }` 实际写出 `bottom: calc(var(--mptk-popup-close-base-bottom) + 10px)` 与 `left: calc(var(--mptk-popup-close-base-left) - 12px)`。**四个字段在任意档位都生效**，不会写出 CSS 未使用的边。
+**定位全程归 CSS**：档位几何基线写在 `--mptk-popup-close-base-*`，四向偏移由组件原样写成行内 CSS 变量 `--mptk-popup-close-shift-*`（未给的轴在公共类里默认 `0px`），档位类自己用 `calc(基线 + 正向 - 反向)` 算出最终 `top/right/bottom/left`。JS 不判断哪条边生效、不拼 `calc`、不碰 `transform`。八个档位各自只在它锚定的两条边上定位，四向变量都会被该档的 calc 消费，任意方向的配置都生效。
 
-| 档位 | 锚定边 |
-|---|---|
-| `top-left` / `edge-top-left` / `above-center` | `top` + `left` |
-| `top-right` / `edge-top-right` / `above-right` | `top` + `right` |
-| `below-center` | `bottom` + `left` |
-| `below-right` | `bottom` + `right` |
-
-不写 `var(--x, fallback)`（WXSS 会整条丢弃定位声明）、不注入行内自定义属性（Skyline 未核实）、不靠负号字符串拼出双负号的 `calc`。**不碰 `transform`**——外置档靠 transform 按按钮自身高度移出面板，覆盖会让按钮飞走。未给偏移时不产任何内联声明，原档位位置一字不变。`CLOSE_ANCHOR` 与 CSS 基线的一致性由 `tests/layout.test.mjs` 逐档校验。
+不写 `var(--x, fallback)`（WXSS 会整条丢弃定位声明）；零基线必须写 `0px`（`--mptk-s-zero` 是无单位 `0`，`calc(0 + 10px)` 是无效 CSS，整条声明会被丢弃）。**不碰 `transform`**——外置档靠 transform 按按钮自身高度移出面板，覆盖会让按钮飞走。未给偏移时四个变量都是 `0px`，原档位位置一字不变。`tests/layout.test.mjs` 逐档校验定位声明、零基线与偏移变量的消费。
 
 ```tsx
 <Popup open position="bottom" closePosition="top-right"
@@ -248,3 +241,4 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-21：面板底色改走抬升面 token `--mptk-surface-elevated`，暗档按 iOS base/elevated 分层提亮
 
 - 2026-11-24：关闭叉错位根因修复——档位几何收进 WXSS `--mptk-popup-close-base-*` 基线变量、定位读裸 `var()`，去掉带 fallback 的 `var()`（WXSS 会整条丢弃定位声明）。修「叉偏移」无效果：`closeOffset` 现按 `CLOSE_ANCHOR` 换算到档位实际锚定的边，四向字段在任意档位都生效；删未用的 `resolveEdgeShift`、去重复 `cssLength`，并修贴底安全区被 `contentPadding.bottom` 覆盖。
+- 2026-11-24 11:22:04：关闭偏移改由 CSS 变量驱动：档位 calc 算最终定位，零基线写 0px 修无效 calc

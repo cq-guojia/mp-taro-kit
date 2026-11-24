@@ -56,10 +56,10 @@ test('demo 设置面板：每页常驻入口，底部面板按内容撑高，三
     '贴底弹窗该读注入的底部真值算 max(呼吸, 横条)',
   )
   const aboveRight = /\.mptk-popup__close--above-right\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? ''
-  assert.match(aboveRight, /--mptk-popup-close-base-top:\s*var\(--mptk-s-zero\)/, '外右上锚在面板顶边内侧')
+  assert.match(aboveRight, /--mptk-popup-close-base-top:\s*0px/, '外右上锚在面板顶边内侧，零基线带单位')
   assert.match(aboveRight, /--mptk-popup-close-base-right:\s*var\(--mptk-space-3\)/, '外右上该保留 right 基线 12px')
-  assert.match(aboveRight, /top:\s*var\(--mptk-popup-close-base-top\)/, '定位只读基线变量，不带 fallback')
-  assert.match(aboveRight, /right:\s*var\(--mptk-popup-close-base-right\)/, 'right 定位只读基线变量')
+  assert.match(aboveRight, /top:\s*calc\(var\(--mptk-popup-close-base-top\)[^}]*--mptk-popup-close-shift-top/, '垂直定位由 CSS 用基线加偏移算出')
+  assert.match(aboveRight, /right:\s*calc\(var\(--mptk-popup-close-base-right\)[^}]*--mptk-popup-close-shift-right/, '水平定位由 CSS 用基线加偏移算出')
   assert.match(aboveRight, /transform:\s*translateY\(calc\(var\(--mptk-s-full-neg\) - var\(--mptk-space-3\)\)\)/, '外右上按按钮自身高度上移')
 
   // 单组 CellGroup、无标题、无副标题、去上下外框线、分隔线不内缩。
