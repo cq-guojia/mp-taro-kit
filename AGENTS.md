@@ -8,3 +8,9 @@
 - 编译完核对 `demo/dist/` 里改动的实际值，不要只报「已编译」。
 - 只改文档或规则、产物不可能变化时可以不编译；其余一律编译。
 - 完整命令链与门禁顺序以 [`docs/development/build-and-test.md`](docs/development/build-and-test.md) 为准。
+
+## 新能力必须可按单元引用
+
+新增组件、命令式 API 或样式时，必须提供直接命中的细粒度出口（用哪个引哪个），不得只挂在子域或顶层聚合出口里；`ui/` 顶层不 re-export 组件。
+对外出口登记见 `docs/api/exports.md`，自检由 `scripts/check.mjs` 与 `tests/tree-shaking.test.mjs` 负责。
+只改聚合出口、不给细路径视为未完成。
