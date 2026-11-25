@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 01:15:04 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 01:19:50 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -35,6 +35,14 @@
 - [ ] `resetUIForTests` / Host 卸载时 settle 挂起的 Promise
 - [ ] 回归自检：三形态、width、badge/headerImage/offset 不回归；busy/locked 下三路径不 dismiss/resolve 且无重复 resolve；`onBusyChange` true/false 成对
 
+按需引入（用户明确追加，「引哪个用哪个」）：
+- [ ] 命令式 API 按能力拆子入口，不从一个 `commands.ts` 全量导出：引 `confirm` 只应带 `DialogHost` + `ContentPopup`，不得连带 Toast / Loading
+- [ ] 宿主与 API 同进口：引了 `confirm` 就自带 `DialogHost`，不需要再去 `mp-taro-kit/app` 里翻宿主
+- [ ] `createKitApp` 的 `hosts` 不得默认把三件全拖进来；未使用的宿主不进产物
+- [ ] 组件不走大 barrel：`mp-taro-kit/ui/layout` 目前 `export { Overlay, Popup, ImagePopup, ContentPopup, FloatingAction, BackToTop }`（`src/ui/layout/index.ts:2-59`），引 `ContentPopup` 会拉全域；exports 需支持两层子入口（现 `./ui/*` 只匹配一层，`./ui/layout/content-popup` 不匹配）
+- [ ] `mp-taro-kit/app` 顶层 `import '../ui/layout/floating-action/style/index.css'`（`src/app/index.ts:3`）必须去掉：只要引 `createKitApp` 就无条件带 floating-action 样式
+- [ ] 产物级验收：只 import `confirm` 的构建，产物不得出现 ToastHost / LoadingHost / FloatingAction 等无关模块
+
 ## Next
 
 1. 定契约（`src/ui/commands.ts:111-147`、`src/ui/infra/DialogHost.tsx:26-61`）：payload 改判别联合，去 JSX / 业务回调
@@ -42,6 +50,7 @@
 3. `Button` 补 `onBusyChange`（`src/ui/actions/Button.tsx:105-126`）
 4. `Dialog` 改薄适配（`src/ui/feedback/Dialog.tsx:30-53`）
 5. 测试先锁竞态断言（`tests/render.test.mjs`、`tests/layout.test.mjs`），再改实现
+6. 按需引入：拆 `commands` 子入口 + 细粒度 exports + 宿主与 API 同进口，最后做产物断言（见 Process 按需引入小节）
 
 ## Process
 
@@ -59,6 +68,28 @@
 
 **不做**：不建第二 store / 样式体系；不把 JSX、业务回调或 Web DOM focus 方案照搬；仅补 `width` / `locked`，其余复用 `panelStyle` / `footerConfig`。
 
+### 2026-11-25 按需引入讨论（架构师 + 前端）
+
+用户追加「引哪个用哪个」：引 `confirm` 带弹窗可以接受，但不能连带全库。
+
+**实证断点**：
+- `src/ui/commands.ts` 单模块导出 toast / loading / dialog 全部 API（`:70-147`），共用 `uiState`；模块本身无顶层副作用、未用导出可摇，但入口粒度仍粗
+- `src/ui/layout/index.ts:2-59` 是大 barrel，`export { Overlay, Popup, ImagePopup, ContentPopup, FloatingAction, BackToTop }` 全在一处；ESM 静态链接会求值所有 re-export 模块
+- 每个组件模块底部都有 `markCardEdgeOutOfFlow(X)` 顶层调用（`ContentPopup.tsx:893`、`Popup.tsx:210`、`Overlay.tsx:71`、`ImagePopup.tsx:335`、`FloatingAction.tsx:55`），属模块级副作用，能否被摇掉取决于打包器是否信任 `sideEffects`
+- `src/app/index.ts:3` 顶层 `import '../ui/layout/floating-action/style/index.css'`：引 `createKitApp` 就无条件带这份 CSS
+- `create-kit-app.tsx:106` 默认 `hosts = [ToastHost, DialogHost, LoadingHost]`：三件全挂、全进产物
+- `package.json` 的 `./ui/*` 只匹配一层，`./ui/layout/content-popup` 这类两层子入口根本不解析
+
+**结论**：
+1. 命令式 API 按能力拆子入口（dialog / toast / loading），宿主与 API 同进口，`confirm` 自带依赖收窄到 `DialogHost → ContentPopup`
+2. `ui/layout/index.ts` 收窄：只留天然成对的（Popup + Overlay），ContentPopup / ImagePopup / FloatingAction 走各自子入口；exports 增加两层匹配
+3. `app/index.ts` 的 floating-action CSS 下沉到 KitPage 或对应子入口，不在装配出口无条件引
+4. `createKitApp` 的 hosts 不默认全挂；按能力的装配入口与旧默认之间做过渡
+5. 验收必须做产物级断言，不能只信「理论上可摇」——Taro webpack 对 barrel 与 `markCardEdgeOutOfFlow` 的处理要实测
+6. 旧入口保留别名并标废弃，避免破坏既有接入
+
+**风险**：拆入口是破坏性变更面；小程序端 tree-shaking 依赖 ESM + `sideEffects` 精确声明，`markCardEdgeOutOfFlow` 这类顶层调用可能让整模块被保留。
+
 ## Conclusion
 
 方案已由三视角评审收敛并落入本任务，待实现。命令式与声明式双通道并存；屏蔽能力属底座而非命令式专属；视觉只有 `ContentPopup` 一份。Skyline 真机观感与双端验证不在自检内，实现后单独声明。
@@ -70,3 +101,4 @@
 - 2026-11-25 01:13:13 · new · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · created
 - 2026-11-25 01:14:33 · claim · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · claimed → doing
 - 2026-11-25 01:15:04 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 三视角（系统架构师/前端工程师/UX 专家）评审完成，16 条需求与完整方案已写入 Background/To Do/Next/Process/Conclusion；方案收敛为：判别联合 payload、底座 locked/busy/例外、Button onBusyChange、Dialog 薄适配、三路径统一 dismiss；待实现
+- 2026-11-25 01:19:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 追加按需引入需求与讨论：commands 按能力拆子入口、ui/layout barrel 收窄、exports 支持两层子路径、app 去掉 floating-action CSS 顶层引、createKitApp hosts 不默认全挂、产物级验收；已写入 To Do 与 Process
