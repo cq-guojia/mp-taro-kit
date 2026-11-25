@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 08:28:35 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 08:34:28 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -48,7 +48,10 @@
 - [x] 菜单 label 一律保留原文，不改成 X、不降级、不丢条目
 - [x] 对话框宽度档按小程序 750rpx 总宽：640 / 560 / 720rpx
 - [x] 图片头用指定 PNG，`offset.top=-30` 向上延伸
-- [x] 按钮不另立 size 轴，与 Popup 底栏共用 Button 默认档；横排等分铺满；确定蓝 / 取消灰
+- [x] 按钮尺寸复用 Button 轴、默认 md 与 Popup 底栏同型号；横排等分铺满；确定蓝 / 取消灰
+- [x] 删掉「按钮形态」独立示例块，形态由顶部配置统一控制
+- [x] 点击后不展示结果文案，只保留效果
+- [x] 图片头不写 width，走 ContentPopup 默认 100% 铺满
 - [x] 顶部配置删关闭路径与四向偏移；头部四档互斥（普通 / 图标+备注 / 外伸icon / 图片）
 - [x] 图标+备注复用 ContentPopup 文字头；外伸档统一叫 icon，不自造“徽标文字”
 - [x] 产物级核对菜单原文、宽度档、图片头、头部四档与无临时日志
@@ -120,9 +123,19 @@
 
 **自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build 全过；产物按 unicode 转义核对菜单原文、宽度三档、图片头与 `top:-30`、头部四档、无关闭/偏移配置、无 `MPTK-DEBUG`；`koc-codelint` 9 文件六层全过。本轮 9 个文件改动未提交。
 
+### 2026-11-25 演示观感纠偏
+
+**按钮尺寸**：Popup 页 `FOOTER_BTN_SIZE = 'md'`（`demo/src/pages/popup/index.tsx:293`），Dialog 之前走 Button 默认 sm 小一号。根因是 `DialogAction` 没有 size 轴、`DialogHost` 也没透传；补 `ButtonSize` 到 `src/ui/state.ts`、Host 透传、默认按钮显式 `md`，演示站自定义按钮同步。
+
+**图片头**：ContentPopup 图片头默认 `width: '100%'` 铺满（`ContentPopup.tsx:638-643`），Dialog 之前传 `width: '640rpx'` 导致左右留白；去掉 width 与 Popup 页一致。
+
+**演示页精简**：删掉「按钮形态」独立示例块（顶部已有 Segmented 配置）；删掉 alert / confirm / 自定义 / 异步点击后的结果文案 state 与渲染，只保留触发按钮。产物里残留的「解析」是弹窗正文、「按钮形态」是顶部配置，均非结果文案。
+
+**自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build 全过；产物核对按钮 `md`、图片头 `top:-30` 且无写死宽度、无「已关闭」结果文案；`koc-codelint` 10 文件六层全过。
+
 ## Conclusion
 
-命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
+命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
 
 ## Execution Log
 
@@ -139,3 +152,4 @@
 - 2026-11-25 07:15:23 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 日志定位根因：Taro 保留上一页页面树，旧页 DialogHost 先渲染抢走全部弹窗（当前页 visible=0）；新增页面 route 单例与上下文，命令载荷记录发起页，宿主只认领同 route；232 项测试通过，demo 已带日志重编待用户复验
 - 2026-11-25 07:32:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除临时日志；专家研判否定渲染写全局 route 的归属方案，改 app 层注入页面栈 provider + 页面实例 id，宿主按 id 认领并卸载收尾；删演示站重复 alert/confirm 与旧 dialog 示例；232 项测试/门禁全过，提交 db9a20c 并推送 origin/main
 - 2026-11-25 08:28:35 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站细化并纠偏菜单：pageTitleOf 唯一 ready 入口取菜单 label、多入口显示 X（catalog.ts:1137），15 条菜单原文还原；build/test(233)/guard/pack/demo 全过，产物核对通过，9 个文件未提交
+- 2026-11-25 08:34:28 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示观感纠偏：按钮补 size 轴默认 md 与 Popup 底栏同型号（state.ts/DialogHost.tsx），图片头去 width 走 100% 铺满，删形态块与结果文案；build/test(233)/guard/pack/demo 全过
