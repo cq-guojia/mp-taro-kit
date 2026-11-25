@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 13:41:06 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 14:18:00 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -249,3 +249,4 @@
 - 2026-11-25 09:39:44 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 四组合并到同一 Card：catalog 四个 example 合并为 actions，页面用四个 CellGroup 各带标题；Card 只有一组 title/subtitle，多标题靠 children 分组；build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 13:31:42 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 标题覆盖四档：ContentPopup 新增独立 __headline（header 与 body 之间），image/badge 挂在图形下方，badge 任意锚点出；DialogHost 无条件透传 title；撤 __title-text--raised；demo 四档带标题；build/test(233)/guard/pack/demo/codelint/docwriter 全过，产物含 headline 与四档标题
 - 2026-11-25 13:41:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纯标题三档归一：ContentPopup 让无图标/备注的 title 档与 image/badge 共用居中 __headline，默认无下划线；带图标/备注的文字头保留原内联结构；新增三档一致性断言，build/test(234)/guard/pack/demo/codelint/docwriter 全过
+- 2026-11-25 14:18:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 标题行上方留白 space-3→space-4：标题上/左/右/下统一 16px，消除上间距比左右小的疏漏；layout 断言同步；build(408)/test(234)/guard/pack/demo/codelint/docwriter 全过，产物 wxss 四边同一档
