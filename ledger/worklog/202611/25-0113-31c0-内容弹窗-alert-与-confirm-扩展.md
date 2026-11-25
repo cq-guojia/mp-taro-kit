@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 06:51:03 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 06:57:01 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -112,3 +112,4 @@
 - 2026-11-25 03:58:48 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 实现完成：命令式对话框改走 ContentPopup，底座交互锁 + 多 Host 归属 + Promise settle + 声明式薄适配；产物级 tree-shaking 断言落地；build/test(229)/guard/pack/demo 全过，双端真机待验收
 - 2026-11-25 04:13:23 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站补 Dialog 独立页：顶部配置驱动 alert/confirm，覆盖三形态、头部配置、自定义按钮与异步忙碌锁；菜单 Dialog 指向新页，ActionSheet 保留 planned 占位；build/test(230)/guard/pack/demo 全过
 - 2026-11-25 06:51:03 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 修复命令式弹窗不显示根因：拆分 Toast/Dialog/Loading 宿主时漏搬 OverlayHost 的 fixed 全屏定位，补四件宿主公共定位 + 按类名恢复命中（WXSS 会丢弃 > *）；新增产物级断言，build/test(231)/guard/pack/demo 全过
+- 2026-11-25 06:57:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 命令式弹层仍不可见，继续治根：Taro App 根节点不投影为页面可见子树，createKitApp 改为只登记宿主，KitPage 在每页页面树渲染；补回归断言，build/test(231)/guard/pack/demo 全过，待真机复验
