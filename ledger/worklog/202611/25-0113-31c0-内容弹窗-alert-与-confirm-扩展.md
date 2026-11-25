@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 08:46:03 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 08:53:20 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -57,7 +57,7 @@
 - [x] 产物级核对菜单原文、宽度档、图片头、头部四档与无临时日志
 
 按钮交互与主题配置（用户 2026-11-25 追加）：
-- [x] 自定义「稍后」点击后直接关闭；confirm 的取消按钮同为默认带边框样式、动作一致
+- [x] 自定义「稍后」点击后直接关闭；confirm 的取消按钮同为 Button soft 浅底档、动作一致；joined 档保持原有 ghost 不改
 - [x] 竖排默认「确定」在上、「取消」在下
 - [x] alert / confirm 默认文案走统一配置，不在演示页自造
 - [x] 确定按钮、alert 按钮、confirm 按钮的默认样式集中在 kit.config.mjs，改一个文件统一生效
@@ -146,7 +146,13 @@
 
 **交互**：竖排默认 actions 顺序改为 `[confirmAction, cancelAction]`（确定在上）；演示页去掉自造的「知道了」「继续」「取消」文案，稍后按钮改 `onAction: () => true` 直接关闭，样式与取消同为 outline。「点上去没反应」根因是 `onAction` 返回 false 让弹窗保持打开，不是缺少视觉按压态——Button 已有 `hoverClass=mptk-btn--pressed` 与 `--mptk-c-btn-pressed-opacity: .86`。宽度档固定 560 / 640 / 720，默认 640rpx。
 
-**自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物核对生成配置含 `dialog`、确定/取消文案存在、无「知道了」「继续」、`common.wxss` 有 `mptk-btn--default.mptk-btn--outline`、三档宽度齐全。
+**自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物核对生成配置含 `dialog`、确定/取消文案存在、无「知道了」「继续」、三档宽度齐全。
+
+### 2026-11-25 取消档与 joined 纠偏
+
+横排取消之前被我改成 `outline`（实底浅色背景），用户要求走 Button 现成的 `soft` 浅底档；`runtime.dialog.cancel.variant` 改回 `soft`，演示页「稍后」同步。更关键的是显式 `variant` 会覆盖 ContentPopup 的 joined 默认 ghost（`ContentPopup.tsx:470-472`），把原本正确的竖线按钮改坏；`commands.ts` 加 `configuredVariant`，joined 时不传 variant，其余档照配置。
+
+**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物核对配置为 `soft`、`common.wxss` 有 `mptk-btn--default.mptk-btn--soft`、joined ghost 分支保留。
 
 ## Conclusion
 
@@ -169,3 +175,4 @@
 - 2026-11-25 08:28:35 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站细化并纠偏菜单：pageTitleOf 唯一 ready 入口取菜单 label、多入口显示 X（catalog.ts:1137），15 条菜单原文还原；build/test(233)/guard/pack/demo 全过，产物核对通过，9 个文件未提交
 - 2026-11-25 08:34:28 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示观感纠偏：按钮补 size 轴默认 md 与 Popup 底栏同型号（state.ts/DialogHost.tsx），图片头去 width 走 100% 铺满，删形态块与结果文案；build/test(233)/guard/pack/demo 全过
 - 2026-11-25 08:46:03 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮交互与主题配置：kit.config.mjs 新增 runtime.dialog 集中文案与样式，生成器补类型/校验，commands 读配置；竖排确定在上、稍后直接关闭、取消改 outline，宽度 560/640/720；build/test(233)/guard/pack/demo 全过
+- 2026-11-25 08:53:20 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 取消档纠偏：runtime.dialog.cancel.variant 由 outline 改回 Button soft 浅底档，稍后同步；joined 档不传 variant 保留 ContentPopup 原有 ghost；build/test(233)/guard/pack/demo/codelint 全过
