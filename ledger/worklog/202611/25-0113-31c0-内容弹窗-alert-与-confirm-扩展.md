@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 14:18:00 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 14:37:07 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -74,6 +74,11 @@
 - [x] 标题行不进 header，图片头外伸收窄与徽标绝对定位都不牵连它；自定义 `header` 槽位优先
 - [x] 带图标/备注的文字头保留原内联「图标 + 标题 + 备注」结构与默认分割线
 - [x] 演示站四档都带 title，产物与渲染断言覆盖新旧行为；API 文档同步
+
+固定类型图标（用户 2026-11-25 追加）：
+- [x] `alert` / `confirm` 的 `type`：success / error / warning / info 四档，映射到 gou / guanbi / warn / info 四个库图标
+- [x] 每档配轻微渐变底色圆角块（明深底白字、暗浅底深字），显式 `icon` 只换图标不丢色底
+- [x] 演示站 alert 示例加四个固定类型按钮，全部 XS
 
 待办：
 - [ ] 弹窗动效：`DialogHost` 把 `open` 写死 true，绕过 `Popup` 的 `usePresence`，需按退场保留挂载的方案修（本轮未动）
@@ -220,6 +225,18 @@
 
 **自检**：build（405 产物）/ test（234 项）/ guard / pack / demo build / codelint（9 文件六层）/ docwriter check 全过；产物核对 `common.wxss` 的 `__headline` 居中样式与 `common.js` 的标题行节点。
 
+### 2026-11-25 固定类型图标与语义色底
+
+用户拍板：success = `koc-i-common-base-gou` 绿、error = `koc-i-common-base-guanbi` 红、warning = `koc-i-common-base-warn` 黄、info = `koc-i-common-base-info` 蓝；「颜色不能直接用纯色，要稍微往浅一点或往深一点做一点点渐变，眼睛看不出来但有层次」。
+
+**根因/前置**：库里虽有 `info` / `warn` / `gou` / `guanbi` 四个候选，但没有「类型 → 图标 + 颜色」preset；`headerIcon` 的 icon 形态只有 name / size / color，没有底色槽。对外契约因此缺一环。
+
+**落点**：`kit.config.mjs` 明暗两支各加 `--mptk-c-dialog-type-bg-{success,error,warning,info}`（165deg 同色相极浅渐变）与 `--mptk-c-dialog-type-ink`、`--mptk-c-content-popup-type-icon-size`（44px 方块）；`ContentPopupHeaderIcon.icon` 加 `tone?: ContentPopupIconTone`，inline 图标槽按 tone 挂类并渲染渐变底 + 反色字；badge 档仍走自己的 `__badge--tone-*`，两套 tone 不混。命令层 `DialogType` + `DIALOG_TYPE_ICON` 映射，`DialogContent.iconTone` 携带语义色，显式 `icon` 只覆盖图标名；不传 `type` 时载荷不出现 `iconTone` 键，保持旧 deepEqual 契约。`DialogType` 从 `ui/commands/dialog` 子出口导出，`ContentPopupIconTone` 从 content-popup 子出口导出。
+
+**回归**：`ui.test.mjs` 断言四档映射、显式 icon 保留色底；`render.test.mjs` 断言四档 tone 类与无 tone 不出；`layout.test.mjs` 断言四档渐变 CSS 与 token 真源。演示站 alert 示例加四个类型按钮（XS）。
+
+**自检**：build（408 产物）/ test（236 项）/ guard / pack / demo build / codelint / docwriter 全过（门禁结果见下一轮执行记录）。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -250,3 +267,4 @@
 - 2026-11-25 13:31:42 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 标题覆盖四档：ContentPopup 新增独立 __headline（header 与 body 之间），image/badge 挂在图形下方，badge 任意锚点出；DialogHost 无条件透传 title；撤 __title-text--raised；demo 四档带标题；build/test(233)/guard/pack/demo/codelint/docwriter 全过，产物含 headline 与四档标题
 - 2026-11-25 13:41:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纯标题三档归一：ContentPopup 让无图标/备注的 title 档与 image/badge 共用居中 __headline，默认无下划线；带图标/备注的文字头保留原内联结构；新增三档一致性断言，build/test(234)/guard/pack/demo/codelint/docwriter 全过
 - 2026-11-25 14:18:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 标题行上方留白 space-3→space-4：标题上/左/右/下统一 16px，消除上间距比左右小的疏漏；layout 断言同步；build(408)/test(234)/guard/pack/demo/codelint/docwriter 全过，产物 wxss 四边同一档
+- 2026-11-25 14:37:07 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标落地：type(success/error/warning/info)→gou/guanbi/warn/info + 轻微渐变语义色底，headerIcon.icon.tone 只作用 inline 槽、badge tone 不混；token 明暗两支；demo 四按钮；build(408)/test(236)/guard/pack/demo/codelint(39)/docwriter 全过，产物四档渐变齐全
