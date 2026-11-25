@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 09:27:53 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 09:39:44 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -66,6 +66,7 @@
 - [x] joined 档自定义按钮只认文字与颜色；顶部形态滑块改到各示例内三按钮；confirm 默认竖线、自定义默认横排
 - [x] 演示页除滑块外所有按钮统一 XS
 - [x] 配置页去分组标题只留两个 Cell；示例标题带英文 alert / confirm；各示例加默认按钮、竖线用小号；alert 隐藏竖排
+- [x] 四组演示（提示 / 确认 / 自定义 / 异步闸门）合并到同一 Card，CellGroup 各带标题
 
 ## Next
 
@@ -182,6 +183,12 @@
 
 **自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过。
 
+### 2026-11-25 四组合并到同一 Card
+
+按用户要求把 alert / confirm / 自定义按钮 / 异步闸门四组演示收进同一张 Card：catalog 里四个 example 合并为单个 `actions` 块，`demo/src/pages/dialog/index.tsx` 用四个 `CellGroup` 各带标题（`提示 alert` / `确认 confirm` / `自定义按钮` / `异步闸门`），`CellGroup` 在 Card 内自动收敛外框，视觉连成一片。`Card` 本身只有一组 `title/subtitle`，多标题靠 children 分组实现。
+
+**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物四组标题齐全，目录只剩 config + actions 两块。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
@@ -208,3 +215,4 @@
 - 2026-11-25 09:09:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 形态与 joined 纠偏：confirm 默认 stack、自定义默认 spaced，joined 自定义按钮只认文字颜色；演示页顶部删形态滑块、各示例放横排/竖排/竖线三按钮；build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 09:18:39 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示页展示规范：配置页去 CellGroup 标题只留两个 Cell，示例标题加 alert/confirm，各示例加默认按钮、竖线用 sm、alert 隐藏竖排；build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 09:27:53 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮尺寸与 confirm 默认形态再纠偏：演示页除滑块外全部 size=xs，confirm 不传参默认 joined 竖线（显式 stack 仍确定在上）；build/test(233)/guard/pack/demo/codelint 全过
+- 2026-11-25 09:39:44 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 四组合并到同一 Card：catalog 四个 example 合并为 actions，页面用四个 CellGroup 各带标题；Card 只有一组 title/subtitle，多标题靠 children 分组；build/test(233)/guard/pack/demo/codelint 全过
