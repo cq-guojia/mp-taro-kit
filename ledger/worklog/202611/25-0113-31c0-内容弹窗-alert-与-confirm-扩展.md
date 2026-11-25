@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 07:32:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 08:28:35 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -43,9 +43,22 @@
 - [x] floating-action 样式随 `KitPage` 自带，不在 `app/index.ts` 顶层引（现状已满足，原断点描述过期）
 - [x] 产物级验收：`tests/tree-shaking.test.mjs` 真打包 dist，断言对话框产物无 ToastHost / LoadingHost / FloatingAction
 
+演示站细化与菜单纠偏（用户 2026-11-25 逐条要求）：
+- [x] 打开后的页面标题只认首页菜单文字：`pageTitleOf` 唯一 ready 入口取 label，多入口显示 X
+- [x] 菜单 label 一律保留原文，不改成 X、不降级、不丢条目
+- [x] 对话框宽度档按小程序 750rpx 总宽：640 / 560 / 720rpx
+- [x] 图片头用指定 PNG，`offset.top=-30` 向上延伸
+- [x] 按钮不另立 size 轴，与 Popup 底栏共用 Button 默认档；横排等分铺满；确定蓝 / 取消灰
+- [x] 顶部配置删关闭路径与四向偏移；头部四档互斥（普通 / 图标+备注 / 外伸icon / 图片）
+- [x] 图标+备注复用 ContentPopup 文字头；外伸档统一叫 icon，不自造“徽标文字”
+- [x] 产物级核对菜单原文、宽度档、图片头、头部四档与无临时日志
+
 ## Next
 
-待用户验收：Skyline 与 WebView 真机打开命令页，确认转圈期间「取消可点、其它控件与叉/遮罩不可点」、`onConfirm` 失败后能重试、`top`/`bottom` 三形态与宽度的观感；这一步本轮未做。
+待用户验收：
+1. Skyline 与 WebView 真机打开命令页，确认转圈期间「取消可点、其它控件与叉/遮罩不可点」、`onConfirm` 失败后能重试、`top`/`bottom` 三形态与宽度的观感
+2. 演示站打开多入口页面（如 commands / foundation）确认标题显示 X，单入口页标题与菜单文字一致
+3. 本轮 9 个文件改动未提交，等用户明确指令再 commit + push
 
 ## Process
 
@@ -97,9 +110,19 @@
 
 **验证**：`pnpm run build`（393 产物）→ `pnpm test`（229 项全过）→ `pnpm run guard` → `pnpm pack --dry-run` → `pnpm --filter mp-taro-kit-demo build:weapp` 全过；`demo/dist/common.wxss` 实测有 `pointer-events:none` 与例外 `auto`，`demo/dist/common.js` 实测有命令对话框 body 与 joined 底栏。`koc-codelint` 通过，`docwriter check` 无 FAIL。
 
+### 2026-11-25 演示站细化与菜单纠偏
+
+**标题与菜单**：`demo/src/catalog.ts:1137` 的 `pageTitleOf(pageId)` 改为按 `ready` 入口数判定——唯一入口取它的 `label`，多入口或没有都用 `X`；`DemoBlock.tsx` 统一把结果传给 `DemoShell`。中途曾把重复入口的菜单 label 改成 `X` 并降 `planned`，用户明确定性为丢信息：菜单是识别入口的唯一依据，`X` 只能出现在页面标题上。已把 style / toast / loading / navbar / 基础能力 10 条 / 加载句柄共 15 条逐项还原原文与 `ready` 状态（以 `git diff` 对照 HEAD）。`tests/ui.test.mjs` 断言菜单无 `X`、每页有 `ready`、单入口标题取 label、多入口标题为 `X`。
+
+**按钮尺寸纠偏**：`DialogAction` 本就没有 `size` 轴，显式写 `size:'md'` 既是类型错误也违背「跟 Popup 底栏用同一默认尺寸」；`src/ui/commands.ts` 与演示站自定义按钮都不指定尺寸，由 `ContentPopup` 底栏 `Button` 走默认档。`tests/ui.test.mjs` 用 `doesNotMatch` 锁住不写死尺寸。测试里 `+` 被当成正则量词导致「图标+备注」误判，改用字面量包含判断。
+
+**其余**：宽度档按 750rpx（640 / 560 / 720）；图片头用指定 PNG 并 `offset.top=-30`；头部四档互斥且图标+备注走 `ContentPopup` 文字头；横排 `ratios` 等分铺满、确定蓝 / 取消灰；顶部配置删关闭路径与四向偏移。`docs/api/exports.md` 与 `docs/architecture/demo-mapping.md` 同步口径并补更新日志。
+
+**自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build 全过；产物按 unicode 转义核对菜单原文、宽度三档、图片头与 `top:-30`、头部四档、无关闭/偏移配置、无 `MPTK-DEBUG`；`koc-codelint` 9 文件六层全过。本轮 9 个文件改动未提交。
+
 ## Conclusion
 
-命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证，待用户验收。
+命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
 
 ## Execution Log
 
@@ -115,3 +138,4 @@
 - 2026-11-25 06:57:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 命令式弹层仍不可见，继续治根：Taro App 根节点不投影为页面可见子树，createKitApp 改为只登记宿主，KitPage 在每页页面树渲染；补回归断言，build/test(231)/guard/pack/demo 全过，待真机复验
 - 2026-11-25 07:15:23 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 日志定位根因：Taro 保留上一页页面树，旧页 DialogHost 先渲染抢走全部弹窗（当前页 visible=0）；新增页面 route 单例与上下文，命令载荷记录发起页，宿主只认领同 route；232 项测试通过，demo 已带日志重编待用户复验
 - 2026-11-25 07:32:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除临时日志；专家研判否定渲染写全局 route 的归属方案，改 app 层注入页面栈 provider + 页面实例 id，宿主按 id 认领并卸载收尾；删演示站重复 alert/confirm 与旧 dialog 示例；232 项测试/门禁全过，提交 db9a20c 并推送 origin/main
+- 2026-11-25 08:28:35 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站细化并纠偏菜单：pageTitleOf 唯一 ready 入口取菜单 label、多入口显示 X（catalog.ts:1137），15 条菜单原文还原；build/test(233)/guard/pack/demo 全过，产物核对通过，9 个文件未提交
