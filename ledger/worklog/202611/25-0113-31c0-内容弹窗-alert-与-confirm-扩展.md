@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 15:35:43 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 15:40:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -292,6 +292,12 @@
 
 **门禁实测**：gen:config → build 408 → test 237 全过 → guard / pack → demo build:weapp → codelint 38 文件 → docwriter 无 FAIL。产物核对 `common.wxss` 无 `box-sizing`，token 转 rpx 为 64 / 4 / 44。未提交，等用户看效果。
 
+### 2026-11-25 固定类型图标再缩 4px
+
+用户要求：「圆保持一样大啊，中间的 icon 再减小 4 像素。」圈仍是 32px 不动，内部图标 22px → 18px，只改 `--mptk-c-dialog-type-icon-size` 一个 token，居中与「仅固定类型加圈」的边界不变。
+
+**门禁实测**：gen:config → build 408 → test 237 全过 → guard / pack → demo build:weapp → codelint 38 文件 → docwriter 无 FAIL。产物核对 token 为 64 / 4 / 36rpx（圈 32px、描边 2px、图标 18px）。未提交，等用户看效果。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -328,3 +334,4 @@
 - 2026-11-25 15:21:32 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型 inline 图标加同色细圆环（2px 描边 / 32px 外径 / 图标缩到 22px），只作用 type 档、通用 iconColor 不加框；237 项测试与全套门禁通过，产物核对圆环 CSS 与图标色同源。未提交，待看效果。
 - 2026-11-25 15:26:53 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 圆环口径定稿：外径回到原图标 28px（border-box 含 2px 描边），内图标 22px 居中；仅固定 type 图标加圈，显式 icon/自定义颜色回到无圈原大小。237 项测试与全套门禁通过，产物核对 56/4/44rpx。未提交，等看效果。
 - 2026-11-25 15:35:43 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纠正圆环尺寸误读：圈恢复原来的 32px（撤掉 border-box），只把内部图标缩到 22px 居中；显式 icon 仍不加圈。237 项测试与全套门禁通过，产物核对 64/4/44rpx。未提交，等看效果。
+- 2026-11-25 15:40:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标再缩 4px：圈仍 32px 不变，内部图标 22→18px；237 项测试与全套门禁通过，产物核对 64/4/36rpx。未提交，等看效果。
