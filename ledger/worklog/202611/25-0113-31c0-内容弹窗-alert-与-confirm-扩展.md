@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 08:53:20 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 09:00:01 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -62,6 +62,7 @@
 - [x] alert / confirm 默认文案走统一配置，不在演示页自造
 - [x] 确定按钮、alert 按钮、confirm 按钮的默认样式集中在 kit.config.mjs，改一个文件统一生效
 - [x] 宽度档固定 560 / 640 / 720，640 居中且为默认
+- [x] 演示站去掉位置选择，只走 API 默认中部；接口 position 保留给需要的调用方
 
 ## Next
 
@@ -154,6 +155,10 @@
 
 **自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物核对配置为 `soft`、`common.wxss` 有 `mptk-btn--default.mptk-btn--soft`、joined ghost 分支保留。
 
+### 2026-11-25 演示站精简位置选择
+
+按用户要求，演示站顶部配置删掉「位置」档，`demo/src/pages/dialog/index.tsx` 不再传 `position`，固定走 API 默认 `center`；`DialogOptions.position` 保留，供需要自己折腾的调用方使用。产物核对演示页无「位置 / 顶部 / 中部 / 底部」文案。自检全过。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
@@ -176,3 +181,4 @@
 - 2026-11-25 08:34:28 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示观感纠偏：按钮补 size 轴默认 md 与 Popup 底栏同型号（state.ts/DialogHost.tsx），图片头去 width 走 100% 铺满，删形态块与结果文案；build/test(233)/guard/pack/demo 全过
 - 2026-11-25 08:46:03 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮交互与主题配置：kit.config.mjs 新增 runtime.dialog 集中文案与样式，生成器补类型/校验，commands 读配置；竖排确定在上、稍后直接关闭、取消改 outline，宽度 560/640/720；build/test(233)/guard/pack/demo 全过
 - 2026-11-25 08:53:20 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 取消档纠偏：runtime.dialog.cancel.variant 由 outline 改回 Button soft 浅底档，稍后同步；joined 档不传 variant 保留 ContentPopup 原有 ghost；build/test(233)/guard/pack/demo/codelint 全过
+- 2026-11-25 09:00:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站去掉位置选择：删 POSITIONS/position state/配置 Cell，不传 position 走 API 默认中部，DialogOptions.position 保留；产物无位置文案，build/test(233)/guard/pack/demo/codelint 全过
