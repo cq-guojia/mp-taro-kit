@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 07:15:23 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 07:32:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -114,3 +114,4 @@
 - 2026-11-25 06:51:03 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 修复命令式弹窗不显示根因：拆分 Toast/Dialog/Loading 宿主时漏搬 OverlayHost 的 fixed 全屏定位，补四件宿主公共定位 + 按类名恢复命中（WXSS 会丢弃 > *）；新增产物级断言，build/test(231)/guard/pack/demo 全过
 - 2026-11-25 06:57:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 命令式弹层仍不可见，继续治根：Taro App 根节点不投影为页面可见子树，createKitApp 改为只登记宿主，KitPage 在每页页面树渲染；补回归断言，build/test(231)/guard/pack/demo 全过，待真机复验
 - 2026-11-25 07:15:23 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 日志定位根因：Taro 保留上一页页面树，旧页 DialogHost 先渲染抢走全部弹窗（当前页 visible=0）；新增页面 route 单例与上下文，命令载荷记录发起页，宿主只认领同 route；232 项测试通过，demo 已带日志重编待用户复验
+- 2026-11-25 07:32:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除临时日志；专家研判否定渲染写全局 route 的归属方案，改 app 层注入页面栈 provider + 页面实例 id，宿主按 id 认领并卸载收尾；删演示站重复 alert/confirm 与旧 dialog 示例；232 项测试/门禁全过，提交 db9a20c 并推送 origin/main
