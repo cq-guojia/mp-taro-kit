@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 15:14:50 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 15:21:32 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -262,6 +262,16 @@
 
 **门禁实测**：gen:config → build 408 产物 → test 237 项全过 → guard → pack → demo build:weapp → codelint 38 文件六层 → docwriter 无 FAIL 全过。产物核对：`demo/dist/common.js` 有 `gt={success:"var(--mptk-c-dialog-type-fg-success)",…}` 与 `headerIcon:{kind:"icon",name:t.content.icon,color:t.content.iconColor}`、`subtitle:t.content.note`；演示页 `note:"…标题下的备注小字"` 在；四档 fg token 明暗各一条共 8 条真值。首次 build 曾撞上工作区里 Card 文件的瞬时中间态（`flushPlain` 一闪而过），复跑即恢复，与本改动无关。
 
+### 2026-11-25 固定类型图标同色圆环（看效果）
+
+用户要求：「默认的 icon 单独处理一下：套一个 2-4 像素左右的小圆把它框在里面，把本身的 icon 稍微缩小一点，圆的颜色也用现在图标的颜色。我看看效果。」
+
+**落点**：`ContentPopupProps` 加 `iconFramed?: boolean`，只给固定类型开；`HeaderContent` 的 inline 槽在 framed 时挂 `__lead-slot--framed`，描边色取 `lead.color ?? color`（与图标同源的 `currentColor`），不铺底色。`DialogHost` 在 `payload.content.iconColor !== undefined`（即有 `type`）时传 `iconFramed`；通用 `iconColor` 不带框。几何 token 放主题无关组：图标 22px（原 28px 缩一档）、圆环外径 32px、描边 2px；SCSS 用 `--mptk-radius-pill` 做正圆，避免写 50%。
+
+**回归**：render 断言圆环类 + 槽位 `style="color:var(--mptk-c-dialog-type-fg-success)"`，并锁通用 `iconColor` 不自动加框；layout 断言描边取 `currentColor`、图标字号走新 token 与三条几何 token 真源。
+
+**门禁实测**：gen:config → build 408 → test 237 全过 → guard / pack → demo build:weapp → codelint 38 文件 → docwriter 无 FAIL。产物核对：`demo/dist/common.wxss` 有 `__lead-slot--framed{width:var(--mptk-c-dialog-type-icon-ring-size);height:…;border:var(--mptk-c-dialog-type-icon-ring-w) solid currentColor;border-radius:var(--mptk-radius-pill)}` 与缩字号规则，token 转 rpx 为 64 / 4 / 44；`common.js` 有 `iconFramed:void 0!==t.content.iconColor` 透传。中途 demo build 曾撞上工作区里 dialog 页导入语句的并发中间态（`DemoShell` 暂挂错模块），复跑即恢复；与本改动无关。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -295,3 +305,4 @@
 - 2026-11-25 14:37:07 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标落地：type(success/error/warning/info)→gou/guanbi/warn/info + 轻微渐变语义色底，headerIcon.icon.tone 只作用 inline 槽、badge tone 不混；token 明暗两支；demo 四按钮；build(408)/test(236)/guard/pack/demo/codelint(39)/docwriter 全过，产物四档渐变齐全
 - 2026-11-25 15:07:08 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标落点纠正完成并过全门禁：build 408 产物/test 236 项/guard/pack/demo build/codelint(38 文件)/docwriter 全绿；产物核对 type→图标映射、badge 四档明暗 8 条渐变、__headline 16px 间距生效。未提交，待用户指令。
 - 2026-11-25 15:14:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 副标题回归与 inline 图标上色完成：note 无条件透传恢复标题下小字；type 给左侧 inline 图标上绿/红/黄/蓝语义色（token 明暗各一支，无底色）；237 项测试/产物核对/全套门禁通过。未提交，待用户指令。
+- 2026-11-25 15:21:32 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型 inline 图标加同色细圆环（2px 描边 / 32px 外径 / 图标缩到 22px），只作用 type 档、通用 iconColor 不加框；237 项测试与全套门禁通过，产物核对圆环 CSS 与图标色同源。未提交，待看效果。
