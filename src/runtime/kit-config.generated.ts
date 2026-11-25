@@ -1,4 +1,4 @@
-// @mptk-inputs:d63b92904195
+// @mptk-inputs:bb21e2c9012b
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（runtime 层默认表）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -8,6 +8,12 @@ export interface KitConfigDefaults {
     toastDuration: number
     notifyLimit: number
     controlSizeDefault: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+    dialog: {
+      confirmText: string
+      cancelText: string
+      confirm: { type: 'default' | 'primary' | 'success' | 'warning' | 'danger'; variant: 'solid' | 'soft' | 'outline' | 'ghost' }
+      cancel: { type: 'default' | 'primary' | 'success' | 'warning' | 'danger'; variant: 'solid' | 'soft' | 'outline' | 'ghost' }
+    }
     core: {
       baseURL: string
       timeout: number
@@ -25,6 +31,18 @@ export const DEFAULT_KIT_CONFIG: KitConfigDefaults = {
       "toastDuration": 2000,
       "notifyLimit": 3,
       "controlSizeDefault": "sm",
+      "dialog": {
+        "confirmText": "确定",
+        "cancelText": "取消",
+        "confirm": {
+          "type": "primary",
+          "variant": "solid",
+        },
+        "cancel": {
+          "type": "default",
+          "variant": "soft",
+        },
+      },
       "core": {
         "baseURL": "",
         "timeout": 10000,

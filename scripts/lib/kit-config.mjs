@@ -18,6 +18,10 @@ export const CONTROL_SIZE_TIERS = ['3xs', 'xxs', 'xs', 'sm', 'md', 'lg', 'xl']
 /** 可点控件能填的档：3xs / xxs 都低于最小可点目标，只留给 Tag 这类展示元素。 */
 export const CLICKABLE_SIZE_TIERS = CONTROL_SIZE_TIERS.filter((tier) => tier !== '3xs' && tier !== 'xxs')
 
+/** 对话框按钮复用 Button 的 type / variant 轴，配置值守在 Button 支持的集合内。 */
+export const BUTTON_TYPES = ['default', 'primary', 'success', 'warning', 'danger']
+export const BUTTON_VARIANTS = ['solid', 'soft', 'outline', 'ghost']
+
 export const SENTINEL = {
   base: ['// @mptk-generated:base:start', '// @mptk-generated:base:end'],
   surface: ['// @mptk-generated:surface:start', '// @mptk-generated:surface:end'],
@@ -152,6 +156,15 @@ export function validateConfig(config) {
   if (!CONTROL_SIZE_TIERS.includes(config.runtime?.controlSizeDefault)) {
     errors.push(`runtime.controlSizeDefault 必须是 ${CONTROL_SIZE_TIERS.join('/')}`)
   }
+  for (const role of ['confirm', 'cancel']) {
+    const button = config.runtime?.dialog?.[role]
+    if (!BUTTON_TYPES.includes(button?.type)) {
+      errors.push(`runtime.dialog.${role}.type 必须是 ${BUTTON_TYPES.join('/')}`)
+    }
+    if (!BUTTON_VARIANTS.includes(button?.variant)) {
+      errors.push(`runtime.dialog.${role}.variant 必须是 ${BUTTON_VARIANTS.join('/')}`)
+    }
+  }
   if (errors.length > 0) throw new Error(`配置校验失败：\n  - ${errors.join('\n  - ')}`)
   return config
 }
@@ -242,6 +255,12 @@ export function renderRuntimeGenerated(config) {
     `    toastDuration: number\n` +
     `    notifyLimit: number\n` +
     `    controlSizeDefault: ${CLICKABLE_SIZE_TIERS.map((tier) => `'${tier}'`).join(' | ')}\n` +
+    `    dialog: {\n` +
+    `      confirmText: string\n` +
+    `      cancelText: string\n` +
+    `      confirm: { type: ${BUTTON_TYPES.map((t) => `'${t}'`).join(' | ')}; variant: ${BUTTON_VARIANTS.map((v) => `'${v}'`).join(' | ')} }\n` +
+    `      cancel: { type: ${BUTTON_TYPES.map((t) => `'${t}'`).join(' | ')}; variant: ${BUTTON_VARIANTS.map((v) => `'${v}'`).join(' | ')} }\n` +
+    `    }\n` +
     `    core: {\n` +
     `      baseURL: string\n` +
     `      timeout: number\n` +

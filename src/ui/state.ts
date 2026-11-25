@@ -6,6 +6,7 @@ import { createNotifyCenter } from '../runtime/notify.js'
 import type { NotifyCenter } from '../runtime/notify.js'
 import { createLoadingSlot } from '../runtime/loading-slot.js'
 import type { LoadingSlot } from '../runtime/loading-slot.js'
+import type { ButtonSize } from './actions/Button.js'
 import type { ContentPopupBadge, ContentPopupImage, ContentPopupPosition } from './layout/content-popup/ContentPopup.js'
 import type { EdgeOffset } from './layout/edge-offset.js'
 
@@ -15,6 +16,8 @@ export interface DialogAction {
   readonly text: string
   readonly type?: 'default' | 'primary' | 'success' | 'warning' | 'danger'
   readonly variant?: 'solid' | 'soft' | 'outline' | 'ghost'
+  /** 与 Popup 底栏按钮共用 Button 尺寸轴，默认 md。 */
+  readonly size?: ButtonSize
   readonly color?: string
   readonly loadingText?: string
 }

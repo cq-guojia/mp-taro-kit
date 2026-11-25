@@ -122,17 +122,33 @@ function pushDialog(
   options: DialogOptions,
   resolve: (confirmed: boolean) => void,
 ): void {
+  const dialogConfig = getKitConfig().runtime.dialog
+  // 默认形态按载荷区分：confirm 不传参走竖线，自定义按钮走横排；调用方显式传了以它为准。
+  const layout = options.layout ?? (options.actions === undefined && kind === 'confirm' ? 'joined' : 'spaced')
+  // joined 档沿用 ContentPopup 底栏自带的 ghost 文字按钮，不把配置的 variant 灌进去改坏它。
+  const configuredVariant = (variant: 'solid' | 'soft' | 'outline' | 'ghost') =>
+    layout === 'joined' ? undefined : variant
   const confirmAction: DialogAction = {
     key: 'confirm',
-    text: options.confirmText ?? '确定',
-    type: 'primary',
+    text: options.confirmText ?? dialogConfig.confirmText,
+    type: dialogConfig.confirm.type,
+    variant: configuredVariant(dialogConfig.confirm.variant),
+    size: 'md',
   }
   const cancelAction: DialogAction = {
     key: 'cancel',
-    text: options.cancelText ?? '取消',
-    type: 'default',
-    variant: 'ghost',
+    text: options.cancelText ?? dialogConfig.cancelText,
+    type: dialogConfig.cancel.type,
+    variant: configuredVariant(dialogConfig.cancel.variant),
+    size: 'md',
   }
+  const defaultActions = kind === 'confirm' ? [cancelAction, confirmAction] : [confirmAction]
+  // 竖排从上到下先看确定；joined 档的自定义按钮只认文字与颜色，样式轴一律不采信。
+  const actions = options.actions === undefined
+    ? (kind === 'confirm' && layout === 'stack' ? [confirmAction, cancelAction] : defaultActions)
+    : layout === 'joined'
+      ? options.actions.map(({ key, text, color }) => ({ key, text, color }))
+      : options.actions
   uiState().overlays.push({
     kind,
     content: {
@@ -142,8 +158,8 @@ function pushDialog(
       note: options.note,
       icon: options.icon,
     },
-    actions: options.actions ?? (kind === 'confirm' ? [cancelAction, confirmAction] : [confirmAction]),
-    layout: options.layout ?? 'spaced',
+    actions,
+    layout,
     position: options.position ?? 'center',
     width: options.width,
     closeable: options.closeable ?? false,

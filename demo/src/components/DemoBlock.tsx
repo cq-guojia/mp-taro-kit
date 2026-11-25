@@ -6,7 +6,7 @@ import { Divider } from 'mp-taro-kit/ui/display'
 import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/style'
 import type { KitAction } from 'mp-taro-kit/app'
-import { catalogPages, type CatalogExample } from '../catalog'
+import { catalogPages, pageTitleOf, type CatalogExample } from '../catalog'
 import { DemoShell } from './DemoShell'
 
 function pageOf(id: string) {
@@ -78,7 +78,7 @@ export function DemoPage({
   }))
   return (
     <DemoShell
-      title={page.title}
+      title={pageTitleOf(page.id)}
       actions={actions}
       hideActions={hideActions}
       backToTop={backToTop}

@@ -1,4 +1,4 @@
-// @mptk-inputs:bf8d20bf31ad
+// @mptk-inputs:4e1fd1b3cd00
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -3387,6 +3387,42 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "sm",
       "unit": "",
       "note": "controlSizeDefault",
+    },
+    {
+      "key": "runtime.dialog.confirmText",
+      "label": "运行时默认 · confirmText",
+      "group": "runtime",
+      "groupLabel": "运行时默认",
+      "value": "确定",
+      "unit": "",
+      "note": "dialog.confirmText",
+    },
+    {
+      "key": "runtime.dialog.cancelText",
+      "label": "运行时默认 · cancelText",
+      "group": "runtime",
+      "groupLabel": "运行时默认",
+      "value": "取消",
+      "unit": "",
+      "note": "dialog.cancelText",
+    },
+    {
+      "key": "runtime.dialog.confirm",
+      "label": "运行时默认 · confirm",
+      "group": "runtime",
+      "groupLabel": "运行时默认",
+      "value": "{\"type\":\"primary\",\"variant\":\"solid\"}",
+      "unit": "",
+      "note": "dialog.confirm",
+    },
+    {
+      "key": "runtime.dialog.cancel",
+      "label": "运行时默认 · cancel",
+      "group": "runtime",
+      "groupLabel": "运行时默认",
+      "value": "{\"type\":\"default\",\"variant\":\"soft\"}",
+      "unit": "",
+      "note": "dialog.cancel",
     },
     {
       "key": "runtime.core.baseURL",

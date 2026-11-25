@@ -468,6 +468,18 @@ export default {
     "toastDuration": 2000,                                          // Toast 自动消失毫秒数；0 表示常驻不自动关
     "notifyLimit": 3,                                               // 通知队列同时最多显示条数，超出顶掉最旧一条
     "controlSizeDefault": "sm",                                     // 未传 size 时 Button / Switch / Segmented 的默认档：32 / 14，与 WeUI mini 对齐
+    "dialog": {                                                     // 命令式对话框默认按钮：改这一个文件即可统一换文案与外观
+      "confirmText": "确定",                                        // alert 与 confirm 的确定按钮默认文案
+      "cancelText": "取消",                                         // confirm 的取消按钮默认文案
+      "confirm": {                                                  // 确定按钮（alert / confirm 共用）复用 Button 样式轴
+        "type": "primary",
+        "variant": "solid",
+      },
+      "cancel": {                                                   // 取消按钮：走 Button 现成的 soft 浅底档，与「稍后」这类次要操作同一档
+        "type": "default",
+        "variant": "soft",
+      },
+    },
     "core": {                                                       // core 请求与存储默认值：由 configure() 读取
       "baseURL": "",                                                // core 请求基址：留空则由调用方传完整 URL
       "timeout": 10000,                                             // core 请求超时毫秒数

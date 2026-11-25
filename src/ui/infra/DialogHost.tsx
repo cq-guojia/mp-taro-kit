@@ -3,7 +3,6 @@ import { View, Text } from '@tarojs/components'
 import { markHostMounted, markHostUnmounted } from '../commands.js'
 import { uiState } from '../state.js'
 import type { DialogPayload } from '../state.js'
-import { Icon } from '../display/icon/Icon.js'
 import { ContentPopup } from '../layout/content-popup/ContentPopup.js'
 import type { ContentPopupAction } from '../layout/content-popup/ContentPopup.js'
 import { KitPageKeyContext } from './page-key-context.js'
@@ -104,6 +103,7 @@ export function DialogHost({ className }: DialogHostProps) {
       text: action.text,
       type: action.type,
       variant: action.variant,
+      size: action.size,
       color: action.color,
       loadingText: action.loadingText,
       lockKey: action.key,
@@ -116,6 +116,7 @@ export function DialogHost({ className }: DialogHostProps) {
         const payload = entry.payload
         const busy = busyIds.includes(entry.id)
         const layout = payload.layout
+        const actions = actionsOf(entry.id, payload)
         return (
           <ContentPopup
             key={entry.id}
@@ -125,6 +126,11 @@ export function DialogHost({ className }: DialogHostProps) {
             variant={payload.badge !== undefined ? 'badge' : payload.headerImage !== undefined ? 'image' : 'title'}
             badge={payload.badge}
             image={payload.headerImage}
+            title={payload.content.variant === 'icon' ? payload.content.title : undefined}
+            subtitle={payload.content.variant === 'icon' ? payload.content.note : undefined}
+            headerIcon={payload.content.variant === 'icon' && payload.content.icon !== undefined
+              ? { kind: 'icon', name: payload.content.icon }
+              : undefined}
             closeable={payload.closeable}
             closable={payload.maskClosable}
             closeOffset={payload.offsets}
@@ -135,19 +141,11 @@ export function DialogHost({ className }: DialogHostProps) {
               layout: layout === 'stack' ? 'stack' : 'row',
               separation: layout === 'joined' ? 'joined' : 'spaced',
               divider: layout === 'joined',
+              ratios: layout === 'stack' ? undefined : actions.map(() => 1),
             }}
-            actions={actionsOf(entry.id, payload)}
+            actions={actions}
           >
             <View className="mptk-dialog__body">
-              {payload.content.variant === 'icon' && payload.content.icon !== undefined ? (
-                <View className="mptk-dialog__icon"><Icon name={payload.content.icon} /></View>
-              ) : null}
-              {payload.content.title === undefined ? null : (
-                <View className="mptk-dialog__title"><Text>{payload.content.title}</Text></View>
-              )}
-              {payload.content.note === undefined ? null : (
-                <View className="mptk-dialog__note"><Text>{payload.content.note}</Text></View>
-              )}
               <View className="mptk-dialog__description"><Text>{payload.content.description}</Text></View>
             </View>
           </ContentPopup>

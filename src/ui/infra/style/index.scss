@@ -54,29 +54,11 @@
   padding-left: var(--mptk-space-4);
 }
 
-/* 命令式对话框的面板 / 底栏全走 ContentPopup，这里只管 body 内的文案层级。 */
-.mptk-dialog__title {
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-xl);
-  line-height: var(--mptk-line-xl);
-}
-
-.mptk-dialog__note {
-  color: var(--mptk-fg-3);
-  font-size: var(--mptk-font-sm);
-  line-height: var(--mptk-line-sm);
-}
-
+/* 命令式对话框的面板 / 头 / 底栏全走 ContentPopup，这里只管 body 内的说明。 */
 .mptk-dialog__description {
   color: var(--mptk-fg-2);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
-}
-
-.mptk-dialog__icon {
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-xl);
-  line-height: var(--mptk-line-xl);
 }
 
 .mptk-safe-area {

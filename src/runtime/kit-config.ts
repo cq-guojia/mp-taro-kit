@@ -40,6 +40,12 @@ export function setKitConfig(overrides: KitConfig = {}): KitConfigDefaults {
       ...current.runtime,
       ...(overrides.runtime ?? {}),
       core: { ...current.runtime.core, ...(overrides.runtime?.core ?? {}) },
+      dialog: {
+        ...current.runtime.dialog,
+        ...(overrides.runtime?.dialog ?? {}),
+        confirm: { ...current.runtime.dialog.confirm, ...(overrides.runtime?.dialog?.confirm ?? {}) },
+        cancel: { ...current.runtime.dialog.cancel, ...(overrides.runtime?.dialog?.cancel ?? {}) },
+      },
     },
     window: {
       light: { ...current.window.light, ...(overrides.window?.light ?? {}) },

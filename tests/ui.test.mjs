@@ -180,12 +180,28 @@ test('confirm() 推栈并由关闭动作 resolve true / false', async () => {
   assert.equal(entries.length, 1)
   assert.equal(entries[0].payload.kind, 'confirm')
   assert.equal(entries[0].payload.content.description, '确定删除？')
+  assert.equal(entries[0].payload.layout, 'joined')
   assert.equal(entries[0].payload.actions[0].text, '再想想')
+  assert.equal(entries[0].payload.actions[1].text, '确定')
   assert.equal(entries[0].payload.closeable, false)
   assert.equal(entries[0].payload.maskClosable, false)
   closeTop(false)
   assert.equal(await pending, false)
   assert.equal(ui.uiState().overlays.getSnapshot().length, 0)
+
+  const spaced = ui.confirm('横排形态', { layout: 'spaced', cancelText: '再想想' })
+  const spacedEntries = ui.uiState().overlays.getSnapshot()
+  assert.equal(spacedEntries[spacedEntries.length - 1].payload.actions[0].text, '再想想')
+  assert.equal(spacedEntries[spacedEntries.length - 1].payload.actions[1].text, '确定')
+  closeTop(false)
+  assert.equal(await spaced, false)
+
+  const stacked = ui.confirm('竖排形态', { layout: 'stack', cancelText: '再想想' })
+  const stackedEntries = ui.uiState().overlays.getSnapshot()
+  assert.equal(stackedEntries[stackedEntries.length - 1].payload.actions[0].text, '确定')
+  assert.equal(stackedEntries[stackedEntries.length - 1].payload.actions[1].text, '再想想')
+  closeTop(false)
+  assert.equal(await stacked, false)
 
   const second = ui.confirm('再来一次')
   closeTop(true)
@@ -358,6 +374,31 @@ test('演示站菜单：ready 必指真实展示页，planned 不绑跳转，条
   }
   assert.ok(ready > 0 && planned > 0, '菜单必须同时包含 ready 与 planned')
   assert.equal(appPages.length, catalogPages.length + 1, '路由必须是索引页 + 全部展示页')
+})
+
+test('菜单保留原文，页面标题唯一入口取菜单文字、多入口标 X', () => {
+  const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
+  const { menu, catalogPages, pageTitleOf } = mod.exports
+  const entries = menu.flatMap((group) => group.entries)
+  assert.equal(entries.some((item) => item.label === 'X'), false, '菜单 label 不许改成 X')
+  const ready = entries.filter((item) => item.status === 'ready')
+  const seen = new Set(ready.map((item) => item.pageId))
+  for (const page of catalogPages) {
+    assert.equal(seen.has(page.id), true, `${page.id} 没有 ready 入口`)
+  }
+  let multi = 0
+  for (const pageId of seen) {
+    const owners = ready.filter((item) => item.pageId === pageId)
+    if (owners.length > 1) multi += 1
+    const expected = owners.length === 1 ? owners[0].label : 'X'
+    assert.equal(pageTitleOf(pageId), expected, `${pageId} 打开后的标题与预期不一致`)
+  }
+  assert.ok(multi > 0, '应有多入口页面用 X 标出待调整')
 })
 
 test('cell 组件级出口与样式出口齐全，子域 barrel 仍导出', () => {
@@ -992,7 +1033,7 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
   assert.ok(page, '缺 Dialog 独立展示页')
   assert.equal(page.path, 'pages/dialog/index')
   assert.deepEqual(page.examples.map((item) => item.id), [
-    'config', 'alert', 'confirm', 'layout', 'header', 'custom-actions', 'busy',
+    'config', 'alert', 'confirm', 'custom-actions', 'busy',
   ])
   const entries = mod.exports.menu.flatMap((group) => group.entries)
   assert.equal(entries.find((item) => item.id === 'dialog')?.pageId, 'dialog', 'Dialog 菜单没指向自己的页')
@@ -1004,9 +1045,59 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
   assert.match(demo, /from 'mp-taro-kit\/ui\/commands\/dialog'/, 'Dialog 页没从对话框子入口引命令')
   assert.match(demo, /\balert\(/, 'Dialog 页没演 alert')
   assert.match(demo, /\bconfirm\(/, 'Dialog 页没演 confirm')
-  assert.match(demo, /<CellGroup title="形态与几何">/, 'Dialog 页缺顶部配置驱动')
+  assert.match(demo, /<CellGroup>\s*<Cell\s+title="宽度"/, '配置页应是两个无标题 Cell')
+  assert.doesNotMatch(demo, /<CellGroup title="几何"|title="按钮形态"|setLayout/, '配置页不该有分组标题或形态滑块')
+  assert.doesNotMatch(demo, /id === 'actions'/, '合并实验已撤回，不该再有聚合示例块')
+  for (const id of ['alert', 'confirm', 'custom-actions', 'busy']) {
+    assert.ok(demo.includes(`id === '${id}'`), `缺独立示例分支 ${id}`)
+  }
   assert.match(demo, /onConfirm:/, 'Dialog 页缺异步闸门演示')
   assert.match(demo, /lockExceptions:/, 'Dialog 页缺按钮例外演示')
+  const widths = demo.match(/const WIDTHS = \[([\s\S]*?)\] as const/)
+  assert.ok(widths, 'Dialog 页缺宽度档')
+  assert.deepEqual(
+    [...widths[1].matchAll(/value: '([^']+)'/g)].map((item) => item[1]),
+    ['560rpx', '640rpx', '720rpx'],
+    '宽度档按 560 / 640 / 720 排，640 居中',
+  )
+  for (const label of ['普通', '图标+备注', '外伸icon', '图片']) {
+    assert.ok(demo.includes(`label: '${label}'`), `头部缺 ${label} 档`)
+  }
+  assert.match(demo, /popup-header-rise-up\.png/, '图片头没用上延伸示例图')
+  assert.doesNotMatch(demo, /headerImage:\s*\{\s*src:\s*HEADER_IMAGE,\s*width:/, '图片头不该写死宽度，应与 Popup 一样铺满')
+  assert.doesNotMatch(demo, /已关闭|Promise 解析|demo-note/, '演示站只展示效果，不展示调用结果文案')
+  assert.doesNotMatch(demo, /id === 'layout'|openShape/, '不该再有独立形态示例块')
+  assert.match(demo, /layoutRow\(openAlert, LAYOUTS\.filter\(\(item\) => item\.value !== 'stack'\)\)/, 'alert 应隐藏竖排按钮')
+  assert.match(demo, /layoutRow\(openConfirm\)/, 'confirm 缺形态按钮行')
+  assert.match(demo, /layoutRow\(openCustomActions\)/, '自定义按钮缺形态按钮行')
+  assert.match(demo, /onClick=\{\(\) => open\(\)\}>默认</, '示例前面缺默认样式按钮')
+  assert.doesNotMatch(demo, /compact/, '页面按钮不该再有尺寸差异标记')
+  assert.match(demo, /size="xs" onClick=\{\(\) => open\(\)\}/, '默认按钮没用 XS')
+  assert.match(demo, /size="xs"\s+onClick=\{\(\) => open\(item\.value\)\}/, '形态按钮没用 XS')
+  assert.match(demo, /size="xs" onClick=\{openBusy\}/, 'busy 按钮没用 XS')
+  assert.doesNotMatch(demo, /confirmText: '知道了'|confirmText: '继续'|cancelText: '取消'/, '演示页不该自造按钮文案，走配置默认')
+  assert.match(demo, /onAction: \(\) => true/, '稍后按钮点击后应直接关闭')
+  assert.doesNotMatch(demo, /title="关闭路径"|title="四向偏移"|closeable,|maskClosable/, '关闭与偏移不该进演示配置')
+  const catalogSource = read('../demo/src/catalog.ts')
+  assert.match(catalogSource, /id: 'alert',\s*title: '提示 alert'/, 'alert 示例标题缺英文')
+  assert.match(catalogSource, /id: 'confirm',\s*title: '确认 confirm'/, 'confirm 示例标题缺英文')
+  const commands = read('../src/ui/commands.ts')
+  const dialogHost = read('../src/ui/infra/DialogHost.tsx')
+  assert.match(commands, /getKitConfig\(\)\.runtime\.dialog/, '对话框默认按钮没从统一配置读取')
+  assert.match(commands, /dialogConfig\.confirmText|dialogConfig\.cancelText/, '默认文案没走配置')
+  assert.match(commands, /layout === 'stack' \? \[confirmAction, cancelAction\]/, '竖排没把确定排在取消上面')
+  assert.match(commands, /options\.actions === undefined && kind === 'confirm' \? 'joined' : 'spaced'/, 'confirm 默认竖线、自定义按钮默认横排的口径丢了')
+  assert.match(commands, /options\.actions\.map\(\(\{ key, text, color \}\)/, 'joined 档自定义按钮没过滤样式轴')
+  assert.match(commands, /size: 'md'/, '对话框按钮没跟 Popup 底栏同型号 md')
+  assert.match(dialogHost, /size: action\.size/, 'Dialog 按钮尺寸没透传给 ContentPopup 底栏')
+  const kitConfig = read('../kit.config.mjs')
+  assert.match(kitConfig, /"dialog": \{/, '统一配置缺 dialog 默认按钮段')
+  assert.match(kitConfig, /"confirmText": "确定"/, '确定文案默认不是「确定」')
+  assert.match(kitConfig, /"cancel": \{[\s\S]*?"variant": "soft"/, '取消按钮默认不是 Button 的 soft 浅底档')
+  assert.match(demo, /variant: 'soft'/, '稍后按钮没走 soft 浅底档')
+  assert.match(commands, /layout === 'joined' \? undefined : variant/, 'joined 档被配置 variant 覆盖，丢了原有 ghost 外观')
+  assert.doesNotMatch(demo, /POSITIONS|setPosition|title="位置"/, '演示站只支持中部，不提供位置选择')
+  assert.match(commands, /position\?: ContentPopupPosition/, 'API 仍保留 position 给需要自己折腾的调用方')
   assert.doesNotMatch(demo, /<Dialog\b/, 'Dialog 页不该再演声明式 Dialog')
   assert.equal(exists('../demo/src/pages/dialog/index.config.ts'), true, '缺新页的 disableScroll 配置')
 })

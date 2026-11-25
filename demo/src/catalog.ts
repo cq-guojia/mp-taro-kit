@@ -753,8 +753,8 @@ export const pages: CatalogPage[] = [
       {
         id: 'config',
         title: '配置',
-        hint: '形态、位置、宽度、头部、关闭路径统一控制下方 alert / confirm',
-        usage: 'confirm("说明", { layout, position, width, badge, headerImage, closeable, maskClosable })',
+        hint: '宽度（750 口径）与头部四档统一控制下方各形态演示',
+        usage: 'confirm("说明", { width: "640rpx", badge, headerImage })',
         imports: [
           'mp-taro-kit/ui/commands/dialog',
           'mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style',
@@ -765,35 +765,19 @@ export const pages: CatalogPage[] = [
       },
       {
         id: 'alert',
-        title: '提示',
+        title: '提示 alert',
         hint: 'alert：解析即关，不返回用户选择',
         usage: 'void alert("说明", { title, confirmText })',
         imports: ['mp-taro-kit/ui/commands/dialog', 'mp-taro-kit/ui/actions'],
-        renderNotes: '默认无关闭叉、点遮罩不关；按顶部配置切换',
+        renderNotes: '默认无关闭叉、点遮罩不关；关闭开关不进演示配置，见文档',
       },
       {
         id: 'confirm',
-        title: '确认',
+        title: '确认 confirm',
         hint: 'confirm：确定 resolve true，取消或点遮罩 resolve false',
         usage: 'void confirm("说明", { title }).then((ok) => …)',
         imports: ['mp-taro-kit/ui/commands/dialog', 'mp-taro-kit/ui/actions'],
         renderNotes: '默认放行取消按钮，其它控件在忙碌期屏蔽',
-      },
-      {
-        id: 'layout',
-        title: '按钮形态',
-        hint: 'spaced 横排 / stack 竖排 / joined 竖线等分，三档各点一次',
-        usage: 'confirm("说明", { layout: "spaced" | "stack" | "joined" })',
-        imports: ['mp-taro-kit/ui/commands/dialog', 'mp-taro-kit/ui/actions'],
-        renderNotes: '三档都走同一个 ContentPopup 底栏，不另画一套',
-      },
-      {
-        id: 'header',
-        title: '头部配置',
-        hint: '外伸徽标与图片头都是数据配置，不接 ReactNode',
-        usage: 'alert("说明", { badge: { content: { kind: "icon", name } } })',
-        imports: ['mp-taro-kit/ui/commands/dialog', 'mp-taro-kit/ui/actions'],
-        renderNotes: '徽标档同时使用四向偏移；图片头与本页 Popup 演示共用同一张图',
       },
       {
         id: 'custom-actions',
@@ -801,7 +785,7 @@ export const pages: CatalogPage[] = [
         hint: '按钮文字、颜色与 key 可配，lockExceptions 按 key 放行',
         usage: 'confirm("说明", { actions: [{ key, text, color }], onAction })',
         imports: ['mp-taro-kit/ui/commands/dialog', 'mp-taro-kit/ui/actions'],
-        renderNotes: '稍后按钮返回 false 保持打开，立即执行返回 true 出栈',
+        renderNotes: '稍后按钮直接关闭，立即执行返回 true 出栈',
       },
       {
         id: 'busy',
@@ -1140,6 +1124,14 @@ export function pagePathOf(pageId: string): string {
   const page = pages.find((item) => item.id === pageId)
   if (page === undefined) throw new Error(`[demo] menu 指向不存在的展示页 ${pageId}`)
   return page.path
+}
+
+/** 打开后的页面标题只认首页菜单文字；同一页多个入口无从判断时用 X 标出待调整。 */
+export function pageTitleOf(pageId: string): string {
+  const entries = menu
+    .flatMap((group) => group.entries)
+    .filter((item) => item.status === 'ready' && item.pageId === pageId)
+  return entries.length === 1 ? entries[0]?.label ?? 'X' : 'X'
 }
 
 export const appPages: string[] = ['pages/index/index', ...pages.map((page) => page.path)]
