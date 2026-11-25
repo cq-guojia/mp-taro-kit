@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 01:19:50 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 03:58:48 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -18,39 +18,34 @@
 ## To Do
 
 需求（用户逐条确认，作为验收项）：
-- [ ] 命令式 `alert` / `confirm` 基于 `ContentPopup`，Promise 语义（alert→void，confirm→boolean）
-- [ ] 消费端不感知 `DialogHost`；`createKitApp` 默认挂载不变
-- [ ] 默认无关闭叉，可传参打开
-- [ ] 标题 + 说明默认放 body，不碰 header 框；可选「icon + 标题 + 备注 + 说明」形式
-- [ ] 按钮可定制颜色 / 文字；三形态：横排 spaced、竖排 stack、竖线 joined
-- [ ] 位置 top / center / bottom 可选
-- [ ] 宽度默认（center 档 token 320），可传参定制
-- [ ] 保留 badge 外伸图标、header 图片、四向偏移
-- [ ] 默认点遮罩不关闭，可改；开启时映射为 cancel
-- [ ] 点确定后转圈，成功后才消失；失败保持打开、解锁可重试
-- [ ] 转圈期间整框屏蔽（所有控件不可点、三条关闭路径全封），可设例外让指定控件仍可点
-- [ ] 屏蔽能力做成底座能力（`Popup` / `ContentPopup`），普通文字弹窗也能用
-- [ ] 声明式 `Dialog` 与命令式双通道并存，但收敛为 `ContentPopup` 薄适配，消除两套视觉
-- [ ] 修全局栈单例被多页 Host 订阅导致重复渲染、只显栈顶
-- [ ] `resetUIForTests` / Host 卸载时 settle 挂起的 Promise
-- [ ] 回归自检：三形态、width、badge/headerImage/offset 不回归；busy/locked 下三路径不 dismiss/resolve 且无重复 resolve；`onBusyChange` true/false 成对
+- [x] 命令式 `alert` / `confirm` 基于 `ContentPopup`，Promise 语义（alert→void，confirm→boolean）
+- [x] 消费端不感知 `DialogHost`；`createKitApp` 默认挂载不变（仍由 `hosts` 决定，默认空）
+- [x] 默认无关闭叉，可传参打开
+- [x] 标题 + 说明默认放 body，不碰 header 框；可选「icon + 标题 + 备注 + 说明」形式
+- [x] 按钮可定制颜色 / 文字；三形态：横排 spaced、竖排 stack、竖线 joined
+- [x] 位置 top / center / bottom 可选
+- [x] 宽度默认走 center 档 token 320，可传参定制
+- [x] 保留 badge 外伸图标、header 图片、四向偏移
+- [x] 默认点遮罩不关闭，可改；开启时映射为 cancel
+- [x] 点确定后转圈，成功后才消失；`onConfirm` reject / 返回 false 保持打开、解锁可重试
+- [x] 转圈期间整框屏蔽，可设例外让指定控件仍可点（默认放行 cancel）
+- [x] 屏蔽能力做成底座能力（`Popup` / `ContentPopup`），普通文字弹窗也能用
+- [x] 声明式 `Dialog` 与命令式双通道并存，收敛为 `ContentPopup` 薄适配
+- [x] 多页 Host 订阅同一栈时一条载荷只归一个 Host 渲染（归属表）
+- [x] `resetUIForTests` / 最后一份 Host 卸载时 settle 挂起的 Promise
+- [x] 回归自检：三形态、width、badge/headerImage/offset 载荷、忙碌/锁态节点、Promise settle；`onBusyChange` true/false 成对（源码路径断言）
 
 按需引入（用户明确追加，「引哪个用哪个」）：
-- [ ] 命令式 API 按能力拆子入口，不从一个 `commands.ts` 全量导出：引 `confirm` 只应带 `DialogHost` + `ContentPopup`，不得连带 Toast / Loading
-- [ ] 宿主与 API 同进口：引了 `confirm` 就自带 `DialogHost`，不需要再去 `mp-taro-kit/app` 里翻宿主
-- [ ] `createKitApp` 的 `hosts` 不得默认把三件全拖进来；未使用的宿主不进产物
-- [ ] 组件不走大 barrel：`mp-taro-kit/ui/layout` 目前 `export { Overlay, Popup, ImagePopup, ContentPopup, FloatingAction, BackToTop }`（`src/ui/layout/index.ts:2-59`），引 `ContentPopup` 会拉全域；exports 需支持两层子入口（现 `./ui/*` 只匹配一层，`./ui/layout/content-popup` 不匹配）
-- [ ] `mp-taro-kit/app` 顶层 `import '../ui/layout/floating-action/style/index.css'`（`src/app/index.ts:3`）必须去掉：只要引 `createKitApp` 就无条件带 floating-action 样式
-- [ ] 产物级验收：只 import `confirm` 的构建，产物不得出现 ToastHost / LoadingHost / FloatingAction 等无关模块
+- [x] 命令式 API 按能力拆子入口：`confirm` 只带 `DialogHost` + `ContentPopup`，不连带 Toast / Loading
+- [x] 宿主与 API 同进口：`mp-taro-kit/ui/commands/dialog` 同时导出 `confirm` 与 `DialogHost`
+- [x] `createKitApp` 的 `hosts` 默认空（现状已满足，未改）
+- [x] 组件细路径 `mp-taro-kit/ui/layout/content-popup` 已可用：`./ui/*` 的 `*` 可穿透多段，原「只匹配一层」判断有误，见 Process 更正
+- [x] floating-action 样式随 `KitPage` 自带，不在 `app/index.ts` 顶层引（现状已满足，原断点描述过期）
+- [x] 产物级验收：`tests/tree-shaking.test.mjs` 真打包 dist，断言对话框产物无 ToastHost / LoadingHost / FloatingAction
 
 ## Next
 
-1. 定契约（`src/ui/commands.ts:111-147`、`src/ui/infra/DialogHost.tsx:26-61`）：payload 改判别联合，去 JSX / 业务回调
-2. 底座补 `locked` / `busy` / 例外（`src/ui/layout/Popup.tsx:41-85`、`src/ui/layout/content-popup/ContentPopup.tsx:148-219`）
-3. `Button` 补 `onBusyChange`（`src/ui/actions/Button.tsx:105-126`）
-4. `Dialog` 改薄适配（`src/ui/feedback/Dialog.tsx:30-53`）
-5. 测试先锁竞态断言（`tests/render.test.mjs`、`tests/layout.test.mjs`），再改实现
-6. 按需引入：拆 `commands` 子入口 + 细粒度 exports + 宿主与 API 同进口，最后做产物断言（见 Process 按需引入小节）
+待用户验收：Skyline 与 WebView 真机打开命令页，确认转圈期间「取消可点、其它控件与叉/遮罩不可点」、`onConfirm` 失败后能重试、`top`/`bottom` 三形态与宽度的观感；这一步本轮未做。
 
 ## Process
 
@@ -90,9 +85,21 @@
 
 **风险**：拆入口是破坏性变更面；小程序端 tree-shaking 依赖 ESM + `sideEffects` 精确声明，`markCardEdgeOutOfFlow` 这类顶层调用可能让整模块被保留。
 
+### 2026-11-25 实现与纠偏
+
+**契约与命令**：`src/ui/state.ts:13,54,78` 落判别联合载荷、按钮/文案数据与 Host 归属表；`src/ui/commands.ts:15,161,169,177` 用字面量宿主提示避免无关名字进包，`alert`/`confirm` 组默认按钮，`resetUIForTests` 清栈时 settle 所有 Promise。原 Next 里「去业务回调」细化为：载荷不接 JSX，保留 `onConfirm` / `onAction` 两个异步闸门，否则无法判定「成功后才关闭」。
+
+**底座锁**：`src/ui/infra/popup-lock.ts` 提供唯一例外判定；`src/ui/layout/Popup.tsx:88-92,188,204` 把 `busy` / `locked` / `lockExceptions` 广播给子树，封遮罩路径、叉按钮逻辑门与面板 `catchMove`；`src/ui/layout/content-popup/ContentPopup.tsx:167,223-224,838` 接宽度与锁；`src/ui/actions/Button.tsx:72-74,118-135` 在成功/失败两条 settle 路径成对上报 `onBusyChange`，`lockKey` 决定锁期间是否可点。WebView 的 `pointer-events` 例外样式落在 `src/ui/layout/style/index.scss`；Skyline 只做到源码与编译产物级，未真机验证。
+
+**宿主与声明式**：`src/ui/infra/DialogHost.tsx:35-37,48,65,69,112` 一条载荷只归一个 Host、最后一份宿主卸载 settle 挂起 Promise、忙碌期间挡住 dismiss/resolve；`src/ui/feedback/Dialog.tsx` 改为 ContentPopup 薄适配，旧自绘面板/按钮样式已删。`src/ui/infra/use-store.ts` 与 `use-theme.ts` 补 `getServerSnapshot`，修掉 SSR 渲染宿主时的报错。
+
+**按需引入纠偏**：Node 的 `./ui/*` 通配 `*` 可匹配多段，`mp-taro-kit/ui/layout/content-popup` 原本就能解析，未改 `package.json`；floating-action CSS 实际在 `src/app/KitPage.tsx:1`、不在 `src/app/index.ts:3`；`createKitApp` 的 `hosts` 原本默认空。三项在评审时判断过期，已按现状核实。`src/ui/commands/dialog/index.ts` 同出口给 `confirm` 与 `DialogHost`；`ensureMounted` 提示改成调用点传字面量；`tests/tree-shaking.test.mjs` 用 esbuild 真打包 dist 断言无 Toast / Loading / FloatingAction。
+
+**验证**：`pnpm run build`（393 产物）→ `pnpm test`（229 项全过）→ `pnpm run guard` → `pnpm pack --dry-run` → `pnpm --filter mp-taro-kit-demo build:weapp` 全过；`demo/dist/common.wxss` 实测有 `pointer-events:none` 与例外 `auto`，`demo/dist/common.js` 实测有命令对话框 body 与 joined 底栏。`koc-codelint` 通过，`docwriter check` 无 FAIL。
+
 ## Conclusion
 
-方案已由三视角评审收敛并落入本任务，待实现。命令式与声明式双通道并存；屏蔽能力属底座而非命令式专属；视觉只有 `ContentPopup` 一份。Skyline 真机观感与双端验证不在自检内，实现后单独声明。
+命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证，待用户验收。
 
 ## Execution Log
 
@@ -102,3 +109,4 @@
 - 2026-11-25 01:14:33 · claim · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · claimed → doing
 - 2026-11-25 01:15:04 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 三视角（系统架构师/前端工程师/UX 专家）评审完成，16 条需求与完整方案已写入 Background/To Do/Next/Process/Conclusion；方案收敛为：判别联合 payload、底座 locked/busy/例外、Button onBusyChange、Dialog 薄适配、三路径统一 dismiss；待实现
 - 2026-11-25 01:19:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 追加按需引入需求与讨论：commands 按能力拆子入口、ui/layout barrel 收窄、exports 支持两层子路径、app 去掉 floating-action CSS 顶层引、createKitApp hosts 不默认全挂、产物级验收；已写入 To Do 与 Process
+- 2026-11-25 03:58:48 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 实现完成：命令式对话框改走 ContentPopup，底座交互锁 + 多 Host 归属 + Promise settle + 声明式薄适配；产物级 tree-shaking 断言落地；build/test(229)/guard/pack/demo 全过，双端真机待验收
