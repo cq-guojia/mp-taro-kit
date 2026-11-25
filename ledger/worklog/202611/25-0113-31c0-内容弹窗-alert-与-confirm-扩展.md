@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 14:37:07 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 15:07:08 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -75,10 +75,11 @@
 - [x] 带图标/备注的文字头保留原内联「图标 + 标题 + 备注」结构与默认分割线
 - [x] 演示站四档都带 title，产物与渲染断言覆盖新旧行为；API 文档同步
 
-固定类型图标（用户 2026-11-25 追加）：
+固定类型图标（用户 2026-11-25 追加、同日纠正）：
 - [x] `alert` / `confirm` 的 `type`：success / error / warning / info 四档，映射到 gou / guanbi / warn / info 四个库图标
-- [x] 每档配轻微渐变底色圆角块（明深底白字、暗浅底深字），显式 `icon` 只换图标不丢色底
-- [x] 演示站 alert 示例加四个固定类型按钮，全部 XS
+- [x] 普通 icon 档只换图标、不带底色；外伸徽标档换图标 + 红黄蓝绿轻微渐变底（走 badge 既有 tone）
+- [x] 显式 `icon` 只换图标名；显式 badge 的几何保持，只覆盖 content 与 tone
+- [x] 演示站 alert 示例加普通与外伸两行固定类型按钮，全部 XS
 
 待办：
 - [ ] 弹窗动效：`DialogHost` 把 `open` 写死 true，绕过 `Popup` 的 `usePresence`，需按退场保留挂载的方案修（本轮未动）
@@ -237,6 +238,18 @@
 
 **自检**：build（408 产物）/ test（236 项）/ guard / pack / demo build / codelint / docwriter 全过（门禁结果见下一轮执行记录）。
 
+### 2026-11-25 固定类型图标落点纠正
+
+用户纠正：「改错了，得改两个地方：1. 外生 icon：主要是把外生 icon 变成这个图标，背景变成红黄蓝绿。2. 普通 icon：普通的那种也有个 icon，也可以改，但是不要有背景，直接用相应的图标就行了。」
+
+上一轮把色底做成 inline 图标槽的 `tone`（`ContentPopupHeaderIcon.icon.tone` + `--mptk-c-dialog-type-*`），落错层。本轮撤回：删掉 `ContentPopupIconTone`、inline `__lead-slot--tone-*` CSS、`DialogContent.iconTone`、DialogHost 的 tone 透传与全部新增 token。
+
+**正确落点**：`commands.ts` 加 `DIALOG_TYPE_TONE`（success→green / error→red / warning→yellow / info→blue）；`type` 恒把 `icon` 映射到指定图标名，**仅当 `options.badge` 存在时**把 badge.content 换成该图标并设 badge.tone，保留 badge 其余几何。普通 icon 档无 badge、无色底。徽标四档渐变 token 收窄为同色相轻微层次（明档 blue/green/red/yellow、暗档已在同一色相内，绿档同步收窄），避免纯色死板。
+
+**回归**：`ui.test.mjs` 逐档断言普通档不造 badge、不带 iconTone，外伸档 content/tone 正确；`layout.test.mjs` 改为断言 badge 四档渐变仍在且是 linear-gradient；演示站两行按钮分别演示普通与外伸。
+
+**门禁实测**：build 408 产物 → test 236 项全过（含「固定 type 换图标；带 badge 时换外伸图标与底色，普通 icon 不带底色」）→ guard → pack --dry-run → demo build:weapp 全过。产物核对：`demo/dist/common.js` 的 `ct={success:"common.base:gou",error:"common.base:guanbi",warning:"common.base:warn",info:"common.base:info"}` 与 `dt={success:"green",error:"red",warning:"yellow",info:"blue"}` 真值；`common.wxss` 四档 `--mptk-c-content-popup-badge-bg-*` 明/暗共 8 条 `linear-gradient(165deg, …)`，`__headline` 上/左/右均为 `var(--mptk-space-4)`。`koc-codelint` 38 文件六层全过；`docwriter check` 无 FAIL（26 条 WARN 均为历史存量，不涉及本改动）。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -268,3 +281,4 @@
 - 2026-11-25 13:41:06 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纯标题三档归一：ContentPopup 让无图标/备注的 title 档与 image/badge 共用居中 __headline，默认无下划线；带图标/备注的文字头保留原内联结构；新增三档一致性断言，build/test(234)/guard/pack/demo/codelint/docwriter 全过
 - 2026-11-25 14:18:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 标题行上方留白 space-3→space-4：标题上/左/右/下统一 16px，消除上间距比左右小的疏漏；layout 断言同步；build(408)/test(234)/guard/pack/demo/codelint/docwriter 全过，产物 wxss 四边同一档
 - 2026-11-25 14:37:07 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标落地：type(success/error/warning/info)→gou/guanbi/warn/info + 轻微渐变语义色底，headerIcon.icon.tone 只作用 inline 槽、badge tone 不混；token 明暗两支；demo 四按钮；build(408)/test(236)/guard/pack/demo/codelint(39)/docwriter 全过，产物四档渐变齐全
+- 2026-11-25 15:07:08 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标落点纠正完成并过全门禁：build 408 产物/test 236 项/guard/pack/demo build/codelint(38 文件)/docwriter 全绿；产物核对 type→图标映射、badge 四档明暗 8 条渐变、__headline 16px 间距生效。未提交，待用户指令。
