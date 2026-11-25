@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 08:34:28 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 08:46:03 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -55,6 +55,13 @@
 - [x] 顶部配置删关闭路径与四向偏移；头部四档互斥（普通 / 图标+备注 / 外伸icon / 图片）
 - [x] 图标+备注复用 ContentPopup 文字头；外伸档统一叫 icon，不自造“徽标文字”
 - [x] 产物级核对菜单原文、宽度档、图片头、头部四档与无临时日志
+
+按钮交互与主题配置（用户 2026-11-25 追加）：
+- [x] 自定义「稍后」点击后直接关闭；confirm 的取消按钮同为默认带边框样式、动作一致
+- [x] 竖排默认「确定」在上、「取消」在下
+- [x] alert / confirm 默认文案走统一配置，不在演示页自造
+- [x] 确定按钮、alert 按钮、confirm 按钮的默认样式集中在 kit.config.mjs，改一个文件统一生效
+- [x] 宽度档固定 560 / 640 / 720，640 居中且为默认
 
 ## Next
 
@@ -133,9 +140,17 @@
 
 **自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build 全过；产物核对按钮 `md`、图片头 `top:-30` 且无写死宽度、无「已关闭」结果文案；`koc-codelint` 10 文件六层全过。
 
+### 2026-11-25 按钮交互与主题配置
+
+**配置集中**：`kit.config.mjs` 的 `runtime.dialog` 新增 `confirmText` / `cancelText` 与 `confirm` / `cancel` 两组 Button 样式轴（默认确定 primary + solid、取消 default + outline）。生成器 `scripts/lib/kit-config.mjs` 补字面量类型与取值校验，`setKitConfig` 补逐键深合并，`src/ui/commands.ts` 改为读 `getKitConfig().runtime.dialog`——宿主改这一个文件即可统一换文案与外观。
+
+**交互**：竖排默认 actions 顺序改为 `[confirmAction, cancelAction]`（确定在上）；演示页去掉自造的「知道了」「继续」「取消」文案，稍后按钮改 `onAction: () => true` 直接关闭，样式与取消同为 outline。「点上去没反应」根因是 `onAction` 返回 false 让弹窗保持打开，不是缺少视觉按压态——Button 已有 `hoverClass=mptk-btn--pressed` 与 `--mptk-c-btn-pressed-opacity: .86`。宽度档固定 560 / 640 / 720，默认 640rpx。
+
+**自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物核对生成配置含 `dialog`、确定/取消文案存在、无「知道了」「继续」、`common.wxss` 有 `mptk-btn--default.mptk-btn--outline`、三档宽度齐全。
+
 ## Conclusion
 
-命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
+命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
 
 ## Execution Log
 
@@ -153,3 +168,4 @@
 - 2026-11-25 07:32:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除临时日志；专家研判否定渲染写全局 route 的归属方案，改 app 层注入页面栈 provider + 页面实例 id，宿主按 id 认领并卸载收尾；删演示站重复 alert/confirm 与旧 dialog 示例；232 项测试/门禁全过，提交 db9a20c 并推送 origin/main
 - 2026-11-25 08:28:35 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站细化并纠偏菜单：pageTitleOf 唯一 ready 入口取菜单 label、多入口显示 X（catalog.ts:1137），15 条菜单原文还原；build/test(233)/guard/pack/demo 全过，产物核对通过，9 个文件未提交
 - 2026-11-25 08:34:28 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示观感纠偏：按钮补 size 轴默认 md 与 Popup 底栏同型号（state.ts/DialogHost.tsx），图片头去 width 走 100% 铺满，删形态块与结果文案；build/test(233)/guard/pack/demo 全过
+- 2026-11-25 08:46:03 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮交互与主题配置：kit.config.mjs 新增 runtime.dialog 集中文案与样式，生成器补类型/校验，commands 读配置；竖排确定在上、稍后直接关闭、取消改 outline，宽度 560/640/720；build/test(233)/guard/pack/demo 全过
