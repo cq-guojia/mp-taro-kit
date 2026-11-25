@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 09:00:01 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 09:09:50 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -63,6 +63,7 @@
 - [x] 确定按钮、alert 按钮、confirm 按钮的默认样式集中在 kit.config.mjs，改一个文件统一生效
 - [x] 宽度档固定 560 / 640 / 720，640 居中且为默认
 - [x] 演示站去掉位置选择，只走 API 默认中部；接口 position 保留给需要的调用方
+- [x] joined 档自定义按钮只认文字与颜色；顶部形态滑块改到各示例内三按钮；confirm 默认竖排、自定义默认横排
 
 ## Next
 
@@ -159,6 +160,14 @@
 
 按用户要求，演示站顶部配置删掉「位置」档，`demo/src/pages/dialog/index.tsx` 不再传 `position`，固定走 API 默认 `center`；`DialogOptions.position` 保留，供需要自己折腾的调用方使用。产物核对演示页无「位置 / 顶部 / 中部 / 底部」文案。自检全过。
 
+### 2026-11-25 形态默认值与 joined 自定义按钮
+
+`src/ui/commands.ts` 把默认形态按载荷区分：`confirm()` 不传 `layout` 走 `stack`（确定在上），自定义 actions 不传走 `spaced`——这是对外默认，不靠演示页滑块掩盖。joined 档的自定义按钮只保留 `key/text/color`，`type`/`variant`/`size` 一律不采信，避免覆盖 ContentPopup 底栏自带的 ghost 外观导致出错。
+
+演示页删掉顶部「按钮形态」滑块，alert / confirm / 自定义按钮各放「横排按钮 / 竖排按钮 / 竖线」三个按钮；busy 仍固定 `stack`。`tests/ui.test.mjs` 里 confirm 默认形态断言随新口径修正，并补显式 `spaced` 顺序验证。
+
+**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物无「按钮形态」文案、三形态按钮齐全。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
@@ -182,3 +191,4 @@
 - 2026-11-25 08:46:03 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮交互与主题配置：kit.config.mjs 新增 runtime.dialog 集中文案与样式，生成器补类型/校验，commands 读配置；竖排确定在上、稍后直接关闭、取消改 outline，宽度 560/640/720；build/test(233)/guard/pack/demo 全过
 - 2026-11-25 08:53:20 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 取消档纠偏：runtime.dialog.cancel.variant 由 outline 改回 Button soft 浅底档，稍后同步；joined 档不传 variant 保留 ContentPopup 原有 ghost；build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 09:00:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站去掉位置选择：删 POSITIONS/position state/配置 Cell，不传 position 走 API 默认中部，DialogOptions.position 保留；产物无位置文案，build/test(233)/guard/pack/demo/codelint 全过
+- 2026-11-25 09:09:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 形态与 joined 纠偏：confirm 默认 stack、自定义默认 spaced，joined 自定义按钮只认文字颜色；演示页顶部删形态滑块、各示例放横排/竖排/竖线三按钮；build/test(233)/guard/pack/demo/codelint 全过
