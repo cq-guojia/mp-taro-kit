@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "20261116-0247-98c5-新增锚定浮窗": {"category": null, "created": "2026-11-16 02:47:16", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["浮窗", "锚定定位", "新组件"], "title": "新增锚定浮窗", "updated": "2026-11-16 02:47:16", "worklog": "worklog/202611/16-0247-98c5-新增锚定浮窗.md"}
+    "20261116-0247-98c5-新增锚定浮窗": {"category": null, "created": "2026-11-16 02:47:16", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["浮窗", "锚定定位", "新组件"], "title": "新增锚定浮窗", "updated": "2026-11-16 02:47:16", "worklog": "worklog/202611/16-0247-98c5-新增锚定浮窗.md"},
+    "20261125-0305-34d0-命令式-api-与宿主按需装载": {"category": "方案设计", "created": "2026-11-25 03:05:01", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["弹窗", "按需引入", "API", "宿主"], "title": "命令式 API 与宿主按需装载", "updated": "2026-11-25 03:05:01", "worklog": "worklog/202611/25-0305-34d0-命令式-api-与宿主按需装载.md"}
   },
   "version": "20261022000000"
 }
