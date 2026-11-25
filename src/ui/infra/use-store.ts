@@ -10,6 +10,7 @@ export function useOverlayEntries(): readonly OverlayEntry<DialogPayload>[] {
   return useSyncExternalStore(
     (listener) => uiState().overlays.subscribe(listener),
     () => uiState().overlays.getSnapshot(),
+    () => uiState().overlays.getSnapshot(),
   )
 }
 
@@ -17,12 +18,14 @@ export function useNotices(): readonly Notice[] {
   return useSyncExternalStore(
     (listener) => uiState().notices.subscribe(listener),
     () => uiState().notices.getSnapshot(),
+    () => uiState().notices.getSnapshot(),
   )
 }
 
 export function useLoadingState(): LoadingState {
   return useSyncExternalStore(
     (listener) => uiState().loading.subscribe(listener),
+    () => uiState().loading.getSnapshot(),
     () => uiState().loading.getSnapshot(),
   )
 }

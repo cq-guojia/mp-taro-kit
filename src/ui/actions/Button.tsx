@@ -3,6 +3,7 @@ import { View, Text } from '@tarojs/components'
 import type { CSSProperties, ReactNode } from 'react'
 import { isThenable, isSuccess } from '../../runtime/thenable.js'
 import { CONTROL_SIZE_DEFAULT } from '../../design/index.js'
+import { isPopupLockExempt, usePopupLock } from '../infra/popup-lock.js'
 import { Icon } from '../display/icon/Icon.js'
 import { PRESS_STAY_TIME } from '../infra/press.js'
 import { Spinner } from '../feedback/spinner/Spinner.js'
@@ -67,6 +68,10 @@ export interface ButtonProps {
   onClick?: () => unknown
   /** 显式返回 false（或 Promise<false>）时回调，表示操作没成。 */
   onFailed?: () => void
+  /** 内部 loading 起止各上报一次，供外层浮层整框屏蔽；true / false 成对。 */
+  onBusyChange?: (busy: boolean) => void
+  /** 浮层锁里的身份；配在 Popup 的 lockExceptions 里即可在整框屏蔽时仍可点。 */
+  lockKey?: string
 }
 
 /**
@@ -101,26 +106,33 @@ export function Button({
   style,
   onClick,
   onFailed,
+  onBusyChange,
+  lockKey,
 }: ButtonProps) {
   const [busy, setBusy] = useState(false)
   const inFlight = useRef(false)
+  const lock = usePopupLock()
+  const lockedByPopup = lock.blocked && !isPopupLockExempt(lockKey, lock)
   const loading = loadingProp || busy
 
+  const settleBusy = (value: boolean): void => {
+    inFlight.current = value
+    setBusy(value)
+    onBusyChange?.(value)
+  }
+
   const handleClick = (): void => {
-    if (disabled || loading || inFlight.current) return
+    if (disabled || loading || inFlight.current || lockedByPopup) return
     const result = onClick?.()
     if (!isThenable(result)) return
-    inFlight.current = true
-    setBusy(true)
+    settleBusy(true)
     void Promise.resolve(result).then(
       (value) => {
-        inFlight.current = false
-        setBusy(false)
+        settleBusy(false)
         if (!isSuccess(value)) onFailed?.()
       },
       (error: unknown) => {
-        inFlight.current = false
-        setBusy(false)
+        settleBusy(false)
         throw error
       },
     )
@@ -148,6 +160,7 @@ export function Button({
     iconOnly ? 'mptk-btn--icon-only' : '',
     spinCircle ? 'mptk-btn--spin-circle' : '',
     loading ? 'mptk-btn--loading' : '',
+    lock.blocked && isPopupLockExempt(lockKey, lock) ? 'mptk-btn--lock-exempt' : '',
     disabled ? 'mptk-btn--disabled' : '',
     className,
   ]

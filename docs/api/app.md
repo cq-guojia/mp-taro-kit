@@ -21,7 +21,7 @@ export default createKitApp(App, {
 1. `configure(createTaroFaces(faces), core)` —— 13 个平台方法走 Taro 默认实现，业务用 `faces` 覆盖差异项。
 2. `configureSafeArea` —— 取 `getWindowInfo().statusBarHeight` + `getMenuButtonBoundingClientRect()` 注入顶部真值，取 `screenHeight - safeArea.bottom` 注入底部横条真值（Skyline 下 `env()` 取不到）。
 3. `setThemeMode(mode, faces)` —— 默认跟随系统，`theme.onDarkChange` 默认用 `themeConfig` 同步窗口背景。
-4. 渲染 `children` + 命令宿主。
+4. 把命令宿主写进注册表；实际渲染由 `KitPage` 在每页页面树中完成。Taro 的 App 根节点不投影成页面可见子树，宿主留在 App 根节点会让命令「有返回但看不见」。
 
 初始化按配置指纹去重：相同配置只做一次；配置变了（改 faces / 主题，或 HMR 重载）整体重放，不静默吞掉新配置。
 
@@ -47,9 +47,13 @@ export default createKitApp(App, {
 | 宿主 | 能力 | 遮罩 |
 |---|---|---|
 | `ToastHost` | `showToast` / `hideToast` / `clearToasts` | 无 |
-| `DialogHost` | `alert` / `confirm` | 有（唯一用 `<Overlay>` 的命令宿主，锁滚动） |
+| `DialogHost` | `alert` / `confirm` | 有（基于 `ContentPopup` 底座，遮罩与锁滚动随浮层） |
 | `LoadingHost` | `showLoading` / `hideLoading` | 无 |
 | `LoginDialogHost` | 渲染 `setLoginDialog` 注册的业务登录窗 | 由业务 UI 决定 |
+
+四件宿主（含兼容组合 `OverlayHost`）共用 `ui/infra/style` 里的一张 `fixed` 全屏层：容器 `pointer-events: none`，只有真正弹出的子树按类名恢复命中（WXSS 会整条丢弃 `> *` 这类通配符选择器）。拆宿主时必须四件都在这条选择器里，少一件就会出现「命令有返回但屏幕没东西」。宿主样式需宿主应用显式引入 `mp-taro-kit/ui/infra/style`。
+
+宿主由 `KitPage` 从注册表取出、渲染在每页页面树里；不用 `KitPage` 的页面需要自行渲染同一批宿主，否则命令会因宿主未挂载而抛错。`createKitApp` 注入 Taro 页面栈读取器，命令调用时取栈顶页实例的稳定 id；`KitPage` 把本页实例 id 通过上下文传给宿主。Taro 会保留上一页的页面树，`DialogHost` 只认领同 id 的弹窗，避免旧页宿主抢走当前页的对话框，也不受分包 route 前缀影响。手动挂载且不在 `KitPage` 内的宿主只认领没有页面身份的弹窗。
 
 默认一件都不挂。用哪个命令就从 `mp-taro-kit/app` 显式 import 对应宿主，传进 `hosts`：
 
@@ -252,3 +256,9 @@ async function submit() {
 - 2026-11-21：移除 ScrollKeeperContext，改订阅全局滚动锁并注入 `scrollY={!locked}`
 - 2026-11-22：滚动锁方案实测无效，全部撤销；KitPage 不介入滚动位置，改由页面结构保证（滚动区稳定 key + 浮层恒定隔离容器）
 - 2026-11-25 11:12:26：宿主改为按需显式配置：createKitApp 的 hosts 默认空，三件 Host 由调用方显式 import；命令 API 拆 ui/commands/{toast,dialog,loading} 精确子入口；KitPage 浮动列样式下沉到自身并加 app/kit-page 出口；示例同步
+- 2026-11-25 11:56:20：DialogHost 改用 ContentPopup 底座
+- 2026-11-25 14:48:15：补四件命令宿主共用 fixed 全屏层的契约，说明拆分时漏定位会让命令弹层不进页面视口
+- 2026-11-25 14:49:52：补 WXSS 丢弃通配符选择器的限制，命中选择器改按子节点类名逐条列出
+- 2026-11-25 14:55:54：命令宿主改由 KitPage 在每页页面树渲染，createKitApp 只登记注册表
+- 2026-11-25 15:15:13：命令载荷按发起页 route 归属，避免 Taro 保留的旧页宿主抢走当前页对话框
+- 2026-11-25 15:31:08：命令归属改由 app 层注入 Taro 页面栈读取器，载荷记录页面实例 id，不再依赖渲染写入的全局 route

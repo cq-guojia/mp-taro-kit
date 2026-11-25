@@ -179,7 +179,10 @@ test('confirm() 推栈并由关闭动作 resolve true / false', async () => {
   const entries = ui.uiState().overlays.getSnapshot()
   assert.equal(entries.length, 1)
   assert.equal(entries[0].payload.kind, 'confirm')
-  assert.equal(entries[0].payload.cancelText, '再想想')
+  assert.equal(entries[0].payload.content.description, '确定删除？')
+  assert.equal(entries[0].payload.actions[0].text, '再想想')
+  assert.equal(entries[0].payload.closeable, false)
+  assert.equal(entries[0].payload.maskClosable, false)
   closeTop(false)
   assert.equal(await pending, false)
   assert.equal(ui.uiState().overlays.getSnapshot().length, 0)
@@ -195,9 +198,58 @@ test('alert() 解析即关，不携带选择', async () => {
   const pending = ui.alert('已完成')
   const entries = ui.uiState().overlays.getSnapshot()
   assert.equal(entries[0].payload.kind, 'alert')
-  assert.equal(entries[0].payload.confirmText, '确定')
+  assert.equal(entries[0].payload.actions[0].text, '确定')
+  assert.equal(entries[0].payload.content.description, '已完成')
   closeTop(true)
   assert.equal(await pending, undefined)
+})
+
+test('对话框载荷带齐三形态、位置、宽度与头部配置', async () => {
+  ui.resetUIForTests()
+  mountAll()
+  const badge = { content: { kind: 'icon', name: 'common.base:home' } }
+  const headerImage = { src: 'https://example.com/banner.png', width: 200 }
+  const offsets = { top: 1, right: 2, bottom: 3, left: 4 }
+  const pending = ui.confirm('说明正文', {
+    title: '标题', icon: 'common.base:info', note: '备注',
+    layout: 'joined', position: 'bottom', width: 280,
+    closeable: true, maskClosable: true,
+    badge, headerImage, offsets, lockExceptions: ['cancel'],
+    confirmText: '继续', cancelText: '返回',
+  })
+  const payload = ui.uiState().overlays.getSnapshot()[0].payload
+  assert.deepEqual(payload.content, {
+    variant: 'icon', title: '标题', description: '说明正文', note: '备注', icon: 'common.base:info',
+  })
+  assert.deepEqual(payload.actions.map((action) => [action.key, action.text]), [['cancel', '返回'], ['confirm', '继续']])
+  assert.equal(payload.layout, 'joined')
+  assert.equal(payload.position, 'bottom')
+  assert.equal(payload.width, 280)
+  assert.equal(payload.closeable, true)
+  assert.equal(payload.maskClosable, true)
+  assert.deepEqual(payload.badge, badge)
+  assert.deepEqual(payload.headerImage, headerImage)
+  assert.deepEqual(payload.offsets, offsets)
+  assert.deepEqual(payload.lockExceptions, ['cancel'])
+  ui.resetUIForTests()
+  assert.equal(await pending, false)
+})
+
+test('resetUIForTests settle 挂起的对话框：confirm 解析 false、alert 解析 undefined', async () => {
+  ui.resetUIForTests()
+  mountAll()
+  const yes = ui.confirm('等确认')
+  const notice = ui.alert('等提示')
+  ui.resetUIForTests()
+  assert.equal(await yes, false)
+  assert.equal(await notice, undefined)
+})
+
+test('Button 的忙碌上报在成功与失败两条路径成对', () => {
+  const source = read('../src/ui/actions/Button.tsx')
+  assert.match(source, /onBusyChange\?\.\(value\)/)
+  assert.equal((source.match(/settleBusy\(false\)/g) ?? []).length, 2, '成功 / 失败都要解锁并上报')
+  assert.match(source, /if \(disabled \|\| loading \|\| inFlight\.current \|\| lockedByPopup\) return/)
 })
 
 test('resetUIForTests 清空栈、通知、loading 与挂载标记', () => {
@@ -926,4 +978,35 @@ test('自动回顶：阈值变化即重算、一次节点命令回顶、无逐�
   assert.match(doc, /仅 iOS|安卓/, '文档没交代平台 scrollTo duration 的限制')
   assert.match(doc, /来回蹦|过山车/, '文档没交代逐帧方案废弃原因')
   assert.match(doc, /scrollViewToTop/, '文档示例缺一次回顶命令')
+})
+
+test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置驱动写法', () => {
+  const source = readFileSync(new URL('../demo/src/catalog.ts', import.meta.url), 'utf8')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, catalogModuleStub)
+
+  const page = mod.exports.catalogPages.find((item) => item.id === 'dialog')
+  assert.ok(page, '缺 Dialog 独立展示页')
+  assert.equal(page.path, 'pages/dialog/index')
+  assert.deepEqual(page.examples.map((item) => item.id), [
+    'config', 'alert', 'confirm', 'layout', 'header', 'custom-actions', 'busy',
+  ])
+  const entries = mod.exports.menu.flatMap((group) => group.entries)
+  assert.equal(entries.find((item) => item.id === 'dialog')?.pageId, 'dialog', 'Dialog 菜单没指向自己的页')
+  const actionSheet = entries.find((item) => item.id === 'action-sheet')
+  assert.equal(actionSheet?.status, 'planned', 'ActionSheet 仍是未实现占位')
+  assert.equal(actionSheet?.pageId, undefined, 'planned 条目不应绑跳转')
+
+  const demo = read('../demo/src/pages/dialog/index.tsx')
+  assert.match(demo, /from 'mp-taro-kit\/ui\/commands\/dialog'/, 'Dialog 页没从对话框子入口引命令')
+  assert.match(demo, /\balert\(/, 'Dialog 页没演 alert')
+  assert.match(demo, /\bconfirm\(/, 'Dialog 页没演 confirm')
+  assert.match(demo, /<CellGroup title="形态与几何">/, 'Dialog 页缺顶部配置驱动')
+  assert.match(demo, /onConfirm:/, 'Dialog 页缺异步闸门演示')
+  assert.match(demo, /lockExceptions:/, 'Dialog 页缺按钮例外演示')
+  assert.doesNotMatch(demo, /<Dialog\b/, 'Dialog 页不该再演声明式 Dialog')
+  assert.equal(exists('../demo/src/pages/dialog/index.config.ts'), true, '缺新页的 disableScroll 配置')
 })

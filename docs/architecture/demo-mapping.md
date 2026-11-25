@@ -79,7 +79,7 @@ demo/                                               # 仓库内的 Taro 小程�
 - 三页职责固定：「主题配置」是**配置项清单**（基础配置 / 颜色配置 / 其他控件配置，颜色给出明暗色值与标准色相名），回答「默认值是什么、在哪改」；「设计基础」是**取值依据**（灰阶层级与色相分档的理由）；「尺寸」是**档位标尺**（逐档铺开看比例）。配置页只列**不传时真有默认值**的项，必须由调用方传的项不列；同一条取值允许在配置页出现一次，但只列值与档位名，不重复讲理由。
 - 整页就是内容本体的页标 `bare`，并让示例的 `title` 留空：页壳不渲染示例块卡片与标题区，卡片直接铺在页面底色上。不再出现「示例块卡片里再套 Card」的双层卡；主题配置页就是这种形态。
 - 分组判据按「使用者找组件时的场景」，不按 `src/ui/` 的目录；库侧路径仍是 `ui/feedback` / `ui/layout`，目录不反向约束 exports。浮层类按「用户要做什么」收进「浮层与弹出」组，组内四档顺序固定：通用容器（`Popup`，内容是消费方塞的）→ 确认对话（`Dialog`，问一个二选一）→ 操作面板（`ActionSheet` / `ShareSheet` / `DropdownMenu` / `Popover`，给一组候选挑一个）→ 轻提示（`Toast` / `Notify` / `Loading`，只告知不用回应）。`Overlay` 遮罩归基础组件——它是下拉 / 气泡 / Popup 共用的底层能力，不是弹窗专属；`Drawer` 取消，侧滑由 `Popup` 的左右档吸收，菜单不再有独立抽屉条目（Vant / antd-mobile / NutUI 均无独立 Drawer）。命令式 `alert` / `confirm` / `showToast` / `showLoading` 仍在「命令式 API」组，与组件式按调用方式分开。
-- **演示按使用者分页，被引用的下层只演自己**：遮罩不知道谁会用它，所以遮罩页只演示压暗、浓度、底色、点击策略，不出现 Popup / Dialog；Popup 用它做出来的成品归 Popup 页，下拉归导航页，Dialog / Toast / Loading 归反馈页。抽屉已从菜单移除（侧滑并入 Popup 左右档），演示页暂留、由使用者逐个调整。`tests/layout.test.mjs` 断言遮罩页不出现使用者。
+- **演示按使用者分页，被引用的下层只演自己**：遮罩不知道谁会用它，所以遮罩页只演示压暗、浓度、底色、点击策略，不出现 Popup / Dialog；Popup 用它做出来的成品归 Popup 页，下拉归导航页，Toast / Loading 归反馈页。Dialog 单独成页，以 `alert` / `confirm` 命令为展示主体，沿用 Popup 页「顶部配置统一控制下方演示」的写法；声明式 `Dialog` 不另起菜单。抽屉已从菜单移除（侧滑并入 Popup 左右档），演示页暂留、由使用者逐个调整。`tests/layout.test.mjs` 断言遮罩页不出现使用者。
 - 每个页面必须走 `DemoShell`：外壳 `height: 100vh` + `scroll-view type="custom"`，页面 json 配 `disableScroll: true`。Skyline 不支持页面全局滚动，绕开外壳写普通容器会让超屏内容滚不到；平台依据见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md)。
 - 站级设置入口由 `DemoShell` 每页固定挂进右侧浮动列（id `demo-settings`），不并入页面 `actions`、不受 `hideActions` 屏蔽；面板 `DemoSettings` 用底部 `Popup` 默认 `panel` 档（高度由三行内容撑开），单组 `CellGroup` 无标题、Cell 无副标题，去上下外框线（`border={false}`）且分隔线不内缩（`dividerInset={false}`），放明暗模式 / 编译模式 / 当前版本三项；关闭按钮用核心默认位置（外右上）。这是 demo 自己的调试能力，不进 `catalog.ts` 演示页。编译模式如实标注：`renderer` 是 `app.config.ts` 的编译期配置，运行时无切换 API；confirm 后只重启运行环境，真正切引擎靠开发者工具「开发调试 → Switch Render」或改配置重编译。
 - 控件的效果展示归演示站；props、组内行为与用法代码归 `docs/api/<组件>.md`（如 [Cell 单元格](../api/cell.md)、[Switch 开关](../api/switch.md)、[Segmented 分段选择](../api/segmented.md)），演示站不展示代码。演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
@@ -149,3 +149,4 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-20 22:16:12：设置面板改回panel档与核心默认右上关闭位
 - 2026-11-20 22:26:58：设置面板 CellGroup 去外框线、分隔线不内缩，关闭位外右上
 - 2026-11-22：页面级卡片间距统一收口到 .demo-card（左右与底部均取 --mptk-space-4），删除 .demo-cards 包裹层；首页主题块与 menu、主题配置页按此对齐，Cell 页块内组合 Card 改用 .demo-stack 避免双重缩进
+- 2026-11-25 12:10:47：Dialog 独立成页并以 alert / confirm 为展示主体，沿用 Popup 页配置驱动写法

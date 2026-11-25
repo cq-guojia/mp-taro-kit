@@ -126,6 +126,8 @@
 | `style` | CSSProperties | 否 | — | 追加样式（只补布局）；`style.width` 参与定宽判断 |
 | `onClick` | `() => unknown` | 否 | — | 返回 Promise 自动 loading；禁用 / 加载中不触发 |
 | `onFailed` | `() => void` | 否 | — | `onClick` 返回 `false` 或 `Promise<false>` 时回调 |
+| `onBusyChange` | `(busy: boolean) => void` | 否 | — | 内部 loading 起止各上报一次，成功 / 失败路径都成对 |
+| `lockKey` | `string` | 否 | — | 浮层整框锁里的身份；登记在 `Popup` / `ContentPopup` 的 `lockExceptions` 里即可在锁期间仍可点 |
 
 ## 样式契约
 
@@ -151,3 +153,4 @@
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
 - 2026-11-15 17:05:00：实心语义块的字色统一走新增的 `--mptk-fg-on-accent`（明暗都是白），不再借用 `--mptk-surface-1`
 - 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME），不吃 Taro View 的 400ms 默认
+- 2026-11-25 11:56:20：登记 onBusyChange 与 lockKey

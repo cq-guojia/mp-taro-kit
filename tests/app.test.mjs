@@ -33,12 +33,14 @@ test('浮动列样式随 KitPage 自带，app 装配出口不再顶层带样式'
 })
 
 /** 三件命令宿主按能力拆开：遮罩只进 DialogHost。 */
-test('toast / dialog / loading 三件宿主独立，遮罩只属于 DialogHost', () => {
+test('toast / dialog / loading 三件宿主独立，对话框遮罩由 ContentPopup 底座提供', () => {
   for (const name of ['ToastHost', 'DialogHost', 'LoadingHost']) {
     assert.equal(existsSync(join(root, `src/ui/infra/${name}.tsx`)), true, `缺 ${name}.tsx`)
     assert.match(read(`src/ui/infra/index.ts`), new RegExp(`export \\{ ${name}`), `${name} 没导出`)
   }
-  assert.match(read('src/ui/infra/DialogHost.tsx'), /<Overlay\s+closable=\{false\}/, 'Dialog 没挂遮罩')
+  const dialogHost = read('src/ui/infra/DialogHost.tsx')
+  assert.match(dialogHost, /<ContentPopup\b/, 'DialogHost 没走 ContentPopup 底座')
+  assert.match(dialogHost, /closable=\{payload\.maskClosable\}/, '对话框遮罩开关没接载荷')
   assert.doesNotMatch(read('src/ui/infra/ToastHost.tsx'), /<Overlay\b/, 'Toast 带了遮罩')
   assert.doesNotMatch(read('src/ui/infra/LoadingHost.tsx'), /<Overlay\b/, 'Loading 带了遮罩')
   // OverlayHost 是兼容组合，自身不许再出现遮罩实现。
@@ -46,6 +48,21 @@ test('toast / dialog / loading 三件宿主独立，遮罩只属于 DialogHost',
   assert.match(read('src/ui/infra/OverlayHost.tsx'), /<ToastHost/, '兼容层没组合 ToastHost')
   assert.match(read('src/ui/infra/OverlayHost.tsx'), /<DialogHost/, '兼容层没组合 DialogHost')
   assert.match(read('src/ui/infra/OverlayHost.tsx'), /<LoadingHost/, '兼容层没组合 LoadingHost')
+})
+
+/** 宿主拆分后四件都得有全屏定位，否则命令式弹层只在 App 根节点里生成、不进页面视口。 */
+test('四件命令宿主都有全屏定位，空宿主不吃页面点击', () => {
+  const css = read('dist/ui/infra/style/index.css')
+  const group = css.match(/\.mptk-overlay-host,[\s\S]*?\.mptk-loading-host\s*\{([\s\S]*?)\}/)
+  assert.ok(group, '四件宿主没进同一条全屏定位选择器')
+  assert.match(group[1], /position:\s*fixed/, '宿主缺全屏定位，命令式弹层不会显示')
+  for (const host of ['overlay', 'toast', 'dialog', 'loading']) {
+    assert.match(group[0], new RegExp(`\\.mptk-${host}-host`), `${host} 宿主没进公共定位选择器`)
+  }
+  const hit = css.match(/\.mptk-overlay-host\s*>\s*\.mptk-toast-host[\s\S]*?\.mptk-loading-host\s*>\s*\.mptk-loading\s*\{([\s\S]*?)\}/)
+  assert.ok(hit, '弹出子树没恢复命中的选择器')
+  assert.match(hit[1], /pointer-events:\s*auto/, '弹出子树没恢复命中')
+  assert.doesNotMatch(css, /mptk-(?:toast|dialog|loading|overlay)-host\s*>\s*\*/, 'WXSS 会丢弃通配符选择器，不能靠它恢复命中')
 })
 
 /** 按能力判定挂载：没挂 ToastHost 就调 showToast 必须当场抛，且错误信息点名对应 Host。 */
@@ -87,7 +104,11 @@ test('createKitApp 配置指纹 guard 与按需宿主', () => {
   assert.match(src, /safeArea && typeof windowInfo\.screenHeight/, 'safeArea / screenHeight 缺失时没兜底')
   assert.match(src, /setThemeMode\(/, '没注入主题')
   assert.match(src, /options\.hosts \?\? \[\]/, '默认宿主不是空，违背按需配置')
-  assert.match(src, /hosts\.map\(/, '没按 hosts 数组渲染宿主')
+  assert.match(src, /setKitHosts\(options\.hosts \?\? \[\]\)/, '宿主没登记到页面壳')
+  assert.doesNotMatch(src, /hosts\.map\(/, '宿主不该留在 App 根节点，Taro 不投影到页面')
+  const page = read('src/app/KitPage.tsx')
+  assert.match(page, /kitHosts\(\)/, 'KitPage 没读取宿主注册表')
+  assert.match(page, /<Host key=\{`mptk-command-host-/, 'KitPage 没在页面树里渲染宿主')
 })
 
 /** KitPage：每页包一层的页面壳，默认回顶可关、业务项可加，不碰受控 scrollTop。 */

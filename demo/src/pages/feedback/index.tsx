@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { Button } from 'mp-taro-kit/ui/actions'
-import { Dialog, Loader, Loading, Spinner, Toast } from 'mp-taro-kit/ui/feedback'
+import { Loader, Loading, Spinner, Toast } from 'mp-taro-kit/ui/feedback'
 
 import 'mp-taro-kit/ui/actions/style'
 import 'mp-taro-kit/ui/feedback/style'
@@ -9,8 +9,6 @@ import { DemoPage } from '../../components/DemoBlock'
 
 export default function FeedbackPage() {
   const [toastVisible, setToastVisible] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogResult, setDialogResult] = useState('')
 
   const render = (id: string) => {
     if (id === 'toast') {
@@ -70,36 +68,6 @@ export default function FeedbackPage() {
             <Spinner variant="chase" size={24} color="#00a870" className="demo-loader-spaced" />
             <Loader variant="blocks" color="#00a870" className="demo-loader-spaced" />
           </View>
-        </View>
-      )
-    }
-    if (id === 'dialog') {
-      return (
-        <View>
-          <View className="demo-row">
-            <Button className="demo-item" onClick={() => setDialogOpen(true)}>
-              打开对话框
-            </Button>
-          </View>
-          {dialogResult === '' ? null : (
-            <Text className="demo-note">{`上次选择：${dialogResult}`}</Text>
-          )}
-          <Dialog
-            open={dialogOpen}
-            title="声明式对话框"
-            confirmText="确定"
-            cancelText="取消"
-            onConfirm={() => {
-              setDialogOpen(false)
-              setDialogResult('确定')
-            }}
-            onCancel={() => {
-              setDialogOpen(false)
-              setDialogResult('取消')
-            }}
-          >
-            <Text>内容由 children 注入</Text>
-          </Dialog>
         </View>
       )
     }

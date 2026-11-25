@@ -73,6 +73,17 @@
   min-height: var(--mptk-s-zero);
 }
 
+/* 整框屏蔽：WebView 靠 pointer-events 命中判定，Skyline 另由面板 catchMove + 控件逻辑门兜底；
+   只有登记在 lockExceptions 的按钮恢复命中，其余子树一律不响应。 */
+.mptk-popup--blocked .mptk-popup__body,
+.mptk-popup--blocked .mptk-popup__foot {
+  pointer-events: none;
+}
+
+.mptk-popup--blocked .mptk-btn--lock-exempt {
+  pointer-events: auto;
+}
+
 /* 顶部让位：注入生效时由 JS 把 max(呼吸 16px, 让位真值) 写进面板 padding-top 行内；
    下面两条是**未注入时的兜底**，同样落在面板上——让位与预留内边距同一目的，占同一层取较大者，
    不另起 body 一层相加。面板贴边定位（top: 0），不要把安全区偏移混进 fixed 的 top：

@@ -10,6 +10,9 @@ import {
   useBackToTop,
   type FloatingActionPosition,
 } from '../ui/layout/floating-action/index.js'
+import { KitPageKeyContext } from '../ui/infra/page-key-context.js'
+import { pageKeyOf } from './current-page.js'
+import { kitHosts } from './kit-hosts.js'
 import { injectFirstScrollView } from './scroll-inject.js'
 
 interface ScrollNode {
@@ -131,12 +134,18 @@ export function KitPage({
     )
   }
 
+  const hosts = kitHosts()
+  const pageKey = pageKeyOf(Taro.getCurrentInstance().page)
+
   return (
     <KitPageScrollContext.Provider value={onScroll}>
       {renderedChildren}
       {items.length === 0 ? null : (
         <FloatingActionGroup position={position}>{items}</FloatingActionGroup>
       )}
+      <KitPageKeyContext.Provider value={pageKey ?? null}>
+        {hosts.map((Host, index) => <Host key={`mptk-command-host-${String(index)}`} />)}
+      </KitPageKeyContext.Provider>
     </KitPageScrollContext.Provider>
   )
 }

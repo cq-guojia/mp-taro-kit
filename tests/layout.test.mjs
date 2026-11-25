@@ -67,7 +67,7 @@ test('遮罩只有一份实现：Drawer / Dropdown 不再自绘遮罩，Dialog �
   for (const file of ['src/ui/navigation/Drawer.tsx', 'src/ui/navigation/Dropdown.tsx']) {
     assert.match(read(file), /<Overlay\b/, `${file} 没用 layout 的 Overlay`)
   }
-  assert.match(read('src/ui/infra/DialogHost.tsx'), /<Overlay\s+closable=\{false\}/, '命令式 Dialog 没挂遮罩')
+  assert.match(read('src/ui/infra/DialogHost.tsx'), /<ContentPopup\b/, '命令式 Dialog 没走共用浮层底座')
   assert.doesNotMatch(read('src/ui/infra/ToastHost.tsx'), /<Overlay\b/, 'Toast 不许带遮罩')
   assert.doesNotMatch(read('src/ui/infra/LoadingHost.tsx'), /<Overlay\b/, 'Loading 不许带遮罩')
 })

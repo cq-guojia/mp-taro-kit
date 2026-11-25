@@ -32,7 +32,16 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 | `closeOffset` | `EdgeOffset` | `{}` | 关闭按钮四向微调，叠加在 `closePosition` 档位之上；正=向内收、负=向外伸，与 `image.offset` 同一类型。实现走 WXSS 档位基线变量 + 内联标准定位属性，口径详见 [Popup](popup.md#参数) |
 | `overlay` / `overlayTone` / `overlayOpacity` / `closable` / `lockScroll` / `duration` | 同 Popup | 同 Popup | 遮罩、点遮罩关闭与进出场 |
 | `surface` | `'panel' \| 'none'` | `'panel'` | `'none'` 是完全自绘的裸壳 |
+| `width` | `number \| string` | 走 Popup 档位 | 面板宽度，数字按 px、字符串按 CSS 长度；显式 `panelStyle.width` 优先 |
 | `round` / `roundSize` / `contentPadding` / `panelStyle` / `className` | 同 Popup | 同 Popup | 面板几何；`image` / `badge` 未给内边距时默认 0，让头图贴边 |
+| `busy` / `locked` | `boolean` | `false` | 整框交互锁：异步操作进行中或外部强制锁；两条取或，解锁后恢复 |
+| `lockExceptions` | `readonly string[]` | `[]` | 锁期间的例外键：`'close'` / `'overlay'` 或按钮自己的 `lockKey` |
+
+### 整框交互锁
+
+`busy` / `locked` 一开，整块面板进入屏蔽：关闭叉与点遮罩两条关闭路径都封住，内部按钮的 `onClick` 由锁上下文门控，不会误触发宿主回调；`lockExceptions` 列出的 `lockKey` 仍可点，命令式确认框默认放行 `cancel`。`Button` 的 `onBusyChange` 在内部 loading 起止各上报一次（`true` / `false` 成对），供外层把按钮自己的转圈状态接成整框锁。
+
+WebView 侧用 `pointer-events: none` + 例外子树 `auto` 命中；Skyline 侧不能只靠 `pointer-events`，另由面板的 `catchMove` 与控件逻辑门兜底。这条是源码与编译产物级核实，尚未做 Skyline / WebView 双端真机观感验证。
 
 ### 头部通用
 
@@ -277,3 +286,4 @@ interface ContentPopupFooterConfig {
 - 2026-11-24 22:25:46：关闭图片头弹窗时冻结几何：复位只在新一轮测量开启时做，退场动画不再跳
 - 2026-11-24 22:40:37：底部弹出的徽标头默认隐藏关闭叉，避免与外伸 icon 冲突；显式 closeable=true 可覆盖
 - 2026-11-24 23:03:59：新增头部透明档：headerBackground:'transparent' 时面板底色下沉到内容与底栏，头部那段透出遮罩，异形图上方透明区直接可见，不需要上下偏移；演示站用用户提供的透明火箭图落在「透明」按钮
+- 2026-11-25 11:56:19：补 width 与整框交互锁参数，写清双端落法和未真机验证边界

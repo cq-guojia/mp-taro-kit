@@ -8,6 +8,7 @@ export function useThemeSnapshot(): ThemeSnapshot {
   return useSyncExternalStore(
     (listener) => store.subscribe(listener),
     () => store.getSnapshot(),
+    () => store.getSnapshot(),
   )
 }
 

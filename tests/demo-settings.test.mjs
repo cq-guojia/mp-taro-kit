@@ -90,7 +90,7 @@ test('demo 设置面板：每页常驻入口，底部面板按内容撑高，三
 test('编译模式：confirm 确认后重启，如实标注引擎切换路径', () => {
   const panel = read('demo/src/components/DemoSettings.tsx')
 
-  assert.match(panel, /import \{ confirm \} from 'mp-taro-kit\/ui'/, '没用库的 confirm')
+  assert.match(panel, /import \{ confirm \} from 'mp-taro-kit\/ui\/commands\/dialog'/, '没用库的对话框子入口')
   assert.match(panel, /confirm\(/, '切换前没弹 confirm')
   assert.match(panel, /\.then\(\(ok\) =>/, 'confirm 的 Promise 结果没被处理')
   assert.match(panel, /if \(!ok\) return/, '取消重启后仍继续执行')

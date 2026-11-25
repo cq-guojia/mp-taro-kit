@@ -65,6 +65,8 @@
 |---|---|---|---|
 | `surface` | `'panel' \| 'none'` | `'panel'` | `panel` 是有底色 / 内边距 / 圆角的常规面板；`none` 是裸壳——不画底色、内边距、圆角，只留遮罩 / 进场 / 关闭按钮 / 定位 |
 
+`busy` / `locked` / `lockExceptions` 是底座的整框交互锁，语义、例外键与双端落法集中在 [ContentPopup 的整框交互锁](content-popup.md#整框交互锁)，两处共用同一套上下文；普通文字弹窗不走 ContentPopup 也能用。
+
 两档的**高度模型完全相同**：body 都是 `View` 直出，面板高度由 children 撑开；surface 只管底色 / 内边距 / 圆角，不再有「panel 写死高、裸壳撑高」的分裂。裸壳用于「自己画内容」：children 塞什么就显示什么，遮罩、`overlayTone` / `overlayOpacity`、关闭按钮及其位置全保留。样式上 `.mptk-popup--surface-none .mptk-popup__panel` 放样式表末尾、双类名覆盖各档位（含 `--round`），不依赖样式表顺序。主流库多是值型背景开关，这里连 padding、圆角一起关，故取 `surface` 做档位。
 
 **完全自定义的形式**：直接用底座 `Popup` 传 `surface="none"`，整块内容塞进 children，不要再套 `ImagePopup` / `ContentPopup`——那两个是「配好头部 / 图片 / 按钮」的配置式封装，自己画时不需要它们。裸壳撤掉的是面板自身的底色、16px 内距、圆角、`overflow:hidden` 与 `min-height`；其余浮层能力原样保留：
@@ -267,3 +269,4 @@ import 'mp-taro-kit/ui/layout/style'
 - 2026-11-24：关闭叉错位根因修复——档位几何收进 WXSS `--mptk-popup-close-base-*` 基线变量、定位读裸 `var()`，去掉带 fallback 的 `var()`（WXSS 会整条丢弃定位声明）。修「叉偏移」无效果：`closeOffset` 现按 `CLOSE_ANCHOR` 换算到档位实际锚定的边，四向字段在任意档位都生效；删未用的 `resolveEdgeShift`、去重复 `cssLength`，并修贴底安全区被 `contentPadding.bottom` 覆盖。
 - 2026-11-24 11:22:04：关闭偏移改由 CSS 变量驱动：档位 calc 算最终定位，零基线写 0px 修无效 calc
 - 2026-11-24 23:20:36：补完全自定义的形式说明：直接用 Popup 传 surface='none' 并自行写 children；列清保留的遮罩/关闭叉全档与偏移、让位仅限 top/left/right 且依赖宿主注入真值、高度由内容撑开
+- 2026-11-25 11:56:19：登记底座整框交互锁并指向 ContentPopup 的唯一说明

@@ -14,7 +14,7 @@
 | `mp-taro-kit/utils` | `dist/utils/index.d.ts` | `dist/utils/index.js` | `dist/utils/index.cjs` | 纯函数与 i18n 注册口 |
 | `mp-taro-kit/core` | `dist/core/index.d.ts` | `dist/core/index.js` | `dist/core/index.cjs` | `configure` 与注入式平台操作 |
 | `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件；命令汇总出口，要按需改用下面的子入口 |
-| `mp-taro-kit/ui/commands/toast` / `.../dialog` / `.../loading` | 有 | 有 | 有 | 命令式 API 的按能力子入口：分别只带 toast / dialog / loading 命令，互不串入 |
+| `mp-taro-kit/ui/commands/toast` / `.../dialog` / `.../loading` | 有 | 有 | 有 | 命令式 API 的按能力子入口：分别只带 toast / dialog / loading 命令，互不串入；`dialog` 同时导出 `DialogHost` 与载荷类型，API 与宿主同进口 |
 | `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 子域出口；`*` 可穿透多段，组件级与图标包级细路径同走这条 |
 | `mp-taro-kit/app/kit-page` | `dist/app/kit-page.d.ts` | `dist/app/kit-page.js` | `dist/app/kit-page.cjs` | KitPage 精确出口，浮动列样式随它自带；只引 `createKitApp` 不带这份样式 |
 | `mp-taro-kit/ui/*/style` | 无 | 无 | 无 | 字符串出口，`*` 可穿透多段，指向对应单元的 `style/index.css` |
@@ -62,7 +62,9 @@
 
 推荐用 `app` 出口的 `createKitApp(App, options)` 在应用入口一条接入（configure + 安全区 + 主题 + 命令宿主）；细节见 [应用级接入](app.md)。
 
-命令式宿主按能力拆成三件独立组件，各自只挂需要的那份：`ToastHost`（不带遮罩）、`DialogHost`（唯一带遮罩）、`LoadingHost`（不带遮罩）。`<OverlayHost />` 是三件的兼容组合出口，新代码不必用。`showToast` / `showLoading` / `alert` / `confirm` **按能力**同步检查对应宿主是否已挂载；没挂就调对应 API 每次抛带修复指引的 Error（错误点名 `ToastHost` / `DialogHost` / `LoadingHost`）。`hideToast` / `hideLoading` / `clearToasts` 不检查。`confirm` 以 Promise 解析出布尔值，`alert` 解析即关闭。
+命令式宿主按能力拆成三件独立组件，各自只挂需要的那份：`ToastHost`（不带遮罩）、`DialogHost`（唯一带遮罩）、`LoadingHost`（不带遮罩）。`<OverlayHost />` 是三件的兼容组合出口，新代码不必用。`showToast` / `showLoading` / `alert` / `confirm` **按能力**同步检查对应宿主是否已挂载；没挂就调对应 API 每次抛带修复指引的 Error（错误点名 `ToastHost` / `DialogHost` / `LoadingHost`）。`hideToast` / `hideLoading` / `clearToasts` 不检查。`confirm` 以 Promise 解析出布尔值，`alert` 解析即关闭。`DialogHost` 同时可从 `mp-taro-kit/ui/commands/dialog` 取得，不必再从 `mp-taro-kit/app` 翻宿主。
+
+对话框命令的载荷是判别联合：`title` / 说明默认都进 `ContentPopup` 的 body，不碰 header 框；`icon` + `note` 可选；`actions` 的按钮文案与颜色复用 Button 轴，`layout` 三档为 `spaced`（横排）/ `stack`（竖排）/ `joined`（竖线等分）。`position` / `width` / `closeable`（默认 `false`）/ `maskClosable`（默认 `false`，开启时映射为取消）/ `badge` / `headerImage` / `offsets` 都是数据化配置，不接 ReactNode。`onConfirm` 是可选的异步闸门：返回 Promise 期间按钮转圈并触发整框锁，reject 或返回 `false` 保持打开可重试，成功才出栈并 resolve；`lockExceptions` 默认放行 `cancel`。`resetUIForTests` 清栈时会把挂起的 Promise settle 掉。产物级断言在 `tests/tree-shaking.test.mjs`，只引对话框能力不会带进 Toast / Loading / FloatingAction。
 
 ### Cell / CellGroup 的组内行为
 
@@ -296,3 +298,4 @@ runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawe
 - 2026-11-15：16 档改名 3xs、空出的 xxs 给新增的 20px 档，刻度成七档；Tag 的 size 变为 3xs|xxs|xs|sm|md
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
 - 2026-11-25 11:12:26：补命令式 API 三个按能力子入口与 app/kit-page 精确出口
+- 2026-11-25 11:56:19：对话框子入口同出口提供 DialogHost 与载荷类型，补 Promise 闸门与产物级按需引入契约

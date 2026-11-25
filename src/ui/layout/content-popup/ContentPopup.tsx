@@ -163,6 +163,8 @@ export interface ContentPopupProps {
   round?: boolean
   roundSize?: PopupRoundSize
   contentPadding?: PopupContentPadding
+  /** 面板宽度：数字按 px、字符串按 CSS 长度；panelStyle.width 显式给时以后者为准。 */
+  width?: number | string
   panelStyle?: CSSProperties
   closeable?: boolean
   closeShape?: PopupCloseShape
@@ -216,6 +218,11 @@ export interface ContentPopupProps {
   actionsAlign?: ContentPopupActionsAlign
   /** 底栏排布、分隔与上边线配置，优先于 actionsLayout / actionsAlign。 */
   footerConfig?: ContentPopupFooterConfig
+
+  // 底座交互锁：普通文字弹窗也能用，命令式对话框用它罩住转圈期间
+  busy?: boolean
+  locked?: boolean
+  lockExceptions?: readonly string[]
 }
 
 const DEFAULT_CONTAINER_WIDTH = 320
@@ -500,6 +507,7 @@ export function ContentPopup({
   round,
   roundSize,
   contentPadding,
+  width,
   panelStyle,
   closeable,
   closeShape,
@@ -528,6 +536,9 @@ export function ContentPopup({
   actionsLayout = 'row',
   actionsAlign = 'center',
   footerConfig,
+  busy,
+  locked,
+  lockExceptions,
 }: ContentPopupProps) {
   const [natural, setNatural] = useState<ImageNaturalSize | undefined>(undefined)
   /* 垂直外伸要按图片真实渲染宽反推显示高——JS 拿不到 100% 档的实际像素宽，只能量节点。
@@ -825,9 +836,13 @@ export function ContentPopup({
   const transparentHeader = headerBackground === 'transparent'
 
   const mergedPanelStyle: CSSProperties | undefined =
-    panelBackground === undefined && panelStyle === undefined
+    panelBackground === undefined && panelStyle === undefined && width === undefined
       ? undefined
-      : { ...backgroundStyle(panelBackground), ...panelStyle }
+      : {
+          ...(width === undefined ? null : { width: cssLength(width) }),
+          ...backgroundStyle(panelBackground),
+          ...panelStyle,
+        }
 
   // 面板 Padding 由本组件自己分层：分割线要通到面板两边，不能窝在底座的 16px 内边距里。
   const contentPaddingValue: PopupContentPadding = contentPadding ?? 0
@@ -857,6 +872,9 @@ export function ContentPopup({
       closeBackground={closeBackground}
       closePosition={resolvedClosePosition}
       closeOffset={closeOffset}
+      busy={busy}
+      locked={locked}
+      lockExceptions={lockExceptions}
       onClose={onClose}
     >
       {hasHeader ? (

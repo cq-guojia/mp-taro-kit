@@ -1,12 +1,14 @@
-import { Fragment, type ComponentType, type ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import Taro from '@tarojs/taro'
 import { configure, type CoreConfig, type PlatformFaces } from '../core/index.js'
 import { configureSafeArea, setThemeMode, type ThemeMode } from '../runtime/index.js'
+import { setPageKeyProvider } from '../runtime/page-route.js'
 import { createSingleton } from '../runtime/singleton.js'
+import { currentPageKeyFromTaro } from './current-page.js'
+import { setKitHosts, type CommandHost } from './kit-hosts.js'
 import { createTaroFaces } from './taro-faces.js'
 
-/** 宿主是无必填 props 的组件；业务自定义宿主也按这个形态传。 */
-export type CommandHost = ComponentType<{ className?: string }>
+export type { CommandHost } from './kit-hosts.js'
 
 export interface ThemeConfig {
   readonly light: { readonly bgColor: string }
@@ -103,17 +105,12 @@ export function createKitApp<P extends { children?: ReactNode }>(
     state.fingerprint = fingerprint
   }
 
-  const hosts = options.hosts ?? []
+  // Taro 的 App 根节点不投影成页面可见子树，宿主只在 KitPage 里渲染才能进入当前页面。
+  setKitHosts(options.hosts ?? [])
+  setPageKeyProvider(currentPageKeyFromTaro)
 
   function KitApp(props: P) {
-    return (
-      <Fragment>
-        <App {...props} />
-        {hosts.map((Host, index) => (
-          <Host key={index} />
-        ))}
-      </Fragment>
-    )
+    return <App {...props} />
   }
   return KitApp
 }

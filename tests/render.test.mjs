@@ -118,6 +118,10 @@ const { resolveImageSize } = await import('../dist/ui/layout/image-size.js')
 const { closeOffsetVars } = await import('../dist/ui/layout/edge-offset.js')
 const { Drawer, Dropdown } = await import('../dist/ui/navigation/index.js')
 const { Dialog, Loading, Toast } = await import('../dist/ui/feedback/index.js')
+const { DialogHost } = await import('../dist/ui/infra/DialogHost.js')
+const { KitPageKeyContext } = await import('../dist/ui/infra/page-key-context.js')
+const { setPageKeyProvider } = await import('../dist/runtime/page-route.js')
+const commands = await import('../dist/ui/index.js')
 const { CARD_EDGE_OUT_OF_FLOW } = await import('../dist/ui/infra/card-edge.js')
 
 /** 渲染成一行 HTML，方便按 class 切片。 */
@@ -1138,4 +1142,78 @@ test('ContentPopup 三档位置生效，左右越界回落到中部', () => {
   const left = render(h(ContentPopup, { open: true, position: 'left' }))
   assert.match(left, /mptk-popup__panel--center/)
   assert.doesNotMatch(left, /mptk-popup__panel--left/)
+})
+
+test('宽度与整框锁在渲染节点上生效，只有例外按钮保留可点', () => {
+  const html = render(h(ContentPopup, {
+    open: true,
+    width: 280,
+    locked: true,
+    lockExceptions: ['cancel'],
+    actions: [
+      { text: '仍可点', lockKey: 'cancel' },
+      { text: '被锁住', lockKey: 'confirm' },
+    ],
+  }))
+  assert.match(html, /mptk-popup--blocked/)
+  assert.match(html, /width:\s*280px/)
+  const buttons = [...html.matchAll(/<view class="(mptk-btn[^"]*)"[^>]*><text[^>]*>([^<]*)<\/text>/g)]
+    .map((match) => ({ className: match[1], text: match[2] }))
+  const exempt = buttons.filter((button) => button.className.includes('mptk-btn--lock-exempt'))
+  assert.equal(exempt.length, 1, '只有一个例外按钮恢复可点')
+  assert.equal(exempt[0].text, '仍可点')
+  assert.deepEqual(
+    buttons.filter((button) => !button.className.includes('mptk-btn--lock-exempt')).map((button) => button.text),
+    ['被锁住'],
+  )
+})
+
+test('命令式对话框三形态共用 ContentPopup 视觉，默认无叉且宽度可配', async () => {
+  commands.resetUIForTests()
+  commands.markHostMounted('dialog')
+  const pending = [
+    commands.confirm('横排', { layout: 'spaced' }),
+    commands.confirm('竖排', { layout: 'stack', position: 'bottom', width: 260 }),
+    commands.alert('竖线', { layout: 'joined' }),
+  ]
+  const html = render(h(DialogHost))
+  for (const name of ['spaced', 'stack', 'joined']) {
+    assert.match(html, new RegExp(`mptk-content-popup__actions--${name}`), `${name} 形态没渲染`)
+  }
+  assert.match(html, /mptk-popup__panel--bottom/)
+  assert.match(html, /width:\s*260px/)
+  assert.doesNotMatch(html, /mptk-popup__close/, '命令式对话框默认不该有关闭叉')
+  commands.resetUIForTests()
+  await Promise.allSettled(pending)
+})
+
+test('声明式 Dialog 与命令式共用 ContentPopup 面板与底栏', () => {
+  const html = render(h(Dialog, { open: true, title: '声明式', layout: 'joined' }))
+  assert.match(html, /mptk-content-popup__panel/)
+  assert.match(html, /mptk-content-popup__actions--joined/)
+  assert.match(html, /声明式/)
+  assert.doesNotMatch(html, /mptk-fb-dialog__panel|mptk-fb-dialog__action--confirm/, '旧自绘面板还在')
+})
+
+test('Taro 保留上一页页面树时，弹窗只由发起页的宿主认领', async () => {
+  commands.resetUIForTests()
+  commands.markHostMounted('dialog')
+  commands.markHostMounted('dialog')
+  setPageKeyProvider(() => 'key-current')
+  const pending = commands.confirm('归属于当前页')
+  const renderHost = (key) => render(h(KitPageKeyContext.Provider, { value: key }, h(DialogHost)))
+  assert.doesNotMatch(renderHost('key-stale'), /mptk-dialog__description/, '上一页宿主抢到了弹窗')
+  assert.doesNotMatch(renderHost(null), /mptk-dialog__description/, '拿不到页面身份的宿主不该认领')
+  assert.match(renderHost('key-current'), /mptk-dialog__description/, '当前页宿主没拿到弹窗')
+  commands.resetUIForTests()
+  await Promise.allSettled([pending])
+
+  // 手动挂载的全局宿主（context 未给值）只认领没有发起页身份的载荷。
+  commands.markHostMounted('dialog')
+  setPageKeyProvider(() => '')
+  const manual = commands.alert('全局弹窗')
+  assert.match(render(h(DialogHost)), /mptk-dialog__description/, '手动宿主没认领无页面身份的弹窗')
+  commands.resetUIForTests()
+  await Promise.allSettled([manual])
+  setPageKeyProvider(() => '')
 })

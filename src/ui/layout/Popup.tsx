@@ -13,6 +13,8 @@ import {
   type PopupPosition,
 } from './close-position.js'
 import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
+import { PopupLockContext, isPopupLockExempt, usePopupLock } from '../infra/popup-lock.js'
+import type { PopupLockState } from '../infra/popup-lock.js'
 import { Overlay, type OverlayOpacity, type OverlayTone } from './Overlay.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
 import { isTopAnchored, resolveBottomInset, resolveTopInset, TOP_BREATH_PX, type TopInsetLevel } from './safe-inset.js'
@@ -82,6 +84,12 @@ export interface PopupProps {
   contentPadding?: PopupContentPadding
   /** 面板内联样式：ImagePopup 用它让裸壳面板贴合图片宽度；不传走各档位默认 */
   panelStyle?: CSSProperties
+  /** 异步操作进行中：整框屏蔽，操作完成才解锁；与 locked 取或 */
+  busy?: boolean
+  /** 外部强制锁：所有控件不可点、三条关闭路径全封，直到解锁 */
+  locked?: boolean
+  /** 锁期间的例外键：'close' / 'overlay' 或按钮自己的 lockKey */
+  lockExceptions?: readonly string[]
 }
 
 /** 弹出层：遮罩 + 定位面板，面板高度由 children 撑开；超高要滚由调用方在 children 里包 scroll-view 并给高。 */
@@ -109,9 +117,23 @@ export function Popup({
   insetTop,
   contentPadding,
   panelStyle,
+  busy = false,
+  locked = false,
+  lockExceptions,
 }: PopupProps) {
   const { mounted, open: shown } = usePresence(open, duration)
+  const outerLock = usePopupLock()
   if (!mounted) return null
+
+  // 嵌套浮层继承外层锁；两层的例外合并，内层能放行的控件在外层也放行。
+  const lockState: PopupLockState = {
+    blocked: busy || locked || outerLock.blocked,
+    exceptions: lockExceptions === undefined
+      ? outerLock.exceptions
+      : [...outerLock.exceptions, ...lockExceptions],
+  }
+  const blocked = lockState.blocked
+  const overlayExempt = isPopupLockExempt('overlay', lockState)
 
   // 让位只对上 / 左 / 右生效：先按位置判定，center / bottom 即使传了 insetTop 也强制 none。
   const resolvedInset: PopupInsetTop = isTopAnchored(position) ? insetTop ?? 'nav-bar' : 'none'
@@ -157,24 +179,30 @@ export function Popup({
     `mptk-popup--radius-${roundSize}`,
     resolvedInset === 'none' ? '' : `mptk-popup--inset-${resolvedInset}`,
     closeOutside ? 'mptk-popup--close-outside' : '',
+    blocked ? 'mptk-popup--blocked' : '',
     shown ? 'mptk-popup--open' : '',
   ]
   const panel = ['mptk-popup__panel', `mptk-popup__panel--${position}`, className]
 
   return (
+    <PopupLockContext.Provider value={lockState}>
     <View className={names.filter(Boolean).join(' ')}>
       {overlay ? (
         <Overlay
           visible={shown}
           tone={overlayTone}
           opacity={overlayOpacity}
-          closable={closable}
+          closable={closable && (!blocked || overlayExempt)}
           lockScroll={lockScroll}
           duration={duration}
           onClose={onClose}
         />
       ) : null}
-      <View className={panel.filter(Boolean).join(' ')} style={padStyle === undefined ? panelStyle : { ...padStyle, ...panelStyle }}>
+      <View
+        className={panel.filter(Boolean).join(' ')}
+        style={padStyle === undefined ? panelStyle : { ...padStyle, ...panelStyle }}
+        catchMove={blocked}
+      >
         {/* 两档 body 都用 View 直出：面板高度由 children 撑开，不写死 35vh。
             要滚由调用方自己在 children 里包 scroll-view 并给确定高（长列表 / 长图走这条，
             与 ImagePopup 长图档一致）；surface 只差底色 / 内边距 / 圆角。 */}
@@ -198,10 +226,12 @@ export function Popup({
             ].filter(Boolean).join(' ')}
             style={closeOffsetVars(closeOffset) as CSSProperties}
             onClick={onClose}
+            lockKey="close"
           />
         ) : null}
       </View>
     </View>
+    </PopupLockContext.Provider>
   )
 }
 

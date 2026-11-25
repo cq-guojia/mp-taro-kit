@@ -88,7 +88,7 @@
 
 - **滚动穿透**：遮罩挂 `catchMove` 拦事件冒泡。这是事件层的兜底，不碰滚动容器的属性（切 `scroll-y` 既拦不干净、又会在 Skyline 下触发原生 scroll-view 重建）。
 - **滚动位置保持 = 节点层级隔离**：浮层开合绝不与页面滚动容器同级插拔。Taro 把 React 的 state 更新归级到 Page 的 `setData`；若浮层节点和 `ScrollView` 是同一父节点下的兄弟，浮层增删时渲染层 diff 范围扩大，原生 `scroll-view`（Skyline 的增强自建容器）被重建，它的 `scrollTop` 是实例状态、不在虚拟 DOM 里，一重建就归零——表现为关掉浮层后回顶。正确结构：滚动区待在稳定分支（带稳定 `key`），所有会增删的浮层放进一个**恒定存在**的容器（demo 里的 `demo-shell__overlays`），开合只动这个容器内部。这条是消费方的页面结构契约，库不强插容器；demo 提供可照抄的写法。**三件都不做**：不记坐标再 `scrollTo` 跳回、不切 `scroll-y`、不写受控 `scrollTop`。
-- **命令式 Dialog**：自带遮罩，`closable={false}`，点空白不关，关闭只走按钮。
+- **命令式 Dialog**：走 `ContentPopup` 底座，默认无关闭叉、点遮罩不关；`closeable` / `maskClosable` 可显式开启，开启遮罩点击映射为 cancel。
 
 ## 不做什么
 
@@ -134,3 +134,4 @@
 - 2026-11-21：`lockScroll` 在 KitPage 子树内自动保存/恢复滚动偏移，关闭浮层不再把用户带回顶部
 - 2026-11-21：废弃「记 scrollTop 再 scrollTo 跳回」（浮层在 KitPage 外拿不到 context、恢复从不执行）。改全局锁切 `scroll-y`——实测 Skyline 下仍回顶，一并废弃
 - 2026-11-22：查实真根因（Taro 更新归级到 Page.setData，浮层与 ScrollView 同级增删令原生 scroll-view 重建、scrollTop 归零）。改为节点层级隔离：滚动区带稳定 key、浮层放进恒定存在的隔离容器；撤销全局锁 / 切 scroll-y / 记位置跳回三套无效方案
+- 2026-11-25 15:31:08：同步命令式 Dialog 的关闭叉与遮罩点击契约

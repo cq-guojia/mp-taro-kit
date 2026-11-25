@@ -1,15 +1,8 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import { Button } from 'mp-taro-kit/ui/actions'
-import {
-  alert,
-  clearToasts,
-  confirm,
-  hideLoading,
-  hideToast,
-  showLoading,
-  showToast,
-} from 'mp-taro-kit/ui'
+import { clearToasts, hideToast, showToast } from 'mp-taro-kit/ui/commands/toast'
+import { hideLoading, showLoading } from 'mp-taro-kit/ui/commands/loading'
 
 import 'mp-taro-kit/ui/actions/style'
 import 'mp-taro-kit/ui/infra/style'
@@ -17,8 +10,6 @@ import { DemoPage } from '../../components/DemoBlock'
 
 export default function CommandsPage() {
   const [toastId, setToastId] = useState<number | null>(null)
-  const [alertResult, setAlertResult] = useState('')
-  const [confirmResult, setConfirmResult] = useState('')
   const [loadingResult, setLoadingResult] = useState('')
 
   const render = (id: string) => {
@@ -48,46 +39,6 @@ export default function CommandsPage() {
             </Button>
           </View>
           {toastId === null ? null : <Text className="demo-note">{`最近 id：${toastId}`}</Text>}
-        </View>
-      )
-    }
-    if (id === 'alert') {
-      return (
-        <View>
-          <View className="demo-row">
-            <Button
-              className="demo-item"
-              onClick={() => {
-                void alert('解析即关闭，不返回用户选择', { title: '提示' }).then(() =>
-                  setAlertResult('已关闭'),
-                )
-              }}
-            >
-              alert
-            </Button>
-          </View>
-          {alertResult === '' ? null : <Text className="demo-note">{alertResult}</Text>}
-        </View>
-      )
-    }
-    if (id === 'confirm') {
-      return (
-        <View>
-          <View className="demo-row">
-            <Button
-              className="demo-item"
-              onClick={() => {
-                void confirm('确定要继续吗？', { title: '确认', confirmText: '继续' }).then((ok) =>
-                  setConfirmResult(ok ? 'true' : 'false'),
-                )
-              }}
-            >
-              confirm
-            </Button>
-          </View>
-          {confirmResult === '' ? null : (
-            <Text className="demo-note">{`Promise 解析：${confirmResult}`}</Text>
-          )}
         </View>
       )
     }
