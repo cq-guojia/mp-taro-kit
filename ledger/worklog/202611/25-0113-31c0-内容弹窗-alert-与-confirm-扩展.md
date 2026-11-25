@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 09:18:39 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 09:27:53 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -63,7 +63,8 @@
 - [x] 确定按钮、alert 按钮、confirm 按钮的默认样式集中在 kit.config.mjs，改一个文件统一生效
 - [x] 宽度档固定 560 / 640 / 720，640 居中且为默认
 - [x] 演示站去掉位置选择，只走 API 默认中部；接口 position 保留给需要的调用方
-- [x] joined 档自定义按钮只认文字与颜色；顶部形态滑块改到各示例内三按钮；confirm 默认竖排、自定义默认横排
+- [x] joined 档自定义按钮只认文字与颜色；顶部形态滑块改到各示例内三按钮；confirm 默认竖线、自定义默认横排
+- [x] 演示页除滑块外所有按钮统一 XS
 - [x] 配置页去分组标题只留两个 Cell；示例标题带英文 alert / confirm；各示例加默认按钮、竖线用小号；alert 隐藏竖排
 
 ## Next
@@ -173,7 +174,13 @@
 
 按用户要求统一 demo 呈现：配置页去掉 `CellGroup` 标题，宽度与头部两个 `Cell` 直接并列；alert / confirm 示例标题分别加英文 `alert` / `confirm`；每个示例的形态按钮行最前面加「默认」按钮（不传 `layout`，走 API 默认），横排 / 竖排用 `md`、竖线用 `sm` 小号；alert 只有一个按钮，横排与竖排效果相同，隐藏竖排按钮。
 
-**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物核对示例标题、「默认」按钮、`size:!0===t.compact?"sm":"md"`、无「几何」分组标题。
+**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物核对示例标题、「默认」按钮、无「几何」分组标题。
+
+### 2026-11-25 按钮尺寸与 confirm 默认形态再纠偏
+
+按用户最新口径：演示页除 Segmented 滑块外所有 Button 统一 `size="xs"`（默认按钮、三形态按钮、busy 按钮），删掉上一轮给竖线加的 `sm` 与横排/竖排的 `md` 差异。`confirm()` 不传 `layout` 时默认 `joined`（竖线），不再默认 `stack`；显式传 `stack` 时仍是确定在上。命令层测试同步默认形态断言并补显式竖排验证。产物里页面按钮 `size:"xs"` 三处，`md` 仅剩弹窗内自定义按钮。
+
+**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过。
 
 ## Conclusion
 
@@ -200,3 +207,4 @@
 - 2026-11-25 09:00:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站去掉位置选择：删 POSITIONS/position state/配置 Cell，不传 position 走 API 默认中部，DialogOptions.position 保留；产物无位置文案，build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 09:09:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 形态与 joined 纠偏：confirm 默认 stack、自定义默认 spaced，joined 自定义按钮只认文字颜色；演示页顶部删形态滑块、各示例放横排/竖排/竖线三按钮；build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 09:18:39 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示页展示规范：配置页去 CellGroup 标题只留两个 Cell，示例标题加 alert/confirm，各示例加默认按钮、竖线用 sm、alert 隐藏竖排；build/test(233)/guard/pack/demo/codelint 全过
+- 2026-11-25 09:27:53 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮尺寸与 confirm 默认形态再纠偏：演示页除滑块外全部 size=xs，confirm 不传参默认 joined 竖线（显式 stack 仍确定在上）；build/test(233)/guard/pack/demo/codelint 全过
