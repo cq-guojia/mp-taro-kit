@@ -67,6 +67,30 @@
 
 两档的**高度模型完全相同**：body 都是 `View` 直出，面板高度由 children 撑开；surface 只管底色 / 内边距 / 圆角，不再有「panel 写死高、裸壳撑高」的分裂。裸壳用于「自己画内容」：children 塞什么就显示什么，遮罩、`overlayTone` / `overlayOpacity`、关闭按钮及其位置全保留。样式上 `.mptk-popup--surface-none .mptk-popup__panel` 放样式表末尾、双类名覆盖各档位（含 `--round`），不依赖样式表顺序。主流库多是值型背景开关，这里连 padding、圆角一起关，故取 `surface` 做档位。
 
+**完全自定义的形式**：直接用底座 `Popup` 传 `surface="none"`，整块内容塞进 children，不要再套 `ImagePopup` / `ContentPopup`——那两个是「配好头部 / 图片 / 按钮」的配置式封装，自己画时不需要它们。裸壳撤掉的是面板自身的底色、16px 内距、圆角、`overflow:hidden` 与 `min-height`；其余浮层能力原样保留：
+
+```tsx
+<Popup
+  open={campaignOpen}
+  position="bottom"
+  surface="none"
+  overlayTone="dark"
+  overlayOpacity="default"
+  closable
+  closeable
+  closePosition="above-center"
+  closeOffset={{ top: -8 }}
+  onClose={() => setCampaignOpen(false)}
+>
+  <View className="campaign-sheet">…整个背景、圆角、内容都自己写…</View>
+</Popup>
+```
+
+- `closable`（点遮罩关闭，默认开）与 `closeable`（显示关闭叉，默认关、必须显式给）是两个正交开关；不传 `onClose` 则不渲染叉。
+- `closePosition` 全档与 `closeOffset` 四向偏移在裸壳下照常生效。外置档（`above-*` / `below-*`）叉色取遮罩上的亮灰；面板内档（`top-*`）叉色随主题取深色，自定义背景偏深时建议改用外置档。
+- `insetTop` 只对 `top` / `left` / `right` 生效，`center` / `bottom` 强制 `none`。**裸壳下让位依赖宿主注入真值**：裸壳 CSS 把面板 padding 归零会压掉 `env()` 兜底，宿主未用 `createKitApp` 注入安全区真值时顶部不会让位；贴底横条同理。
+- 面板高度由 children 撑开、不设上限；内容要滚就自己包 `scroll-view` 并给确定高。
+
 内容容器两档一致，滚动统一交给调用方：
 
 | 档位 | 内容容器 | 高度 | 调用方设置 |
@@ -242,3 +266,4 @@ import 'mp-taro-kit/ui/layout/style'
 
 - 2026-11-24：关闭叉错位根因修复——档位几何收进 WXSS `--mptk-popup-close-base-*` 基线变量、定位读裸 `var()`，去掉带 fallback 的 `var()`（WXSS 会整条丢弃定位声明）。修「叉偏移」无效果：`closeOffset` 现按 `CLOSE_ANCHOR` 换算到档位实际锚定的边，四向字段在任意档位都生效；删未用的 `resolveEdgeShift`、去重复 `cssLength`，并修贴底安全区被 `contentPadding.bottom` 覆盖。
 - 2026-11-24 11:22:04：关闭偏移改由 CSS 变量驱动：档位 calc 算最终定位，零基线写 0px 修无效 calc
+- 2026-11-24 23:20:36：补完全自定义的形式说明：直接用 Popup 传 surface='none' 并自行写 children；列清保留的遮罩/关闭叉全档与偏移、让位仅限 top/left/right 且依赖宿主注入真值、高度由内容撑开

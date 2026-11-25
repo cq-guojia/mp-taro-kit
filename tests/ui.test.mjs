@@ -100,9 +100,20 @@ function closeTop(confirmed) {
   return payload
 }
 
+/** 三件宿主一次性挂载的测试辅助。 */
+function mountAll() {
+  ui.markHostMounted('toast')
+  ui.markHostMounted('dialog')
+  ui.markHostMounted('loading')
+}
+
+function allMounted() {
+  return ui.isHostMounted('toast') && ui.isHostMounted('dialog') && ui.isHostMounted('loading')
+}
+
 test('未挂载 <OverlayHost /> 时命令式 API 每次都抛错，不静默降级', () => {
   ui.resetUIForTests()
-  assert.equal(ui.isOverlayHostMounted(), false)
+  assert.equal(allMounted(), false)
   for (const call of [
     () => ui.showToast('x'),
     () => ui.showLoading(),
@@ -122,17 +133,21 @@ test('挂载标记与跨副本状态：ESM / CJS 共享同一份单例', () => {
   const cjsNames = Object.keys(cjs).sort()
   assert.deepEqual(cjsNames, esmNames)
   assert.ok(esmNames.length >= 10)
-  cjs.markOverlayHostMounted()
-  assert.equal(ui.isOverlayHostMounted(), true)
+  cjs.markHostMounted('toast')
+  cjs.markHostMounted('dialog')
+  cjs.markHostMounted('loading')
+  assert.equal(allMounted(), true)
   cjs.showToast('from-cjs')
   assert.equal(ui.uiState().notices.getSnapshot()[0].text, 'from-cjs')
-  cjs.markOverlayHostUnmounted()
-  assert.equal(ui.isOverlayHostMounted(), false)
+  cjs.markHostUnmounted('toast')
+  cjs.markHostUnmounted('dialog')
+  cjs.markHostUnmounted('loading')
+  assert.equal(allMounted(), false)
 })
 
 test('showToast / hideToast / clearToasts 与通知队列上限', () => {
   ui.resetUIForTests()
-  ui.markOverlayHostMounted()
+  mountAll()
   const first = ui.showToast('a')
   ui.showToast('b', 'error')
   assert.equal(ui.uiState().notices.getSnapshot().length, 2)
@@ -146,7 +161,7 @@ test('showToast / hideToast / clearToasts 与通知队列上限', () => {
 
 test('showLoading / hideLoading 句柄配对，重复 hide 不误关别人的', () => {
   ui.resetUIForTests()
-  ui.markOverlayHostMounted()
+  mountAll()
   const a = ui.showLoading()
   const b = ui.showLoading()
   assert.equal(ui.uiState().loading.getSnapshot().count, 2)
@@ -159,7 +174,7 @@ test('showLoading / hideLoading 句柄配对，重复 hide 不误关别人的', 
 
 test('confirm() 推栈并由关闭动作 resolve true / false', async () => {
   ui.resetUIForTests()
-  ui.markOverlayHostMounted()
+  mountAll()
   const pending = ui.confirm('确定删除？', { title: '提示', cancelText: '再想想' })
   const entries = ui.uiState().overlays.getSnapshot()
   assert.equal(entries.length, 1)
@@ -176,7 +191,7 @@ test('confirm() 推栈并由关闭动作 resolve true / false', async () => {
 
 test('alert() 解析即关，不携带选择', async () => {
   ui.resetUIForTests()
-  ui.markOverlayHostMounted()
+  mountAll()
   const pending = ui.alert('已完成')
   const entries = ui.uiState().overlays.getSnapshot()
   assert.equal(entries[0].payload.kind, 'alert')
@@ -186,12 +201,12 @@ test('alert() 解析即关，不携带选择', async () => {
 })
 
 test('resetUIForTests 清空栈、通知、loading 与挂载标记', () => {
-  ui.markOverlayHostMounted()
+  mountAll()
   ui.showToast('x')
   ui.showLoading()
   ui.confirm('y').catch(() => {})
   ui.resetUIForTests()
-  assert.equal(ui.isOverlayHostMounted(), false)
+  assert.equal(allMounted(), false)
   assert.equal(ui.uiState().notices.getSnapshot().length, 0)
   assert.equal(ui.uiState().overlays.getSnapshot().length, 0)
   assert.equal(ui.uiState().loading.getSnapshot().active, false)

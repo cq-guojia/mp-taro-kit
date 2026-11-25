@@ -135,7 +135,9 @@ test('最终生效行为：Toast 按配置的时长自动消失，hide / clear �
   t.mock.timers.enable({ apis: ['setTimeout'] })
   try {
     ui.resetUIForTests()
-    ui.markOverlayHostMounted()
+    ui.markHostMounted('toast')
+    ui.markHostMounted('dialog')
+    ui.markHostMounted('loading')
 
     const id = ui.showToast('配置时长')
     assert.equal(ui.uiState().notices.getSnapshot().length, 1)

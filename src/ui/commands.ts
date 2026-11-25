@@ -34,26 +34,6 @@ export function isHostMounted(kind: HostKind): boolean {
   return uiState().hosts[kind] > 0
 }
 
-/**
- * 兼容 shim：旧业务 / 单测手动把三件一次性标记为已挂载。
- * 生产代码已由三件 Host 各自 mark；本函数只为不打断既有调用方保留。
- */
-export function markOverlayHostMounted(): void {
-  markHostMounted('toast')
-  markHostMounted('dialog')
-  markHostMounted('loading')
-}
-
-export function markOverlayHostUnmounted(): void {
-  markHostUnmounted('toast')
-  markHostUnmounted('dialog')
-  markHostUnmounted('loading')
-}
-
-export function isOverlayHostMounted(): boolean {
-  return isHostMounted('toast') && isHostMounted('dialog') && isHostMounted('loading')
-}
-
 function clearToastTimer(id: number): void {
   const state = uiState()
   const timer = state.toastTimers.get(id)

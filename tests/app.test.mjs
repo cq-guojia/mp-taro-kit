@@ -18,15 +18,16 @@ test('mp-taro-kit/app 出口存在，主出口仍不 import Taro', () => {
   assert.match(read('package.json'), /"\.\/app"/, 'package.json 缺 ./app 出口')
 })
 
-/** KitPage 依赖的浮动列定位样式必须随 app 出口自带，消费方不能漏引。 */
-test('app 出口自带浮动列样式，任何消费方 import 即有 fixed 定位', () => {
-  const src = read('src/app/index.ts')
-  assert.match(src, /import ['"]\.\.\/ui\/layout\/floating-action\/style\/index\.css['"]/, 'app 出口没带浮动列样式')
-  const built = read('dist/app/index.js')
-  assert.match(built, /floating-action\/style\/index\.css/, 'dist/app/index.js 丢了样式 import')
+/** 浮动列样式随 KitPage 精确出口自带，只引 createKitApp 的 app 出口不带你不需要的样式。 */
+test('浮动列样式随 KitPage 自带，app 装配出口不再顶层带样式', () => {
+  const src = read('src/app/KitPage.tsx')
+  assert.match(src, /import ['"]\.\.\/ui\/layout\/floating-action\/style\/index\.css['"]/, 'KitPage 没自带浮动列样式')
+  const indexSrc = read('src/app/index.ts')
+  assert.doesNotMatch(indexSrc, /floating-action\/style\/index\.css/, 'app 出口不该顶层带浮动列样式')
   assert.equal(existsSync(join(root, 'dist/ui/layout/floating-action/style/index.css')), true, 'dist 缺浮动列 css')
+  assert.equal(existsSync(join(root, 'dist/app/kit-page.js')), true, 'dist 缺 app/kit-page 精确出口')
   assert.doesNotMatch(read('dist/app/index.d.ts'), /\.css/, '声明文件不该残留 css import')
-  // demo 是消费方：全局 wxss 必须有规则，而不是只在某一个页面里。
+  // demo 是消费方：显式 import KitPage 后，全局 wxss 必须有规则。
   const globalCss = read('demo/dist/common.wxss')
   assert.match(globalCss, /\.mptk-fab-group--bottom-right/, '全局样式缺浮动列定位规则')
 })
@@ -71,11 +72,6 @@ test('命令式 API 按能力校验宿主，互不牵连', async () => {
   assert.equal(typeof toastId, 'number', '挂了 ToastHost 却不能 showToast')
   ui.hideToast(toastId)
 
-  // 兼容 API：markOverlayHostMounted 一次挂三件，卸载也一次清三件。
-  ui.markOverlayHostMounted()
-  assert.equal(ui.isOverlayHostMounted(), true)
-  ui.markOverlayHostUnmounted()
-  assert.equal(ui.isOverlayHostMounted(), false)
   ui.resetUIForTests()
 })
 
@@ -90,7 +86,7 @@ test('createKitApp 配置指纹 guard 与按需宿主', () => {
   assert.match(src, /screenHeight - safeArea\.bottom/, '底部横条没按屏幕高减安全区底边算')
   assert.match(src, /safeArea && typeof windowInfo\.screenHeight/, 'safeArea / screenHeight 缺失时没兜底')
   assert.match(src, /setThemeMode\(/, '没注入主题')
-  assert.match(src, /options\.hosts \?\? \[ToastHost, DialogHost, LoadingHost\]/, '默认宿主不是三件全给')
+  assert.match(src, /options\.hosts \?\? \[\]/, '默认宿主不是空，违背按需配置')
   assert.match(src, /hosts\.map\(/, '没按 hosts 数组渲染宿主')
 })
 

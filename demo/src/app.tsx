@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { createKitApp } from 'mp-taro-kit/app'
+import { createKitApp, ToastHost, DialogHost, LoadingHost } from 'mp-taro-kit/app'
 import themeConfig from './theme.json'
 
 import 'mp-taro-kit/styles/theme-runtime'
@@ -16,4 +16,5 @@ function App({ children }: { children?: ReactNode }) {
 // 主题样式与 app.json / theme.json 仍留在消费方（编译期 / 业务自己的东西）。
 export default createKitApp(App, {
   theme: { mode: 'auto', themeConfig },
+  hosts: [ToastHost, DialogHost, LoadingHost],
 })

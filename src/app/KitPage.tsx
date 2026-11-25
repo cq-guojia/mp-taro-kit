@@ -1,3 +1,4 @@
+import '../ui/layout/floating-action/style/index.css'
 import { createContext, useCallback, useContext, useRef, type ReactNode } from 'react'
 import Taro from '@tarojs/taro'
 import { ScrollView } from '@tarojs/components'

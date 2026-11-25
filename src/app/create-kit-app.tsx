@@ -4,9 +4,6 @@ import { configure, type CoreConfig, type PlatformFaces } from '../core/index.js
 import { configureSafeArea, setThemeMode, type ThemeMode } from '../runtime/index.js'
 import { createSingleton } from '../runtime/singleton.js'
 import { createTaroFaces } from './taro-faces.js'
-import { ToastHost } from '../ui/infra/ToastHost.js'
-import { DialogHost } from '../ui/infra/DialogHost.js'
-import { LoadingHost } from '../ui/infra/LoadingHost.js'
 
 /** 宿主是无必填 props 的组件；业务自定义宿主也按这个形态传。 */
 export type CommandHost = ComponentType<{ className?: string }>
@@ -30,7 +27,10 @@ export interface CreateKitAppOptions {
     themeConfig?: ThemeConfig
     onDarkChange?: (dark: boolean) => void
   }
-  /** 按需挂载的命令宿主；默认三件全给，传数组即"用哪个挂哪个"。 */
+  /**
+   * 要挂载的命令宿主，默认空（不挂任何命令宿主）。
+   * 用哪个命令就从 mp-taro-kit/app 显式 import 对应 Host 传进来；不传即不挂，调命令会抛错。
+   */
   hosts?: readonly CommandHost[]
 }
 
@@ -103,7 +103,7 @@ export function createKitApp<P extends { children?: ReactNode }>(
     state.fingerprint = fingerprint
   }
 
-  const hosts = options.hosts ?? [ToastHost, DialogHost, LoadingHost]
+  const hosts = options.hosts ?? []
 
   function KitApp(props: P) {
     return (

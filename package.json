@@ -69,6 +69,11 @@
       "import": "./dist/app/index.js",
       "require": "./dist/app/index.cjs"
     },
+    "./app/kit-page": {
+      "types": "./dist/app/kit-page.d.ts",
+      "import": "./dist/app/kit-page.js",
+      "require": "./dist/app/kit-page.cjs"
+    },
     "./ui/*/style": "./dist/ui/*/style/index.css",
     "./styles/tokens": "./dist/styles/tokens.css",
     "./styles/theme-light": "./dist/styles/theme-light.css",

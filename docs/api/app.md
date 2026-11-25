@@ -1,6 +1,6 @@
 # 应用级接入（`mp-taro-kit/app`）
 
-一条接入解决三件原本要在每个应用入口重复做的事：注入平台能力、装配命令式宿主、装配页面壳。这是唯一 import `@tarojs/taro` 的库出口；主出口 `mp-taro-kit` 保持零平台依赖。
+一条接入解决三件原本要在每个应用入口重复做的事：注入平台能力、装配命令式宿主、装配页面壳。这是唯一 import `@tarojs/taro` 的库出口；主出口 `mp-taro-kit` 保持零平台依赖。宿主按能力显式配置（默认不挂），命令 API 由调用方从精确子入口 import。
 
 ## 一条接入
 
@@ -25,7 +25,7 @@ export default createKitApp(App, {
 
 初始化按配置指纹去重：相同配置只做一次；配置变了（改 faces / 主题，或 HMR 重载）整体重放，不静默吞掉新配置。
 
-`KitPage` 依赖的浮动列定位样式由本出口**自带**（`import 'mp-taro-kit/app'` 即生效），消费方不必单独引 `ui/layout/floating-action/style`。
+`KitPage` 依赖的浮动列定位样式随 `KitPage` **自带**：从 `mp-taro-kit/app/kit-page` 或 `mp-taro-kit/app` 引 `KitPage` 即生效，不必单独引 `ui/layout/floating-action/style`。只引 `createKitApp` 不带这份样式。
 
 仍需留在消费方的：`config/index.js` 的插件行、主题样式 import（`styles/theme-runtime`）、`app.json` / `theme.json`。这些是编译期或业务自己的资产，不属于库。
 
@@ -38,7 +38,7 @@ export default createKitApp(App, {
 | `theme.mode` | `light` / `dark` / `auto`，默认 `auto` |
 | `theme.themeConfig` | 明暗两套 `bgColor`，用于窗口背景同步 |
 | `theme.onDarkChange` | 自定义暗色副作用，覆盖默认的窗口背景同步 |
-| `hosts` | 命令宿主数组，默认 `[ToastHost, DialogHost, LoadingHost]` |
+| `hosts` | 要挂载的命令宿主数组，**默认空**（不挂任何命令宿主）；要哪个就从 `mp-taro-kit/app` import 哪个传进来 |
 
 ## 用哪个挂哪个（按能力）
 
@@ -51,17 +51,17 @@ export default createKitApp(App, {
 | `LoadingHost` | `showLoading` / `hideLoading` | 无 |
 | `LoginDialogHost` | 渲染 `setLoginDialog` 注册的业务登录窗 | 由业务 UI 决定 |
 
-默认挂前三件。要按能力收窄，传 `hosts` 覆盖：
+默认一件都不挂。用哪个命令就从 `mp-taro-kit/app` 显式 import 对应宿主，传进 `hosts`：
 
 ```tsx
 import { createKitApp, ToastHost, DialogHost } from 'mp-taro-kit/app'
 
 export default createKitApp(App, {
-  hosts: [ToastHost, DialogHost],  // 不挂 LoadingHost
+  hosts: [ToastHost, DialogHost],  // 只挂 Toast 与 Dialog，不挂 Loading
 })
 ```
 
-`hosts` 控制的是**挂载与能力校验**（没挂就调对应 API 会当场抛错）。要真正把某能力的代码从包里排除，得靠构建器的 tree-shaking：不在文件里 import 那个组件，它才不会进包——只传参关掉、但仍写在 import 里的组件未必会被移除。
+`hosts` 控制的是**挂载与能力校验**（没挂就调对应 API 会当场抛错）。**命令 API 另走精确子入口，由调用方在自己文件里 import**：`mp-taro-kit/ui/commands/toast`（`showToast` / `hideToast` / `clearToasts`）、`.../dialog`（`alert` / `confirm`）、`.../loading`（`showLoading` / `hideLoading`）。`mp-taro-kit/ui` 的汇总出口保留作兼容，但会带进全部命令代码，要按需就用子入口。`tests/tree-shaking.test.mjs` 用真实打包探针锁定三入口互不带入。
 
 没挂对应宿主就调对应 API，同步抛带修复指引的 Error，错误点名缺失的宿主并给出准确 import 路径——不会静默失效（老项目用事件总线广播时漏挂就静默无 UI，这个坑不再重演）。
 
@@ -130,7 +130,7 @@ if (!ok) return
 
 ## 按场景接入示例
 
-下面四例覆盖「新项目怎么接、某页怎么用、某页怎么关、业务弹窗写哪」。所有 `mp-taro-kit/app` 的 import 都自带样式，不必再引 style。
+下面四例覆盖「新项目怎么接、某页怎么用、某页怎么关、业务弹窗写哪」。只有 `KitPage` 自带浮动列样式；命令宿主与命令 API 都按能力显式 import，不必再引 style。
 
 ### 例一：新项目 app 入口（全局只写一次）
 
@@ -175,8 +175,8 @@ export default function IndexPage() {
 ```tsx
 // pages/settings/index.tsx
 import { ScrollView, View } from '@tarojs/components'
-import { KitPage } from 'mp-taro-kit/app'
-import { showToast } from 'mp-taro-kit/ui'
+import { KitPage } from 'mp-taro-kit/app/kit-page'
+import { showToast } from 'mp-taro-kit/ui/commands/toast'
 
 export default function SettingsPage() {
   return (
@@ -251,3 +251,4 @@ async function submit() {
 - 2026-11-21：KitPage 提供 ScrollKeeperContext，锁滚动浮层关闭后恢复原滚动位置
 - 2026-11-21：移除 ScrollKeeperContext，改订阅全局滚动锁并注入 `scrollY={!locked}`
 - 2026-11-22：滚动锁方案实测无效，全部撤销；KitPage 不介入滚动位置，改由页面结构保证（滚动区稳定 key + 浮层恒定隔离容器）
+- 2026-11-25 11:12:26：宿主改为按需显式配置：createKitApp 的 hosts 默认空，三件 Host 由调用方显式 import；命令 API 拆 ui/commands/{toast,dialog,loading} 精确子入口；KitPage 浮动列样式下沉到自身并加 app/kit-page 出口；示例同步

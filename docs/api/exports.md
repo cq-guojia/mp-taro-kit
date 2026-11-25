@@ -13,8 +13,10 @@
 | `mp-taro-kit/plugin` | `dist/plugin/index.d.ts` | `dist/plugin/index.mjs` | `dist/plugin/index.cjs` | Taro 4 构建插件，把配置生成挂进编译链；包根另有 `plugin/index.js` 物理入口供 `resolve.sync` 解析；见[统一配置](config.md) |
 | `mp-taro-kit/utils` | `dist/utils/index.d.ts` | `dist/utils/index.js` | `dist/utils/index.cjs` | 纯函数与 i18n 注册口 |
 | `mp-taro-kit/core` | `dist/core/index.d.ts` | `dist/core/index.js` | `dist/core/index.cjs` | `configure` 与注入式平台操作 |
-| `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件 |
+| `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件；命令汇总出口，要按需改用下面的子入口 |
+| `mp-taro-kit/ui/commands/toast` / `.../dialog` / `.../loading` | 有 | 有 | 有 | 命令式 API 的按能力子入口：分别只带 toast / dialog / loading 命令，互不串入 |
 | `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 子域出口；`*` 可穿透多段，组件级与图标包级细路径同走这条 |
+| `mp-taro-kit/app/kit-page` | `dist/app/kit-page.d.ts` | `dist/app/kit-page.js` | `dist/app/kit-page.cjs` | KitPage 精确出口，浮动列样式随它自带；只引 `createKitApp` 不带这份样式 |
 | `mp-taro-kit/ui/*/style` | 无 | 无 | 无 | 字符串出口，`*` 可穿透多段，指向对应单元的 `style/index.css` |
 | `mp-taro-kit/ui/display/icon` | 有 | 有 | 有 | `Icon` 组件；出口同时带全量图标样式（`@font-face` 只声明不下载，字体按使用懒加载） |
 | `mp-taro-kit/ui/icon/all` / `.../all/style` | 有 / 无 | 有 / 无 | 有 / 无 | 聚合入口：`库名:图标名` 解析与全量样式；组件出口用的就是它 |
@@ -293,3 +295,4 @@ runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawe
 - 2026-11-15：刻度补 xxs（16）成六档；Tag 出口补 TagSize / TagRadius / TagVariant，Tag 取 xxs|xs|sm|md 子集
 - 2026-11-15：16 档改名 3xs、空出的 xxs 给新增的 20px 档，刻度成七档；Tag 的 size 变为 3xs|xxs|xs|sm|md
 - 2026-11-15 16:45:00：控件默认档 md → sm（32 / 14，对齐 WeUI mini）
+- 2026-11-25 11:12:26：补命令式 API 三个按能力子入口与 app/kit-page 精确出口
