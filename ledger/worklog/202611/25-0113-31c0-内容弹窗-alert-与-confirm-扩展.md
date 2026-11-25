@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 09:39:44 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 13:31:42 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -66,14 +66,24 @@
 - [x] joined 档自定义按钮只认文字与颜色；顶部形态滑块改到各示例内三按钮；confirm 默认竖线、自定义默认横排
 - [x] 演示页除滑块外所有按钮统一 XS
 - [x] 配置页去分组标题只留两个 Cell；示例标题带英文 alert / confirm；各示例加默认按钮、竖线用小号；alert 隐藏竖排
-- [x] 四组演示（提示 / 确认 / 自定义 / 异步闸门）合并到同一 Card，CellGroup 各带标题
+- [x] 四组演示合并同一 Card 的实验已撤回：Card 只有一组标题，多标题需求另立任务 `20261125-0946-e087-卡片多标题成组展示`
+
+标题覆盖四档（用户 2026-11-25 追加）：
+- [x] `title` 一个字段贯穿 alert / confirm 的四种头部形态：普通、图标+备注、外伸 icon、图片
+- [x] image / badge 的标题从「图标文案块」拆出，排在 header 下方的独立 `__headline` 行；badge 任意锚点都出标题
+- [x] 标题行不进 header，图片头外伸收窄与徽标绝对定位都不牵连它；自定义 `header` 槽位优先
+- [x] 演示站四档都带 title，产物与渲染断言覆盖新旧行为；API 文档同步
+
+待办：
+- [ ] 弹窗动效：`DialogHost` 把 `open` 写死 true，绕过 `Popup` 的 `usePresence`，需按退场保留挂载的方案修（本轮未动）
 
 ## Next
 
 待用户验收：
 1. Skyline 与 WebView 真机打开命令页，确认转圈期间「取消可点、其它控件与叉/遮罩不可点」、`onConfirm` 失败后能重试、`top`/`bottom` 三形态与宽度的观感
-2. 演示站打开多入口页面（如 commands / foundation）确认标题显示 X，单入口页标题与菜单文字一致
-3. 本轮 9 个文件改动未提交，等用户明确指令再 commit + push
+2. 演示站切四档头部打开 alert / confirm，确认普通、图标+备注、外伸 icon、图片都出标题，图片头外伸仍正常
+3. 动效问题单独处理，本轮未修
+4. 当前改动未提交，等用户明确指令再 commit + push
 
 ## Process
 
@@ -187,11 +197,25 @@
 
 按用户要求把 alert / confirm / 自定义按钮 / 异步闸门四组演示收进同一张 Card：catalog 里四个 example 合并为单个 `actions` 块，`demo/src/pages/dialog/index.tsx` 用四个 `CellGroup` 各带标题（`提示 alert` / `确认 confirm` / `自定义按钮` / `异步闸门`），`CellGroup` 在 Card 内自动收敛外框，视觉连成一片。`Card` 本身只有一组 `title/subtitle`，多标题靠 children 分组实现。
 
-**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物四组标题齐全，目录只剩 config + actions 两块。
+**自检**：build / test（233 项）/ guard / pack / demo build / `koc-codelint`（20 文件六层）全过；产物四组标题齐全，目录只剩 config + actions 两块。该合并随后按用户要求撤回，四组恢复为独立 example；Card 多标题另立任务，不再在本任务内实现。
+
+### 2026-11-25 标题覆盖四档头部
+
+用户指出：「除了『图标加备注』是有标题的，外延图片和普通形式都是没标题的，但 alert 和 confirm 都应该是有标题的」，并明确「专门做一个放开头的、用于放标题的 view，这样它就不会和 header 去抢位置，有了标题就显示、没有就不显示」，最后授权「你来定，实现整个逻辑」。
+
+**根因两处**：`DialogHost.tsx:129` 原先只在 `content.variant === 'icon'` 时把 `title` 传给 `ContentPopup`，其余形态被丢掉；`ContentPopup.tsx` 的 image 档压根没有标题节点，badge 档的标题塞在 `HeaderContent` 里且只在 `anchor='center'` 出。
+
+**落点**：`ContentPopup.tsx` 加 `Headline` 组件，渲染 `mptk-content-popup__headline > Text.mptk-content-popup__title`，作为 header 与 content 之间的兄弟节点（`hasHeadline = title !== undefined && variant !== 'title' && header === undefined`）。title 档保持原「图标 + 标题 + 副标题」结构不动；image / badge 图形各自独占 header，标题走独立行。badge 去掉 `anchor` 限制，任意锚点都出；删除已无调用方的 `__title-text--raised` 样式。`DialogHost.tsx` 改为无条件透传 `title`，`note` 仍只在 icon 档当副标题。
+
+**为什么放 header 外**：image 档上下外伸会把 header 收窄到 `H + top + bottom`（`edge-offset.ts:60-70`），标题塞进 header 会被定高挤掉或挤坏几何；放兄弟节点则实测高度、徽标 `position:absolute` 都影响不到标题。与用户「不和 header 抢位置」一致。
+
+**回归**：`tests/render.test.mjs` 覆盖 badge 任意锚点出标题、无 title 不出、image 出标题且排在图片后、标题行位于 header 与 content 之间；`tests/layout.test.mjs` 把 CSS 契约从 `__title-text--raised` 改为 `__headline`。演示站 `headerOptions()` 四档都带 title。api 文档补 image 的 title 参数、改写 badge 标题契约并补更新日志。
+
+**自检**：build（405 产物）/ test（233 项）/ guard / pack / demo build / `koc-codelint` 全过（门禁结果见下一轮执行记录）。
 
 ## Conclusion
 
-命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；标题/说明走 body，三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；Skyline / WebView 双端真机观感尚未验证；本轮 9 个文件未提交，待用户明确指令。
+命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
 
 ## Execution Log
 
@@ -216,3 +240,4 @@
 - 2026-11-25 09:18:39 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示页展示规范：配置页去 CellGroup 标题只留两个 Cell，示例标题加 alert/confirm，各示例加默认按钮、竖线用 sm、alert 隐藏竖排；build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 09:27:53 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮尺寸与 confirm 默认形态再纠偏：演示页除滑块外全部 size=xs，confirm 不传参默认 joined 竖线（显式 stack 仍确定在上）；build/test(233)/guard/pack/demo/codelint 全过
 - 2026-11-25 09:39:44 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 四组合并到同一 Card：catalog 四个 example 合并为 actions，页面用四个 CellGroup 各带标题；Card 只有一组 title/subtitle，多标题靠 children 分组；build/test(233)/guard/pack/demo/codelint 全过
+- 2026-11-25 13:31:42 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 标题覆盖四档：ContentPopup 新增独立 __headline（header 与 body 之间），image/badge 挂在图形下方，badge 任意锚点出；DialogHost 无条件透传 title；撤 __title-text--raised；demo 四档带标题；build/test(233)/guard/pack/demo/codelint/docwriter 全过，产物含 headline 与四档标题
