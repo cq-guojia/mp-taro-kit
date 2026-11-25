@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 15:07:08 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-25 15:14:50 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -250,6 +250,18 @@
 
 **门禁实测**：build 408 产物 → test 236 项全过（含「固定 type 换图标；带 badge 时换外伸图标与底色，普通 icon 不带底色」）→ guard → pack --dry-run → demo build:weapp 全过。产物核对：`demo/dist/common.js` 的 `ct={success:"common.base:gou",error:"common.base:guanbi",warning:"common.base:warn",info:"common.base:info"}` 与 `dt={success:"green",error:"red",warning:"yellow",info:"blue"}` 真值；`common.wxss` 四档 `--mptk-c-content-popup-badge-bg-*` 明/暗共 8 条 `linear-gradient(165deg, …)`，`__headline` 上/左/右均为 `var(--mptk-space-4)`。`koc-codelint` 38 文件六层全过；`docwriter check` 无 FAIL（26 条 WARN 均为历史存量，不涉及本改动）。
 
+### 2026-11-25 副标题回归与 inline 图标上色
+
+用户纠正：「普通的副标题流程（标题下那条小字）给我取了，样式就不对了」；并明确「普通的那个把 icon 变成我指定的颜色，就不用外伸那个图标了……正常的那个 icon 不是在左边吗，把 icon 的颜色变成我指定的颜色」。
+
+**根因两处**：`DialogHost.tsx:130` 的 `subtitle` 只在 `content.variant === 'icon'` 时透传，纯文字档传了 `note` 也被丢；`headerIcon` 只有 `{kind,name}`，没有颜色。演示站 `openTyped` 普通档原本没传 `note`，所以小字彻底看不到。
+
+**落点**：`DialogHost` 改为 `subtitle={payload.content.note}` 无条件透传（ContentPopup 自己按 variant 决定是否显示），`headerIcon` 带 `color: payload.content.iconColor`；`commands.ts` 加 `DIALOG_TYPE_ICON_COLOR` 映射（`var(--mptk-c-dialog-type-fg-*)`），仅传 `type` 时载荷带 `iconColor`，显式 `icon` 只覆盖名字不改色；`state.ts` 的 `DialogContent` 加 `iconColor`，无底色字段。`kit.config.mjs` 明暗两支各加 4 条 `--mptk-c-dialog-type-fg-{success,error,warning,info}`（取徽标渐变起点色，暗档用亮一档），走 `gen:config` 生成四份产物。演示站普通固定类型档补 `note`，外伸档保持 badge 渐变不变。
+
+**回归**：`ui.test.mjs` 逐档断言 inline 图标色 + 备注进载荷；新增 render 断言锁定 `color:var(--mptk-c-dialog-type-fg-*)` 与两档（有/无图标）`__subtitle`；`layout.test.mjs` 锁 token 真源与明暗产物不同色。
+
+**门禁实测**：gen:config → build 408 产物 → test 237 项全过 → guard → pack → demo build:weapp → codelint 38 文件六层 → docwriter 无 FAIL 全过。产物核对：`demo/dist/common.js` 有 `gt={success:"var(--mptk-c-dialog-type-fg-success)",…}` 与 `headerIcon:{kind:"icon",name:t.content.icon,color:t.content.iconColor}`、`subtitle:t.content.note`；演示页 `note:"…标题下的备注小字"` 在；四档 fg token 明暗各一条共 8 条真值。首次 build 曾撞上工作区里 Card 文件的瞬时中间态（`flushPlain` 一闪而过），复跑即恢复，与本改动无关。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -282,3 +294,4 @@
 - 2026-11-25 14:18:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 标题行上方留白 space-3→space-4：标题上/左/右/下统一 16px，消除上间距比左右小的疏漏；layout 断言同步；build(408)/test(234)/guard/pack/demo/codelint/docwriter 全过，产物 wxss 四边同一档
 - 2026-11-25 14:37:07 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标落地：type(success/error/warning/info)→gou/guanbi/warn/info + 轻微渐变语义色底，headerIcon.icon.tone 只作用 inline 槽、badge tone 不混；token 明暗两支；demo 四按钮；build(408)/test(236)/guard/pack/demo/codelint(39)/docwriter 全过，产物四档渐变齐全
 - 2026-11-25 15:07:08 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标落点纠正完成并过全门禁：build 408 产物/test 236 项/guard/pack/demo build/codelint(38 文件)/docwriter 全绿；产物核对 type→图标映射、badge 四档明暗 8 条渐变、__headline 16px 间距生效。未提交，待用户指令。
+- 2026-11-25 15:14:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 副标题回归与 inline 图标上色完成：note 无条件透传恢复标题下小字；type 给左侧 inline 图标上绿/红/黄/蓝语义色（token 明暗各一支，无底色）；237 项测试/产物核对/全套门禁通过。未提交，待用户指令。
