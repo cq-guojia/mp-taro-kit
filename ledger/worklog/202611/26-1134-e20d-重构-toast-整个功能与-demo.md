@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-26 12:47:57 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 13:17:19 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -15,7 +15,8 @@
 
 ## To Do
 
-- 调研 Toast 参考：用户先否决「大而全组件库里的通用 Toast」，又否决上一轮给的 Web 独立库（Sonner / react-hot-toast / toastify-js / notyf 都不是移动端）。用户要求必须是移动端。移动端候选：sonner-native（RN，1.4k）、react-native-toast-message（RN，2.1k）、AlertToast（SwiftUI，2.4k）；小程序独立 Toast 库只有 wepy-com-toast（105 star，2017 年后未更新）等低质量项目。移动端视觉参考：Mobbin Toast/Snackbar 真实 App 截图、UISDC Toast 设计文章。Vant Weapp Toast README 仍留作同端 API 基线。等用户看完选定抄谁。
+- **已拍板（2026-11-26）：抄 sonner-native 的显示与交互**，不抄它的 RN 实现。两种形态照搬：① 默认平铺，顶部往下长 / 底部往上长，各自计时、各自消失；② `enableStacking` 折叠成一摞，点任意一条整叠展开为全宽竖排列表，点外部或再点收起，最多显示 `visibleToasts`（参考实现默认 3）。不做 hover。内容槽暂定：标题（string）、内容/描述（string）、icon（可传，可有按 tone 的默认值）、关闭小叉（参考实现默认关，demo 要开）、定制 action/cancel 按钮；任意内容另走 custom/jsx 槽。
+- 触发与后端逻辑**尚未拍板**，下一轮讨论。硬约束：必须全局唯一，不能每个页面各存一份；用户明确不要参考 dsh-plugin-core 的触发实现。Vant Weapp 的函数式 API 是页面级的（`getCurrentPages()` 取栈顶 + `selectComponent('#van-toast')` + `setData`），不满足全局要求，只作反面证据。
 - 定 Toast 契约：声明式与命令式边界、位置/类型/时长/队列、与 Loading 的分离、`NoticeTone` 语义是否保留。
 - 落码：`src/ui/feedback/Toast.tsx`、`src/ui/commands.ts` 的 showToast/hideToast、`src/runtime/notify.ts` 队列、`src/ui/infra/ToastHost.tsx` 与样式。
 - 填 `demo/src/pages/toast/index.tsx` 空页，按一页一组件铺示例；更新 `docs/api/` 对应契约与出口登记。
@@ -23,7 +24,7 @@
 
 ## Next
 
-等用户从「移动端 Toast」候选里选定要抄的对象后，先写 `docs/api/toast.md` 契约，再按契约改 `src/ui/feedback/Toast.tsx:12` 与 `demo/src/pages/toast/index.tsx:4`；本轮只完成占位、空页与移动端候选调研。
+先讨论并拍板触发/后端逻辑（全局唯一、页面退出后 Toast 是否继续计完剩余时长），再写 `docs/api/toast.md` 契约；之后按契约改 `src/ui/feedback/Toast.tsx:12`、`src/ui/infra/ToastHost.tsx`、`src/runtime/notify.ts` 与 `demo/src/pages/toast/index.tsx:4`。本轮只登记决定，不动 Toast 实现代码。
 
 ## Process
 
@@ -36,9 +37,13 @@
 
 - 2026-11-26 在线示例核实：https://sonner-native.netlify.app/ 是 Docusaurus 文档站，手机打开只有文档和代码块，不能实际点/滑 Toast；官方 README 提供 Expo Snack 入口 https://snack.expo.dev/@gunnartorfis/sonner-native （作者账号 @gunnartorfis，手机装 Expo Go 后扫码可在真机运行），另有录屏 https://github.com/user-attachments/assets/ccc428ca-37c3-4589-9e8c-f414c40d764c （重定向后 content-type=video/quicktime）可直接看动效。
 
+- 2026-11-26 用户拍板：**抄 sonner-native 的显示与交互，不抄 RN 实现**。默认平铺 + 可选折叠牌堆点开成列表；内容槽暂定标题、内容/描述、icon、关闭叉、定制 action/cancel 按钮。sonner-native `src/types.ts` 证实这些槽都有：`title`/`description` 是 string，`icon`/`action`/`cancel`/`close`/`jsx`/`backgroundComponent` 是 ReactNode 槽，`closeButton` 是 boolean，参考实现默认 false。
+- 2026-11-26 Vant Weapp 触发机制核实（用户点名看该站点，且明确不要参考 dsh-plugin-core）：`packages/toast/toast.ts` 的 `getContext()` 取 `getCurrentPages()` 栈顶页，再 `context.selectComponent('#van-toast')` + `toast.setData(options)`；`packages/notify/notify.ts` 同构。`Toast.loading/success/fail` 由 `createMethod(type)` 生成。模块级只有 `currentOptions` 默认配置与 `queue`，**没有全局单例宿主**；页面必须自己放 `<van-toast id="van-toast" />`，找不到节点就只告警。结论：Vant Weapp 是页面级触发，不满足用户「全局唯一」硬约束，只作反面证据。
+- 2026-11-26 当前实现症状定位：本库 `src/app/KitPage.tsx:137,152` 把 hosts 渲染在**每个页面树**里；`src/runtime/notify.ts:22` 的队列是模块级、`src/ui/commands.ts:51-64` 的自动消失定时器也在模块级 state。于是页面销毁时宿主一起消失（视觉上 Toast 被页面带走），定时器仍会跑完但没人渲染。这正是用户观察到的「退出页面 Toast 立刻没了」。后端逻辑如何改成全局唯一，留下一轮拍板。
+
 ## Conclusion
 
-已建任务并完成前置整理：三个菜单占位移除、Toast 独立空页建好、前因后果登记。Toast 组件契约与 demo 内容尚未实现，未跑构建与自检，双端实机未验证。
+已建任务并完成前置整理：三个菜单占位移除、Toast 独立空页建好、前因后果登记；显示与交互参照已拍板为 sonner-native，内容槽已列。触发/后端逻辑（全局唯一、页面退出后的续显）尚未拍板，Toast 实现代码未动，未跑构建与自检，双端实机未验证。
 
 ## Execution Log
 
@@ -53,3 +58,4 @@
 - 2026-11-26 12:35:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 查 sonner-native 源码确认移动端无 hover：tap 切换展开/收起，swipe 关闭阈值 left=屏宽25%、up=16px且底部方向反转；已记入工作日志
 - 2026-11-26 12:41:15 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 核实 sonner-native 在线演示：官网仅文档不可交互，官方 Expo Snack 可在手机 Expo Go 真机运行，README 另有 .mov 录屏链接
 - 2026-11-26 12:47:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纠正上一轮对 sonner-native 的描述：isExpanded 不控制 description/action 字段显示，只改堆叠位置与动画；多条时 visibleToasts 超限整条隐藏，默认回退 3；已改工作日志
+- 2026-11-26 13:17:19 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户拍板抄 sonner-native 显示与交互（平铺/折叠点开成列表），内容槽暂定标题/内容/icon/关闭叉/定制按钮；触发必须全局唯一，下轮讨论；Vant Weapp 函数式 API 为页面级 getCurrentPages+selectComponent，不满足全局；当前 KitPage 每页挂 host 导致退出页面 toast 视觉消失，已记入工作日志
