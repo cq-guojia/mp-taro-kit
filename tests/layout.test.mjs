@@ -902,7 +902,7 @@ test('异步 confirm 成功：busy 保持到 onExited，退场帧不翻 loading/
     '成功回调只走一次失败出口：仅在 result=false 的拒绝分支内',
   )
   assert.match(success, /fail\(\)\s*\n\s*return/, '拒绝分支调用失败出口后立即 return，不落到成功路径')
-  assert.match(success, /requestClose\(id, key === 'confirm'\)/, '成功走逻辑关闭')
+  assert.match(success, /requestClose\(id, true\)/, '成功一律走逻辑关闭并 resolve(true)，取消 / 叉 / 遮罩才 false')
   // 失败出口是全命令式动作共用的单一实现：只结算自己的动作，reject 与 false 都走它。
   const fail = /const fail = \(\): void => \{([\s\S]*?)\n\s+\}/.exec(host)?.[1] ?? ''
   assert.match(fail, /settleAction\(id, key\)/, '失败只结算自己的动作，不误清并发的例外动作')
@@ -912,8 +912,8 @@ test('异步 confirm 成功：busy 保持到 onExited，退场帧不翻 loading/
     2,
     'false 分支与 reject 分支都走同一个失败出口，没有第二套',
   )
-  const finish = /const finish = \(id: number\): void => \{([\s\S]*?)\n\s+\}/.exec(host)?.[1] ?? ''
-  assert.match(finish, /settleAction\(id, key\)/, 'busy 只在 finish（onExited 驱动）逐个清理')
+  const finish = /const finish = \(id: number\): void => \{([\s\S]*?)\n[ ]{2}\}/.exec(host)?.[1] ?? ''
+  assert.match(finish, /activeRef\.current\.delete\(id\)/, 'busy 只在 finish（onExited 驱动）整批清理')
   assert.match(finish, /dialogLifecycle\.finish\(id\)/, 'finish 做物理清理')
 })
 

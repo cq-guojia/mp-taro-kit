@@ -41,7 +41,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 ### 整框交互锁
 
-`busy` / `locked` 一开，整块面板进入屏蔽：关闭叉与点遮罩两条关闭路径都封住，内部按钮的 `onClick` 由锁上下文门控，不会误触发宿主回调。屏蔽是「不可点」的可见状态——非例外按钮置灰，但**不转圈**；转圈只属于真正跑异步的那个动作，由命令式 Dialog 的活跃动作 key 或调用方显式传的 `loading` 决定，两者互不替代。`lockExceptions` 列出的 `lockKey` 仍可点，命令式确认框默认放行 `cancel`；嵌套浮层的例外取交集，内层不能放行外层没放的 key。`Button` 的 `onBusyChange` 在内部 loading 起止各上报一次（`true` / `false` 成对），供外层把按钮自己的转圈状态接成整框锁。
+`busy` / `locked` 一开，整块面板进入屏蔽：关闭叉与点遮罩两条关闭路径都封住，内部按钮的 `onClick` 由锁上下文门控，不会误触发宿主回调。屏蔽是「不可点」的可见状态——非例外按钮置灰，但**不转圈**；转圈只属于真正跑异步的那个动作，由命令式 Dialog 的活跃动作 key 或调用方显式传的 `loading` 决定，两者互不替代。`lockExceptions` 列出的 `lockKey` 仍可点，命令式确认框默认放行 `cancel`；嵌套浮层只有「锁住的层」才施加例外约束，两层都锁时例外取交集：内层没锁时不吃掉外层例外，内层锁住但没声明例外时也不继承外层放行。`Button` 的 `onBusyChange` 在内部 loading 起止各上报一次（`true` / `false` 成对），供外层把按钮自己的转圈状态接成整框锁。
 
 WebView 侧用 `pointer-events: none` + 例外子树 `auto` 命中（Button / Switch / Segmented / Cell 四类同口径）；Skyline 侧不能只靠 `pointer-events`，另由面板的 `catchMove` 与控件逻辑门兜底。这条是源码与编译产物级核实，尚未做 Skyline / WebView 双端真机观感验证。
 
@@ -310,3 +310,4 @@ interface ContentPopupFooterConfig {
 - 2026-11-25：固定类型图标加同色细圆环（2px 描边、圈尺寸 32px 保持原样），图标缩到 18px 并居中；通过 `iconFramed` 只作用于固定类型，显式 `icon` 与通用 `iconColor` 行为不变。
 - 2026-11-25：`title` 扩到 image / badge 两档——标题从「图标文案块」里拆出，排在 header 下方的独立 `__headline` 行；badge 任意锚点都出标题，image 档也出；标题行不进 header，图片外伸收窄与徽标定位都影响不到它。删除已无用的 `__title-text--raised`。纯标题档（无图标/备注）改用同一条标题行，居中且默认无下划线；带图标/备注的文字头保持原内联结构与分割线默认。
 - 2026-11-26 17:06:57：整框交互锁写清屏蔽与转圈解耦：非例外按钮置灰不转圈、嵌套例外取交集、WebView 四类控件例外恢复命中
+- 2026-11-26 17:36:12：嵌套例外口径写清：未锁层不施加约束，内层未声明例外不继承外层放行

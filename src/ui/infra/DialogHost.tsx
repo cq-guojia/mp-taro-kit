@@ -34,9 +34,9 @@ export function DialogHost({ className }: DialogHostProps) {
     scope: pageKey,
   })
   const [busyIds, setBusyIds] = useState<readonly number[]>([])
-  // 每个弹窗的活跃动作 key 集合：例外允许并发，只有最后一个 settle 才解锁。
-  // 布尔 busyRef 会让先结束的动作误清仍在跑的另一个，所以按集合管理。
-  const activeRef = useRef<Map<number, Set<string>>>(new Map())
+  // 每个弹窗 → 每个 key 的在飞行动作数：例外允许并发（含同 key 重入），只有最后一个 settle 才解锁。
+  // 布尔会误清并发的另一个动作，Set 又会让同 key 的先结束者提前解锁，所以用计数表。
+  const activeRef = useRef<Map<number, Map<string, number>>>(new Map())
   // 正在跑的动作 key 集合：只有这些按钮转圈，其余被闸门锁住的只置灰、不转圈。
   const [pendingKeys, setPendingKeys] = useState<Readonly<Record<number, readonly string[]>>>({})
 
@@ -63,28 +63,31 @@ export function DialogHost({ className }: DialogHostProps) {
     }
   }, [token])
 
-  /** 开始一个动作：登记为活跃 + 转圈。例外允许并发，多个 key 可同时在跑。 */
+  /** 开始一个动作：登记为活跃 + 转圈。同 key 重入也各记一笔，避免先结束者提前解锁。 */
   const startAction = (id: number, key: string): void => {
     if (!mountedRef.current) return
-    const active = activeRef.current.get(id) ?? new Set<string>()
-    active.add(key)
+    const active = activeRef.current.get(id) ?? new Map<string, number>()
+    active.set(key, (active.get(key) ?? 0) + 1)
     activeRef.current.set(id, active)
     setBusyIds((ids) => ids.includes(id) ? ids : [...ids, id])
-    setPendingKeys((prev) => ({ ...prev, [id]: [...active] }))
+    setPendingKeys((prev) => ({ ...prev, [id]: [...active.keys()] }))
   }
 
-  /** 结束一个动作：只清它自己的 key；还有别的活跃动作时整框锁与转圈都保持。 */
+  /** 结束一个动作：只减它自己的 key 一笔；还有别的在飞行动作时整框锁与转圈都保持。 */
   const settleAction = (id: number, key: string): void => {
     if (!mountedRef.current) return
     const active = activeRef.current.get(id)
-    if (active === undefined || !active.delete(key)) return
+    const count = active?.get(key)
+    if (active === undefined || count === undefined) return
+    if (count > 1) active.set(key, count - 1)
+    else active.delete(key)
     const settled = active.size === 0
     if (settled) activeRef.current.delete(id)
     setPendingKeys((prev) => {
       if (!(id in prev)) return prev
       const next = { ...prev }
       if (settled) delete next[id]
-      else next[id] = [...active]
+      else next[id] = [...active.keys()]
       return next
     })
     if (settled) setBusyIds((ids) => ids.filter((item) => item !== id))
@@ -99,8 +102,15 @@ export function DialogHost({ className }: DialogHostProps) {
   }
 
   const finish = (id: number): void => {
-    // 退场完成：该弹窗的所有活跃动作一并落地，不能留悬空 key。
-    for (const key of [...(activeRef.current.get(id) ?? [])]) settleAction(id, key)
+    // 退场完成：该弹窗的在飞行动作一并落地，不能留悬空 key。
+    activeRef.current.delete(id)
+    setPendingKeys((prev) => {
+      if (!(id in prev)) return prev
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    setBusyIds((ids) => ids.filter((item) => item !== id))
     state.dialogLifecycle.finish(id)
   }
 
@@ -122,9 +132,11 @@ export function DialogHost({ className }: DialogHostProps) {
     }
     const seq = state.dialogLifecycle.seqOf(id)
     startAction(id, key)
-    const task = key === 'confirm'
+    // 默认集合的 confirm 走 onConfirm；自定义集合里即使 key 叫 confirm 也走 onAction，
+    // 否则调用方给自定义按钮挂的异步闸门会被静默丢掉（alert 的自定义按钮同理）。
+    const task = !payload.customActions && key === 'confirm'
       ? payload.onConfirm
-      : payload.kind === 'confirm'
+      : payload.onAction
         ? () => payload.onAction?.(key)
         : undefined
     const fail = (): void => {
@@ -142,7 +154,8 @@ export function DialogHost({ className }: DialogHostProps) {
             return
           }
           // 成功：busy 留到 onExited → finish，退场帧不翻 busy/catchMove/loading，与声明式 Popup 同帧。
-          requestClose(id, key === 'confirm')
+          // 取消 / 叉 / 遮罩已各自传 false；能走到这里的都是成功动作，自定义 key 也算确认。
+          requestClose(id, true)
         },
         () => {
           // reject 保持打开可重试，只解 busy。

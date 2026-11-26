@@ -51,11 +51,18 @@ test('嵌套锁例外取交集：内层不能放行外层没放的 key', () => {
   const bothAllow = mergeNestedLock({ blocked: true, exceptions: ['save'] }, inner)
   assert.equal(decideGate(bothAllow, 'save').locked, false, '两层都放行才可点')
 
-  const noInnerExceptions = mergeNestedLock(outerLocked, { blocked: true })
-  assert.equal(decideGate(noInnerExceptions, 'save').locked, true, '内层没声明例外 = 继承外层约束')
+  const noInnerExceptions = mergeNestedLock({ blocked: true, exceptions: ['save'] }, { blocked: true })
+  assert.equal(decideGate(noInnerExceptions, 'save').locked, true, '内层锁住但一个例外都不放，不能继承外层的放行')
 
   const outerUnlocked = mergeNestedLock(UNLOCKED_GATE, inner)
   assert.equal(decideGate(outerUnlocked, 'save').locked, false, '外层未锁时内层例外照常生效')
+
+  const innerUnlocked = mergeNestedLock({ blocked: true, exceptions: ['save'] }, { blocked: false })
+  assert.equal(decideGate(innerUnlocked, 'save').locked, false, '内层未锁不施加约束，不能吃掉外层例外')
+
+  const innerOnly = mergeNestedLock(UNLOCKED_GATE, { blocked: true, exceptions: ['close'] })
+  assert.equal(decideGate(innerOnly, 'close').locked, false, '只有内层锁时采用内层例外')
+  assert.equal(decideGate(innerOnly, 'save').locked, true, '只有内层锁时未放行的 key 一律锁住')
 })
 
 test('控件统一从 useControlGate 接入，不再散写闸门判定', () => {
@@ -85,10 +92,17 @@ test('命令式动作与 UI 层共用同一判定，cancel 不再绕过闸门', 
   assert.match(host, /startAction\(id, key\)/, '点下时登记正在跑的动作')
   assert.match(host, /disabled:\s*decision\.locked && !spinning/, '其余被锁按钮置灰，转圈的那个不灰')
   assert.doesNotMatch(host, /loading:\s*decideGate\([^)]*\)\.locked/, '闸门判定结果不能直接当 loading')
-  // 例外允许并发：按 key 集合结算，先结束的不能清掉仍在跑的另一个。
-  assert.match(host, /activeRef\.current\.get\(id\)/, '活跃动作按弹窗分组记 key 集合')
+  // 例外允许并发：按弹窗 + key 记在飞行动作数，同 key 重入也不能被先结束者提前解锁。
+  assert.match(host, /Map<number, Map<string, number>>/, '活跃动作用计数表而非布尔或 Set')
+  assert.match(host, /active\.set\(key, \(active\.get\(key\) \?\? 0\) \+ 1\)/, '同 key 重入各记一笔')
   assert.match(host, /if \(settled\) setBusyIds/, '只有最后一个动作结束才解锁整框')
   assert.match(host, /settleAction\(id, key\)/, '失败只结算自己的动作')
+  // 命令式分派：默认 confirm 走 onConfirm；自定义集合（含 key=confirm）走 onAction。
+  assert.match(host, /!payload\.customActions && key === 'confirm'\s*\n\s*\? payload\.onConfirm/, '默认集合才走 onConfirm')
+  assert.match(host, /payload\.onAction\s*\n\s*\? \(\) => payload\.onAction/, '自定义按钮都走 onAction')
+  const commandSource = read('src/ui/commands.ts')
+  assert.match(commandSource, /customActions:\s*options\.actions !== undefined/, '载荷带上是否自定义集合')
+  assert.match(commandSource, /onAction:\s*options\.onAction/, 'alert 也透传 onAction，不再只给 confirm')
   const button = read('src/ui/actions/Button.tsx')
   assert.match(button, /disabled \|\| \(gate\.locked && !loading\) \? 'mptk-btn--disabled'/, '按钮自身也按闸门显禁用态，转圈例外')
   assert.match(button, /if \(!isThenable\(result\)\) \{[\s\S]*?onFailed\?\.\(\)/, '同步 false 也兑现 onFailed')

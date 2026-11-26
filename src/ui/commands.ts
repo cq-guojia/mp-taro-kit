@@ -141,7 +141,7 @@ export interface DialogOptions {
   lockExceptions?: readonly string[]
   /** 确定前的异步闸门：Promise 期间转圈、整框屏蔽；reject / 返回 false 则保持打开。 */
   onConfirm?: () => unknown
-  /** 自定义按钮的异步闸门，key 为按钮 key。 */
+  /** 自定义按钮（含键为 confirm 的自定义按钮，alert 同样适用）的异步闸门，key 为按钮 key；成功即 resolve(true)，只有取消 / 叉 / 遮罩 resolve(false)。 */
   onAction?: (key: string) => unknown
   /** 闸门拒绝（onConfirm/onAction 返回 Promise 后 reject 或显式 false）时回调，弹窗保持打开可重试。 */
   onFailed?: (key: string) => void
@@ -203,6 +203,7 @@ function pushDialog(
         : { iconColor: DIALOG_TYPE_ICON_COLOR[options.type] }),
     },
     actions,
+    customActions: options.actions !== undefined,
     layout,
     position: options.position ?? 'center',
     width: options.width,
@@ -214,8 +215,8 @@ function pushDialog(
     lockExceptions: options.lockExceptions ?? (kind === 'confirm' ? ['cancel'] : []),
     pageKey,
     onConfirm: options.onConfirm,
+    onAction: options.onAction,
     onFailed: options.onFailed,
-    ...(kind === 'confirm' ? { onAction: options.onAction } : null),
     resolve,
   }, pageKey)
 }

@@ -27,20 +27,23 @@ export function decideGate(state: PopupLockState, key?: string): GateDecision {
 }
 
 /**
- * 嵌套浮层合并：任意一层锁住即整体锁住；例外必须每一层都放行才放行。
- * 例外取交集（外层未锁时它等于没约束，直接采用内层）——并集会让内层自己放的 key
- * 绕过外层锁，这是错的。与 decideGate 同处一文件，判定口径只有一处。
+ * 嵌套浮层合并：任意一层锁住即整体锁住；例外必须每个「锁住的层」都放行才放行。
+ * 未锁的层不施加任何约束；两层都锁时例外取交集——并集会让内层自己放的 key 绕过外层锁。
+ * 与 decideGate 同处一文件，判定口径只有一处。
  */
 export function mergeNestedLock(
   outer: PopupLockState,
   inner: { blocked: boolean; exceptions?: readonly string[] },
 ): PopupLockState {
-  const blocked = inner.blocked || outer.blocked
-  if (inner.exceptions === undefined) return { blocked, exceptions: outer.exceptions }
-  if (!outer.blocked) return { blocked, exceptions: inner.exceptions }
+  if (!outer.blocked && !inner.blocked) return UNLOCKED_GATE
+  // 只有内层锁：采用内层声明的例外（未声明即不放行任何 key）。
+  if (!outer.blocked) return { blocked: true, exceptions: inner.exceptions ?? [] }
+  // 只有外层锁：内层没锁就不该吃掉外层的例外。
+  if (!inner.blocked) return { blocked: true, exceptions: outer.exceptions }
+  // 两层都锁：交集；内层未声明例外即一个都不放行。
   return {
-    blocked,
-    exceptions: inner.exceptions.filter((key) => outer.exceptions.includes(key)),
+    blocked: true,
+    exceptions: (inner.exceptions ?? []).filter((key) => outer.exceptions.includes(key)),
   }
 }
 

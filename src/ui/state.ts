@@ -41,6 +41,8 @@ export type DialogLayout = 'spaced' | 'stack' | 'joined'
 interface DialogPayloadCommon {
   readonly content: DialogContent
   readonly actions: readonly DialogAction[]
+  /** 动作来自调用方自定义集合还是默认集合：决定键为 confirm 时该走 onAction 还是 onConfirm。 */
+  readonly customActions: boolean
   readonly layout: DialogLayout
   readonly position: ContentPopupPosition
   readonly width?: number | string
@@ -57,15 +59,14 @@ interface DialogPayloadCommon {
   readonly resolve: (confirmed: boolean) => void
   /** 确定前的异步闸门：返回 Promise 期间转圈并整框屏蔽，reject / false 保持打开可重试。 */
   readonly onConfirm?: () => unknown
+  /** 自定义按钮（含键为 confirm 的自定义按钮）的异步闸门，key 为按钮 key。 */
+  readonly onAction?: (key: string) => unknown
   /** 闸门拒绝（reject / 显式 false）时的反馈，Promise 期间保持打开可重试。 */
   readonly onFailed?: (key: string) => void
 }
 
 /** 弹窗条目的载荷：命令式 API 只把待渲染数据推进栈，resolve 由 <DialogHost /> 调用。 */
-export type DialogPayload = DialogPayloadCommon & (
-  | { readonly kind: 'alert' }
-  | { readonly kind: 'confirm'; readonly onAction?: (key: string) => unknown }
-)
+export type DialogPayload = DialogPayloadCommon & { readonly kind: 'alert' | 'confirm' }
 
 /**
  * 三类命令式能力的宿主挂载计数。Taro 的 App 组件在每个页面 React root 都渲染，
