@@ -1087,13 +1087,14 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
   assert.match(demo, /\balert\(/, 'Dialog 页没演 alert')
   assert.match(demo, /\bconfirm\(/, 'Dialog 页没演 confirm')
   assert.match(demo, /<CellGroup>\s*<Cell\s+title="宽度"/, '配置页应是两个无标题 Cell')
-  assert.doesNotMatch(demo, /<CellGroup title="几何"|title="按钮形态"|setLayout/, '配置页不该有分组标题或形态滑块')
+  assert.doesNotMatch(demo, /<CellGroup title="几何"|title="按钮形态"/, '配置页不该有分组标题或形态滑块')
   assert.doesNotMatch(demo, /id === 'actions'/, '合并实验已撤回，不该再有聚合示例块')
   for (const id of ['alert', 'confirm', 'custom-actions', 'busy']) {
     assert.ok(demo.includes(`id === '${id}'`), `缺独立示例分支 ${id}`)
   }
   assert.match(demo, /<DemoBlock example=\{config\}>/, '顶部配置仍单独成卡')
-  assert.match(demo, /<Card className="demo-block">[\s\S]*<CardHead[\s\S]*render\(example\.id\)/, '下方示例要合成一张多标题卡')
+  assert.match(demo, /cases\.map\(\(example\) => \([\s\S]*<DemoBlock key=\{example\.id\}/, '四个示例各自独立成卡')
+  assert.doesNotMatch(demo, /<Card className="demo-block">|<CardHead/, '不该再把示例合成一张多标题卡')
   assert.match(demo, /onConfirm:/, 'Dialog 页缺异步闸门演示')
   assert.match(demo, /lockExceptions:/, 'Dialog 页缺按钮例外演示')
   const widths = demo.match(/const WIDTHS = \[([\s\S]*?)\] as const/)
@@ -1103,26 +1104,36 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
     ['560rpx', '640rpx', '720rpx'],
     '宽度档按 560 / 640 / 720 排，640 居中',
   )
-  for (const label of ['普通', '图标+备注', '外伸icon', '图片']) {
-    assert.ok(demo.includes(`label: '${label}'`), `头部缺 ${label} 档`)
-  }
+  assert.doesNotMatch(demo, /title="头部"|const HEADERS|HeaderMode|headerOptions/, '顶部配置区不该再有头部滑块')
   assert.match(demo, /popup-header-rise-up\.png/, '图片头没用上延伸示例图')
   assert.doesNotMatch(demo, /headerImage:\s*\{\s*src:\s*HEADER_IMAGE,\s*width:/, '图片头不该写死宽度，应与 Popup 一样铺满')
   assert.doesNotMatch(demo, /已关闭|Promise 解析|demo-note/, '演示站只展示效果，不展示调用结果文案')
   assert.doesNotMatch(demo, /id === 'layout'|openShape/, '不该再有独立形态示例块')
-  assert.match(demo, /layoutRow\(openAlert, LAYOUTS\.filter\(\(item\) => item\.value !== 'stack'\)\)/, 'alert 应隐藏竖排按钮')
+  assert.doesNotMatch(demo, /openAlert\(|openTyped\(/, 'alert 旧按钮已由配置区替代，不该残留')
   for (const type of ['success', 'error', 'warning', 'info']) {
     assert.ok(demo.includes(`value: '${type}'`), `alert 缺固定类型 ${type}`)
   }
-  assert.match(demo, /size="xs" onClick=\{\(\) => openTyped\(item\.value\)\}/, '普通固定类型按钮没用 XS')
-  assert.match(demo, /size="xs" onClick=\{\(\) => openTyped\(item\.value, true\)\}/, '外伸固定类型按钮没用 XS 或没开外伸')
-  assert.match(demo, /layoutRow\(openConfirm\)/, 'confirm 缺形态按钮行')
-  assert.match(demo, /layoutRow\(openCustomActions\)/, '自定义按钮缺形态按钮行')
-  assert.match(demo, /onClick=\{\(\) => open\(\)\}>默认</, '示例前面缺默认样式按钮')
+  assert.match(demo, /title="按钮"/, '配置区缺按钮形态 cell')
+  assert.match(demo, /title="内置 icon"/, '配置区缺内置 icon cell')
+  assert.equal((demo.match(/title="按钮"/g) ?? []).length, 1, '配置区应抽成一份共用，不重复写三遍')
+  assert.equal((demo.match(/title="内置 icon"/g) ?? []).length, 1, '内置 icon 配置应抽成一份共用')
+  assert.equal((demo.match(/useState<ButtonLayout>\('spaced'\)/g) ?? []).length, 2, 'alert 与自定义按钮默认横排')
+  assert.match(demo, /useState<ButtonLayout>\('joined'\)/, 'confirm 默认竖线，与库不传参口径一致')
+  assert.equal((demo.match(/useState<DialogType>\('info'\)/g) ?? []).length, 3, '三块内置 icon 各自独立，默认信息')
+  for (const label of ['默认', 'icon外伸', '信息头', '图片头']) {
+    assert.ok(demo.includes(`>${label}</Button>`), `配置区缺 ${label} 按钮`)
+  }
+  assert.match(demo, /mode === 'image' \? \{ headerImage: \{ src: HEADER_IMAGE, offset: \{ top: -30 \} \} \}/, '图片头按钮该带延伸示例图')
+  assert.doesNotMatch(demo, /size="xs"\s+onClick=\{\(\) => open\(/, '配置区按钮走默认型号，不用 XS')
+  for (const kind of ['alert', 'confirm', 'custom']) {
+    assert.ok(demo.includes(`openVariant('${kind}'`), `${kind} 未接共用配置区`)
+  }
+  assert.match(demo, /confirmText: '完成'/, 'alert 默认样式不该有正确/不正确语义')
+  assert.match(demo, /mode === 'default' \? null : \{ type \}/, '默认样式是纯标题+内容+按钮，不带图标')
+  assert.doesNotMatch(demo, /layoutRow\(|openConfirm\(|openCustomActions\(/, '旧形态按钮行不该残留')
   assert.doesNotMatch(demo, /compact/, '页面按钮不该再有尺寸差异标记')
-  assert.match(demo, /size="xs" onClick=\{\(\) => open\(\)\}/, '默认按钮没用 XS')
-  assert.match(demo, /size="xs"\s+onClick=\{\(\) => open\(item\.value\)\}/, '形态按钮没用 XS')
-  assert.match(demo, /size="xs" onClick=\{openBusy\}/, 'busy 按钮没用 XS')
+  assert.match(demo, /<Cell value=\{<Button onClick=\{openBusy\}>/, '异步闸门按钮该进 Cell 居右')
+  assert.doesNotMatch(demo, /size="xs"\s+onClick=\{openBusy\}/, '异步按钮走默认型号')
   assert.doesNotMatch(demo, /confirmText: '知道了'|confirmText: '继续'|cancelText: '取消'/, '演示页不该自造按钮文案，走配置默认')
   assert.match(demo, /onAction: \(\) => true/, '稍后按钮点击后应直接关闭')
   assert.doesNotMatch(demo, /title="关闭路径"|title="四向偏移"|closeable,|maskClosable/, '关闭与偏移不该进演示配置')
