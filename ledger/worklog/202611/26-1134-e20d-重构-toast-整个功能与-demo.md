@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-26 14:04:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 14:11:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -15,16 +15,17 @@
 
 ## To Do
 
-- **已拍板（2026-11-26）：抄 sonner-native 的显示与交互**，不抄它的 RN 实现。两种形态照搬：① 默认平铺，顶部往下长 / 底部往上长，各自计时、各自消失；② `enableStacking` 折叠成一摞，点任意一条整叠展开为全宽竖排列表，点外部或再点收起，最多显示 `visibleToasts`（参考实现默认 3）。不做 hover。内容槽暂定：标题（string）、内容/描述（string）、icon（可传，可有按 tone 的默认值）、关闭小叉（参考实现默认关，demo 要开）、定制 action/cancel 按钮；任意内容另走 custom/jsx 槽。
-- **已拍板（2026-11-26）：全量重构，不保留旧 Toast 兼容**。先把现有 Toast 程序全部删除，再在统一底座上重建，禁止在旧实现上做局部修补。触发/后端采用**与 Dialog 同一套全局命令宿主协议**：模块级全局 store + 每条 id + `token/scope` 认领 + 当前页唯一渲染；Dialog 在此上加 Promise 结算与锁定，Toast 在此上加绝对到期时间 `expiresAt` 与堆叠/展开交互。外部只调命令函数，业务页面不写 `<Toast>`；`createKitApp({ hosts })` 一次配置。Vant Weapp / TDesign / Titian 的「页面预置组件 + 函数式 API」证明触发方式要统一，但它们是当前页级，不满足本库全局续显要求，只作机制参考。用户明确不要参考 dsh-plugin-core。
-- 定 Toast 契约：声明式与命令式边界、位置/类型/时长/队列、与 Loading 的分离、`NoticeTone` 语义是否保留。
-- 落码：`src/ui/feedback/Toast.tsx`、`src/ui/commands.ts` 的 showToast/hideToast、`src/runtime/notify.ts` 队列、`src/ui/infra/ToastHost.tsx` 与样式。
-- 填 `demo/src/pages/toast/index.tsx` 空页，按一页一组件铺示例；更新 `docs/api/` 对应契约与出口登记。
-- 补/改测试，跑 build → test → guard → demo build:weapp → 产物核对；Skyline / WebView 双端实机验证前不得宣称可用。
+- **最终方案（架构 + 前端复核后）**：与 Dialog 共用全局命令宿主底座，但**独立一份 Toast lifecycle/store**，不把 Toast 塞进 `overlays: OverlayStack<DialogPayload>`。底座复用 `id + seq`、`open → close(exiting) → finish`、`claim/owns/release`、`useOverlayLifecycle` 订阅、`pageKey` 实例身份、action descriptor→Host 事件映射、全屏 fixed host + 逐类 pointer-events；不复用 Dialog 的 Promise 结算、busy 闸门、ContentPopup、遮罩锁，也不复用「宿主卸载即 clear 全局」。
+- **跨页语义（相对成熟库的刻意差异）**：Vant Weapp / TDesign / Titian 是页面级，离开页面即收口；本库按用户硬约束做 **scope 交接**：`navigateTo` 后仍在有效期内的 Toast 把 `scope` 改挂到新栈顶页，由新页宿主认领续显剩余时间；`redirectTo/navigateBack` 旧页销毁时只清理该页 owner 的条目，禁止全局 clear；无新页承接（app 退出）才清。`expiresAt` 是唯一时间真值，timer 只做及时触发；emit/expire 一律在 store/effect 里做，render 期不改 store。
+- **载荷只可序列化**：`title` / `description` / `icon`（图标名或 tone）/ `closeButton` / `action` 均为 descriptor；**禁止 ReactNode、`onClick`、resolve 进 store**。业务回调只作为 `showToast(options.onAction)` 的命令层字段，Host 按 `phase === 'open' && mountedRef.current && isCurrent(id, seq)` 守卫后调用。`ensureMounted('toast', currentScope)` 必须确认当前页有宿主，不能只看全局计数。
+- **显示交互（抄 sonner-native，按小程序降级）**：默认平铺，顶部往下长 / 底部往上长，各自计时；`enableStacking` 折叠成一摞，点任意一条整叠展开为全宽竖排列表，点外部或再点收起，`visibleToasts` 默认 3，超限整条隐藏。不做 hover。用固定档高 + CSS `transition` 的离散位移/缩放，不实测 `toastHeights`；安全区从 `safeAreaState()` 注入；关闭叉复用 `CloseGlyph`；swipe 用 `onTouchStart/Move/End` 离散阈值（位置感知），真机未验前不宣称等价 Reanimated。
+- **交付清单**：`src/ui/state.ts` 新增 ToastPayload / ToastLifecycle / `hosts.toast`；`src/ui/infra/overlay-lifecycle.ts` 暴露 `scopeOf` 与 TTL 幂等；`src/ui/infra/ToastHost.tsx`；`src/ui/commands/toast/index.ts`；`src/ui/feedback/toast/{index.ts,style/index.scss}`；`src/ui/{index.ts,commands.ts,infra/index.ts}` 与 `src/app/index.ts` 出口；`src/ui/infra/style/index.scss`；`src/runtime/page-route.ts` 可订阅当前页；`src/app/{KitPage,create-kit-app}.tsx` scoped host 注册；`kit.config.mjs` 生成物；`demo/src/pages/toast/*`、`demo/src/catalog.ts`、`demo/src/app.tsx`；`docs/api/toast.md` 与相关出口/架构文档；测试 `overlay-lifecycle` / `ui` / `app` / `tree-shaking` / `render` / `card` 相应补断言。
+- **不做**：声明式 `<Toast>`（因此 `markCardEdgeOutOfFlow` 不用加）；ReactNode / `onClick` 进载荷；全局 clear 兜底；照搬 Dialog 的 Promise / 遮罩 / 闸门；在 render 期改 store。
+- **门禁**：`kit.config.mjs` 改完跑 `pnpm gen:config`；按 `build → test → guard → demo build:weapp → 产物核对` 顺序；`codelint` 全过；双端真机验证前不宣称可用。
 
 ## Next
 
-先删除全部旧 Toast 实现（源码专属文件、共享文件中的 Toast 分支、样式、配置、导出、demo、测试、文档、生成物），使仓库没有 Toast 残留；再在统一命令宿主协议上重写 Toast 契约与实现，最后写 `docs/api/toast.md` 并补 demo/tests。本轮只做「补录决定 + 删除旧实现」，不写新 Toast。
+按上面清单实现：先改配置与 store/lifecycle/page-route，再写 Toast 命令/宿主/样式，再补 demo、出口、文档、测试，最后跑全部门禁并核对 `demo/dist/pages/toast`。
 
 ## Process
 
@@ -43,9 +44,11 @@
 
 - 2026-11-26 用户拍板全量重构：现有 Toast 实现全部删除，不留兼容；新 Toast 与 Dialog 共用一套全局命令宿主协议（模块级 store + id + token/scope 认领 + 当前页唯一渲染 + `expiresAt`）。差异只在内容形态：Dialog 有 Promise 结算/锁定，Toast 有计时与堆叠展开。显示交互继续抄 sonner-native 的两种形态。
 
+- 2026-11-26 架构 + 前端双重复核（只读，两个独立 agent）：① 现有 Dialog 的 owner 是「发起页唯一」，不是「当前页唯一」——`navigateTo` 后弹窗留在旧页、Promise 悬挂；照搬会让 Toast 在隐藏页渲染或过期才出现。修正为 scope 交接 + 当前页唯一渲染。② `ensureMounted` 只看全局计数，不证明当前页有宿主；修正为按 scope 校验。③ ReactNode / `onClick` 进全局 store 会把旧页闭包留在 `Symbol.for` 单例里、跨页点击打到错误页面；修正为 descriptor 载荷 + 命令层回调 + `isCurrent` 守卫。④ `expiresAt` 不能在 render 期改 store；timer 幂等 + effect 兜底。⑤ 宿主卸载禁止全局 clear，只按 owner 清。⑥ `createKitApp` 的 hosts 不在 fingerprint 内，重复配置会覆盖注册表，接入时避免隐式全局单写。前端侧：⑦ 不实测 `toastHeights`，用固定档高 + CSS transition；⑧ 安全区用 `safeAreaState()` 注入，`env()`仅兜底；⑨ 展开态透明层显式 `catchMove={false}` + 逐类 pointer-events；⑩ 不提供声明式 Toast，故不加 `markCardEdgeOutOfFlow`；⑪ demo 页不打 `section`（`tests/ui.test.mjs:773-775` 会红）；⑫ 避免 `var()` fallback / `inset` / 简写等 Skyline 会静默丢弃的写法。
+
 ## Conclusion
 
-已建任务并完成前置整理：三个菜单占位移除、前因后果登记；显示交互拍板抄 sonner-native，后端拍板与 Dialog 共用统一全局命令宿主协议。旧 Toast 实现待删除，新实现未写，未跑构建与自检，双端实机未验证。
+最终方案已复核并落入本工作日志：旧 Toast 已全量删除且门禁全绿；下一步按最终方案实现统一底座上的新 Toast（含 demo、出口、文档、测试），完成后再跑 `build → test → guard → demo build:weapp → 产物核对`。Skyline / WebView 双端手势与动画真机验证前不宣称可用。
 
 ## Execution Log
 
@@ -63,3 +66,4 @@
 - 2026-11-26 13:17:19 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户拍板抄 sonner-native 显示与交互（平铺/折叠点开成列表），内容槽暂定标题/内容/icon/关闭叉/定制按钮；触发必须全局唯一，下轮讨论；Vant Weapp 函数式 API 为页面级 getCurrentPages+selectComponent，不满足全局；当前 KitPage 每页挂 host 导致退出页面 toast 视觉消失，已记入工作日志
 - 2026-11-26 13:32:34 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 补录全量重构决定：旧 Toast 全部删除不留兼容；新 Toast 与 Dialog 共用全局命令宿主协议（模块级 store + token/scope 认领 + 当前页唯一渲染 + expiresAt），显示交互抄 sonner-native
 - 2026-11-26 14:04:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 旧 Toast 实现已全量删除：组件/宿主/命令/队列/配置键/样式/导出/demo/测试/文档/生成物均清理；build=0、test=261/261、guard=0、demo build=0、codelint=0。仓库仅剩工作日志中的 Toast 字样
+- 2026-11-26 14:11:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 架构+前端复核完成，修正跨页 scope 交接、descriptor 载荷、TTL 执行点、scoped ensureMounted、宿主交接清理等漏洞；最终方案已写入工作日志，开始实施
