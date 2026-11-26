@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-26 07:42:16 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 07:51:29 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -352,6 +352,18 @@
 
 **门禁实测**：build 414 产物 → test 253 全过 → guard / pack → demo build:weapp → codelint 13 文件 → docwriter 无 FAIL。产物核对顶部无「头部」cell 标题、四个按钮文案各一次、`headerImage:{src:j,offset:{top:-30}}` 生效。未提交。
 
+### 2026-11-26 演示站示例图补原始宽高
+
+用户要求：popup 弹出层与 dialog 示例里用到的图片，明明知道原始宽高就传给控件，让首帧按真实比例占位、不靠 onLoad 回灌再跳。
+
+**核对**：`src/ui/layout/image-size.ts:33-34` 的 `naturalWidth` / `naturalHeight` 才是「原始尺寸」字段，`width` / `height` 是目标显示尺寸；`ContentPopupImage extends ImageSizeInput` 可用，徽标图（`ContentPopup.tsx:104` 的 `kind:'image'`）只有 width/height、不支持 natural，故不补。8 张图实测：本地 5 张取 PNG 文件头（portrait 1080×1080、search 741×537、rise-up 1080×587、rise-both 1080×763、transparent 1080×587），CDN 3 张联网读头（IMAGE_B 943×1212、LONG_IMAGE VP8 750×14186、图片按钮 231×71）。
+
+**落点**：`demo/src/pages/popup/index.tsx` 集中一张 `NATURAL` 尺寸表，13 处图片传参按图 spread；`demo/src/pages/dialog/index.tsx` 的图片头内联 1080×587。中途 `HEADER_IMAGE_SLIDE` 放在 `NATURAL` 声明前触发 TS2448，已把常量移到表后。
+
+**回归**：`tests/layout.test.mjs` 锁尺寸表含本地/长图/图片按钮三类、spread 恰好 13 处；`tests/render.test.mjs` 同步图片头断言；`tests/ui.test.mjs` 同步 dialog 图片头断言。
+
+**门禁实测**：build 414 产物 → test 253 全过 → guard / pack → demo build:weapp → codelint 15 文件 → docwriter 无 FAIL。产物核对 7 组尺寸真值（两张同为 1080×587 合并）与 dialog 图片头尺寸。未提交。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -395,3 +407,4 @@
 - 2026-11-26 07:09:58 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · confirm 与自定义按钮改为 alert 同款排列：上面按钮/内置 icon 两滑块，下面默认样式/icon外伸/信息头三按钮；配置区共用、三组 state 独立，旧形态按钮行全删。252 项测试与全套门禁通过，产物核对旧文案已清。未提交，待看效果。
 - 2026-11-26 07:34:40 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · demo 四处修正：confirm 滑块默认竖线（库不传参口径核查已是 joined，无需改库）、默认样式改纯标题+内容+按钮去掉 type、异步闸门按钮进 Cell 居右走默认型号、四块拆成独立 Card。253 项测试与全套门禁通过，产物核对 joined/spaced 默认值与 Cell 结构。未提交，待看效果。
 - 2026-11-26 07:42:16 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 删顶部配置区头部滑块及配套状态；alert/confirm/自定义三处配置区各加图片头按钮（复用延伸示例图与 -30 偏移），默认样式按钮改名默认；253 项测试与全套门禁通过，产物核对四按钮文案与 headerImage。未提交，待看效果。
+- 2026-11-26 07:51:29 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站 8 张示例图补齐原始宽高：popup 页集中 NATURAL 表并在 13 处传参 spread，dialog 图片头内联 1080×587；253 项测试与全套门禁通过，产物核对 7 组尺寸真值。未提交。
