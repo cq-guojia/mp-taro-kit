@@ -107,13 +107,14 @@ export function ToastHost({ className }: ToastHostProps) {
         {visible.map((entry, index) => {
           const seq = lifecycle.seqOf(entry.id)
           const behind = stacking && !isExpanded && index > 0
-          const scale = behind ? Math.max(0.8, 1 - index * 0.1) : 1
+          const scale = behind ? Math.max(0.88, 1 - index * 0.04) : 1
           return (
             <ToastView
               key={entry.id}
               payload={entry.payload}
               exiting={entry.phase === 'exiting'}
               scale={scale}
+              zIndex={stacking && !isExpanded ? visible.length - index : 1}
               onOpen={stacking ? toggle : undefined}
               onClose={() => closeToast(entry.id)}
               onAction={(key) => onAction(entry.id, seq, key)}

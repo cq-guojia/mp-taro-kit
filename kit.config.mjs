@@ -112,6 +112,14 @@ export default {
     "--mptk-dur-run": "500ms",                                      // 运行动画时长：进度 / 加载类循环的一个周期
     "--mptk-dur-breathe": "1120ms",                                 // 呼吸动效周期：等待态有内容位时替代转圈
     "--mptk-ease": "cubic-bezier(.4, 0, .2, 1)",                    // 默认缓动曲线：与微信官方 motion 对齐
+    // Toast：sonner-native 像素刻度（进场/堆叠用 easeOutQuart，退场用 easeInOutCubic）
+    "--mptk-c-toast-enter-dur": "300ms",                            // 进场时长：sonner-native ENTERING_ANIMATION_DURATION=300
+    "--mptk-c-toast-stack-dur": "600ms",                            // 堆叠展开/收起位移时长：sonner-native STACKING_ANIMATION_DURATION=600
+    "--mptk-c-toast-ease-out": "cubic-bezier(.25, 1, .5, 1)",        // 进场/堆叠缓动：easeOutQuart
+    "--mptk-c-toast-ease-in-out": "cubic-bezier(.65, 0, .35, 1)",    // 退场缓动：easeInOutCubic
+    "--mptk-c-toast-stack-gap": "8px",                              // 折叠时下层露出的一截：sonner-native stackGap=8
+    "--mptk-c-toast-gap": "14px",                                   // 平铺相邻间距：sonner-native gap=14
+    "--mptk-c-toast-estimated-h": "70px",                           // 折叠层叠位移基准高：sonner-native ESTIMATED_TOAST_HEIGHT=70
   },
 
   surface: {                                                        // 页面底色声明：仅编译期三选一出口 include，运行时出口不 include
@@ -212,6 +220,16 @@ export default {
     "--mptk-c-dialog-type-fg-error": "#ef4444",
     "--mptk-c-dialog-type-fg-warning": "#f59e0b",
     "--mptk-c-dialog-type-fg-info": "#3b82f6",
+    /* Toast（sonner-native 明档精确值）：卡片底 #fff、主字 #232020、描述 #4f4a4a、action 边 #e6e3e3 / 底 #f7f7f7。 */
+    "--mptk-c-toast-bg": "#fff",
+    "--mptk-c-toast-fg": "#232020",
+    "--mptk-c-toast-fg-2": "#4f4a4a",
+    "--mptk-c-toast-action-border": "#e6e3e3",
+    "--mptk-c-toast-action-bg": "#f7f7f7",
+    "--mptk-c-toast-icon-success": "#3c8643",
+    "--mptk-c-toast-icon-error": "#ff3a41",
+    "--mptk-c-toast-icon-warning": "#e37a00",
+    "--mptk-c-toast-icon-info": "#286efa",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -317,6 +335,16 @@ export default {
     "--mptk-c-dialog-type-fg-error": "#ff8787",
     "--mptk-c-dialog-type-fg-warning": "#fcd34d",
     "--mptk-c-dialog-type-fg-info": "#8aa4fe",
+    /* Toast（sonner-native 暗档精确值）：卡片底 #181313、主字 #fff、描述 #C0BEBE、action 边 #302B2B / 底 #232020。 */
+    "--mptk-c-toast-bg": "#181313",
+    "--mptk-c-toast-fg": "#fff",
+    "--mptk-c-toast-fg-2": "#C0BEBE",
+    "--mptk-c-toast-action-border": "#302B2B",
+    "--mptk-c-toast-action-bg": "#232020",
+    "--mptk-c-toast-icon-success": "#9ED397",
+    "--mptk-c-toast-icon-error": "#FF999D",
+    "--mptk-c-toast-icon-warning": "#ffd089",
+    "--mptk-c-toast-icon-info": "#B3CDFF",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值

@@ -1,72 +1,171 @@
-/* Toast 展示层：只用长写属性，避免 Skyline 静默丢弃简写 / var() 兜底。 */
+@use '../../../../design/keyframes' as kf;
+
+/* Toast 卡片：像素复刻 sonner-native 默认态。
+   源码依据（gunnartorfis/sonner-native-toasts）：use-default-styles.ts（padding 16 / radius 16 /
+   marginHorizontal 16 / content gap 16 / title 600·20 / description 14·20 / action 胶囊 999·6·14）、
+   toast.tsx（shadow 0 4 12 rgba(0,0,0,.106)）、use-colors.ts（明暗底与字色）、
+   animations.ts + animation-utils.ts（进场 top -20 / bottom 50 淡入 300ms easeOutQuart；
+   退场 top -150 / bottom 150 淡出 easeInOutCubic）。
+   只用长写属性；keyframes 内只写字面量（WXSS 固化为静态表，var() 会被整条丢弃）。 */
 
 .mptk-toast {
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
-  align-items: center;
-  box-sizing: border-box;
-  min-height: 40px;
-  padding-top: var(--mptk-space-2);
-  padding-right: var(--mptk-space-3);
-  padding-bottom: var(--mptk-space-2);
-  padding-left: var(--mptk-space-3);
-  border-radius: var(--mptk-radius-md);
-  background-color: var(--mptk-surface-1);
-  color: var(--mptk-fg);
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  padding-top: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+  padding-bottom: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
+  border-radius: var(--mptk-radius-lg);
+  background-color: var(--mptk-c-toast-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .106);
+  color: var(--mptk-c-toast-fg);
   font-size: var(--mptk-font-sm);
   line-height: var(--mptk-line-sm);
-  transition: transform var(--mptk-dur-fast) ease-out;
+  opacity: 1;
 }
 
-.mptk-toast--exiting {
-  opacity: 0;
+.mptk-toast--success { color: var(--mptk-c-toast-icon-success); }
+.mptk-toast--warning { color: var(--mptk-c-toast-icon-warning); }
+.mptk-toast--error { color: var(--mptk-c-toast-icon-error); }
+.mptk-toast--info { color: var(--mptk-c-toast-icon-info); }
+
+/* 进场：从屏幕外一点滑入 + 淡入。top 从上方 20px，bottom 从下方 50px。 */
+.mptk-toast--enter-top {
+  animation-name: mptk-toast-enter-top;
+  animation-duration: var(--mptk-c-toast-enter-dur);
+  animation-timing-function: var(--mptk-c-toast-ease-out);
+  animation-fill-mode: both;
+}
+.mptk-toast--enter-bottom,
+.mptk-toast--enter-center {
+  animation-name: mptk-toast-enter-bottom;
+  animation-duration: var(--mptk-c-toast-enter-dur);
+  animation-timing-function: var(--mptk-c-toast-ease-out);
+  animation-fill-mode: both;
 }
 
-.mptk-toast--success {
-  color: var(--mptk-c-dialog-type-fg-success);
+/* 退场：top 上移 150px、bottom 下移 150px 淡出；覆盖进场 animation。 */
+.mptk-toast--exit-top {
+  animation-name: mptk-toast-exit-top;
+  animation-duration: var(--mptk-c-toast-enter-dur);
+  animation-timing-function: var(--mptk-c-toast-ease-in-out);
+  animation-fill-mode: both;
+}
+.mptk-toast--exit-bottom,
+.mptk-toast--exit-center {
+  animation-name: mptk-toast-exit-bottom;
+  animation-duration: var(--mptk-c-toast-enter-dur);
+  animation-timing-function: var(--mptk-c-toast-ease-in-out);
+  animation-fill-mode: both;
 }
 
-.mptk-toast--warning {
-  color: var(--mptk-c-dialog-type-fg-warning);
-}
+.mptk-toast--exiting { pointer-events: none; }
 
-.mptk-toast--error {
-  color: var(--mptk-c-dialog-type-fg-error);
-}
-
-.mptk-toast--info {
-  color: var(--mptk-c-dialog-type-fg-info);
-}
-
+/* 自绘 tone 图标：20×20 圆底 + 白色字形，遮罩取色由 tone 的 color 注入（currentColor）。 */
 .mptk-toast__icon {
-  margin-right: var(--mptk-space-2);
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-right: var(--mptk-space-4);
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 20px 20px;
+  mask-size: 20px 20px;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v5M12 16h.01'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v5M12 16h.01'/%3E%3C/svg%3E");
+}
+.mptk-toast__icon--text {
+  background-color: transparent;
+  -webkit-mask-image: none;
+  mask-image: none;
+  font-size: var(--mptk-font-sm);
+  line-height: 20px;
+}
+.mptk-toast--success .mptk-toast__icon {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m8 12 2.5 2.5L16 9'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m8 12 2.5 2.5L16 9'/%3E%3C/svg%3E");
+}
+.mptk-toast--error .mptk-toast__icon {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 9 6 6M15 9l-6 6'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 9 6 6M15 9l-6 6'/%3E%3C/svg%3E");
+}
+.mptk-toast--warning .mptk-toast__icon {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 2 20h20L12 3Z'/%3E%3Cpath d='M12 9v5M12 17h.01'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 2 20h20L12 3Z'/%3E%3Cpath d='M12 9v5M12 17h.01'/%3E%3C/svg%3E");
 }
 
 .mptk-toast__body {
   display: flex;
   flex: 1;
   flex-direction: column;
+  justify-content: center;
 }
 
 .mptk-toast__title {
-  color: var(--mptk-fg);
+  color: var(--mptk-c-toast-fg);
   font-size: var(--mptk-font-sm);
   font-weight: 600;
-  line-height: var(--mptk-line-sm);
+  line-height: 20px;
 }
 
 .mptk-toast__description {
-  color: var(--mptk-fg-2);
+  margin-top: 2px;
+  color: var(--mptk-c-toast-fg-2);
   font-size: var(--mptk-font-xs);
-  line-height: var(--mptk-line-xs);
+  line-height: 20px;
 }
 
+/* action：sonner-native 的胶囊按钮 —— radius 999、描边 1、上下 6、左右 14、次级底。 */
 .mptk-toast__action {
-  margin-left: var(--mptk-space-3);
-  color: var(--mptk-fg-on-accent);
+  flex: none;
+  align-self: flex-start;
+  margin-top: var(--mptk-space-4);
+  padding-top: 6px;
+  padding-right: 14px;
+  padding-bottom: 6px;
+  padding-left: 14px;
+  border-radius: var(--mptk-radius-pill);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--mptk-c-toast-action-border);
+  background-color: var(--mptk-c-toast-action-bg);
+}
+.mptk-toast__action-text {
+  color: var(--mptk-c-toast-fg);
+  font-size: var(--mptk-font-sm);
+  font-weight: 600;
+  line-height: 20px;
 }
 
 .mptk-toast__close {
-  margin-left: var(--mptk-space-2);
-  color: var(--mptk-fg-3);
+  flex: none;
+  align-self: flex-start;
+  margin-left: var(--mptk-space-4);
+  color: var(--mptk-c-toast-fg-2);
+}
+
+/* keyframes 数值一律字面量：与 kit.config 的 enter-dur / ease-out / ease-in-out 对应项一一对应。 */
+@keyframes mptk-toast-enter-top {
+  #{kf.$mptk-kf-0} { opacity: 0; transform: translateY(-20px); }
+  #{kf.$mptk-kf-full} { opacity: 1; transform: translateY(0); }
+}
+@keyframes mptk-toast-enter-bottom {
+  #{kf.$mptk-kf-0} { opacity: 0; transform: translateY(50px); }
+  #{kf.$mptk-kf-full} { opacity: 1; transform: translateY(0); }
+}
+@keyframes mptk-toast-exit-top {
+  #{kf.$mptk-kf-0} { opacity: 1; transform: translateY(0); }
+  #{kf.$mptk-kf-full} { opacity: 0; transform: translateY(-150px); }
+}
+@keyframes mptk-toast-exit-bottom {
+  #{kf.$mptk-kf-0} { opacity: 1; transform: translateY(0); }
+  #{kf.$mptk-kf-full} { opacity: 0; transform: translateY(150px); }
 }

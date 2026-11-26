@@ -1,4 +1,4 @@
-// @mptk-inputs:e2eaede83781
+// @mptk-inputs:1b8883f0e0cf
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -359,6 +359,42 @@
   .demo-swatch--c-dialog-type-fg-info {
     --mptk-swatch: var(--mptk-c-dialog-type-fg-info);
     background-color: var(--mptk-c-dialog-type-fg-info);
+  }
+  .demo-swatch--c-toast-bg {
+    --mptk-swatch: var(--mptk-c-toast-bg);
+    background-color: var(--mptk-c-toast-bg);
+  }
+  .demo-swatch--c-toast-fg {
+    --mptk-swatch: var(--mptk-c-toast-fg);
+    background-color: var(--mptk-c-toast-fg);
+  }
+  .demo-swatch--c-toast-fg-2 {
+    --mptk-swatch: var(--mptk-c-toast-fg-2);
+    background-color: var(--mptk-c-toast-fg-2);
+  }
+  .demo-swatch--c-toast-action-border {
+    --mptk-swatch: var(--mptk-c-toast-action-border);
+    background-color: var(--mptk-c-toast-action-border);
+  }
+  .demo-swatch--c-toast-action-bg {
+    --mptk-swatch: var(--mptk-c-toast-action-bg);
+    background-color: var(--mptk-c-toast-action-bg);
+  }
+  .demo-swatch--c-toast-icon-success {
+    --mptk-swatch: var(--mptk-c-toast-icon-success);
+    background-color: var(--mptk-c-toast-icon-success);
+  }
+  .demo-swatch--c-toast-icon-error {
+    --mptk-swatch: var(--mptk-c-toast-icon-error);
+    background-color: var(--mptk-c-toast-icon-error);
+  }
+  .demo-swatch--c-toast-icon-warning {
+    --mptk-swatch: var(--mptk-c-toast-icon-warning);
+    background-color: var(--mptk-c-toast-icon-warning);
+  }
+  .demo-swatch--c-toast-icon-info {
+    --mptk-swatch: var(--mptk-c-toast-icon-info);
+    background-color: var(--mptk-c-toast-icon-info);
   }
   .demo-swatch--control-blue {
     --mptk-swatch: var(--mptk-control-blue);

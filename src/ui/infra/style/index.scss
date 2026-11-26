@@ -63,22 +63,31 @@
   left: var(--mptk-s-zero);
 }
 
+/* 卡片宽 = 视口宽 - 左右各 16px（sonner-native marginHorizontal:16）。 */
 .mptk-toast-track {
   display: flex;
   flex-direction: column;
-  width: 640rpx;
+  width: calc(100% - 32px);
+}
+
+/* 平铺相邻间距 14px（sonner-native gap:14）：top 向下、bottom 向上。 */
+.mptk-toast-track > .mptk-toast + .mptk-toast {
+  margin-top: var(--mptk-c-toast-gap);
 }
 
 .mptk-toast-track--bottom {
   flex-direction: column-reverse;
 }
 
-.mptk-toast-track--stack .mptk-toast + .mptk-toast {
-  margin-top: calc(-1 * var(--mptk-space-3));
+/* 折叠成一摞：下层向上顶到只露一条 8px 的边（sonner-native stackGap:8），
+   下层用 scaleX 微缩露出边缘；展开后按 gap 铺开成竖排列表。 */
+.mptk-toast-track--stack > .mptk-toast + .mptk-toast {
+  margin-top: calc(-1 * (var(--mptk-c-toast-estimated-h) - var(--mptk-c-toast-stack-gap)));
+  transition: margin-top var(--mptk-c-toast-stack-dur) var(--mptk-c-toast-ease-out);
 }
 
-.mptk-toast-track--stack.mptk-toast-track--expanded .mptk-toast + .mptk-toast {
-  margin-top: var(--mptk-space-2);
+.mptk-toast-track--stack.mptk-toast-track--expanded > .mptk-toast + .mptk-toast {
+  margin-top: var(--mptk-c-toast-stack-gap);
 }
 
 .mptk-loading {

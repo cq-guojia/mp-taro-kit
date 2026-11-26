@@ -8,6 +8,7 @@ export interface ToastViewProps {
   readonly payload: ToastPayload
   readonly exiting: boolean
   readonly scale: number
+  readonly zIndex?: number
   readonly onOpen?: () => void
   readonly onClose?: () => void
   readonly onAction?: (key: string) => void
@@ -17,9 +18,16 @@ export interface ToastViewProps {
 
 type ClickLike = { stopPropagation?: () => void }
 
-export function ToastView({ payload, exiting, scale, onOpen, onClose, onAction, onTouchStart, onTouchEnd }: ToastViewProps) {
-  const style: CSSProperties = { transform: `scaleX(${String(scale)})` }
-  const names = ['mptk-toast', `mptk-toast--${payload.tone}`, exiting ? 'mptk-toast--exiting' : ''].filter(Boolean).join(' ')
+export function ToastView({ payload, exiting, scale, zIndex, onOpen, onClose, onAction, onTouchStart, onTouchEnd }: ToastViewProps) {
+  const style: CSSProperties = { transform: `scaleX(${String(scale)})`, position: 'relative', zIndex }
+  const names = [
+    'mptk-toast',
+    `mptk-toast--${payload.tone}`,
+    `mptk-toast--${payload.position}`,
+    `mptk-toast--enter-${payload.position}`,
+    exiting ? `mptk-toast--exit-${payload.position}` : '',
+    exiting ? 'mptk-toast--exiting' : '',
+  ].filter(Boolean).join(' ')
   return (
     <View
       className={names}
@@ -28,7 +36,9 @@ export function ToastView({ payload, exiting, scale, onOpen, onClose, onAction, 
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {payload.icon === undefined ? null : <Text className="mptk-toast__icon">{payload.icon}</Text>}
+      {payload.icon === undefined
+        ? <View className="mptk-toast__icon" aria-hidden="true" />
+        : <Text className="mptk-toast__icon mptk-toast__icon--text">{payload.icon}</Text>}
       <View className="mptk-toast__body">
         {payload.title === undefined ? null : <Text className="mptk-toast__title">{payload.title}</Text>}
         <Text className="mptk-toast__description">{payload.description}</Text>
@@ -37,7 +47,7 @@ export function ToastView({ payload, exiting, scale, onOpen, onClose, onAction, 
             className="mptk-toast__action"
             onClick={(event: ClickLike) => { event.stopPropagation?.(); onAction?.(payload.action?.key ?? 'action') }}
           >
-            <Text>{payload.action.text}</Text>
+            <Text className="mptk-toast__action-text">{payload.action.text}</Text>
           </View>
         )}
       </View>

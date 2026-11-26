@@ -1,4 +1,4 @@
-// @mptk-inputs:9a928edd32b8
+// @mptk-inputs:5d50d2f2685f
 // 请勿手改：本文件由 scripts/gen-kit-config.mjs 从项目根 kit.config.mjs 生成。
 // 唯一真源是 kit.config.mjs；改皮肤改配置，不要改这里。
 //
@@ -65,6 +65,13 @@
   --mptk-dur-run: 500ms;
   --mptk-dur-breathe: 1120ms;
   --mptk-ease: cubic-bezier(.4, 0, .2, 1);
+  --mptk-c-toast-enter-dur: 300ms;
+  --mptk-c-toast-stack-dur: 600ms;
+  --mptk-c-toast-ease-out: cubic-bezier(.25, 1, .5, 1);
+  --mptk-c-toast-ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --mptk-c-toast-stack-gap: 8px;
+  --mptk-c-toast-gap: 14px;
+  --mptk-c-toast-estimated-h: 70px;
   --mptk-c-overlay-color: #000;
   --mptk-c-overlay-color-light: #fff;
   --mptk-c-popup-close-fg-on-overlay: rgba(255, 255, 255, .82);
@@ -296,6 +303,15 @@
   --mptk-c-dialog-type-fg-error: #ef4444;
   --mptk-c-dialog-type-fg-warning: #f59e0b;
   --mptk-c-dialog-type-fg-info: #3b82f6;
+  --mptk-c-toast-bg: #fff;
+  --mptk-c-toast-fg: #232020;
+  --mptk-c-toast-fg-2: #4f4a4a;
+  --mptk-c-toast-action-border: #e6e3e3;
+  --mptk-c-toast-action-bg: #f7f7f7;
+  --mptk-c-toast-icon-success: #3c8643;
+  --mptk-c-toast-icon-error: #ff3a41;
+  --mptk-c-toast-icon-warning: #e37a00;
+  --mptk-c-toast-icon-info: #286efa;
   --mptk-control-blue: #3b5bdb;
   --mptk-control-green: #22c55e;
   --mptk-control-orange: #f59e0b;
@@ -401,6 +417,15 @@
   --mptk-c-dialog-type-fg-error: #ff8787;
   --mptk-c-dialog-type-fg-warning: #fcd34d;
   --mptk-c-dialog-type-fg-info: #8aa4fe;
+  --mptk-c-toast-bg: #181313;
+  --mptk-c-toast-fg: #fff;
+  --mptk-c-toast-fg-2: #C0BEBE;
+  --mptk-c-toast-action-border: #302B2B;
+  --mptk-c-toast-action-bg: #232020;
+  --mptk-c-toast-icon-success: #9ED397;
+  --mptk-c-toast-icon-error: #FF999D;
+  --mptk-c-toast-icon-warning: #ffd089;
+  --mptk-c-toast-icon-info: #B3CDFF;
   --mptk-control-blue: #6b8afd;
   --mptk-control-green: #34d399;
   --mptk-control-orange: #fbbf24;
