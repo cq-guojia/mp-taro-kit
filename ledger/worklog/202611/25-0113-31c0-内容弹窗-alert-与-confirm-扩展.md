@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-26 06:07:47 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 06:11:55 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -302,11 +302,19 @@
 
 用户要求：alert 示例下面加一个 CellGroup——第一格标题「按钮」+ 两档滑块（横排按钮 / 竖线，默认横排）；第二格标题「内置 icon」+ 四档滑块（成功 / 失败 / 警告 / 信息，默认信息）；第三格无标题，右侧三个按钮「默认样式 / icon外伸 / 信息头」。三个按钮都读上面两个滑块的选择；默认样式是标题 + 内容 + icon，底部只有一个「完成」，不区分正确与错误。
 
-**落点**：`demo/src/pages/dialog/index.tsx` 加 `ALERT_LAYOUTS`（spaced / joined）、`alertLayout` 与 `alertType` 两个 state（默认 spaced / info）、`openAlertVariant(mode)` 共用构造，三种头部形态只差 `note` / `badge`；三个按钮都传 `type: alertType` 与 `layout: alertLayout`，`confirmText:'完成'`。原有三行示例按钮保留不动。
+**落点**：`demo/src/pages/dialog/index.tsx` 加 `ALERT_LAYOUTS`（spaced / joined）、`alertLayout` 与 `alertType` 两个 state（默认 spaced / info）、`openAlertVariant(mode)` 共用构造，三种头部形态只差 `note` / `badge`；三个按钮都传 `type: alertType` 与 `layout: alertLayout`，`confirmText:'完成'`。原有三行按钮随后按用户要求清除，由配置区完全替代（见下一段）。
 
 **门禁实测**：build 414 产物 → test 252 项全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对 `dialog/index.js` 有 `value:"spaced"` / `value:"joined"` 两档、`value:"(success|error|warning|info)"` 四档、三个按钮文案的 unicode 转义与 `confirmText:"\u5b8c\u6210"`。未提交。
 
 **待确认**：用户原话「下面有两个完成」「第二个滑块就是忽略 / 那两个花花的选择」口语化较重，按「一个完成按钮、三按钮都跟两个滑块走」实现，等用户看效果后确认。
+
+### 2026-11-26 alert 旧按钮清除
+
+用户纠正：「你把 alert 里面原来有的按钮给删除了。现在加这些就是去替代原来的。」新 CellGroup 是**替代**旧按钮，不是并存。
+
+**落点**：删掉 alert 分支里的 `layoutRow(openAlert, ...)` 与两行 `TYPES.map`（普通固定类型 / 外伸固定类型），连同只被它们调用的 `openAlert` / `openTyped` 函数；`withLayout` / `LAYOUTS` 仍服务 confirm 与自定义按钮，保留。测试改为 `doesNotMatch(openAlert|openTyped)` 锁住不残留。
+
+**门禁实测**：build 414 产物 → test 252 全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对三条旧文案（解析即关 / 外伸固定类型 / 普通图标按类型上色）均已清除，新配置区三按钮文案仍在。未提交。
 
 ## Conclusion
 
@@ -346,3 +354,4 @@
 - 2026-11-25 15:35:43 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纠正圆环尺寸误读：圈恢复原来的 32px（撤掉 border-box），只把内部图标缩到 22px 居中；显式 icon 仍不加圈。237 项测试与全套门禁通过，产物核对 64/4/44rpx。未提交，等看效果。
 - 2026-11-25 15:40:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标再缩 4px：圈仍 32px 不变，内部图标 22→18px；237 项测试与全套门禁通过，产物核对 64/4/36rpx。未提交，等看效果。
 - 2026-11-26 06:07:47 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站 alert 下新增配置 CellGroup：按钮滑块（横排/竖线，默认横排）+ 内置 icon 滑块（成功/失败/警告/信息，默认信息）+ 三按钮（默认样式/icon外伸/信息头），三按钮都读滑块且默认样式只有完成按钮；252 项测试与全套门禁通过，产物核对两档四档与三按钮文案。未提交，待看效果。
+- 2026-11-26 06:11:55 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除 alert 旧按钮：删掉 layoutRow(openAlert) 与两行 TYPES.map，连同 openAlert / openTyped 函数；新配置 CellGroup 完全替代。252 项测试与全套门禁通过，产物核对三条旧文案已清除、新三按钮仍在。未提交，待看效果。
