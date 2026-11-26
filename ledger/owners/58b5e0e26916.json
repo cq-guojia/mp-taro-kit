@@ -1,7 +1,8 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展": {"category": "方案设计", "created": "2026-11-25 01:13:13", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-25 01:14:33", "status": "doing", "tags": ["弹窗", "alert", "confirm", "交互锁"], "title": "内容弹窗 alert 与 confirm 扩展", "updated": "2026-11-26 07:51:29", "worklog": "worklog/202611/25-0113-31c0-内容弹窗-alert-与-confirm-扩展.md"}
+    "20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展": {"category": "方案设计", "created": "2026-11-25 01:13:13", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-25 01:14:33", "status": "doing", "tags": ["弹窗", "alert", "confirm", "交互锁"], "title": "内容弹窗 alert 与 confirm 扩展", "updated": "2026-11-26 07:51:29", "worklog": "worklog/202611/25-0113-31c0-内容弹窗-alert-与-confirm-扩展.md"},
+    "20261126-0819-f810-按钮加载态与弹窗异步闸门": {"category": "功能建设", "created": "2026-11-26 08:19:20", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-26 08:19:20", "status": "doing", "tags": ["加载态", "异步闸门", "锁机制", "双端适配"], "title": "按钮加载态与弹窗异步闸门", "updated": "2026-11-26 08:19:20", "worklog": "worklog/202611/26-0819-f810-按钮加载态与弹窗异步闸门.md"}
   },
   "version": "20261022000000"
 }
