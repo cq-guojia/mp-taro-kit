@@ -89,13 +89,42 @@ export function hideLoading(id: number): boolean {
   return state.loading.hide(id)
 }
 
+/** alert / confirm 的固定类型：选一个即用配套图标与语义色底，无需自己挑图标。 */
+export type DialogType = 'success' | 'error' | 'warning' | 'info'
+
+/** 固定类型 → 库内置图标名；调用方显式传 icon 时以它为准。 */
+const DIALOG_TYPE_ICON: Record<DialogType, string> = {
+  success: 'common.base:gou',
+  error: 'common.base:guanbi',
+  warning: 'common.base:warn',
+  info: 'common.base:info',
+}
+
+/** 固定类型 → 外伸徽标预设色（本身就是轻微渐变底 + 反色图标）。 */
+const DIALOG_TYPE_TONE = {
+  success: 'green',
+  error: 'red',
+  warning: 'yellow',
+  info: 'blue',
+} as const
+
+/** 固定类型 → 普通 inline 图标色：只给图标上色，不造底色。 */
+const DIALOG_TYPE_ICON_COLOR = {
+  success: 'var(--mptk-c-dialog-type-fg-success)',
+  error: 'var(--mptk-c-dialog-type-fg-error)',
+  warning: 'var(--mptk-c-dialog-type-fg-warning)',
+  info: 'var(--mptk-c-dialog-type-fg-info)',
+} as const
+
 export interface DialogOptions {
-  /** 标题与说明默认都排进 body；这里只给文案，不接 ReactNode。 */
+  /** 标题按 ContentPopup 头部形态排布，说明排进 body；这里只给文案，不接 ReactNode。 */
   title?: string
   confirmText?: string
   cancelText?: string
-  /** icon 档的备注（主标题下方的小字）。 */
+  /** 文字头备注（主标题下方的小字）；icon 档与纯标题档都生效。 */
   note?: string
+  /** 固定类型：选配图标并给 inline 图标上语义色；有 badge 时同时换外伸图标与红黄蓝绿底色。显式 icon 只换图标名。 */
+  type?: DialogType
   icon?: string
   /** 自定义按钮：key 用来在锁期间声明例外，也回传给 onAction。 */
   actions?: readonly DialogAction[]
@@ -149,14 +178,26 @@ function pushDialog(
     : layout === 'joined'
       ? options.actions.map(({ key, text, color }) => ({ key, text, color }))
       : options.actions
+  const icon = options.type === undefined ? options.icon : options.icon ?? DIALOG_TYPE_ICON[options.type]
+  // inline 图标上语义色（无底色）；外伸徽标另走 tone 换渐变底，两者互不牵连。
+  const badge = options.badge === undefined || options.type === undefined
+    ? options.badge
+    : {
+      ...options.badge,
+      content: { kind: 'icon' as const, name: icon ?? DIALOG_TYPE_ICON[options.type] },
+      tone: DIALOG_TYPE_TONE[options.type],
+    }
   uiState().overlays.push({
     kind,
     content: {
-      variant: options.icon === undefined ? 'text' : 'icon',
+      variant: icon === undefined ? 'text' : 'icon',
       title: options.title,
       description: message,
       note: options.note,
-      icon: options.icon,
+      icon,
+      ...(options.type === undefined || options.icon !== undefined
+        ? null
+        : { iconColor: DIALOG_TYPE_ICON_COLOR[options.type] }),
     },
     actions,
     layout,
@@ -164,7 +205,7 @@ function pushDialog(
     width: options.width,
     closeable: options.closeable ?? false,
     maskClosable: options.maskClosable ?? false,
-    badge: options.badge,
+    badge,
     headerImage: options.headerImage,
     offsets: options.offsets,
     lockExceptions: options.lockExceptions ?? (kind === 'confirm' ? ['cancel'] : []),

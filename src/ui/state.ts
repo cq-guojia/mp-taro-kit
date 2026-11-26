@@ -22,13 +22,15 @@ export interface DialogAction {
   readonly loadingText?: string
 }
 
-/** 标题 / 说明默认排进 body；icon 档额外给图标与备注，均不使用 header 框。 */
+/** 标题交给 ContentPopup 按头部形态排布；icon 档额外给图标与备注，说明恒在 body。 */
 export interface DialogContent {
   readonly variant: 'text' | 'icon'
   readonly title?: string
   readonly description: string
   readonly note?: string
   readonly icon?: string
+  /** 固定类型给 inline 图标的语义色（var(--mptk-*)），只上色、不带底色。 */
+  readonly iconColor?: string
 }
 
 /** 三形态：横排 spaced / 竖排 stack / 竖线 joined。 */

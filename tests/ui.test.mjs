@@ -220,6 +220,47 @@ test('alert() 解析即关，不携带选择', async () => {
   assert.equal(await pending, undefined)
 })
 
+test('固定 type 换图标；普通 icon 上语义色并保留副标题，带 badge 时换外伸图标与底色', async () => {
+  ui.resetUIForTests()
+  mountAll()
+  const expected = {
+    success: { icon: 'common.base:gou', tone: 'green', fg: 'var(--mptk-c-dialog-type-fg-success)' },
+    error: { icon: 'common.base:guanbi', tone: 'red', fg: 'var(--mptk-c-dialog-type-fg-error)' },
+    warning: { icon: 'common.base:warn', tone: 'yellow', fg: 'var(--mptk-c-dialog-type-fg-warning)' },
+    info: { icon: 'common.base:info', tone: 'blue', fg: 'var(--mptk-c-dialog-type-fg-info)' },
+  }
+  for (const [type, spec] of Object.entries(expected)) {
+    // 普通 icon 档：换图标 + 给图标上色，副标题保留，不造 badge、不带底色。
+    const plain = ui.alert(`${type} 提示`, { type, note: '标题下的小字' })
+    const plainPayload = ui.uiState().overlays.getSnapshot()[0].payload
+    assert.equal(plainPayload.content.variant, 'icon')
+    assert.equal(plainPayload.content.icon, spec.icon, `${type} 应映射到指定图标`)
+    assert.equal(plainPayload.content.iconColor, spec.fg, `${type} inline 图标应上语义色`)
+    assert.equal(plainPayload.content.note, '标题下的小字', '普通档备注要进载荷')
+    assert.equal(plainPayload.badge, undefined, '普通档不该凭空造 badge')
+    assert.equal(plainPayload.content.iconTone, undefined, '普通档不该带色底字段')
+    closeTop(true)
+    await plain
+
+    // 外伸档：图标换成固定图标，底色换成对应红黄蓝绿。
+    const raised = ui.alert(`${type} 外伸`, {
+      type,
+      badge: { content: { kind: 'icon', name: 'common.base:home' } },
+    })
+    const raisedPayload = ui.uiState().overlays.getSnapshot()[0].payload
+    assert.deepEqual(raisedPayload.badge.content, { kind: 'icon', name: spec.icon })
+    assert.equal(raisedPayload.badge.tone, spec.tone, `${type} 外伸底色`)
+    closeTop(true)
+    await raised
+  }
+  const custom = ui.confirm('自定义图标', { type: 'success', icon: 'common.base:home' })
+  const customContent = ui.uiState().overlays.getSnapshot()[0].payload.content
+  assert.equal(customContent.icon, 'common.base:home', '显式 icon 覆盖固定图标')
+  assert.equal(customContent.iconColor, undefined, '自定义 icon 不套语义色，也就没有圆环')
+  closeTop(true)
+  await custom
+})
+
 test('对话框载荷带齐三形态、位置、宽度与头部配置', async () => {
   ui.resetUIForTests()
   mountAll()
@@ -1051,6 +1092,8 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
   for (const id of ['alert', 'confirm', 'custom-actions', 'busy']) {
     assert.ok(demo.includes(`id === '${id}'`), `缺独立示例分支 ${id}`)
   }
+  assert.match(demo, /<DemoBlock example=\{config\}>/, '顶部配置仍单独成卡')
+  assert.match(demo, /<Card className="demo-block">[\s\S]*<CardHead[\s\S]*render\(example\.id\)/, '下方示例要合成一张多标题卡')
   assert.match(demo, /onConfirm:/, 'Dialog 页缺异步闸门演示')
   assert.match(demo, /lockExceptions:/, 'Dialog 页缺按钮例外演示')
   const widths = demo.match(/const WIDTHS = \[([\s\S]*?)\] as const/)
@@ -1068,6 +1111,11 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
   assert.doesNotMatch(demo, /已关闭|Promise 解析|demo-note/, '演示站只展示效果，不展示调用结果文案')
   assert.doesNotMatch(demo, /id === 'layout'|openShape/, '不该再有独立形态示例块')
   assert.match(demo, /layoutRow\(openAlert, LAYOUTS\.filter\(\(item\) => item\.value !== 'stack'\)\)/, 'alert 应隐藏竖排按钮')
+  for (const type of ['success', 'error', 'warning', 'info']) {
+    assert.ok(demo.includes(`value: '${type}'`), `alert 缺固定类型 ${type}`)
+  }
+  assert.match(demo, /size="xs" onClick=\{\(\) => openTyped\(item\.value\)\}/, '普通固定类型按钮没用 XS')
+  assert.match(demo, /size="xs" onClick=\{\(\) => openTyped\(item\.value, true\)\}/, '外伸固定类型按钮没用 XS 或没开外伸')
   assert.match(demo, /layoutRow\(openConfirm\)/, 'confirm 缺形态按钮行')
   assert.match(demo, /layoutRow\(openCustomActions\)/, '自定义按钮缺形态按钮行')
   assert.match(demo, /onClick=\{\(\) => open\(\)\}>默认</, '示例前面缺默认样式按钮')

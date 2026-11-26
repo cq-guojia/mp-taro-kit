@@ -15,6 +15,23 @@ export function markCardEdgeContent<T extends object>(component: T): T {
 }
 
 /**
+ * 段头契约：参与 Card 的边界计算、能拿到该画哪条线的提示，但不声明「自带留白」。
+ * 与贴边内容的区别是内容归属——段头只包标题，下面的正文是它的兄弟节点，
+ * 若声明贴边会让 Card 关掉 body 留白，把兄弟正文推到卡片边上。
+ */
+export const CARD_SECTION_HEAD: unique symbol = Symbol('mptk-card-section-head')
+
+export interface CardSectionHeadComponent {
+  [CARD_SECTION_HEAD]?: true
+}
+
+export function markCardSectionHead<T extends object>(component: T): T {
+  const marked = component as T & CardSectionHeadComponent
+  marked[CARD_SECTION_HEAD] = true
+  return component
+}
+
+/**
  * 贴边内容在 Card body 里该不该画自己的上下边界线。Card 渲染期算好后注入：
  * 每组只负责「自己边界上那一条」，两段之间的分界处恒好一条线，不会两边各画一条叠成双线。
  */

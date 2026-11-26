@@ -1299,16 +1299,31 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
   assert.match(own, /\.mptk-content-popup__title\s*\{[^}]*font-size:\s*var\(--mptk-font-lg\)/, '主标题用大字档')
   assert.match(own, /\.mptk-content-popup__subtitle\s*\{[^}]*font-size:\s*var\(--mptk-font-xs\)[^}]*color:\s*var\(--mptk-c-content-popup-head-ink-2\)/, '副标题用更小字号，字色走头字 token')
   assert.match(read('kit.config.mjs'), /--mptk-c-content-popup-head-ink/, '头部字色缺 token 真源')
-  assert.doesNotMatch(own, /mptk-content-popup__head(?!er)/, '__head 外层应已合并进 __header')
+  assert.doesNotMatch(own, /\.mptk-content-popup__head\s*[{,]/, '__head 外层应已合并进 __header')
   assert.match(own, /\.mptk-content-popup__lead-slot\s*\{[^}]*font-size:\s*var\(--mptk-c-content-popup-title-icon-size\)/, '文字头图标尺寸走组件 token')
   assert.match(own, /\.mptk-content-popup__lead-icon,\s*\.mptk-content-popup__lead-glyph/, '四形态图标收进统一 __lead-* 类族')
-  assert.match(own, /\.mptk-content-popup__title-text--raised\s*\{[^}]*margin-top:\s*var\(--mptk-space-3\)/, '外伸档标题与图标留间距')
+  assert.doesNotMatch(own, /\.mptk-content-popup__title-text--raised\s*\{/, '标题已挪到独立 __headline，不再塞进图标文案块')
+  assert.match(own, /\.mptk-content-popup__headline\s*\{[^}]*padding-top:\s*var\(--mptk-space-4\)\s*;[^}]*padding-left:\s*var\(--mptk-space-4\)\s*;[^}]*padding-right:\s*var\(--mptk-space-4\)/, '独立标题行上下左右留白同一档')
   assert.doesNotMatch(own, /mptk-content-popup__badge-title|mptk-content-popup__badge-icon|mptk-content-popup__badge-image/, 'badge 专属标题/图标类已并入 __lead-*，不许复活')
   assert.match(read('src/ui/layout/content-popup/index.ts'), /type ContentPopupHeaderIcon/, '统一图标类型没导出')
   assert.match(own, /\.mptk-content-popup__title-text\s*\{[^}]*min-width:\s*0/, '长文案换行需要 min-width:0')
   assert.match(own, /\.mptk-content-popup__title,\s*\.mptk-content-popup__subtitle\s*\{[^}]*white-space:\s*normal/, '标题与副标题必须允许换行')
   assert.match(own, /\.mptk-content-popup__header--title\s*\{[^}]*column-gap:\s*var\(--mptk-space-4\)/, '图标与文字的左右间距加大')
   assert.match(read('kit.config.mjs'), /--mptk-c-content-popup-title-icon-size/, '图标尺寸缺 token 真源')
+  for (const tone of ['blue', 'green', 'red', 'yellow']) {
+    assert.match(own, new RegExp(`\\.mptk-content-popup__badge--tone-${tone}\\s*\\{[^}]*background-image:\\s*var\\(--mptk-c-content-popup-badge-bg-${tone}\\)`), `${tone} 外伸档渐变底仍在`)
+    assert.match(read('kit.config.mjs'), new RegExp(`--mptk-c-content-popup-badge-bg-${tone}\\":\\s*\\"linear-gradient`), `${tone} 外伸渐变是轻微层次而非纯色`)
+  }
+  for (const type of ['success', 'error', 'warning', 'info']) {
+    assert.match(read('kit.config.mjs'), new RegExp(`--mptk-c-dialog-type-fg-${type}":\\s*"#`), `${type} inline 图标色缺 token 真源`)
+  }
+  assert.match(own, /\.mptk-content-popup__lead-slot--framed\s*\{[^}]*border:\s*var\(--mptk-c-dialog-type-icon-ring-w\)\s+solid\s+currentColor/, '固定类型圆环描边取图标色')
+  assert.match(own, /\.mptk-content-popup__lead-slot--framed\s+\.mptk-content-popup__lead-icon\s*\{[^}]*font-size:\s*var\(--mptk-c-dialog-type-icon-size\)/, '固定类型图标缩一档')
+  for (const key of ['icon-size', 'icon-ring-size', 'icon-ring-w']) {
+    assert.match(read('kit.config.mjs'), new RegExp(`--mptk-c-dialog-type-${key}"?:`), `${key} 圆环几何缺 token 真源`)
+  }
+  assert.match(read('kit.config.mjs'), /--mptk-c-dialog-type-icon-ring-size":\s*"32px"/, '圆环尺寸保持原样，只缩内部图标')
+  assert.doesNotMatch(own, /\.mptk-content-popup__lead-slot--framed\s*\{[^}]*box-sizing:/, '圆环尺寸口径不变，不引入 border-box')
   assert.doesNotMatch(own, /margin-top:-\d/, 'Skyline 不支持负外边距')
   assert.doesNotMatch(own, /(^|[;{\s])gap:/, 'Skyline 不支持 gap 简写')
   assert.match(read('kit.config.mjs'), /--mptk-c-content-popup-badge-border-w/, '描边宽度缺 token 真源')
@@ -1341,6 +1356,13 @@ test('ContentPopup 样式不踩 Skyline 禁用写法，token 由真源生成', (
     assert.match(lightBg ?? '', /^linear-gradient\(/, `${tone} 明档必须是渐变，不许纯色死板`)
     assert.match(darkBg ?? '', /^linear-gradient\(/, `${tone} 暗档必须是渐变`)
     assert.notEqual(lightBg, darkBg, `${tone} 明暗必须反色，不能同一套色值`)
+  }
+  const typeFg = (mode, type) => new RegExp(`--mptk-c-dialog-type-fg-${type}:\\s*([^;]+);`)
+    .exec(resolveCssVars(read(`dist/styles/theme-${mode}.css`)))?.[1]?.trim()
+  for (const type of ['success', 'error', 'warning', 'info']) {
+    assert.match(typeFg('light', type) ?? '', /^#/, `${type} inline 图标明档色没进产物`)
+    assert.match(typeFg('dark', type) ?? '', /^#/, `${type} inline 图标暗档色没进产物`)
+    assert.notEqual(typeFg('light', type), typeFg('dark', type), `${type} inline 图标明暗不能同色`)
   }
 })
 

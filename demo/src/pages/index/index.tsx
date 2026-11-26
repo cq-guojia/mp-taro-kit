@@ -2,7 +2,7 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { setThemeMode, type ThemeMode } from 'mp-taro-kit/runtime'
 import { useThemeSnapshot } from 'mp-taro-kit/ui/infra'
-import { Card } from 'mp-taro-kit/ui/card'
+import { Card, CardHead } from 'mp-taro-kit/ui/card'
 import { Tag } from 'mp-taro-kit/ui/display'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
@@ -45,11 +45,11 @@ export default function IndexPage() {
           <Tag className="demo-item" size="3xs" radius="pill">{__MTPK_BUILD_ID__}</Tag>
         </View>
       </View>
-      <Card
-        className="demo-card"
-        title="主题模式"
-        subtitle={`当前 ${mode} · ${dark ? '暗色生效' : '明色生效'}；切换后全站样式、弹层与窗口背景立即生效`}
-      >
+      <Card className="demo-card">
+        <CardHead>
+          <View className="mptk-card__title">主题模式</View>
+          <View className="mptk-card__subtitle">{`当前 ${mode} · ${dark ? '暗色生效' : '明色生效'}；切换后全站样式、弹层与窗口背景立即生效`}</View>
+        </CardHead>
         <Segmented
           items={THEME_ITEMS}
           value={mode}
@@ -57,7 +57,8 @@ export default function IndexPage() {
         />
       </Card>
       {menu.map((group) => (
-        <Card key={group.id} className="demo-card" title={group.title}>
+        <Card key={group.id} className="demo-card">
+          <CardHead><View className="mptk-card__title">{group.title}</View></CardHead>
           <CellGroup>
             {group.entries.map((entry) =>
               entry.status === 'ready' ? (

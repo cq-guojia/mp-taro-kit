@@ -199,14 +199,19 @@ export default {
     "--mptk-c-content-popup-head-ink": "var(--mptk-fg)",             // 头部主字色：深渐变头由 headerTone=on-dark 局部覆盖
     "--mptk-c-content-popup-head-ink-2": "var(--mptk-fg-3)",         // 头部副字色：跟随三级文字，深渐变头一并覆盖
     /* 外伸徽标四档预设色：整条渐变作一个 token，明档深、暗档浅（主题反色）；显式 badge.background 覆盖。 */
-    "--mptk-c-content-popup-badge-bg-blue": "linear-gradient(165deg, #3b5bdb, #1e3a8a)",
-    "--mptk-c-content-popup-badge-bg-green": "linear-gradient(165deg, #16a34a, #0e6b4f)",
-    "--mptk-c-content-popup-badge-bg-red": "linear-gradient(165deg, #dc2626, #991b1b)",
-    "--mptk-c-content-popup-badge-bg-yellow": "linear-gradient(165deg, #d97706, #a16207)",
+    "--mptk-c-content-popup-badge-bg-blue": "linear-gradient(165deg, #3b82f6, #2563c7)",
+    "--mptk-c-content-popup-badge-bg-green": "linear-gradient(165deg, #22c55e, #1ea84f)",
+    "--mptk-c-content-popup-badge-bg-red": "linear-gradient(165deg, #ef4444, #cf2727)",
+    "--mptk-c-content-popup-badge-bg-yellow": "linear-gradient(165deg, #f59e0b, #d98805)",
     "--mptk-c-content-popup-badge-ink-blue": "#fff",                // 徽标图标色：明档深底配白
     "--mptk-c-content-popup-badge-ink-green": "#fff",
     "--mptk-c-content-popup-badge-ink-red": "#fff",
     "--mptk-c-content-popup-badge-ink-yellow": "#fff",
+    /* 固定类型的 inline 图标色：纯色图标本身上色，不带底色；取徽标渐变的起点色保持一致。 */
+    "--mptk-c-dialog-type-fg-success": "#22c55e",
+    "--mptk-c-dialog-type-fg-error": "#ef4444",
+    "--mptk-c-dialog-type-fg-warning": "#f59e0b",
+    "--mptk-c-dialog-type-fg-info": "#3b82f6",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -300,13 +305,18 @@ export default {
     "--mptk-c-content-popup-head-ink-2": "var(--mptk-fg-3)",         // 头部副字色：跟随三级文字，深渐变头一并覆盖
     /* 徽标四档预设色：与明档同名，暗档浅底深字，随着 .mptk-dark 切换。 */
     "--mptk-c-content-popup-badge-bg-blue": "linear-gradient(165deg, #8aa4fe, #5b7cdb)",
-    "--mptk-c-content-popup-badge-bg-green": "linear-gradient(165deg, #5fe0b1, #34d399)",
+    "--mptk-c-content-popup-badge-bg-green": "linear-gradient(165deg, #4ade80, #34d399)",
     "--mptk-c-content-popup-badge-bg-red": "linear-gradient(165deg, #ff8787, #ff5c5c)",
     "--mptk-c-content-popup-badge-bg-yellow": "linear-gradient(165deg, #fcd34d, #fbbf24)",
     "--mptk-c-content-popup-badge-ink-blue": "#1f2328",            // 徽标图标色：暗档浅底配深字
     "--mptk-c-content-popup-badge-ink-green": "#1f2328",
     "--mptk-c-content-popup-badge-ink-red": "#1f2328",
     "--mptk-c-content-popup-badge-ink-yellow": "#1f2328",
+    /* 固定类型的 inline 图标色：暗档取徽标渐变起点色，深底上仍够亮。 */
+    "--mptk-c-dialog-type-fg-success": "#4ade80",
+    "--mptk-c-dialog-type-fg-error": "#ff8787",
+    "--mptk-c-dialog-type-fg-warning": "#fcd34d",
+    "--mptk-c-dialog-type-fg-info": "#8aa4fe",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -349,6 +359,9 @@ export default {
     "--mptk-c-content-popup-action-gap": "var(--mptk-space-2)",     // 内容弹窗按钮之间的默认间距（spaced 档）
     "--mptk-c-content-popup-title-icon-size": "28px",               // 文字头图标尺寸，比副标题大一个量级，便于一眼定位
     "--mptk-c-content-popup-badge-icon-size": "32px",               // 外伸徽标图标尺寸：比文字头大、比旧 36px 收敛一档，与消费端彩色图标同档
+    "--mptk-c-dialog-type-icon-size": "18px",                       // 固定类型 inline 图标：在 22px 基础上再减 4px，圈保持原尺寸
+    "--mptk-c-dialog-type-icon-ring-size": "32px",                  // 圆环尺寸保持原样；只把内部图标缩到 22px 并居中
+    "--mptk-c-dialog-type-icon-ring-w": "2px",                      // 圆环描边：细到不抢标题，仍看得出是个圈
     /* 随主题的两条头部字色在 light / dark 组：本组的 var() 会在 page 按明档解析后固定。
        下面三条是「浅底头」专用反色：配置别名解析成明档字面量、不随主题翻亮，
        浅背景在暗档主题下仍是浅底，字色必须固定深色才看得清。 */

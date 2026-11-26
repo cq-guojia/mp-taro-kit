@@ -51,7 +51,7 @@ WebView 侧用 `pointer-events: none` + 例外子树 `auto` 命中；Skyline 侧
 | `headerBackground` | `BackgroundValue` | 透明 | 头部区底色或渐变；铺满整块头部（含左右留白）；图片头默认无背景，要背景才传 |
 | `headerImage` | `{ src: string; mode?: 'cover' \| 'contain'; position?: string; repeat?: boolean }` | — | 头部图片背景，走 CSS `background-image`；与 `headerBackground` 同给时图片盖在色/渐变之上。不裁切外伸图标；字色仍按 `headerTone` 给 |
 | `headerTone` | `'normal' \| 'on-light' \| 'on-dark'` | `'normal'` | 头部底色的明暗：浅底传 `on-light` 配深字、深底传 `on-dark` 配浅字；`normal` 跟随主题 |
-| `headerDivider` | `boolean` | `title` 开，`image` / `badge` 关 | 头部与内容之间**横向**的分割线；显式传值最高优先。与徽标容器外圈那道 `badge.border` 是两回事。有线的上下留白由 header 给，无线时这段留白随之消失（内容区上间距恒在） |
+| `headerDivider` | `boolean` | 带图标/备注的 `title` 开，纯标题 / `image` / `badge` 关 | 头部与内容之间**横向**的分割线；显式传值最高优先（显式给 `headerDividerColor` 也视为要线）。与徽标容器外圈那道 `badge.border` 是两回事。有线的上下留白由 header 给，无线时这段留白随之消失（内容区上间距恒在） |
 | `iconColor` | `string` | 走 `headerTone` 的字色 | 图标颜色，仅单色字体图标生效（COLR/CPAL 彩色字形吃不到 `color`）；显式传入优先于 tone 的默认字色 |
 | `headerDividerColor` | `string` | 随 `headerTone` | 分割线颜色，可写 `var(--mptk-*)`；不传时 `normal` 走 `--mptk-border`、`on-light` 走深线、`on-dark` 走浅线 |
 | `panelBackground` | `BackgroundValue` | — | 整个面板底色或渐变，铺满内容区；`panelStyle` 可再覆盖 |
@@ -81,7 +81,7 @@ WebView 侧用 `pointer-events: none` + 例外子树 `auto` 命中；Skyline 侧
 
 ### `title` 档：文字头
 
-小图标 + 标题 + 副标题是**一体**的标题区。与 `badge` 档共用同一份「图标 + 文案」渲染：图标四形态、标题 `--mptk-font-lg`、副标题 `--mptk-font-xs` 在两档完全一致，差异只在图标是**内嵌在左**（本档）还是**外伸在上**（badge 档）。
+带图标或备注时，图标 + 标题 + 副标题是**一体**的标题区，走 header 内的文案块；只有 `title` 没有图标与备注时，标题走 header 外的独立标题行，与 `image` / `badge` 档同为居中 `--mptk-font-lg`、默认无下划线。图标四形态、标题字号与副标题字号仍是同一套。
 
 排布固定为：图标独占左侧一列、上下贯通右侧两行；图标尺寸走组件 token `--mptk-c-content-popup-title-icon-size`，图标与文字的左右间距为 `--mptk-space-4`。长文案在标题与副标题上都会自动换行，不给单行溢出。
 
@@ -105,11 +105,27 @@ WebView 侧用 `pointer-events: none` + 例外子树 `auto` 命中；Skyline 侧
   actions={[{ text: '知道了', onClick: close }]} onClose={close} />
 ```
 
+### 命令式固定类型图标
+
+`alert` / `confirm` 的 `type?: 'success' | 'error' | 'warning' | 'info'` 选图标并给图标上语义色：
+
+| `type` | 图标 | inline 图标色 | 外伸徽标底色 |
+|---|---|---|---|
+| `success` | `common.base:gou` | `--mptk-c-dialog-type-fg-success`（绿） | `green` |
+| `error` | `common.base:guanbi` | `--mptk-c-dialog-type-fg-error`（红） | `red` |
+| `warning` | `common.base:warn` | `--mptk-c-dialog-type-fg-warning`（黄） | `yellow` |
+| `info` | `common.base:info` | `--mptk-c-dialog-type-fg-info`（蓝） | `blue` |
+
+- 普通文字头：图标排在标题左侧，颜色取上表语义色（`var(--mptk-*)`，明暗各一支）。**仅固定类型图标**另套一个同色细圆环：圈的尺寸保持原样（`--mptk-c-dialog-type-icon-ring-size`，2px 描边取 `currentColor`），内部图标缩到 18px（常规 28px → 22px → 再减 4px）并保持上下左右居中，不铺底色。显式传 `icon` 或自己定颜色的，回到无圈、原尺寸；通用的 `iconColor` 同样只上色、不加框。标题下的 `note` 作为副标题照常显示，纯文字档（无图标）也生效。
+- 外伸徽标头（`badge`）：徽标图标换成对应项，底色换成上表 tone，走徽标既有的 `--mptk-c-content-popup-badge-bg-*` 轻微渐变，明暗各一支。
+- 显式传 `icon` 只覆盖图标名，不改颜色；显式 badge 的几何（尺寸 / 圆角 / 偏移 / 描边）保持，只有 `content` 与 `tone` 由 `type` 决定。
+
 ### `image` 档：图片头
 
 | 参数 | 类型 | 说明 |
 |---|---|---|
 | `image` | `ContentPopupImage` | `{ src } & ImageSizeInput & { onClick?, align?, offset? }`，尺寸走同一套 `resolveImageSize` |
+| `title` | `string` | 主标题（`font-lg`），排在图片下方的独立标题行；与 `title` / `badge` 档同字号 |
 | `headerBackground` | `BackgroundValue` | 默认透明；异形透明图靠面板底色接上，明暗主题各走各的 token |
 
 `ContentPopupImage` 的几何字段：
@@ -183,9 +199,9 @@ WebView 侧用 `pointer-events: none` + 例外子树 `auto` 命中；Skyline 侧
 
 `color` 仅对单色字体图标生效；COLR/CPAL 彩色字形（如演示站的 `tool-kit`）吃不到 `color`，要换色只能换素材。显式 `color` 优先于 `iconColor` 与 `headerTone` 的默认字色，深/浅底上的对比度由调用方自行保证。
 
-**两档是同一个 header**：图标四形态、主标题（lg）、字色 token、分割线共用一份实现与类族；`badge` 只多一层「带背景/圆角/外伸位移的盒子」和标题上方间距，不是另一套标题组件。差异：副标题只在 `title` 档显示；`badge` 只有 `anchor='center'` 出标题，靠左/靠右只有图标；`badge` 外圈描边默认开，但 header 横向分割线默认关。
+**标题与图形分开**：`title` 档是「图标 + 标题 + 副标题」一体的文字头；`badge` 档的外伸徽标独占 header，标题走 header 下方的**独立标题行**（`font-lg`，与另外两档同字号同字色），任何 `anchor` 都出标题，不跟徽标定位走；`image` 档标题同样走这条独立标题行，排在图片下方。这条标题行与 header 是兄弟节点，图片头的外伸收窄与徽标的绝对定位都不会挤掉它；传了自定义 `header` 槽位则不再渲染。副标题只在 `title` 档显示。
 
-另：顶层 `title` 只在徽标居中时作为下方主标题，靠左/靠右不出；badge 档默认有分割线（与 title 档一致）。`headerTone` 控制的是 header 区字色，徽标标题落在透明 header 上，跟随面板主题即可，不必按徽标底色传。
+`badge` 外圈描边默认开，但 header 横向分割线默认关。`headerTone` 控制的是 header 区字色，独立标题行落在透明区，跟随面板主题即可，不必按徽标底色传。
 
 ```tsx
 // 图片徽标（截图形态）：圆形容器 + 面板同色描边 + 图片裁圆，靠上偏移
@@ -246,7 +262,7 @@ interface ContentPopupFooterConfig {
 
 - **位置**：只支持顶部 / 中部 / 底部；左右抽屉不支持，越界值运行时回落 `'center'`，不抛错。顶部档徽标不外伸，降级为内联图标头；关闭叉固定面板下方右（`below-right`）。
 - **高度**：沿用 Popup「高度由内容撑开、不写 `max-height`」；要滚由调用方在 `children` 里包 `scroll-view` 并给确定高。
-- **分割线标准**：头部与内容之间的线是**头部的下边框**（不是独立节点），线及以上都归 header——`headerBackground` 的渐变铺到线为止；线通栏（左右顶到面板边）。线以下的间距是**内容区的上间距**（`--mptk-space-4`，16px），由 `.mptk-content-popup__content--top-gap` 恒给，不随分割线显隐消失；线本身上方由 header 的 `padding-bottom` 留同档间距。线色走 `headerDividerColor`，默认 `--mptk-border`。以后本弹窗里新增任何分割线都按这条标准走。
+- **分割线标准**：默认只有带图标/备注的文字头带横向分割线；纯标题、`image`、`badge` 默认没有。头部与内容之间的线是**头部的下边框**（不是独立节点），线及以上都归 header——`headerBackground` 的渐变铺到线为止；线通栏（左右顶到面板边）。线以下的间距是**内容区的上间距**（`--mptk-space-4`，16px），由 `.mptk-content-popup__content--top-gap` 恒给，不随分割线显隐消失；线本身上方由 header 的 `padding-bottom` 留同档间距。线色走 `headerDividerColor`，默认 `--mptk-border`。以后本弹窗里新增任何分割线都按这条标准走。
 - **圆角裁切**：面板为徽标外伸开了 `overflow: visible`，不再替头部裁圆角；头部按面板档位自裁上两角（居中档恒圆、底部档仅 `round` 开启才圆，取 `--mptk-c-popup-radius`），渐变不会溢出圆角。
 - **徽标避让**：`badge` 形态下若 `closePosition` 落在面板内 `top-*` / `edge-top-*`，自动回落到中线外置档（底部 `above-center`、其余 `below-center`），避免与外伸容器叠在一起。
 - **空态**：`badge` 档没给 `badge.content` 时不渲染头部，只传标题也不会出现空容器。
@@ -287,3 +303,7 @@ interface ContentPopupFooterConfig {
 - 2026-11-24 22:40:37：底部弹出的徽标头默认隐藏关闭叉，避免与外伸 icon 冲突；显式 closeable=true 可覆盖
 - 2026-11-24 23:03:59：新增头部透明档：headerBackground:'transparent' 时面板底色下沉到内容与底栏，头部那段透出遮罩，异形图上方透明区直接可见，不需要上下偏移；演示站用用户提供的透明火箭图落在「透明」按钮
 - 2026-11-25 11:56:19：补 width 与整框交互锁参数，写清双端落法和未真机验证边界
+- 2026-11-25：`alert` / `confirm` 的 `type` 映射到四个指定图标；普通文字头只换图标、无底色，外伸徽标头同时换图标与红黄蓝绿轻微渐变底（走 badge 既有 tone）。
+- 2026-11-25：普通文字头按 `type` 给 inline 图标上语义色（绿 / 红 / 黄 / 蓝，token 明暗各一支），仍不带底色；`note` 作为标题下副标题在纯文字档也照常透传。
+- 2026-11-25：固定类型图标加同色细圆环（2px 描边、圈尺寸 32px 保持原样），图标缩到 18px 并居中；通过 `iconFramed` 只作用于固定类型，显式 `icon` 与通用 `iconColor` 行为不变。
+- 2026-11-25：`title` 扩到 image / badge 两档——标题从「图标文案块」里拆出，排在 header 下方的独立 `__headline` 行；badge 任意锚点都出标题，image 档也出；标题行不进 header，图片外伸收窄与徽标定位都影响不到它。删除已无用的 `__title-text--raised`。纯标题档（无图标/备注）改用同一条标题行，居中且默认无下划线；带图标/备注的文字头保持原内联结构与分割线默认。

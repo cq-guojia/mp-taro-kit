@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { View, Text } from '@tarojs/components'
 import type { ReactNode } from 'react'
-import { Card } from 'mp-taro-kit/ui/card'
+import { Card, CardHead } from 'mp-taro-kit/ui/card'
 import { Divider } from 'mp-taro-kit/ui/display'
 import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/style'
@@ -15,7 +15,7 @@ function pageOf(id: string) {
   return page
 }
 
-/** 单个示例外壳：卡片壳交给 Card，标题与说明走它的槽；通栏页不套壳。 */
+/** 单个示例外壳：卡片壳交给 Card，标题与说明走 CardHead；通栏页不套壳。 */
 export function DemoBlock({
   example,
   bare = false,
@@ -39,11 +39,13 @@ export function DemoBlock({
     )
   }
   return (
-    <Card
-      className="demo-block"
-      title={example.title === '' ? undefined : example.title}
-      subtitle={example.hint === '' ? undefined : example.hint}
-    >
+    <Card className="demo-block">
+      {(example.title !== '' || example.hint !== '') && (
+        <CardHead>
+          {example.title !== '' && <View className="mptk-card__title">{example.title}</View>}
+          {example.hint !== '' && <View className="mptk-card__subtitle">{example.hint}</View>}
+        </CardHead>
+      )}
       <View className="demo-block__content">{children}</View>
     </Card>
   )

@@ -126,11 +126,12 @@ export function DialogHost({ className }: DialogHostProps) {
             variant={payload.badge !== undefined ? 'badge' : payload.headerImage !== undefined ? 'image' : 'title'}
             badge={payload.badge}
             image={payload.headerImage}
-            title={payload.content.variant === 'icon' ? payload.content.title : undefined}
-            subtitle={payload.content.variant === 'icon' ? payload.content.note : undefined}
-            headerIcon={payload.content.variant === 'icon' && payload.content.icon !== undefined
-              ? { kind: 'icon', name: payload.content.icon }
+            title={payload.content.title}
+            subtitle={payload.content.note}
+            headerIcon={payload.content.icon !== undefined
+              ? { kind: 'icon', name: payload.content.icon, color: payload.content.iconColor }
               : undefined}
+            iconFramed={payload.content.iconColor !== undefined}
             closeable={payload.closeable}
             closable={payload.maskClosable}
             closeOffset={payload.offsets}

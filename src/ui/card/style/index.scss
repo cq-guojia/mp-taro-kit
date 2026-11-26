@@ -98,21 +98,8 @@
   width: var(--mptk-s-full);
 }
 
-.mptk-card__header {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  margin-bottom: var(--mptk-card-spacing);
-  padding-right: var(--mptk-card-spacing);
-  padding-left: var(--mptk-card-spacing);
-}
-
-.mptk-card--header-divider .mptk-card__header {
-  border-bottom-width: var(--mptk-c-border-w);
-  border-bottom-style: solid;
-  border-bottom-color: var(--mptk-border);
-  padding-bottom: var(--mptk-space-2);
-}
+/* 标题已迁到 CardHead：.mptk-card__title / __subtitle 留在下面供宿主挂类名取档位；
+   老头部结构类名与 header-divider 一律不再提供。 */
 
 /* 封面贴到卡片顶边，不再叠一层上下留白。 */
 .mptk-card--cover {
@@ -121,34 +108,13 @@
 
 /* 贴边内容：Card 在渲染期识别到声明后自己关掉贴边那一端的留白，子级不再反向抵消。
    归零写在壳上、是字面量 0，不经 calc / 负 margin / 嵌套 var，渲染端不会静默丢弃。
-   只在没有头部 / 底部的那一端归零：有标题还归零，标题会被顶到卡片边上。 */
+   顶部已无头部恒归零；有底部操作区的那一端归壳，否则内容会贴到卡片底边。 */
 .mptk-card--edge-top {
   padding-top: var(--mptk-s-zero);
 }
 
 .mptk-card--edge-bottom {
   padding-bottom: var(--mptk-s-zero);
-}
-
-/* 卡片内列表的左右留白由 CellGroup 自己给一档，body 不再叠一道；
-   两处都留会把内容和分隔线推到离卡片边两道间距。 */
-.mptk-card--edge-content .mptk-card__body {
-  padding-right: var(--mptk-s-zero);
-  padding-left: var(--mptk-s-zero);
-}
-
-/* 贴边列表的首行自带一份上留白，头部不再叠 margin：
-   否则分割线到第一行的距离会变成行间距的两倍。 */
-.mptk-card--edge-content .mptk-card__header {
-  margin-bottom: var(--mptk-s-zero);
-}
-
-.mptk-card__heading {
-  display: flex;
-  flex-direction: column;
-  flex-grow: var(--mptk-s-flex-grow);
-  flex-shrink: var(--mptk-s-flex-shrink);
-  flex-basis: var(--mptk-s-zero);
 }
 
 .mptk-card__title {
@@ -165,14 +131,43 @@
   margin-top: var(--mptk-space-1);
 }
 
-.mptk-card__extra {
-  align-items: center;
-  display: flex;
-  flex-shrink: var(--mptk-s-flex-none);
-  margin-left: var(--mptk-space-2);
+/* 标题块：左右一档卡片间距由自己给，横线也画在自己的边框上，线宽不随内容类型变；
+   上下间距归上下两条线，首段没有上线、末段没有下线。 */
+.mptk-card-head {
+  padding-right: var(--mptk-card-spacing);
+  padding-bottom: var(--mptk-space-2);
+  padding-left: var(--mptk-card-spacing);
 }
 
+.mptk-card--edge-content .mptk-card-head {
+  margin-bottom: var(--mptk-s-zero);
+}
+
+/* 上线：前一段内容与标题之间，与下线镜像，线到内容一档小间距、块外一档卡片间距。 */
+.mptk-card-head--divider-top {
+  border-top-width: var(--mptk-c-border-w);
+  border-top-style: solid;
+  border-top-color: var(--mptk-border);
+  margin-top: var(--mptk-card-spacing);
+  padding-top: var(--mptk-space-2);
+}
+
+/* 下线：原来头部的下边框，后面还有正文时才画。 */
+.mptk-card-head--divider {
+  border-bottom-width: var(--mptk-c-border-w);
+  border-bottom-style: solid;
+  border-bottom-color: var(--mptk-border);
+  margin-bottom: var(--mptk-card-spacing);
+}
+
+/* body 是满宽通道：横线与列表的组级线都通到卡片边，自身不再吃左右留白。 */
 .mptk-card__body {
+  padding-right: var(--mptk-s-zero);
+  padding-left: var(--mptk-s-zero);
+}
+
+/* 普通内容单独缩进一档，列表仍由 Cell 行自己给留白，标题仍由 CardHead 自己给。 */
+.mptk-card__content {
   padding-right: var(--mptk-card-spacing);
   padding-left: var(--mptk-card-spacing);
 }

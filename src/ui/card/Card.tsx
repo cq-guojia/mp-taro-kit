@@ -3,7 +3,12 @@ import { Children } from 'react'
 import type { ReactNode } from 'react'
 import { CardSurfaceContext, CARD_SURFACE_INSIDE } from '../infra/card-context.js'
 import { PRESS_STAY_TIME } from '../infra/press.js'
-import { decorateCardEdgeChildren, hasCardEdgeContent } from './edge.js'
+import {
+  cardStartsWithSectionHead,
+  decorateCardEdgeChildren,
+  hasCardEdgeContent,
+  hasCardSectionHead,
+} from './edge.js'
 import {
   resolveCardState,
   type CardColor,
@@ -15,12 +20,6 @@ import {
 export interface CardProps {
   /** 顶部封面 / 媒体区；不给就不渲染这一块。 */
   cover?: ReactNode
-  /** 头部标题。 */
-  title?: ReactNode
-  /** 标题下的副标题 / 描述。 */
-  subtitle?: ReactNode
-  /** 头部右侧的操作区。 */
-  extra?: ReactNode
   /** 底部操作区。 */
   footer?: ReactNode
   /** 主体内容；槽位全部可选，什么都不给就是一块纯壳。 */
@@ -31,8 +30,6 @@ export interface CardProps {
   radius?: CardRadius
   /** 内容密度枚举，只换分区间距；默认 md。 */
   size?: CardSize
-  /** 头部与主体之间的分隔线；不给则跟随头部：有头部默认画，传 false 关掉。 */
-  headerDivider?: boolean
   /** 主体与底部之间的分隔线；不给则跟随底部：有 footer 默认画，传 false 关掉。 */
   footerDivider?: boolean
   /** 内置色名或任意 CSS 色值；有面时染底，只有边时染线，纯排版形态不参与。 */
@@ -55,15 +52,11 @@ function filled(node: ReactNode): boolean {
     同时向后代声明「你在卡片里」，CellGroup 收到后自己收敛外框与留白，消费方零参数。 */
 export function Card({
   cover,
-  title,
-  subtitle,
-  extra,
   footer,
   children,
   variant,
   radius,
   size,
-  headerDivider,
   footerDivider,
   color,
   onClick,
@@ -72,18 +65,36 @@ export function Card({
   loadingContent,
   className,
 }: CardProps) {
-  const hasHeader = filled(title) || filled(subtitle) || filled(extra)
   const hasCover = filled(cover)
   const hasFooter = filled(footer)
   const body = loading === true && filled(loadingContent) ? loadingContent : children
+  const bodyChildren = Children.toArray(body)
   const state = resolveCardState({
-    variant, radius, size, headerDivider, footerDivider, color,
-    hasCover, hasHeader, hasFooter, onClick, disabled, loading, className,
+    variant, radius, size, footerDivider, color,
+    hasCover, hasFooter, onClick, disabled, loading, className,
     hasEdgeContent: hasCardEdgeContent(body),
+    hasSectionHead: cardStartsWithSectionHead(bodyChildren),
   })
 
-  // 渲染期给贴边内容注入边界提示：穿透包装层找到真正的 CellGroup，Card 不 import cell 子域，消费方零参数。
-  const decoratedBody = decorateCardEdgeChildren(Children.toArray(body))
+  // 渲染期给内容里的列表注入边界提示：穿透包装层找到真正的 CellGroup，Card 不 import cell 子域，消费方零参数。
+  const decoratedBody = decorateCardEdgeChildren(bodyChildren)
+  /* 标题与列表走满宽层，普通内容才包一层带左右留白的层；横线宽度不再随卡里装什么变。 */
+  const bodyNodes: ReactNode[] = []
+  let plain: ReactNode[] = []
+  const emitPlain = (key: number) => {
+    if (plain.length === 0) return
+    bodyNodes.push(<View key={`plain-${key}`} className="mptk-card__content">{plain}</View>)
+    plain = []
+  }
+  decoratedBody.forEach((node, index) => {
+    if (hasCardEdgeContent(node) || hasCardSectionHead(node)) {
+      emitPlain(index)
+      bodyNodes.push(node)
+    } else {
+      plain.push(node)
+    }
+  })
+  emitPlain(decoratedBody.length)
 
   return (
     <CardSurfaceContext.Provider value={CARD_SURFACE_INSIDE}>
@@ -95,16 +106,7 @@ export function Card({
         onClick={state.clickable ? onClick : undefined}
       >
         {hasCover ? <View className="mptk-card__cover">{cover}</View> : null}
-        {hasHeader ? (
-          <View className="mptk-card__header">
-            <View className="mptk-card__heading">
-              {filled(title) ? <View className="mptk-card__title">{title}</View> : null}
-              {filled(subtitle) ? <View className="mptk-card__subtitle">{subtitle}</View> : null}
-            </View>
-            {filled(extra) ? <View className="mptk-card__extra">{extra}</View> : null}
-          </View>
-        ) : null}
-        <View className="mptk-card__body">{decoratedBody}</View>
+        <View className="mptk-card__body">{bodyNodes}</View>
         {hasFooter ? <View className="mptk-card__footer">{footer}</View> : null}
       </View>
     </CardSurfaceContext.Provider>

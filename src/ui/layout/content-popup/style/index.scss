@@ -154,6 +154,19 @@
   font-size: var(--mptk-c-content-popup-title-icon-size);
 }
 
+/* 固定类型专用：同色细圆环包住缩一档的图标；currentColor 由槽位内联色给出，不给通用 iconColor 加框。 */
+.mptk-content-popup__lead-slot--framed {
+  width: var(--mptk-c-dialog-type-icon-ring-size);
+  height: var(--mptk-c-dialog-type-icon-ring-size);
+  border: var(--mptk-c-dialog-type-icon-ring-w) solid currentColor;
+  border-radius: var(--mptk-radius-pill);
+}
+
+.mptk-content-popup__lead-slot--framed .mptk-content-popup__lead-icon {
+  font-size: var(--mptk-c-dialog-type-icon-size);
+  line-height: 1;
+}
+
 /* 四形态图标统一类族：title 与 badge 两档只靠槽位 CSS 决定几何，不再各写一套类名。 */
 .mptk-content-popup__lead-icon,
 .mptk-content-popup__lead-glyph {
@@ -179,14 +192,6 @@
   row-gap: var(--mptk-s-zero);
 }
 
-/* 外伸档的文案块：与图标留出间距并居中；字号/字色沿用 __title / __subtitle，不再另立 badge-title。 */
-.mptk-content-popup__title-text--raised {
-  align-items: center;
-  flex: none;
-  margin-top: var(--mptk-space-3);
-  text-align: center;
-}
-
 .mptk-content-popup__title,
 .mptk-content-popup__subtitle {
   display: block;
@@ -205,6 +210,24 @@
   font-size: var(--mptk-font-xs);
   line-height: var(--mptk-line-xs);
   color: var(--mptk-c-content-popup-head-ink-2);
+}
+
+/* image / badge 档的独立标题行：挂在 header 与 content 之间，不进 header，
+   因此图片头的外伸收窄、徽标的绝对定位都不会把它挤掉。 */
+.mptk-content-popup__headline {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: var(--mptk-space-4);
+  padding-left: var(--mptk-space-4);
+  padding-right: var(--mptk-space-4);
+}
+
+.mptk-content-popup__headline .mptk-content-popup__title {
+  text-align: center;
 }
 
 /* 图片头默认水平居中：header 是 column flex，交叉轴居中后超宽图自然两边溢出（面板已 overflow:visible）。

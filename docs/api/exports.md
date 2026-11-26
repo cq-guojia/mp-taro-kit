@@ -34,7 +34,7 @@
 
 第一个按此落地的组件单元是 `mp-taro-kit/ui/display/cell`（`Cell` + `CellGroup`）与 `mp-taro-kit/ui/display/cell/style`；`mp-taro-kit/ui/display` 只转发它们，不再作为推荐引用口。
 
-`mp-taro-kit/ui/card` + `/style` 是通用卡片容器的组件级单元，导出 `Card` 与 `CardVariant` / `CardRadius` / `CardSize` / `CardColor` 等枚举类型，见 [Card 卡片](card.md)。卡片族后续成员并列放在同一子域下、各给自己的细路径，共用壳的类名与 `--mptk-card-*` 变量；`ui` 顶层仍不 re-export 组件。
+`mp-taro-kit/ui/card` + `/style` 是通用卡片容器的组件级单元，导出 `Card`、`CardHead` 与 `CardVariant` / `CardRadius` / `CardSize` / `CardColor` 等枚举类型，见 [Card 卡片](card.md)。卡片族后续成员并列放在同一子域下、各给自己的细路径，共用壳的类名与 `--mptk-card-*` 变量；`ui` 顶层仍不 re-export 组件。
 
 `Switch` 与 `Segmented` 同为组件级单元：`mp-taro-kit/ui/form/switch` + `/style`、`mp-taro-kit/ui/form/segmented` + `/style`；`mp-taro-kit/ui/form` 只作兼容 barrel。两个组件互不 import，共用 `src/ui/form/useAsyncChange.ts`；引其中一个不会把另一个组件的代码与样式打进产物。
 
@@ -300,3 +300,7 @@ runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawe
 - 2026-11-25 11:12:26：补命令式 API 三个按能力子入口与 app/kit-page 精确出口
 - 2026-11-25 11:56:19：对话框子入口同出口提供 DialogHost 与载荷类型，补 Promise 闸门与产物级按需引入契约
 - 2026-11-25：对话框按钮尺寸轴复用 Button，默认 md 与 Popup 底栏同型号
+- 2026-11-25：`ui/card` 出口补 `CardHead` / `CardHeadProps`，与 Card 同单元；段头声明 `CARD_SECTION_HEAD` 进 `ui/infra`
+- 2026-11-25 22:25:18：`ui/card` 的 `CardProps` 删除 `title` / `subtitle` / `extra` / `headerDivider`，标题统一走同单元的 `CardHead`，不再兼容老写法
+- 2026-11-25 23:12:08：`ui/card` 结构类新增 `mptk-card__content`：body 恒满宽，普通内容的左右留白下沉到这一层，标题横线与 CellGroup 组级线都通到卡片边
+- 2026-11-25 23:52:13：`ui/card` 标题类新增 `mptk-card-head--divider-top`，与 `--divider` 共用 `var(--mptk-border)` 线档；上下间距由标题的线类自带

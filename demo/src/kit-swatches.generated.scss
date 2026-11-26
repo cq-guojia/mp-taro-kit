@@ -1,4 +1,4 @@
-// @mptk-inputs:4e1fd1b3cd00
+// @mptk-inputs:1a4148c341f3
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -343,6 +343,22 @@
   .demo-swatch--c-content-popup-badge-ink-yellow {
     --mptk-swatch: var(--mptk-c-content-popup-badge-ink-yellow);
     background-color: var(--mptk-c-content-popup-badge-ink-yellow);
+  }
+  .demo-swatch--c-dialog-type-fg-success {
+    --mptk-swatch: var(--mptk-c-dialog-type-fg-success);
+    background-color: var(--mptk-c-dialog-type-fg-success);
+  }
+  .demo-swatch--c-dialog-type-fg-error {
+    --mptk-swatch: var(--mptk-c-dialog-type-fg-error);
+    background-color: var(--mptk-c-dialog-type-fg-error);
+  }
+  .demo-swatch--c-dialog-type-fg-warning {
+    --mptk-swatch: var(--mptk-c-dialog-type-fg-warning);
+    background-color: var(--mptk-c-dialog-type-fg-warning);
+  }
+  .demo-swatch--c-dialog-type-fg-info {
+    --mptk-swatch: var(--mptk-c-dialog-type-fg-info);
+    background-color: var(--mptk-c-dialog-type-fg-info);
   }
   .demo-swatch--control-blue {
     --mptk-swatch: var(--mptk-control-blue);

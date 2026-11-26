@@ -16,4 +16,7 @@ export {
   CARD_EDGE_CONTENT,
   markCardEdgeContent,
   type CardEdgeContentComponent,
+  CARD_SECTION_HEAD,
+  markCardSectionHead,
+  type CardSectionHeadComponent,
 } from './card-edge.js'

@@ -192,13 +192,15 @@ export interface ContentPopupProps {
   headerIcon?: ContentPopupHeaderIcon
   /** 图标颜色，仅单色字体图标生效；显式传入优先于 headerTone 的字色 token。 */
   iconColor?: string
+  /** 固定类型图标专用：给 inline 图标套一个同色细圆环并缩一档字号；不传时 iconColor 只上色、不加框。 */
+  iconFramed?: boolean
   /** 旧字段：库内置图标名（库名:图标名），等价于 headerIcon={ kind:'icon', name }。 */
   icon?: string
   /** 旧字段：自绘图标节点，等价于 headerIcon={ kind:'glyph', node }。 */
   glyph?: ReactNode
-  /** 主标题（font-lg），title 与 badge 两档同一尺寸。 */
+  /** 主标题（font-lg）；title 档排在图标右侧，image / badge 档排在图形下方的独立标题行。 */
   title?: string
-  /** 副标题（font-xs），只用于 title 档；badge 档不显示副标题。 */
+  /** 副标题（font-xs），只用于 title 档；image / badge 档不显示副标题。 */
   subtitle?: string
 
   // image 档
@@ -354,7 +356,7 @@ function HeaderLead({ content, color }: { content: ContentPopupHeaderIcon; color
  * 文案块与字号两档完全一致，raised 仅加居中与顶部间距的修饰类。
  */
 function HeaderContent({
-  lead, raised, tone, boxStyle, title, subtitle, color,
+  lead, raised, tone, boxStyle, title, subtitle, color, framed,
 }: {
   lead?: ContentPopupHeaderIcon
   raised: boolean
@@ -363,15 +365,22 @@ function HeaderContent({
   title?: string
   subtitle?: string
   color?: string
+  framed?: boolean
 }) {
   const icon = lead === undefined ? null : <HeaderLead content={lead} color={color} />
+  const ringColor = framed && lead !== undefined && (lead.kind === 'icon' || lead.kind === 'iconClass')
+    ? lead.color ?? color
+    : undefined
   const hasText = title !== undefined || subtitle !== undefined
   return (
     <>
       {icon === null ? null : raised ? (
         <View className={`mptk-content-popup__badge mptk-content-popup__badge--tone-${tone ?? 'blue'}`} style={boxStyle}>{icon}</View>
       ) : (
-        <View className="mptk-content-popup__lead-slot">{icon}</View>
+        <View
+          className={['mptk-content-popup__lead-slot', framed ? 'mptk-content-popup__lead-slot--framed' : ''].filter(Boolean).join(' ')}
+          style={ringColor === undefined ? undefined : { color: ringColor }}
+        >{icon}</View>
       )}
       {hasText ? (
         <View className={[
@@ -383,6 +392,16 @@ function HeaderContent({
         </View>
       ) : null}
     </>
+  )
+}
+
+/** image / badge 档的独立标题槽：不与图形共用一个文案块，有标题才渲染。 */
+function Headline({ title }: { title?: string }) {
+  if (title === undefined) return null
+  return (
+    <View className="mptk-content-popup__headline">
+      <Text className="mptk-content-popup__title">{title}</Text>
+    </View>
   )
 }
 
@@ -524,6 +543,7 @@ export function ContentPopup({
   panelBackground,
   headerIcon,
   iconColor,
+  iconFramed,
   icon,
   glyph,
   title,
@@ -560,19 +580,29 @@ export function ContentPopup({
   const lead: ContentPopupHeaderIcon | undefined = headerIcon ??
     (glyph !== undefined ? { kind: 'glyph', node: glyph } : undefined) ??
     (icon !== undefined ? { kind: 'icon', name: icon } : undefined)
-  const hasTitleContent = title !== undefined || subtitle !== undefined || lead !== undefined
   const hasBadgeContent = badge !== undefined
+  // 文字头的内容（图标 / 备注）才占 header 的内联文案块；纯标题走独立标题行。
+  const hasInlineText = variant === 'title' && (lead !== undefined || subtitle !== undefined)
   const hasHeader =
     header !== undefined ||
-    (variant === 'title' && hasTitleContent) ||
+    (variant === 'title' && (
+      hasInlineText ||
+      headerBackground !== undefined ||
+      headerImage !== undefined ||
+      headerDivider !== undefined ||
+      headerDividerColor !== undefined ||
+      headerTone !== 'normal'
+    )) ||
     (variant === 'image' && image !== undefined) ||
     (variant === 'badge' && hasBadgeContent)
   // top 档贴屏幕顶，徽标向上外伸会浮出屏幕，降级为 title 档内联头部（图标 + 标题），不外伸。
   const inlineBadge = variant === 'badge' && resolvedPosition === 'top'
   const headerVariant: ContentPopupVariant = inlineBadge ? 'title' : variant
-  // header 横向分割线只有文字头默认开；图片头、外伸徽标头默认没有，要分隔由调用方显式 headerDivider 打开。
+  // 横向分割线只有带图标/备注的文字头默认开；纯标题、图片头、外伸徽标头都没有，要分隔由调用方显式 headerDivider 打开。
   // 这与徽标容器外圈那道描边（badge.border）是两回事。
-  const showDivider = headerDivider ?? headerVariant === 'title'
+  const showDivider = headerDivider ?? (headerDividerColor !== undefined || (hasInlineText && headerVariant === 'title'))
+  // 纯标题 / 图片头 / 外伸徽标头的标题都是独立一行：居中、同字号，且不进 header。
+  const hasHeadline = title !== undefined && header === undefined && !hasInlineText
   const hasFooter = footer !== undefined || (actions !== undefined && actions.length > 0)
 
   // footer 最终配置：专名 > 旧简写。layout 把 column 映射到 stack；joined 默认带上边线，spaced 默认不带。
@@ -738,10 +768,8 @@ export function ContentPopup({
   // title 与 badge 共用 HeaderContent（同一份图标四形态 + 同一份文案块），只有 image 是独立的整头图片。
   const headerBody = (() => {
     if (header !== undefined) return header
-    if (variant === 'title') {
-      return (
-        <HeaderContent lead={lead} raised={false} title={title} subtitle={subtitle} color={iconColor} />
-      )
+    if (variant === 'title' && hasInlineText) {
+      return <HeaderContent lead={lead} raised={false} title={title} subtitle={subtitle} color={iconColor} framed={iconFramed} />
     }
     if (variant === 'image' && image !== undefined && sized !== undefined) {
       return (
@@ -769,28 +797,11 @@ export function ContentPopup({
       )
     }
     if (variant === 'badge' && badge !== undefined) {
-      // top 档徽标不外伸，按内联图标头渲染：依旧只有居中档出标题、任何档不出副标题。
+      // top 档徽标不外伸，按内联图标头渲染；标题走下面独立的 headline，不再塞进图标文案块。
       if (inlineBadge) {
-        return (
-          <HeaderContent
-            lead={badge.content}
-            raised={false}
-            title={badgeAnchor === 'center' ? title : undefined}
-            color={iconColor}
-          />
-        )
+        return <HeaderContent lead={badge.content} raised={false} color={iconColor} />
       }
-      // 外伸形态只有居中档带标题；靠左/靠右不出文案，副标题任何档都不显示。
-      return (
-        <HeaderContent
-          lead={badge.content}
-          raised
-          tone={badge.tone}
-          boxStyle={badgeStyle}
-          title={badgeAnchor === 'center' ? title : undefined}
-          color={iconColor}
-        />
-      )
+      return <HeaderContent lead={badge.content} raised tone={badge.tone} boxStyle={badgeStyle} color={iconColor} />
     }
     return null
   })()
@@ -882,6 +893,7 @@ export function ContentPopup({
           {headerBody}
         </View>
       ) : null}
+      {hasHeadline ? <Headline title={title} /> : null}
       <View className={[
         'mptk-content-popup__content',
         'mptk-content-popup__content--top-gap',

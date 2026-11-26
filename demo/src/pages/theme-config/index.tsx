@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components'
-import { Card } from 'mp-taro-kit/ui/card'
+import { Card, CardHead } from 'mp-taro-kit/ui/card'
 import { CONTROL_SIZE_DEFAULT } from 'mp-taro-kit/design'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Tag } from 'mp-taro-kit/ui/display'
@@ -115,7 +115,8 @@ export default function ThemeConfigPage() {
     if (id === 'settings') {
       return (
         <View>
-          <Card className="demo-card" title="基础配置">
+          <Card className="demo-card">
+            <CardHead><View className="mptk-card__title">基础配置</View></CardHead>
             <CellGroup>
               {BASE_ROWS.map((row) => (
                 <Cell
@@ -144,7 +145,8 @@ export default function ThemeConfigPage() {
             </CellGroup>
           </Card>
 
-          <Card className="demo-card" title="颜色配置">
+          <Card className="demo-card">
+            <CardHead><View className="mptk-card__title">颜色配置</View></CardHead>
             <CellGroup>
               {COLOR_ROWS.map((row) => (
                 <Cell
@@ -169,7 +171,8 @@ export default function ThemeConfigPage() {
             </CellGroup>
           </Card>
 
-          <Card className="demo-card" title="其他控件配置">
+          <Card className="demo-card">
+            <CardHead><View className="mptk-card__title">其他控件配置</View></CardHead>
             <CellGroup>
               {DEFAULT_ROWS.map((row) => (
                 <Cell key={row.name} title={row.name} label={row.label} value={row.value} />
@@ -185,7 +188,11 @@ export default function ThemeConfigPage() {
     if (id === 'config-file') {
       return (
         <View>
-          <Card className="demo-card" title="配置文件" subtitle="覆盖只写要改的键，没写的继续吃默认值">
+          <Card className="demo-card">
+            <CardHead>
+              <View className="mptk-card__title">配置文件</View>
+              <View className="mptk-card__subtitle">覆盖只写要改的键，没写的继续吃默认值</View>
+            </CardHead>
             <View className="demo-code">
               {CONFIG_LINES.map((line, index) => (
                 <Text key={`${String(index)}-${line}`} className="demo-code__line">{line}</Text>

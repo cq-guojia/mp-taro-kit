@@ -169,7 +169,7 @@ test('站点主题配置：独立成文件、明暗两套、由 app.scss 引入'
 test('主题配置页：色值、默认值与标准色相名都和真源一致', () => {
   const page = read('../demo/src/pages/theme-config/index.tsx')
   for (const title of ['基础配置', '颜色配置', '其他控件配置']) {
-    assert.match(page, new RegExp(`title="${title}"`), `缺分类卡片：${title}`)
+    assert.match(page, new RegExp(`<View className="mptk-card__title">${title}</View>`), `缺分类卡片：${title}`)
   }
   assert.match(page, /from 'mp-taro-kit\/ui\/card'/, '圆角块用 Card，不手搓')
   assert.match(page, /from 'mp-taro-kit\/ui\/display\/cell'/, '列表用现成的 Cell，不手搓')

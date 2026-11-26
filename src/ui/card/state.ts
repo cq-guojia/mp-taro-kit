@@ -45,14 +45,10 @@ export interface CardStateInput {
   variant?: CardVariant
   radius?: CardRadius
   size?: CardSize
-  /** 不给就跟随 hasHeader：有头部默认画线，显式 false 才关。 */
-  headerDivider?: boolean
   /** 不给就跟随 hasFooter：有底部默认画线，显式 false 才关。 */
   footerDivider?: boolean
   color?: CardColor
   hasCover?: boolean
-  /** 由 Card 渲染期从槽位派生：有标题 / 副标题 / 右侧操作就算有头部。 */
-  hasHeader?: boolean
   /** 由 Card 渲染期从槽位派生：有底部操作区。 */
   hasFooter?: boolean
   onClick?: () => void
@@ -60,6 +56,8 @@ export interface CardStateInput {
   loading?: boolean
   /** 由 Card 渲染期从 children 派生：内容是贴边组件时，壳自己关掉上下留白。 */
   hasEdgeContent?: boolean
+  /** 正文第一块是标题：原来标题吃壳的顶部留白，换写法后保持不变。 */
+  hasSectionHead?: boolean
   className?: string
 }
 
@@ -91,9 +89,8 @@ export function resolveCardState(input: CardStateInput): CardState {
   /* 不给 radius 就走 --mptk-card-radius，宿主不必知道变量名单。 */
   if (input.radius !== undefined) names.push(`mptk-card--radius-${input.radius}`)
   names.push(`mptk-card--size-${input.size ?? 'md'}`)
-  /* 有头部就默认画线：标题区与内容区靠一条 1px 分开；显式 headerDivider={false} 才不画。 */
-  if (input.headerDivider ?? (input.hasHeader === true)) names.push('mptk-card--header-divider')
-  /* 底部操作区同口径：有 footer 就默认画线，两个分区的默认行为一致。 */
+  /* 底部操作区：有 footer 就默认画线，显式 footerDivider={false} 才关。
+     标题已迁到 CardHead，段间线由段头自己画，Card 不再有头部线。 */
   if (input.footerDivider ?? (input.hasFooter === true)) names.push('mptk-card--footer-divider')
   if (input.hasCover === true) names.push('mptk-card--cover')
   /* plain 没有面也没有边，色值无处可落，连类名都不派生，不装作生效。 */
@@ -102,10 +99,10 @@ export function resolveCardState(input: CardStateInput): CardState {
   if (busy) names.push('mptk-card--busy')
   if (input.disabled === true) names.push('mptk-card--disabled')
   /* 内容是贴边组件：壳自己关掉留白，不留空白给子级抵消。
-     只在真正贴边的那一端归零——有头部就保留上留白，有底部就保留下留白。 */
+     只在真正贴边的那一端归零——开头有标题就保留顶部留白，有底部就保留下留白。 */
   if (input.hasEdgeContent === true) {
     names.push('mptk-card--edge-content')
-    if (input.hasHeader !== true) names.push('mptk-card--edge-top')
+    if (input.hasSectionHead !== true) names.push('mptk-card--edge-top')
     if (input.hasFooter !== true) names.push('mptk-card--edge-bottom')
   }
   if (input.className) names.push(input.className)

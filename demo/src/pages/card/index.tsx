@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import { Card, type CardRadius, type CardSize, type CardVariant } from 'mp-taro-kit/ui/card'
+import { Card, CardHead, type CardRadius, type CardSize, type CardVariant } from 'mp-taro-kit/ui/card'
+import { Icon } from 'mp-taro-kit/ui/display/icon'
 
 import 'mp-taro-kit/ui/card/style'
 import { DemoPage } from '../../components/DemoBlock'
@@ -13,6 +14,11 @@ const variants: { value: CardVariant; note: string }[] = [
 ]
 const radii: CardRadius[] = ['none', 'xs', 'sm', 'md', 'lg', 'xl']
 const sizes: CardSize[] = ['sm', 'md', 'lg']
+const Head = ({ text }: { text: string }) => (
+  <CardHead>
+    <View className="mptk-card__title">{text}</View>
+  </CardHead>
+)
 
 export default function CardPage() {
   const [clicks, setClicks] = useState(0)
@@ -30,7 +36,8 @@ export default function CardPage() {
       return (
         <View className="demo-stack">
           {variants.map((item) => (
-            <Card key={item.value} className="demo-item" variant={item.value} title={`variant="${item.value}"`}>
+            <Card key={item.value} className="demo-item" variant={item.value}>
+              <Head text={`variant="${item.value}"`} />
               <Text>{item.note}</Text>
             </Card>
           ))}
@@ -52,7 +59,8 @@ export default function CardPage() {
       return (
         <View className="demo-stack">
           {sizes.map((size) => (
-            <Card key={size} className="demo-item" size={size} title={`size="${size}"`}>
+            <Card key={size} className="demo-item" size={size}>
+              <Head text={`size="${size}"`} />
               <Text>只换分区间距，字号与圆角不动</Text>
             </Card>
           ))}
@@ -62,19 +70,24 @@ export default function CardPage() {
     if (id === 'card-color') {
       return (
         <View className="demo-stack">
-          <Card className="demo-item" color="blue" title="内置色名：blue">
+          <Card className="demo-item" color="blue">
+            <Head text="内置色名：blue" />
             <Text>有面的形态染底：走类名切 --mptk-blue-soft</Text>
           </Card>
-          <Card className="demo-item" variant="filled" color="purple" title="filled + 内置色名">
+          <Card className="demo-item" variant="filled" color="purple">
+            <Head text="filled + 内置色名" />
             <Text>整底卡片：有色块、不画边</Text>
           </Card>
-          <Card className="demo-item" variant="outline" color="teal" title="outline + 内置色名">
+          <Card className="demo-item" variant="outline" color="teal">
+            <Head text="outline + 内置色名" />
             <Text>没有面时色值落到边上，不是被吃掉</Text>
           </Card>
-          <Card className="demo-item" color="#f0e6ff" title="自定义色值：#f0e6ff">
+          <Card className="demo-item" color="#f0e6ff">
+            <Head text="自定义色值：#f0e6ff" />
             <Text>走内联 backgroundColor，口子对业务敞开</Text>
           </Card>
-          <Card className="demo-item" variant="filled" color="var(--mptk-surface-2)" title="自定义色值：内嵌面">
+          <Card className="demo-item" variant="filled" color="var(--mptk-surface-2)">
+            <Head text="自定义色值：内嵌面" />
             <Text>整底 + 次级面：内嵌区块、代码块一类用法</Text>
           </Card>
         </View>
@@ -83,18 +96,12 @@ export default function CardPage() {
     if (id === 'card-divider') {
       return (
         <View className="demo-stack">
-          <Card className="demo-item" title="两段分区线都默认画" footer={<Text>footer · 底部操作区</Text>}>
-            <Text>有头部有底部，两条线都跟着出现</Text>
+          <Card className="demo-item" footer={<Text>footer · 底部操作区</Text>}>
+            <Head text="标题 + 底部：段间线由 CardHead 画，底部线默认画" />
+            <Text>标题线交给 CardHead，底部线由 Card 按 footer 派生</Text>
           </Card>
-          <Card
-            className="demo-item"
-            title="显式关掉头部线"
-            footer={<Text>footer · 底部操作区</Text>}
-            headerDivider={false}
-          >
-            <Text>headerDivider={false}：标题与主体连成一片，底部线仍在</Text>
-          </Card>
-          <Card className="demo-item" title="显式关掉底部线" footerDivider={false} footer={<Text>footer</Text>}>
+          <Card className="demo-item" footerDivider={false} footer={<Text>footer</Text>}>
+            <Head text="显式关掉底部线" />
             <Text>footerDivider={false}：靠留白分开</Text>
           </Card>
         </View>
@@ -104,28 +111,57 @@ export default function CardPage() {
       return (
         <Card
           cover={<View className="demo-card-cover"><Text>cover · 封面区（宿主注入）</Text></View>}
-          title="卡片标题"
-          subtitle="subtitle · 副标题或描述"
-          extra={<Text>extra · 操作区</Text>}
           footer={<Text>footer · 底部操作区</Text>}
         >
-          <Text>body · 主体内容，全部槽位不给就不渲染</Text>
+          <CardHead>
+            <View className="mptk-card__title">卡片标题</View>
+            <View className="mptk-card__subtitle">subtitle · 副标题或描述</View>
+          </CardHead>
+          <Text>body · 标题走 CardHead，封面与底部仍走 Card 槽位</Text>
+        </Card>
+      )
+    }
+    if (id === 'card-head') {
+      return (
+        <Card>
+          <CardHead>
+            <View className="mptk-card__title">
+              提示 alert <Icon name="common.base:home" />
+            </View>
+            <View className="mptk-card__subtitle">解析即关，不返回用户选择</View>
+          </CardHead>
+          <Text>第一段内容：标题由宿主写 View 挂类名，图标随便塞</Text>
+
+          <CardHead>
+            <View className="mptk-card__title">确认 confirm</View>
+            <View className="mptk-card__subtitle">resolve true / false</View>
+          </CardHead>
+          <Text>第二段内容：中间段上下各一条线，接缝处恰好一条</Text>
+
+          <CardHead>
+            <View className="mptk-card__title">异步闸门</View>
+          </CardHead>
+          <Text>末段：下面不画线，卡片底边接管</Text>
         </Card>
       )
     }
     if (id === 'card-state') {
       return (
         <View className="demo-stack">
-          <Card className="demo-item" title={`可点击：已点 ${clicks} 次`} onClick={count}>
+          <Card className="demo-item" onClick={count}>
+            <Head text={`可点击：已点 ${clicks} 次`} />
             <Text>onClick 派生按压态</Text>
           </Card>
-          <Card className="demo-item" variant="filled" color="orange" title="整底 + 自定义按压" onClick={count}>
+          <Card className="demo-item" variant="filled" color="orange" onClick={count}>
+            <Head text="整底 + 自定义按压" />
             <Text>按压反馈叠在半透明层上，自带底色也在</Text>
           </Card>
-          <Card className="demo-item" title="禁用" disabled onClick={count}>
+          <Card className="demo-item" disabled onClick={count}>
+            <Head text="禁用" />
             <Text>onClick 短路，计数不动</Text>
           </Card>
-          <Card className="demo-item" title="等待态" loading loadingContent={<Text>加载中…（宿主注入）</Text>}>
+          <Card className="demo-item" loading loadingContent={<Text>加载中…（宿主注入）</Text>}>
+            <Head text="等待态" />
             <Text>有 loadingContent 时替换主体</Text>
           </Card>
         </View>

@@ -1,15 +1,26 @@
 import { useRef, useState } from 'react'
-import { View } from '@tarojs/components'
+import { Text, View } from '@tarojs/components'
 import { Button } from 'mp-taro-kit/ui/actions'
+import { Card, CardHead } from 'mp-taro-kit/ui/card'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
-import { alert, confirm, type DialogOptions } from 'mp-taro-kit/ui/commands/dialog'
+import { alert, confirm, type DialogOptions, type DialogType } from 'mp-taro-kit/ui/commands/dialog'
 
 import 'mp-taro-kit/ui/actions/style'
+import 'mp-taro-kit/ui/card/style'
 import 'mp-taro-kit/ui/display/style'
 import 'mp-taro-kit/ui/form/segmented/style'
 import 'mp-taro-kit/ui/layout/content-popup/style'
-import { DemoPage } from '../../components/DemoBlock'
+import { catalogPages, pageTitleOf } from '../../catalog'
+import { DemoBlock } from '../../components/DemoBlock'
+import { DemoShell } from '../../components/DemoShell'
+
+const TYPES: { value: DialogType; label: string }[] = [
+  { value: 'success', label: '成功' },
+  { value: 'error', label: '失败' },
+  { value: 'warning', label: '警告' },
+  { value: 'info', label: '信息' },
+]
 
 const LAYOUTS: { value: NonNullable<DialogOptions['layout']>; label: string }[] = [
   { value: 'spaced', label: '横排按钮' },
@@ -50,11 +61,11 @@ export default function DialogPage() {
     if (header === 'icon') {
       return { title: '带图标的标题', note: '图标档备注', icon: 'common.base:shuju' }
     }
-    if (header === 'external-icon') return { badge: EXTERNAL_ICON }
+    if (header === 'external-icon') return { title: '外伸图标标题', badge: EXTERNAL_ICON }
     if (header === 'image') {
-      return { headerImage: { src: HEADER_IMAGE, offset: { top: -30 } } }
+      return { title: '图片头标题', headerImage: { src: HEADER_IMAGE, offset: { top: -30 } } }
     }
-    return {}
+    return { title: '标题' }
   }
 
   const sharedOptions = (): DialogOptions => ({
@@ -66,6 +77,16 @@ export default function DialogPage() {
 
   const openAlert = (next?: NonNullable<DialogOptions['layout']>) => {
     void alert('解析即关，不返回用户选择；默认无叉、点遮罩不关', withLayout(next))
+  }
+
+  const openTyped = (type: DialogType, raised?: boolean) => {
+    void alert(raised === true ? '外伸图标换成固定图标，底色红黄蓝绿' : '普通图标按类型上色，标题下保留备注小字', {
+      title: raised === true ? '外伸固定类型' : '固定类型',
+      note: raised === true ? undefined : '标题下的备注小字',
+      type,
+      width: widthMode,
+      ...(raised === true ? { badge: { content: { kind: 'icon' as const, name: 'common.base:riqi' } } } : null),
+    })
   }
 
   const openConfirm = (next?: NonNullable<DialogOptions['layout']>) => {
@@ -135,7 +156,23 @@ export default function DialogPage() {
         </View>
       )
     }
-    if (id === 'alert') return layoutRow(openAlert, LAYOUTS.filter((item) => item.value !== 'stack'))
+    if (id === 'alert') {
+      return (
+        <View>
+          {layoutRow(openAlert, LAYOUTS.filter((item) => item.value !== 'stack'))}
+          <View className="demo-row">
+            {TYPES.map((item) => (
+              <Button key={item.value} className="demo-item" size="xs" onClick={() => openTyped(item.value)}>{item.label}</Button>
+            ))}
+          </View>
+          <View className="demo-row">
+            {TYPES.map((item) => (
+              <Button key={item.value} className="demo-item" size="xs" onClick={() => openTyped(item.value, true)}>外伸{item.label}</Button>
+            ))}
+          </View>
+        </View>
+      )
+    }
     if (id === 'confirm') return layoutRow(openConfirm)
     if (id === 'custom-actions') return layoutRow(openCustomActions)
     if (id === 'busy') {
@@ -148,5 +185,26 @@ export default function DialogPage() {
     return null
   }
 
-  return <DemoPage pageId="dialog" render={render} />
+  const page = catalogPages.find((item) => item.id === 'dialog')
+  if (page === undefined) return null
+  const config = page.examples[0]
+  const cases = page.examples.slice(1)
+
+  return (
+    <DemoShell title={pageTitleOf('dialog')}>
+      <View className="demo-page__head">
+        <Text className="demo-page__summary">{page.summary}</Text>
+      </View>
+      <DemoBlock example={config}>{render(config.id)}</DemoBlock>
+      <Card className="demo-block">
+        {cases.map((example) => [
+          <CardHead key={`${example.id}-head`}>
+            <View className="mptk-card__title">{example.title}</View>
+            <View className="mptk-card__subtitle">{example.hint}</View>
+          </CardHead>,
+          <View key={`${example.id}-body`} className="demo-block__content">{render(example.id)}</View>,
+        ])}
+      </Card>
+    </DemoShell>
+  )
 }

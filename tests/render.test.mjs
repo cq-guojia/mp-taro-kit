@@ -110,7 +110,7 @@ const server = await import('react-dom/server')
 const renderToStaticMarkup = server.renderToStaticMarkup ?? server.default.renderToStaticMarkup
 const h = React.createElement
 
-const { Card } = await import('../dist/ui/card/index.js')
+const { Card, CardHead } = await import('../dist/ui/card/index.js')
 const { CellGroup, Cell } = await import('../dist/ui/display/cell/index.js')
 const { Overlay, Popup, ImagePopup } = await import('../dist/ui/layout/index.js')
 const { ContentPopup } = await import('../dist/ui/layout/content-popup/index.js')
@@ -150,7 +150,7 @@ test('Card 里的 CellGroup 收到边界提示，渲染出的外框线和提示�
   assert.match(single, /mptk-card--edge-bottom/, '无底部时卡片底部要贴边')
 
   /* 三组（无标题）：每组底线都是自己的封口线，接缝各恰好一条，画在前一组的下边界。 */
-  const three = render(h(Card, { title: '分组' }, group('a'), group('b'), group('c')))
+  const three = render(h(Card, null, group('a'), group('b'), group('c')))
   assert.deepEqual(
     groupBorders(three),
     [
@@ -163,7 +163,7 @@ test('Card 里的 CellGroup 收到边界提示，渲染出的外框线和提示�
 
   /* 显式 border 盖过边界提示。 */
   const manual = render(
-    h(Card, { title: '分组' }, h(CellGroup, null, h(Cell, { title: 'x' }, '内容')), h(CellGroup, { border: 'both' }, h(Cell, { title: 'y' }, '内容'))),
+    h(Card, null, h(CellGroup, null, h(Cell, { title: 'x' }, '内容')), h(CellGroup, { border: 'both' }, h(Cell, { title: 'y' }, '内容'))),
   )
   assert.deepEqual(groupBorders(manual), [{ top: false, bottom: true }, { top: true, bottom: true }], '显式 border 优先')
 
@@ -171,9 +171,33 @@ test('Card 里的 CellGroup 收到边界提示，渲染出的外框线和提示�
   assert.doesNotMatch(three, /__mptkCardEdge/, '边界提示不许落到渲染节点上')
 })
 
+test('换成 CardHead 后，标题下的线、缩进与卡片顶部留白都跟原来一样', () => {
+  const head = (title) => h(CardHead, { key: title }, title)
+  const one = render(h(Card, null, head('基础规范'), group('one')))
+  assert.match(one, /mptk-card-head--divider/, '标题下的横线由标题自己画')
+  assert.doesNotMatch(one, /mptk-card--edge-top/, '有标题时卡片顶部留白不能被归零')
+  assert.deepEqual(groupBorders(one), [{ top: false, bottom: false }], '列表不重复画标题下那条线')
+  assert.doesNotMatch(one, /mptk-card__content/, '标题和列表直挂 body，横线不受普通内容留白影响')
+  const plain = render(h(Card, null, h('text', null, '正文')))
+  assert.match(plain, /mptk-card__content/, '普通内容单独包一层缩进')
+
+  const two = render(h(Card, null, head('一'), group('a'), head('二'), group('b')))
+  assert.equal((two.match(/mptk-card-head--divider-top/g) ?? []).length, 1, '后一段标题画上线')
+  assert.equal((two.match(/mptk-card-head--divider(?!-top)/g) ?? []).length, 2, '两段标题各画自己的下线')
+  assert.deepEqual(
+    groupBorders(two),
+    [{ top: false, bottom: false }, { top: false, bottom: false }],
+    '列表不叠线，接缝由后一段标题的上线承担',
+  )
+
+  const tail = render(h(Card, null, h('text', null, '前文'), head('末标题')))
+  assert.match(tail, /mptk-card-head--divider-top/, '末标题有上线')
+  assert.doesNotMatch(tail, /mptk-card-head--divider(?!-top)/, '末标题后面没正文，不画下线')
+})
+
 test('Card 穿透包装层：CellGroup 不在 body 顶层时边界提示照样生效', () => {
   const wrapped = render(
-    h(Card, { title: '分组' }, h('div', { key: 'wrap' }, h(CellGroup, null, h(Cell, { title: 'a' }, '内容')), h(CellGroup, null, h(Cell, { title: 'b' }, '内容')))),
+    h(Card, null, h('div', { key: 'wrap' }, h(CellGroup, null, h(Cell, { title: 'a' }, '内容')), h(CellGroup, null, h(Cell, { title: 'b' }, '内容')))),
   )
   assert.deepEqual(groupBorders(wrapped), [{ top: false, bottom: true }, { top: false, bottom: false }], '包装层里的组也要拿到边界提示')
 })
@@ -226,7 +250,7 @@ test('边框矩阵：组数 × 标题分布 × 浮层 × 尾部内容，逐格�
           if (withPopup) extras.push(h(Popup, { key: 'popup', open: false, onClose: () => undefined }, h('div', null, '面板内容')))
           if (withTail) extras.push(h('div', { key: 'tail', className: 'plain' }, '普通文字'))
 
-          const html = render(h(Card, { title: '卡' }, h('div', null, [...groups, ...extras])))
+          const html = render(h(Card, null, h('div', null, [...groups, ...extras])))
           const label = `${modeName} / ${String(count)} 组 / 浮层=${String(withPopup)} / 尾部=${String(withTail)}`
           const seq = lineSequence(html)
 
@@ -313,7 +337,7 @@ test('有组标题时标题与列表之间恒有一条分隔线，且不在标�
   /* 用户实际场景：卡片里唯一一组 + 组标题。贴着卡片头 / 卡片底，两条外框都不画，
      标题下那条线必须由标题侧补上，不能一起消失。 */
   const single = render(
-    h(Card, { title: '顶部让位' }, h(CellGroup, { title: '顶部让位（真值取状态栏 + 胶囊）' }, h(Cell, { title: '不让位' }, 'insetTop="none"'))),
+    h(Card, null, h(CellGroup, { title: '顶部让位（真值取状态栏 + 胶囊）' }, h(Cell, { title: '不让位' }, 'insetTop="none"'))),
   )
   assert.equal(
     (single.match(/mptk-cell-group__title-divider/g) ?? []).length,
@@ -324,7 +348,7 @@ test('有组标题时标题与列表之间恒有一条分隔线，且不在标�
 
   /* 三组都有标题：每组标题下恰好一条标题分隔线；组与组之间由前一组的底线封口（画在前一组的下边界）。 */
   const three = render(
-    h(Card, { title: 't' },
+    h(Card, null,
       h(CellGroup, { title: 'a' }, h(Cell, { title: '1' }, 'x')),
       h(CellGroup, { title: 'b' }, h(Cell, { title: '2' }, 'x')),
       h(CellGroup, { title: 'c' }, h(Cell, { title: '3' }, 'x')),
@@ -339,7 +363,7 @@ test('有组标题时标题与列表之间恒有一条分隔线，且不在标�
 
   /* 前面是普通内容 + 后面是有标题的组：顶线画了就落在标题与列表之间（它排在标题之后），标题线让位。 */
   const afterPlain = render(
-    h(Card, { title: 't' },
+    h(Card, null,
       h('div', { key: 'p', className: 'plain' }, '普通文字'),
       h(CellGroup, { title: 'a' }, h(Cell, { title: '1' }, 'x')),
     ),
@@ -352,10 +376,10 @@ test('有组标题时标题与列表之间恒有一条分隔线，且不在标�
   )
 
   /* 没有标题就不该凭空多出这条线；无标题的组靠自己的上边界与上一组分隔。 */
-  const noTitle = render(h(Card, { title: 't' }, h(CellGroup, null, h(Cell, { title: '1' }, 'x'))))
+  const noTitle = render(h(Card, null, h(CellGroup, null, h(Cell, { title: '1' }, 'x'))))
   assert.doesNotMatch(noTitle, /mptk-cell-group__title-divider/, '无标题不许画标题分隔线')
   const untitledPair = render(
-    h(Card, { title: 't' },
+    h(Card, null,
       h(CellGroup, null, h(Cell, { title: '1' }, 'x')),
       h(CellGroup, null, h(Cell, { title: '2' }, 'x')),
     ),
@@ -372,7 +396,7 @@ test('Card 里的浮层不占内容流：Popup 关着时边界提示不被它的
 
   /* 单组 + 关着的 Popup：Popup 渲染 null，CellGroup 仍必须两头收口（曾经多画一条下线）。 */
   const one = render(
-    h(Card, { title: '顶部让位' },
+    h(Card, null,
       h('div', { key: 'wrap', className: 'demo-block__content' },
         h(CellGroup, { title: '顶部让位' }, h(Cell, { title: '不让位' }, 'insetTop="none"')),
         h(Popup, closed, h('div', null, '面板第 1 行'), h('div', null, '面板第 2 行')),
@@ -383,7 +407,7 @@ test('Card 里的浮层不占内容流：Popup 关着时边界提示不被它的
 
   /* 两组 + 关着的 Popup：末组仍贴卡片底，不许因为浮层子树多画底线。 */
   const two = render(
-    h(Card, { title: 't' },
+    h(Card, null,
       h('div', { key: 'wrap' },
         h(CellGroup, { title: 'a' }, h(Cell, { title: '1' }, 'x')),
         h(CellGroup, { title: 'b' }, h(Cell, { title: '2' }, 'x')),
@@ -674,7 +698,7 @@ test('页面常见写法（map 数组 / 条件渲染）不改变边界归属', (
   ]
   /* 组写在 {list.map(…)} 里、外面还包一层 View：以前数组被当成「普通内容」，
      前一组多补一条底线，数组里的组一个提示都拿不到。 */
-  const html = render(h(Card, { title: 't' }, h('div', null, [h(CellGroup, { key: 'x' }, row('X')), mapped])))
+  const html = render(h(Card, null, h('div', null, [h(CellGroup, { key: 'x' }, row('X')), mapped])))
   assert.deepEqual(
     groupBorders(html),
     [
@@ -687,13 +711,13 @@ test('页面常见写法（map 数组 / 条件渲染）不改变边界归属', (
 
   /* 条件渲染留下的 false 不许被当成内容，否则贴着卡片头的第一组会多画一条上边界。 */
   const conditional = render(
-    h(Card, { title: 't' }, h('div', null, [false, h(CellGroup, { key: 'a' }, row('A'))])),
+    h(Card, null, h('div', null, [false, h(CellGroup, { key: 'a' }, row('A'))])),
   )
   assert.deepEqual(groupBorders(conditional), [{ top: false, bottom: false }], 'false 不算内容')
 
   /* 空标题不算有标题：不许凭空多出一条标题线。 */
   for (const title of ['', null]) {
-    const empty = render(h(Card, { title: 't' }, h(CellGroup, { title }, row('A'))))
+    const empty = render(h(Card, null, h(CellGroup, { title }, row('A'))))
     assert.doesNotMatch(empty, /mptk-cell-group__title/, `title=${String(title)} 不该渲染标题块`)
     assert.doesNotMatch(empty, /mptk-cell-group__title-divider/, `title=${String(title)} 不该画标题线`)
   }
@@ -714,6 +738,28 @@ test('ContentPopup 文字头把小图标、标题、副标题渲染成一体并�
   assert.doesNotMatch(html, /mptk-content-popup__divider/, '旧的独立 divider 节点已移除')
   assert.match(html, /mptk-popup__close--below-center/, '中部弹窗默认关闭叉在外下中')
   assert.match(html, /mptk-content-popup__actions/)
+})
+
+test('ContentPopup 纯标题与图片头、外伸徽标头的标题同一条居中标题行，默认无下划线', () => {
+  const cases = [
+    ['纯标题', { open: true, title: '同一个标题' }],
+    ['图片头', { open: true, variant: 'image', image: { src: 'x.png' }, title: '同一个标题' }],
+    ['外伸徽标头', {
+      open: true, variant: 'badge', title: '同一个标题',
+      badge: { content: { kind: 'glyph', node: h('span') } },
+    }],
+  ]
+  for (const [label, props] of cases) {
+    const html = render(h(ContentPopup, props))
+    assert.match(html, /mptk-content-popup__headline/, `${label} 走同一条标题行`)
+    assert.match(html, /<text class="mptk-content-popup__title">同一个标题<\/text>/, `${label} 标题同一字号档`)
+    assert.doesNotMatch(html, /mptk-content-popup__header--divided/, `${label} 默认无下划线`)
+    assert.doesNotMatch(html, /mptk-content-popup__title-text(?!--)/, `${label} 不再用图标文案块`)
+  }
+  // 带图标/备注的文字头保持原「图标 + 标题 + 副标题」结构。
+  const inline = render(h(ContentPopup, { open: true, title: 'T', subtitle: 'S', glyph: h('span') }))
+  assert.match(inline, /mptk-content-popup__title-text/, '图标+备注仍走内联文案块')
+  assert.doesNotMatch(inline, /mptk-content-popup__headline/, '内联档不重复出独立标题行')
 })
 
 test('ContentPopup 底部弹窗默认关闭叉在外上中', () => {
@@ -915,6 +961,7 @@ test('ContentPopup headerImage 与 headerIcon 正交，iconColor 落到图标，
   }))
   assert.match(colored, /mptk-content-popup__lead-icon/, 'title 档图标并入 __lead-* 类族')
   assert.match(colored, /color:\s*#f00/, 'iconColor 落到图标节点')
+  assert.doesNotMatch(colored, /lead-slot--framed/, '通用 iconColor 只上色，不该自动加圆环')
 
   const own = render(h(ContentPopup, {
     open: true,
@@ -925,7 +972,7 @@ test('ContentPopup headerImage 与 headerIcon 正交，iconColor 落到图标，
   assert.match(own, /color:\s*#0f0/, 'content.color 优先于 iconColor')
   assert.doesNotMatch(own, /color:\s*#f00/, '被覆盖的 iconColor 不残留')
 
-  // 两档主标题共用 __title 类，字号同档；外伸档不出副标题，只有居中档出标题。
+  // title 档标题在图标右侧；image / badge 档标题走 header 外的独立 headline，字号字色同 __title。
   const titleHtml = render(h(ContentPopup, { open: true, title: '同一个标题' }))
   const badgeHtml = render(h(ContentPopup, {
     open: true,
@@ -936,17 +983,40 @@ test('ContentPopup headerImage 与 headerIcon 正交，iconColor 落到图标，
   }))
   assert.match(titleHtml, /<text class="mptk-content-popup__title">同一个标题<\/text>/)
   assert.match(badgeHtml, /<text class="mptk-content-popup__title">同一个标题<\/text>/, '两档标题同一类，字号同档')
-  assert.match(badgeHtml, /mptk-content-popup__title-text--raised/, '外伸档文案块加间距修饰类')
+  assert.match(badgeHtml, /mptk-content-popup__headline/, '外伸档标题走独立标题行')
+  assert.doesNotMatch(badgeHtml, /mptk-content-popup__title-text--raised/, '标题不再塞进图标文案块')
   assert.doesNotMatch(badgeHtml, /顶层副标题/, '外伸档不显示副标题')
 
-  const left = render(h(ContentPopup, {
-    open: true,
-    variant: 'badge',
-    title: '不该出现',
-    badge: { content: { kind: 'glyph', node: h('span') }, offset: { anchor: 'left' } },
+  // 标题不跟徽标锚点走：靠左/靠右也出，且标题行排在 header 之后、content 之前。
+  for (const anchor of ['left', 'right']) {
+    const side = render(h(ContentPopup, {
+      open: true,
+      variant: 'badge',
+      title: `${anchor}档标题`,
+      badge: { content: { kind: 'glyph', node: h('span') }, offset: { anchor } },
+    }))
+    assert.match(side, new RegExp(`${anchor}档标题`), `${anchor} 档也出标题`)
+    assert.ok(
+      side.indexOf('mptk-content-popup__headline') > side.indexOf('mptk-content-popup__header--badge') &&
+      side.indexOf('mptk-content-popup__headline') < side.indexOf('mptk-content-popup__content'),
+      '标题行在 header 与内容之间',
+    )
+  }
+
+  // 没有 title 就不渲染标题行；图片头有 title 时同样出。
+  const noTitle = render(h(ContentPopup, {
+    open: true, variant: 'badge', badge: { content: { kind: 'glyph', node: h('span') } },
   }))
-  assert.doesNotMatch(left, /mptk-content-popup__title-text/, '靠左档不出文案块')
-  assert.doesNotMatch(left, /不该出现/, '靠左档不出标题')
+  assert.doesNotMatch(noTitle, /mptk-content-popup__headline/, '没传 title 不出标题行')
+  const imageHtml = render(h(ContentPopup, {
+    open: true, variant: 'image', image: { src: 'x.png' }, title: '图片头标题',
+  }))
+  assert.match(imageHtml, /mptk-content-popup__headline/, '图片头也走同一标题行')
+  assert.match(imageHtml, /<text class="mptk-content-popup__title">图片头标题<\/text>/)
+  assert.ok(
+    imageHtml.indexOf('mptk-content-popup__headline') > imageHtml.indexOf('mptk-content-popup__image'),
+    '标题行排在图片之后',
+  )
 })
 
 test('ContentPopup 徽标空内容不渲染空容器：只传 title 不再造空徽标', () => {
@@ -1040,7 +1110,7 @@ test('ContentPopup 分割线颜色可配，线下间距归 body 上间距恒给'
 test('ContentPopup 头部只有一层，背景与留白同层，字色走 token', () => {
   const html = render(h(ContentPopup, { open: true, variant: 'title', title: 'T', headerBackground: { from: '#a', to: '#b' } }))
   assert.equal((html.match(/mptk-content-popup__header(?!--)/g) ?? []).length, 1, '头部壳只能一层，别再套 __head')
-  assert.doesNotMatch(html, /mptk-content-popup__head(?!er)/, '__head 外层应已删除')
+  assert.doesNotMatch(html, /class="mptk-content-popup__head(?!er|line)[ "]/, '__head 外层应已删除')
   assert.match(html, /mptk-content-popup__header--title[^>]*background-image:/, '背景与 title 留白在同一层')
   assert.doesNotMatch(html, /mptk-content-popup__header[^>]*style="[^"]*padding-top:/, '文字头不该带徽标预留的 padding-top')
 
@@ -1183,6 +1253,24 @@ test('命令式对话框三形态共用 ContentPopup 视觉，默认无叉且宽
   assert.match(html, /mptk-popup__panel--bottom/)
   assert.match(html, /width:\s*260px/)
   assert.doesNotMatch(html, /mptk-popup__close/, '命令式对话框默认不该有关闭叉')
+  commands.resetUIForTests()
+  await Promise.allSettled(pending)
+})
+
+test('固定类型的 inline 图标按语义色渲染，note 在标题下做副标题', async () => {
+  commands.resetUIForTests()
+  commands.markHostMounted('dialog')
+  const pending = [
+    commands.alert('提示', { type: 'success', title: '标题', note: '标题下的小字' }),
+    commands.alert('纯文字', { title: '纯标题', note: '无图标也有小字' }),
+    commands.alert('自定义', { type: 'success', icon: 'common.base:home', title: '自定义图标' }),
+  ]
+  const html = render(h(DialogHost))
+  assert.equal([...html.matchAll(/mptk-content-popup__lead-slot--framed/g)].length, 1, '只有固定图标套圆环，自定义 icon 不加圈')
+  assert.match(html, /color:\s*var\(--mptk-c-dialog-type-fg-success\)/, 'inline 图标上语义色')
+  assert.match(html, /mptk-content-popup__lead-slot--framed[^>]*style="[^"]*color:\s*var\(--mptk-c-dialog-type-fg-success\)/, '圆环取图标色')
+  assert.match(html, /mptk-content-popup__subtitle[^>]*>[^<]*标题下的小字/, '备注小字走副标题节点')
+  assert.match(html, /mptk-content-popup__subtitle[^>]*>[^<]*无图标也有小字/, '纯文字档的小字不能丢')
   commands.resetUIForTests()
   await Promise.allSettled(pending)
 })
