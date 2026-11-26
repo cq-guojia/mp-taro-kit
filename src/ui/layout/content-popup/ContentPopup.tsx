@@ -16,6 +16,7 @@ import {
 import {
   cssLength,
   needsImageInset,
+  pxLength,
   resolveImageHeaderHeight,
   resolveImageShift,
   type EdgeOffset,
@@ -577,7 +578,6 @@ export function ContentPopup({
     return `mptk-cp-img-${String(imageUidSeed)}`
   })
   const [measuredWidth, setMeasuredWidth] = useState<number | null>(null)
-  const [measureFailed, setMeasureFailed] = useState(false)
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   /* 每轮测量一个代次：重开 / 换图 / onLoad 重启后，上一轮已发出的 query 回调一律丢弃，
      否则旧重试会把失败标记盖回成功状态。 */
@@ -681,6 +681,11 @@ export function ContentPopup({
     ? undefined
     : resolveImageSize({ ...image, width: image.width ?? '100%' }, { containerWidth: DEFAULT_CONTAINER_WIDTH, natural })
 
+  /* 首帧种子宽：图片 width:'100%' 铺满 header，面板 padding 归零、图片头无左右内距，
+     所以未测量时的渲染宽就是面板宽。与 Segmented 的 static 轨同源：先用已知真值把几何画对，
+     量到真实宽再无感替换，绝不先隐藏再显形。rpx/% 等 JS 折不出的宽退回 320 默认 token。 */
+  const seededWidth = pxLength(image?.width) ?? pxLength(width) ?? DEFAULT_CONTAINER_WIDTH
+
   /* 垂直外伸链路：仅 px 数字偏移启用。量图片真实渲染宽（不是面板 320 假宽），配合与 resolver
      同口径的比例算出显示高，再收窄 header。两条件（宽、比例）各自可能先到，都在渲染期派生，
      不需要事件互相触发；量不到时有限重试，耗尽后放弃收窄、图片按自然高显示。 */
@@ -709,8 +714,6 @@ export function ContentPopup({
       if (width === undefined || width === null || width <= 0) {
         if (attempt < MEASURE_ATTEMPTS) {
           retryTimer.current = setTimeout(() => measure(attempt + 1), MEASURE_RETRY_MS)
-        } else {
-          setMeasureFailed(true)
         }
         return
       }
@@ -719,17 +722,15 @@ export function ContentPopup({
         retryTimer.current = null
       }
       setMeasuredWidth(width)
-      setMeasureFailed(false)
     })
   }, [imageUid, insetEnabled, open])
 
   useEffect(() => {
     cancelMeasure()
-    /* 关闭只是冻结几何：退场动画期间节点仍在，复位宽/失败会撤掉 header 高度并把图片藏起来，
-       表现为弹窗跳一下。复位只在真正开启新一轮测量时做。 */
+    /* 关闭只是冻结几何：退场动画期间节点仍在，复位宽会撤掉已量到的真实宽，表现为弹窗跳一下。
+       复位只在真正开启新一轮测量时做。 */
     if (!insetEnabled || !open) return undefined
     setMeasuredWidth(null)
-    setMeasureFailed(false)
     /* 图片节点由 Popup 的 usePresence 在 open 变 true 后才挂载；open=false 时量必然扑空，
        还会白耗掉重试预算。open / src / 宽度变化都是新一轮，统一从此入口重启。 */
     const timer = setTimeout(measure, 0)
@@ -750,13 +751,12 @@ export function ContentPopup({
     return () => { Taro.offWindowResize(onResize) }
   }, [measure, insetEnabled])
 
-  const imageHeaderHeight = insetEnabled && !measureFailed
-    ? resolveImageHeaderHeight(image?.offset, measuredWidth, imageRatio)
+  // 量不到时不隐藏、也不留空白：种子宽让几何首帧即终态；测量只做无感替换。
+  const effectiveWidth = measuredWidth ?? seededWidth
+  const imageHeaderHeight = insetEnabled
+    ? resolveImageHeaderHeight(image?.offset, effectiveWidth, imageRatio)
     : undefined
-  const imageHidden = image !== undefined && sized !== undefined && (
-    (sized.needsNatural && natural === undefined) ||
-    (insetEnabled && !measureFailed && imageHeaderHeight === undefined)
-  )
+  const imageHidden = sized?.needsNatural === true && natural === undefined
 
   const handleLoad = (event: { detail: { width: string | number; height: string | number } }) => {
     const width = Number(event.detail.width)
@@ -798,8 +798,7 @@ export function ContentPopup({
           onError={() => {
             cancelMeasure()
             setNatural(undefined)
-            /* 加载失败也是一次定论：放弃收窄，图片按自然高显示，绝不因等测量而永久隐藏。 */
-            setMeasureFailed(true)
+            /* 加载失败即停止测量；几何维持种子宽算出的值，不隐藏图片。 */
           }}
           onClick={image.onClick}
         />

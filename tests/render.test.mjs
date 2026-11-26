@@ -839,6 +839,23 @@ test('图片头几何：默认铺满、超宽原样透传、对齐与四向偏�
 
 })
 
+test('图片头外伸首帧即终态：header 按种子宽算好高度，不等节点测量、不隐藏图片', () => {
+  const base = { open: true, variant: 'image', onClose: () => {} }
+  // 首帧无 boundingClientRect（SSR 就是量不到的场景）：1080×587 → 320×587/1080≈173.9，减 30 外伸 ≈143.9px。
+  const image = { src: 'x.png', offset: { top: -30 }, naturalWidth: 1080, naturalHeight: 587 }
+  const html = render(h(ContentPopup, { ...base, image }))
+  const header = /class="mptk-content-popup__header[^"]*"[^>]*style="([^"]*)"/.exec(html)?.[1] ?? ''
+  const height = Number(/height:([\d.]+)px/.exec(header)?.[1])
+  assert.ok(Math.abs(height - (320 * 587 / 1080 - 30)) < 1, `首帧就用面板种子宽算出收窄高度，不是默认高度再回弹（实际 ${header}）`)
+  const img = /class="mptk-content-popup__image"[^>]*style="([^"]*)"/.exec(html)?.[1] ?? ''
+  assert.doesNotMatch(img, /opacity:0/, '比例已知的首帧不隐藏图片，测量只做无感替换')
+
+  // 无法 JS 折算的 rpx 宽退回 320 种子，仍首帧定高，不因拿不到像素就隐藏。
+  const rpx = render(h(ContentPopup, { ...base, width: '640rpx', image }))
+  const rpxHeader = /class="mptk-content-popup__header[^"]*"[^>]*style="([^"]*)"/.exec(rpx)?.[1] ?? ''
+  assert.match(rpxHeader, /height:/, 'rpx 宽退回 320 默认 token 兜底，首帧照样定高')
+})
+
 test('关闭按钮偏移：四向值作为 CSS 变量落到真实按钮节点，定位仍由档位 CSS 计算', () => {
   const html = render(h(ContentPopup, {
     open: true, position: 'bottom', variant: 'title', title: 'T',
