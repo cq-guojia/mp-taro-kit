@@ -48,16 +48,11 @@ export interface CardStateInput {
   /** 不给就跟随 hasFooter：有底部默认画线，显式 false 才关。 */
   footerDivider?: boolean
   color?: CardColor
-  hasCover?: boolean
   /** 由 Card 渲染期从槽位派生：有底部操作区。 */
   hasFooter?: boolean
   onClick?: () => void
   disabled?: boolean
   loading?: boolean
-  /** 由 Card 渲染期从 children 派生：内容是贴边组件时，壳自己关掉上下留白。 */
-  hasEdgeContent?: boolean
-  /** 正文第一块是标题：原来标题吃壳的顶部留白，换写法后保持不变。 */
-  hasSectionHead?: boolean
   className?: string
 }
 
@@ -92,19 +87,11 @@ export function resolveCardState(input: CardStateInput): CardState {
   /* 底部操作区：有 footer 就默认画线，显式 footerDivider={false} 才关。
      标题已迁到 CardHead，段间线由段头自己画，Card 不再有头部线。 */
   if (input.footerDivider ?? (input.hasFooter === true)) names.push('mptk-card--footer-divider')
-  if (input.hasCover === true) names.push('mptk-card--cover')
   /* plain 没有面也没有边，色值无处可落，连类名都不派生，不装作生效。 */
   if (color.className && variant !== 'plain') names.push(color.className)
   if (clickable) names.push('mptk-card--clickable')
   if (busy) names.push('mptk-card--busy')
   if (input.disabled === true) names.push('mptk-card--disabled')
-  /* 内容是贴边组件：壳自己关掉留白，不留空白给子级抵消。
-     只在真正贴边的那一端归零——开头有标题就保留顶部留白，有底部就保留下留白。 */
-  if (input.hasEdgeContent === true) {
-    names.push('mptk-card--edge-content')
-    if (input.hasSectionHead !== true) names.push('mptk-card--edge-top')
-    if (input.hasFooter !== true) names.push('mptk-card--edge-bottom')
-  }
   if (input.className) names.push(input.className)
   return {
     className: names.join(' '),

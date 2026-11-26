@@ -102,7 +102,7 @@
 </Card>
 ```
 
-`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后派生 `mptk-cell-group--in-card`、据此调整组内留白与线的归属；底色不需要 `Card` 注入——Cell 与 CellGroup 默认透明，卡片的面色直接透上来。上下外框不是一刀切关掉，而是由 `Card` 渲染期用 `ui/infra/card-edge` 按文档顺序给每组算出「上边界要不要画、下边界要不要画」两个布尔注入，据此让每段之间恒好一条线（规则见上文），显式 `border` 仍可覆盖。同时 `CellGroup` 用 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后派生 `mptk-card--edge-content`，把壳的上下 padding 直接归零。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来，实机会留下两层留白。
+`Card` 通过 `ui/infra/card-context` 向后代声明「你在卡片里」，`CellGroup` 消费后派生 `mptk-cell-group--in-card`、据此调整组内留白与线的归属；底色不需要 `Card` 注入——Cell 与 CellGroup 默认透明，卡片的面色直接透上来。上下外框不是一刀切关掉，而是由 `Card` 渲染期用 `ui/infra/card-edge` 按文档顺序给每组算出「上边界要不要画、下边界要不要画」两个布尔注入，据此让每段之间恒好一条线（规则见上文），显式 `border` 仍可覆盖。同时 `CellGroup` 用 `markCardEdgeContent()` 声明「本组每行自带留白」，`Card` 渲染期识别后让列表走满宽通道；壳四向 padding 恒为 0，不再需要按端归零类名。本组不做负 margin 反抵消：小程序渲染端会静默丢弃变量参与计算的负 margin，编译和 CSS 层叠都查不出来。
 
 卡片内的列表默认**左右不到头**：左右留白统一由组给一档，取卡片自己的 `var(--mptk-card-spacing)`（`sm` 8 / `md` 12 / `lg` 16），行自己不再留左右白，文字与卡片标题、底部操作区左边界对齐；贴边时 `Card` 的 body 左右留白同时归零，避免两道间距叠加。行间线的端点由 `dividerInset` 控制：默认 `true` 时随文字内缩到这一档，`false` 时用负的 `--mptk-card-spacing` 跨出 body 内距、通到卡片边——这是 `CellGroup` 在卡片内的组合层参数，不是宿主写样式。组的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone` / `dividerInset`）仍归 `CellGroup`，职责不重叠。
 

@@ -149,8 +149,7 @@ test('Card 里的 CellGroup 收到边界提示，渲染出的外框线和提示�
   /* 无 header 的单组：两头都贴卡片边界，两条线都不画。 */
   const single = render(h(Card, null, group('one')))
   assert.deepEqual(groupBorders(single), [{ top: false, bottom: false }], '单组必须两头收口')
-  assert.match(single, /mptk-card--edge-top/, '无头部时卡片顶部要贴边')
-  assert.match(single, /mptk-card--edge-bottom/, '无底部时卡片底部要贴边')
+  assert.doesNotMatch(single, /mptk-card--edge-(?:top|bottom)/, '壳恒 0，不再派生按端归零类')
 
   /* 三组（无标题）：每组底线都是自己的封口线，接缝各恰好一条，画在前一组的下边界。 */
   const three = render(h(Card, null, group('a'), group('b'), group('c')))
@@ -178,7 +177,7 @@ test('换成 CardHead 后，标题下的线、缩进与卡片顶部留白都跟�
   const head = (title) => h(CardHead, { key: title }, title)
   const one = render(h(Card, null, head('基础规范'), group('one')))
   assert.match(one, /mptk-card-head--divider/, '标题下的横线由标题自己画')
-  assert.doesNotMatch(one, /mptk-card--edge-top/, '有标题时卡片顶部留白不能被归零')
+  assert.doesNotMatch(one, /mptk-card--edge-(?:top|bottom)/, '壳恒 0，不再派生按端归零类')
   assert.deepEqual(groupBorders(one), [{ top: false, bottom: false }], '列表不重复画标题下那条线')
   assert.doesNotMatch(one, /mptk-card__content/, '标题和列表直挂 body，横线不受普通内容留白影响')
   const plain = render(h(Card, null, h('text', null, '正文')))
@@ -196,6 +195,16 @@ test('换成 CardHead 后，标题下的线、缩进与卡片顶部留白都跟�
   const tail = render(h(Card, null, h('text', null, '前文'), head('末标题')))
   assert.match(tail, /mptk-card-head--divider-top/, '末标题有上线')
   assert.doesNotMatch(tail, /mptk-card-head--divider(?!-top)/, '末标题后面没正文，不画下线')
+})
+
+test('相邻 CardHead 的接缝只一条线，由上方标题的下线画', () => {
+  const head = (title) => h(CardHead, { key: title }, title)
+  const three = render(h(Card, null, head('一'), head('二'), head('三')))
+  assert.equal((three.match(/mptk-card-head--divider(?!-top)/g) ?? []).length, 2, '上方两段各画一条下线')
+  assert.equal((three.match(/mptk-card-head--divider-top/g) ?? []).length, 0, '相邻标题不画上线')
+  const two = render(h(Card, null, head('一'), head('二')))
+  assert.equal((two.match(/mptk-card-head--divider(?!-top)/g) ?? []).length, 1, '两条标题之间恰好一条线')
+  assert.equal((two.match(/mptk-card-head--divider-top/g) ?? []).length, 0, '下方标题不让位出第二条线')
 })
 
 test('Card 穿透包装层：CellGroup 不在 body 顶层时边界提示照样生效', () => {

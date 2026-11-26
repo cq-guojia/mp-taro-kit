@@ -136,12 +136,12 @@ export default function CardPage() {
             <View className="mptk-card__title">确认 confirm</View>
             <View className="mptk-card__subtitle">resolve true / false</View>
           </CardHead>
-          <Text>第二段内容：中间段上下各一条线，接缝处恰好一条</Text>
+          <Text>第二段内容：中间段只画下边线，与前一段接缝恰好一条</Text>
 
           <CardHead>
             <View className="mptk-card__title">异步闸门</View>
           </CardHead>
-          <Text>末段：下面不画线，卡片底边接管</Text>
+          <Text>末段：下面不画线，但四向间距仍在</Text>
         </Card>
       )
     }

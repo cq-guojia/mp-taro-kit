@@ -916,10 +916,10 @@ export const pages: CatalogPage[] = [
         id: 'card-divider',
         section: '二 · 外观设置',
         title: '分区分隔线',
-        hint: 'footerDivider 跟随有没有 footer：有就默认画，传 false 关掉；标题下的线由标题自己画，样式不变',
+        hint: 'footerDivider 跟随有没有 footer：有就默认画，传 false 关掉；线只画在块边框上，不改变间距',
         usage: '<Card footer={…} footerDivider={false}><CardHead>…</CardHead>主体</Card>',
         imports: ['mp-taro-kit/ui/card', 'mp-taro-kit/ui/card/style'],
-        renderNotes: '标题下的线不再由 Card 派生，改由标题块自己画，位置与颜色不变；底部线仍取 --mptk-border；双端实机未验证',
+        renderNotes: '标题与底部的线都只切各自节点的 border，不产生间距；留白由各块自己的四向内边距给；双端实机未验证',
       },
       {
         id: 'card-slots',
@@ -939,7 +939,7 @@ export const pages: CatalogPage[] = [
           '<Card><CardHead><View className="mptk-card__title">标题</View></CardHead>内容<CardHead>…</CardHead>内容</Card>',
         imports: ['mp-taro-kit/ui/card', 'mp-taro-kit/ui/card/style'],
         renderNotes:
-          '标题下的线由标题自己画；卡片顶部留白、标题左右缩进与换写法前一致；接缝恰好一条；标题 View 的字号/颜色取 --mptk-font-lg / --mptk-font-xs；双端实机未验证',
+          '标题四向留白自持，与有没有线无关；相邻标题的接缝由上方标题的下线画，恰好一条；标题 View 的字号/颜色取 --mptk-font-lg / --mptk-font-xs；双端实机未验证',
       },
       {
         id: 'card-state',

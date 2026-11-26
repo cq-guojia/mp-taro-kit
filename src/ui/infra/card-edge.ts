@@ -36,9 +36,9 @@ export function markCardSectionHead<T extends object>(component: T): T {
  * 每组只负责「自己边界上那一条」，两段之间的分界处恒好一条线，不会两边各画一条叠成双线。
  */
 export interface CardEdgeLines {
-  /** 上边界：前面还有内容时要画；贴着卡片顶部 / 卡片标题分隔线的那块不画。 */
+  /** 上边界：前面还有内容时要画；贴着卡片顶部 / 前邻是标题时不画。 */
   top: boolean
-  /** 下边界：只有后面跟的是不画线的普通内容时才补；后面是同类贴边内容时由它自己的上边界负责。 */
+  /** 下边界：后面还有内容时画；标题用它负责与相邻标题之间的接缝，列表在后面是标题时让位。 */
   bottom: boolean
 }
 

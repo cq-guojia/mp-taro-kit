@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 import { CardSurfaceContext, CARD_SURFACE_INSIDE } from '../infra/card-context.js'
 import { PRESS_STAY_TIME } from '../infra/press.js'
 import {
-  cardStartsWithSectionHead,
   decorateCardEdgeChildren,
   hasCardEdgeContent,
   hasCardSectionHead,
@@ -71,9 +70,7 @@ export function Card({
   const bodyChildren = Children.toArray(body)
   const state = resolveCardState({
     variant, radius, size, footerDivider, color,
-    hasCover, hasFooter, onClick, disabled, loading, className,
-    hasEdgeContent: hasCardEdgeContent(body),
-    hasSectionHead: cardStartsWithSectionHead(bodyChildren),
+    hasFooter, onClick, disabled, loading, className,
   })
 
   // 渲染期给内容里的列表注入边界提示：穿透包装层找到真正的 CellGroup，Card 不 import cell 子域，消费方零参数。

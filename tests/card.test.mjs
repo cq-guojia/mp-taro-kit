@@ -99,9 +99,11 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   assert.doesNotMatch(types, /\b(title|subtitle|extra|headerDivider)\??:/, 'CardProps 不再支持老标题槽位与头部线，老写法必须报错')
   const cellCss = read('../dist/ui/display/cell/style/index.css')
   assert.doesNotMatch(cellCss, /margin-(?:top|bottom):\s*(?:calc\(|-)/, '不许再用负 margin 反抵消父级 padding')
-  assert.match(css, /\.mptk-card--edge-top\s*\{/, '贴边归零要按端提供，规则归 Card')
-  assert.match(css, /\.mptk-card--edge-bottom\s*\{/, '贴边归零要按端提供，规则归 Card')
-  assert.match(resolveCssVars(css), /\.mptk-card--cover\s*\{[^}]*padding-top:\s*0/, '有封面时顶部不留白')
+  assert.doesNotMatch(
+    css,
+    /\.mptk-card--(?:edge-(?:top|bottom|content)|cover)\s*\{/,
+    '壳无留白，按端归零与封面消白规则都必须删干净',
+  )
 
   /* 色名两处落点：底色走软色，边色走同色相实色；两条路都只换变量。 */
   const blue = ruleOf(css, '.mptk-card--blue')
@@ -112,7 +114,9 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   assert.doesNotMatch(css, /mptk-card--header-divider/, 'Card 不再派生头部线')
   const footerRule = ruleOf(css, '.mptk-card--footer-divider .mptk-card__footer')
   assert.equal(declOf(footerRule, 'border-top-color'), 'var(--mptk-border)', '底部分隔线与段间线同档深色')
-  assert.equal(declOf(footerRule, 'padding-top'), 'var(--mptk-space-2)', '线到内容一档小间距，与段头对称')
+  assert.equal(declOf(footerRule, 'padding-top'), '', '底部分隔线只画边框，不再单独改 padding')
+  assert.equal(declOf(ruleOf(css, '.mptk-card__footer'), 'margin-top'), '', 'footer 无外间距')
+  assert.equal(declOf(ruleOf(css, '.mptk-card__footer'), 'padding-top'), 'var(--mptk-card-spacing)', 'footer 四向内边距自持')
 
   const heading = ruleOf(css, '.mptk-card__title')
   assert.equal(declOf(heading, 'font-size'), 'var(--mptk-font-lg)', '标题取字号档 lg')
@@ -120,27 +124,29 @@ test('Card 组件级出口、样式出口与卡片族语义键齐全', () => {
   assert.equal(declOf(subtitle, 'font-size'), 'var(--mptk-font-xs)', '说明比正文低一档，取字号档 xs')
   assert.equal(declOf(subtitle, 'line-height'), 'var(--mptk-line-xs)', '说明行高同档')
 
-  /* 标题块就是原来的头部：左右缩进与下边框一处不少；上下间距归上下两条线。 */
+  /* 标题块：四向内边距常驻，与有没有线无关；线只是边框开关，不产生也不吃掉间距。 */
   assert.match(css, /\.mptk-card-head\s*\{/, '标题块要有独立块')
-  assert.equal(declOf(ruleOf(css, '.mptk-card-head'), 'margin-bottom'), '', '基础标题块不自带下间距，归下线')
-  assert.equal(declOf(ruleOf(css, '.mptk-card-head'), 'margin-top'), '', '基础标题块不自带上间距，归上线')
-  assert.equal(declOf(ruleOf(css, '.mptk-card-head'), 'padding-bottom'), 'var(--mptk-space-2)', '标题与下线之间一档小间距')
-  assert.equal(declOf(ruleOf(css, '.mptk-card-head'), 'padding-left'), 'var(--mptk-card-spacing)', '标题文字自己缩进，横线不跟着缩')
-  const edgeHead = ruleOf(css, '.mptk-card--edge-content .mptk-card-head')
-  assert.equal(declOf(edgeHead, 'margin-bottom'), 'var(--mptk-s-zero)', '贴边列表的首行自带上留白，标题不再叠 margin')
-  assert.equal(declOf(edgeHead, 'padding-left'), '', '贴边时标题不再靠覆盖 padding 找缩进')
+  const headRule = ruleOf(css, '.mptk-card-head')
+  for (const prop of ['padding-top', 'padding-right', 'padding-bottom', 'padding-left']) {
+    assert.equal(declOf(headRule, prop), 'var(--mptk-card-spacing)', `${prop} 四向常驻，不随线切换`)
+  }
+  assert.equal(declOf(headRule, 'margin-top'), '', '标题无外间距')
+  assert.equal(declOf(headRule, 'margin-bottom'), '', '标题无外间距')
   assert.equal(declOf(ruleOf(css, '.mptk-card__body'), 'padding-left'), 'var(--mptk-s-zero)', 'body 恒满宽，不随内容类型变')
-  assert.equal(declOf(ruleOf(css, '.mptk-card__content'), 'padding-left'), 'var(--mptk-card-spacing)', '普通内容单独缩进一档')
-  assert.doesNotMatch(css, /\.mptk-card--edge-content \.mptk-card__body/, 'body 不再有随内容切换的留白规则')
+  const contentRule = ruleOf(css, '.mptk-card__content')
+  for (const prop of ['padding-top', 'padding-right', 'padding-bottom', 'padding-left']) {
+    assert.equal(declOf(contentRule, prop), 'var(--mptk-card-spacing)', `普通内容 ${prop} 自己给`)
+  }
+  assert.doesNotMatch(resolveCssVars(contentRule), /border-(?:top|right|bottom|left)-width:\s*[1-9]/, 'content 无边框')
   const topLine = ruleOf(css, '.mptk-card-head--divider-top')
   assert.equal(declOf(topLine, 'border-top-color'), 'var(--mptk-border)', '上线与下线同色')
   assert.equal(declOf(topLine, 'border-top-width'), 'var(--mptk-c-border-w)', '上线与下线同宽')
-  assert.equal(declOf(topLine, 'padding-top'), 'var(--mptk-space-2)', '上线到标题一档小间距')
-  assert.equal(declOf(topLine, 'margin-top'), 'var(--mptk-card-spacing)', '上一段内容到上线一档卡片间距')
+  assert.equal(declOf(topLine, 'margin-top'), '', '上线不产生外间距')
+  assert.equal(declOf(topLine, 'padding-top'), '', '上线不吃掉标题内边距')
   const headLine = ruleOf(css, '.mptk-card-head--divider')
   assert.equal(declOf(headLine, 'border-bottom-color'), 'var(--mptk-border)', '标题下的横线与原来头部同色')
   assert.equal(declOf(headLine, 'border-bottom-width'), 'var(--mptk-c-border-w)', '标题下的横线与原来头部同宽')
-  assert.equal(declOf(headLine, 'margin-bottom'), 'var(--mptk-card-spacing)', '下线到正文一档卡片间距')
+  assert.equal(declOf(headLine, 'margin-bottom'), '', '下线不产生外间距')
   assert.doesNotMatch(css, /\.mptk-card-head\s+\.mptk-card__header/, '标题块不许复用已删除的 header 选择器')
 
   /* 按压态必须叠在自有底色之上：自定义色值走内联 backgroundColor，换底色会被内联样式压住。 */
@@ -184,11 +190,11 @@ test('Card 状态：形态派生、颜色双路、点击与等待态', () => {
 
   const shaped = cardState.resolveCardState({
     variant: 'filled', radius: 'none', size: 'lg', footerDivider: true,
-    color: 'blue', hasCover: true, onClick: () => {}, loading: true,
+    color: 'blue', onClick: () => {}, loading: true,
   })
   for (const name of [
     'mptk-card--filled', 'mptk-card--radius-none', 'mptk-card--size-lg',
-    'mptk-card--footer-divider', 'mptk-card--cover',
+    'mptk-card--footer-divider',
     'mptk-card--blue', 'mptk-card--busy', 'mptk-card--clickable',
   ]) {
     assert.ok(shaped.className.includes(name), `派生类缺 ${name}`)
@@ -461,8 +467,8 @@ test('Card 与 CellGroup 组合：上下文自动收敛，消费方零参数', (
   )
   assert.deepEqual(
     linesOf([head(), head(), head()]),
-    [box(false, false), box(true, false), box(true, false)],
-    '段头紧跟段头：后一段头自己画上线，前一段头不再画下线，接缝一条',
+    [box(false, true), box(false, true), box(false, false)],
+    '段头紧跟段头：每条接缝由上方标题的下线画，下方标题不画上线',
   )
   assert.deepEqual(
     linesOf([head(), group()]),
@@ -488,9 +494,9 @@ test('Card 与 CellGroup 组合：上下文自动收敛，消费方零参数', (
   assert.equal(cardStartsWithSectionHead([head(), group()]), true, '正文第一块是标题')
   assert.equal(cardStartsWithSectionHead([group(), head()]), false, '第一块不是标题就不算')
   assert.doesNotMatch(
-    cardState.resolveCardState({ hasEdgeContent: true, hasSectionHead: true }).className,
-    /mptk-card--edge-top/,
-    '有标题时保留卡片顶部留白，跟换写法之前一样',
+    cardState.resolveCardState({}).className,
+    /mptk-card--edge|mptk-card--cover/,
+    '壳无留白，不再派生按端归零类名',
   )
   assert.deepEqual(
     linesOf([group(), plain(), head(), plain()]),
@@ -511,7 +517,7 @@ test('Card 与 CellGroup 组合：上下文自动收敛，消费方零参数', (
     '单个子节点（children 非数组）也要注入',
   )
   assert.match(read('../src/ui/card/Card.tsx'), /decorateCardEdgeChildren\(bodyChildren\)/, 'Card 要用穿透式装饰器')
-  assert.match(read('../src/ui/card/Card.tsx'), /cardStartsWithSectionHead\(bodyChildren\)/, 'Card 要识别开头标题以保留顶部留白')
+  assert.doesNotMatch(read('../src/ui/card/Card.tsx'), /cardStartsWithSectionHead/, '壳恒 0，Card 不再按开头标题改顶部留白')
   assert.match(read('../src/ui/display/cell/CellGroup.tsx'), /CARD_EDGE_LINES_PROP/, 'CellGroup 要读注入的边界提示')
   const outside = cellState.resolveCellGroupState({})
   assert.equal(outside.outerBorder, true, '单独使用仍画上下外框')
@@ -550,8 +556,8 @@ test('Card 与 CellGroup 组合：上下文自动收敛，消费方零参数', (
   )
   assert.match(
     read('../src/ui/card/Card.tsx'),
-    /hasCardEdgeContent\(body\)/,
-    'Card 要在渲染期识别贴边内容',
+    /hasCardEdgeContent\(node\)/,
+    'Card 要在渲染期按节点识别贴边内容',
   )
   assert.match(
     read('../src/ui/display/cell/CellGroup.tsx'),
@@ -576,30 +582,17 @@ test('贴边留白由 Card 侧决定：渲染期识别 + 纯 CSS 归零，不靠
 
   assert.doesNotMatch(
     cardState.resolveCardState({}).className,
-    /mptk-card--edge-content/,
-    '普通内容保留默认留白',
-  )
-  assert.match(
-    cardState.resolveCardState({ hasEdgeContent: true }).className,
-    /mptk-card--edge-content/,
-    '贴边内容要让壳关掉留白',
-  )
-
-  /* 贴边只作用在真正贴边的那一端：标题已迁到 CardHead，顶部恒归零；有底部则保留下留白。 */
-  const bare = cardState.resolveCardState({ hasEdgeContent: true })
-  assert.match(bare.className, /mptk-card--edge-top/, '没有头部，顶部恒贴边')
-  assert.match(bare.className, /mptk-card--edge-bottom/, '没有底部时底部才贴边')
-  assert.doesNotMatch(
-    cardState.resolveCardState({ hasEdgeContent: true, hasFooter: true }).className,
-    /mptk-card--edge-bottom/,
-    '有底部操作区时下留白归壳',
+    /mptk-card--edge|mptk-card--cover/,
+    '壳无留白，不再派生按端归零类名',
   )
 
   const cardCss = read('../dist/ui/card/style/index.css')
   const cellCss = read('../dist/ui/display/cell/style/index.css')
-  assert.equal(declOf(ruleOf(cardCss, '.mptk-card'), 'padding-top'), 'var(--mptk-card-spacing)', '普通内容仍由壳给留白')
-  assert.equal(resolveCssVars(declOf(ruleOf(cardCss, '.mptk-card--edge-top'), 'padding-top')), '0', '贴边时壳顶部必须解析成 0')
-  assert.equal(resolveCssVars(declOf(ruleOf(cardCss, '.mptk-card--edge-bottom'), 'padding-bottom')), '0', '贴边时壳底部必须解析成 0')
+  const cardRule = ruleOf(cardCss, '.mptk-card')
+  for (const prop of ['padding-top', 'padding-right', 'padding-bottom', 'padding-left']) {
+    assert.equal(resolveCssVars(declOf(cardRule, prop)), '0', `壳 ${prop} 恒为 0`)
+  }
+  assert.doesNotMatch(cardCss, /\.mptk-card--(?:edge-(?:top|bottom|content)|cover)\s*\{/, '按端归零规则已删')
   assert.equal(
     declOf(ruleOf(cellCss, '.mptk-cell'), 'min-height'),
     'calc(var(--mptk-line-sm) + var(--mptk-space-1) + var(--mptk-space-0) + var(--mptk-space-1) + var(--mptk-space-0))',

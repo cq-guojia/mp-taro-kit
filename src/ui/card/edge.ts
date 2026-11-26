@@ -125,10 +125,11 @@ function flattenLeaves(nodes: ReactNode[], out: ReactNode[]): void {
 }
 
 /**
- * 按卡片体里所有内容的顺序决定每条线由谁画。
+ * 按卡片体里所有内容的顺序决定每条线由谁画，一个接缝恰好一条。
  *
- * 标题有前一块内容就画上线、后面还有正文才画下线，上下间距都归标题自己；
- * 列表紧跟标题时不再补顶线，后面紧跟标题时也不画底线，接缝恰好一条。
+ * 标题：前面是普通内容才画上线（首段、前邻也是标题都不画），后面还有内容就画下线；
+ * 相邻标题的接缝由上方标题的下线负责。列表：前面是普通内容才画顶线，
+ * 后面紧跟标题时让位给标题的上线。间距与线无关，各块自己常驻内边距。
  * 提示按顺序消费而不是按 element 身份做键：同一个 element 对象当两个兄弟用时也能各拿各的。
  */
 export function decorateCardEdgeChildren(nodes: ReactNode[]): ReactNode[] {
@@ -142,10 +143,14 @@ export function decorateCardEdgeChildren(nodes: ReactNode[]): ReactNode[] {
     const next = leaves[index + 1]
     const isHead = isSectionHeadElement(node)
     hints.push({
-      /* 标题不因前邻是列表而让位；列表仍只在前面是普通内容时画顶线。 */
-      top: isHead ? index > 0 : index > 0 && !isMarkedElement(previous) && !isSectionHeadElement(previous),
-      /* 后面紧跟标题时让位给后者的上线，避免接缝两条线。 */
-      bottom: next !== undefined && !isSectionHeadElement(next),
+      /* 标题前邻也是标题时让位给上方标题的下线；列表仍只在前面是普通内容时画顶线。 */
+      top: isHead
+        ? index > 0 && !isSectionHeadElement(previous)
+        : index > 0 && !isMarkedElement(previous) && !isSectionHeadElement(previous),
+      /* 标题后面还有内容就画下线；列表后面紧跟标题时让位给标题的上线。 */
+      bottom: isHead
+        ? next !== undefined
+        : next !== undefined && !isSectionHeadElement(next),
     })
   })
 
@@ -169,7 +174,7 @@ export function decorateCardEdgeChildren(nodes: ReactNode[]): ReactNode[] {
   return decorate(nodes)
 }
 
-/** 正文第一块是不是标题：有标题就保留卡片顶部留白，跟换写法之前一样。 */
+/** 正文第一块是不是标题：Card 是否以标题开头由调用方按需判断，壳本身不再据此改留白。 */
 export function cardStartsWithSectionHead(nodes: ReactNode[]): boolean {
   const leaves: ReactNode[] = []
   flattenLeaves(nodes, leaves)
