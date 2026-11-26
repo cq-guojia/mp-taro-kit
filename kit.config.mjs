@@ -477,9 +477,7 @@ export default {
     "--mptk-s-kf-full": "100%",                                     // 关键帧终点百分比
   },
 
-  runtime: {                                                        // 运行时行为默认值：Toast / 通知队列 / 默认档位 / core
-    "toastDuration": 2000,                                          // Toast 自动消失毫秒数；0 表示常驻不自动关
-    "notifyLimit": 3,                                               // 通知队列同时最多显示条数，超出顶掉最旧一条
+  runtime: {                                                        // 运行时行为默认值：默认档位 / core
     "controlSizeDefault": "sm",                                     // 未传 size 时 Button / Switch / Segmented 的默认档：32 / 14，与 WeUI mini 对齐
     "dialog": {                                                     // 命令式对话框默认按钮：改这一个文件即可统一换文案与外观
       "confirmText": "确定",                                        // alert 与 confirm 的确定按钮默认文案

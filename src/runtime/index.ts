@@ -8,12 +8,6 @@ export {
   type OverlayStack,
 } from './overlay-stack.js'
 export {
-  createNotifyCenter,
-  type Notice,
-  type NoticeTone,
-  type NotifyCenter,
-} from './notify.js'
-export {
   createLoadingSlot,
   type LoadingState,
   type LoadingSlot,

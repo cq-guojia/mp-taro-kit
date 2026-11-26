@@ -118,7 +118,7 @@ const { ContentPopup } = await import('../dist/ui/layout/content-popup/index.js'
 const { resolveImageSize } = await import('../dist/ui/layout/image-size.js')
 const { closeOffsetVars } = await import('../dist/ui/layout/edge-offset.js')
 const { Drawer, Dropdown } = await import('../dist/ui/navigation/index.js')
-const { Dialog, Loading, Toast } = await import('../dist/ui/feedback/index.js')
+const { Dialog, Loading } = await import('../dist/ui/feedback/index.js')
 const { DialogHost } = await import('../dist/ui/infra/DialogHost.js')
 const { PopupLockContext, decideGate } = await import('../dist/ui/infra/popup-lock/index.js')
 const { KitPageKeyContext } = await import('../dist/ui/infra/page-key-context.js')
@@ -696,10 +696,8 @@ test('浮层类组件都声明了「脱离文档流」：关闭时渲染 null �
   for (const [name, component] of Object.entries({ Popup, Overlay, Drawer, Dropdown, Dialog })) {
     assert.equal(component[CARD_EDGE_OUT_OF_FLOW], true, `${name} 没声明脱离文档流`)
   }
-  /* Toast / Loading 是行内组件，可见时确实占内容流，不该被跳过。 */
-  for (const [name, component] of Object.entries({ Toast, Loading })) {
-    assert.equal(component[CARD_EDGE_OUT_OF_FLOW], undefined, `${name} 是行内组件，不该声明脱离文档流`)
-  }
+  /* Loading 是行内组件，可见时确实占内容流，不该被跳过。 */
+  assert.equal(Loading[CARD_EDGE_OUT_OF_FLOW], undefined, 'Loading 是行内组件，不该声明脱离文档流')
 })
 
 test('页面常见写法（map 数组 / 条件渲染）不改变边界归属', () => {

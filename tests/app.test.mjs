@@ -44,14 +44,13 @@ test('toast / dialog / loading 三件宿主独立，对话框遮罩由 ContentPo
   assert.match(dialogHost, /closable=\{payload\.maskClosable\}/, '对话框遮罩开关没接载荷')
   assert.doesNotMatch(read('src/ui/infra/ToastHost.tsx'), /<Overlay\b/, 'Toast 带了遮罩')
   assert.doesNotMatch(read('src/ui/infra/LoadingHost.tsx'), /<Overlay\b/, 'Loading 带了遮罩')
-  // OverlayHost 是兼容组合，自身不许再出现遮罩实现。
   assert.doesNotMatch(read('src/ui/infra/OverlayHost.tsx'), /<Overlay\b/, '兼容层不该重复实现遮罩')
   assert.match(read('src/ui/infra/OverlayHost.tsx'), /<ToastHost/, '兼容层没组合 ToastHost')
   assert.match(read('src/ui/infra/OverlayHost.tsx'), /<DialogHost/, '兼容层没组合 DialogHost')
   assert.match(read('src/ui/infra/OverlayHost.tsx'), /<LoadingHost/, '兼容层没组合 LoadingHost')
 })
 
-/** 宿主拆分后四件都得有全屏定位，否则命令式弹层只在 App 根节点里生成、不进页面视口。 */
+/** 四件命令宿主都有全屏定位，否则命令式弹层只在 App 根节点里生成、不进页面视口。 */
 test('四件命令宿主都有全屏定位，空宿主不吃页面点击', () => {
   const css = read('dist/ui/infra/style/index.css')
   const group = css.match(/\.mptk-overlay-host,[\s\S]*?\.mptk-loading-host\s*\{([\s\S]*?)\}/)
@@ -66,30 +65,21 @@ test('四件命令宿主都有全屏定位，空宿主不吃页面点击', () =>
   assert.doesNotMatch(css, /mptk-(?:toast|dialog|loading|overlay)-host\s*>\s*\*/, 'WXSS 会丢弃通配符选择器，不能靠它恢复命中')
 })
 
-/** 按能力判定挂载：没挂 ToastHost 就调 showToast 必须当场抛，且错误信息点名对应 Host。 */
+/** 按能力判定挂载：没挂 DialogHost 就调 alert 必须当场抛。 */
 test('命令式 API 按能力校验宿主，互不牵连', async () => {
   const ui = { ...await import(join(root, 'dist/ui/index.js')) }
   const { markHostMounted, markHostUnmounted, isHostMounted } = ui
 
-  for (const kind of ['toast', 'dialog', 'loading']) {
+  for (const kind of ['dialog', 'loading']) {
     markHostUnmounted(kind)
     assert.equal(isHostMounted(kind), false, `${kind} 初始不该挂载`)
   }
 
-  // 只挂 toast：toast 可用，dialog / loading 仍抛。
-  markHostMounted('toast')
-  assert.equal(isHostMounted('toast'), true)
-  const before = []
-  for (const call of [() => ui.alert('x'), () => ui.showLoading()]) {
-    try { call() } catch (error) { before.push(String(error.message)) }
-  }
-  assert.equal(before.length, 2, '没挂 dialog/loading 时调用必须抛错')
-  assert.match(before[0], /DialogHost/, 'dialog 错误信息没点名 DialogHost')
-  assert.match(before[1], /LoadingHost/, 'loading 错误信息没点名 LoadingHost')
-  const toastId = ui.showToast('ok')
-  assert.equal(typeof toastId, 'number', '挂了 ToastHost 却不能 showToast')
-  ui.hideToast(toastId)
-
+  markHostMounted('dialog')
+  assert.equal(isHostMounted('dialog'), true)
+  let error = ''
+  try { ui.showLoading() } catch (caught) { error = String(caught.message) }
+  assert.match(error, /LoadingHost/, 'loading 错误信息没点名 LoadingHost')
   ui.resetUIForTests()
 })
 

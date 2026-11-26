@@ -32,10 +32,10 @@ pnpm --filter mp-taro-kit-demo build:weapp
 | 文件 | 覆盖 |
 |---|---|
 | `tests/utils.test.mjs` | 日期、字符串、数值、路径、i18n 回落 |
-| `tests/runtime.test.mjs` | thenable 判定、跨副本单例、覆盖层栈、通知队列、loading 句柄 |
+| `tests/runtime.test.mjs` | thenable 判定、跨副本单例、覆盖层栈、loading 句柄 |
 | `tests/core.test.mjs` | 注入校验、请求、路由、存储、小程序能力兜底 |
 | `tests/ui.test.mjs` | 挂载契约、命令式 API、ESM / CJS 双端、组件 `.d.ts` 真类型零诊断、样式不硬编码颜色、组件级出口与 Cell 状态机、演示站菜单与示例渲染分支、演示站不渲染代码 |
-| `tests/kit-config-chain.test.mjs` | 配置真源全量锚点、别名与合并、库 / 宿主两模式产物、变异敏感性、发布链三个出口、运行时契约，以及 Toast 按配置时长自动消失的最终生效行为 |
+| `tests/kit-config-chain.test.mjs` | 配置真源全量锚点、别名与合并、库 / 宿主两模式产物、变异敏感性、发布链三个出口、运行时契约 |
 
 断言全部读取 `dist/` 产物、`kit.config.mjs` 与 `demo/` 源码，期望值取自配置而非写死默认值，无外部服务依赖。
 

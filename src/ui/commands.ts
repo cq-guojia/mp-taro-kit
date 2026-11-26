@@ -1,8 +1,15 @@
-import type { Notice, NoticeTone } from '../runtime/notify.js'
 import { getKitConfig } from '../runtime/kit-config.js'
 import { currentPageKey } from '../runtime/page-route.js'
 import { uiState } from './state.js'
-import type { DialogAction, DialogLayout, DialogPayload } from './state.js'
+import type {
+  DialogAction,
+  DialogLayout,
+  DialogPayload,
+  ToastActionDescriptor,
+  ToastPayload,
+  ToastPosition,
+  ToastTone,
+} from './state.js'
 import type {
   ContentPopupBadge,
   ContentPopupImage,
@@ -12,7 +19,7 @@ import type { EdgeOffset } from './layout/edge-offset.js'
 
 type HostKind = string
 
-/** 宿主名由调用方传字面量：只引 dialog 命令时产物里不会留下 toast / loading 的名字。 */
+/** 宿主名由调用方传字面量：只引 dialog 命令时产物里不会留下 loading 的名字。 */
 function ensureMounted(kind: HostKind, hint: string): void {
   if (uiState().hosts[kind] <= 0) {
     throw new Error(
@@ -21,58 +28,27 @@ function ensureMounted(kind: HostKind, hint: string): void {
   }
 }
 
-/** 供各 Host 在挂载 / 卸载时调用；业务代码不要碰。计数允许多页各挂一份。 */
-export function markHostMounted(kind: HostKind): void {
-  uiState().hosts[kind] += 1
+/** 供各 Host 在挂载 / 卸载时调用；计数允许多页各挂一份，Toast 另按 pageKey 记一份。 */
+export function markHostMounted(kind: HostKind, scope?: string): void {
+  const state = uiState()
+  state.hosts[kind] += 1
+  if (kind === 'toast' && scope) {
+    state.toastHostScopes.set(scope, (state.toastHostScopes.get(scope) ?? 0) + 1)
+  }
 }
 
-export function markHostUnmounted(kind: HostKind): void {
-  const hosts = uiState().hosts
-  hosts[kind] = Math.max(0, hosts[kind] - 1)
+export function markHostUnmounted(kind: HostKind, scope?: string): void {
+  const state = uiState()
+  state.hosts[kind] = Math.max(0, state.hosts[kind] - 1)
+  if (kind === 'toast' && scope) {
+    const count = state.toastHostScopes.get(scope) ?? 0
+    if (count <= 1) state.toastHostScopes.delete(scope)
+    else state.toastHostScopes.set(scope, count - 1)
+  }
 }
 
 export function isHostMounted(kind: HostKind): boolean {
   return uiState().hosts[kind] > 0
-}
-
-function clearToastTimer(id: number): void {
-  const state = uiState()
-  const timer = state.toastTimers.get(id)
-  if (timer !== undefined) {
-    clearTimeout(timer)
-    state.toastTimers.delete(id)
-  }
-}
-
-/**
- * 弹一条 Toast。默认关闭时间取 kit.config.mjs 的 runtime.toastDuration；
- * 单次传 duration 可覆盖，传 0 表示常驻、由业务自己 hideToast。
- */
-export function showToast(text: string, tone: NoticeTone = 'info', duration?: number): number {
-  ensureMounted('toast', 'ToastHost')
-  const state = uiState()
-  const id = state.notices.show(text, tone)
-  const ms = duration ?? getKitConfig().runtime.toastDuration
-  if (ms > 0) {
-    const timer = setTimeout(() => {
-      state.toastTimers.delete(id)
-      state.notices.dismiss(id)
-    }, ms)
-    ;(timer as ReturnType<typeof setTimeout> & { unref?: () => void }).unref?.()
-    state.toastTimers.set(id, timer)
-  }
-  return id
-}
-
-export function hideToast(id: number): boolean {
-  clearToastTimer(id)
-  return uiState().notices.dismiss(id)
-}
-
-export function clearToasts(): Notice[] {
-  const state = uiState()
-  for (const id of [...state.toastTimers.keys()]) clearToastTimer(id)
-  return state.notices.clear()
 }
 
 export function showLoading(): number {
@@ -87,6 +63,109 @@ export function hideLoading(id: number): boolean {
   const state = uiState()
   state.loadingHandles.delete(id)
   return state.loading.hide(id)
+}
+
+export interface ToastOptions {
+  readonly description: string
+  readonly title?: string
+  readonly tone?: ToastTone
+  readonly icon?: string
+  readonly closeButton?: boolean
+  readonly action?: ToastActionDescriptor
+  readonly position?: ToastPosition
+  readonly enableStacking?: boolean
+  readonly visibleToasts?: number
+  /** 毫秒；0 表示常驻，需手动 hideToast。 */
+  readonly duration?: number
+  /** 命令层回调，不进全局 store；Host 按 phase / mounted / isCurrent 守卫后调用。 */
+  readonly onAction?: (key: string) => void
+}
+
+function ensureToastHost(scope: string): void {
+  const state = uiState()
+  const scoped = state.toastHostScopes.get(scope) ?? 0
+  if (scoped <= 0 && state.hosts.toast <= 0) {
+    throw new Error(
+      '[mp-taro-kit/ui] 未挂载 <ToastHost />；请在 app 入口 createKitApp(App, { hosts: [...] }) 挂一次，或 import { ToastHost } from \'mp-taro-kit/ui/infra\' 手动挂载',
+    )
+  }
+}
+
+function clearToastTimers(id: number): void {
+  const state = uiState()
+  for (const timer of state.toastTimers.get(id) ?? []) clearTimeout(timer)
+  state.toastTimers.delete(id)
+}
+
+/** 逻辑关闭一条 Toast；幂等，退场完成后由宿主 finish。 */
+export function closeToast(id: number): boolean {
+  clearToastTimers(id)
+  return uiState().toastLifecycle.close(id)
+}
+
+export function hideToast(id: number): boolean {
+  const state = uiState()
+  state.toastCallbacks.delete(id)
+  const closed = closeToast(id)
+  if (closed) state.toastLifecycle.finish(id)
+  return closed
+}
+
+export function clearToasts(): void {
+  const state = uiState()
+  for (const id of [...state.toastTimers.keys()]) clearToastTimers(id)
+  state.toastCallbacks.clear()
+  state.toastLifecycle.clear()
+}
+
+/** 页面跨页交接：把仍有效的 Toast 改挂到当前栈顶页，由新页宿主续显剩余时间。 */
+export function retargetToasts(scope: string): void {
+  if (!scope) return
+  const lifecycle = uiState().toastLifecycle
+  for (const entry of lifecycle.getSnapshot()) {
+    if (entry.phase === 'open') lifecycle.setScope(entry.id, scope)
+  }
+}
+
+/** 绝对到期兜底；timer 只负责及时触发，切页 / 前台恢复也调它。 */
+export function sweepExpiredToasts(now = Date.now()): void {
+  const lifecycle = uiState().toastLifecycle
+  for (const entry of lifecycle.getSnapshot()) {
+    if (entry.phase === 'open' && now >= entry.payload.expiresAt) closeToast(entry.id)
+  }
+}
+
+export function showToast(options: ToastOptions | string): number {
+  const opts: ToastOptions = typeof options === 'string' ? { description: options } : options
+  const scope = currentPageKey()
+  ensureToastHost(scope)
+  const state = uiState()
+  const createdAt = Date.now()
+  const duration = opts.duration ?? 3000
+  const payload: ToastPayload = {
+    title: opts.title,
+    description: opts.description,
+    tone: opts.tone ?? 'info',
+    icon: opts.icon,
+    closeButton: opts.closeButton ?? false,
+    action: opts.action,
+    position: opts.position ?? 'top',
+    enableStacking: opts.enableStacking ?? false,
+    visibleToasts: opts.visibleToasts ?? 3,
+    duration,
+    createdAt,
+    expiresAt: duration > 0 ? createdAt + duration : Number.POSITIVE_INFINITY,
+  }
+  const id = state.toastLifecycle.open(payload, scope)
+  if (opts.onAction !== undefined) state.toastCallbacks.set(id, opts.onAction)
+  if (duration > 0) {
+    const closeTimer = setTimeout(() => closeToast(id), duration)
+    const finishTimer = setTimeout(() => state.toastLifecycle.finish(id), duration + 160)
+    ;(closeTimer as ReturnType<typeof setTimeout> & { unref?: () => void }).unref?.()
+    ;(finishTimer as ReturnType<typeof setTimeout> & { unref?: () => void }).unref?.()
+    state.toastTimers.set(id, [closeTimer, finishTimer])
+  }
+  return id
 }
 
 /** alert / confirm 的固定类型：选一个即用配套图标与语义色底，无需自己挑图标。 */
@@ -240,13 +319,12 @@ export function confirm(message: string, options: DialogOptions = {}): Promise<b
 /** 仅供单测清空全局状态；产品代码不要调用。 */
 export function resetUIForTests(): void {
   const state = uiState()
-  for (const id of state.toastTimers.keys()) clearTimeout(state.toastTimers.get(id))
-  state.toastTimers.clear()
   for (const id of state.loadingHandles) state.loading.hide(id)
   state.loadingHandles.clear()
   state.dialogLifecycle.clear((payload) => payload.resolve(false))
-  state.notices.clear()
-  state.hosts.toast = 0
+  clearToasts()
   state.hosts.dialog = 0
+  state.hosts.toast = 0
   state.hosts.loading = 0
+  state.toastHostScopes.clear()
 }

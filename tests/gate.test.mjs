@@ -130,7 +130,7 @@ test('异步块三个按钮覆盖三档闸门：异步、全屏蔽、单例外',
 
   const busy = fnBody('openBusy')
   assert.match(busy, /onConfirm:/, '异步要由 onConfirm 的 Promise 驱动')
-  assert.match(busy, /onFailed: \([^)]*\) => showToast/, '失败必须给出可见反馈')
+  assert.doesNotMatch(busy, /showToast/, '失败演示不再依赖 Toast 命令')
   assert.match(busy, /reject\(new Error/, '要真的走 reject 路径，不只是 resolve')
   assert.doesNotMatch(busy, /lockExceptions/, '默认异步不配例外，沿用库默认放行 cancel')
 

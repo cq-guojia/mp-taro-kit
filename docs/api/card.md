@@ -133,7 +133,7 @@ export const CellInCard = () => (
 
 声明识别与边界注入都遍历 `children` 树（含数组与嵌套节点），因此 `<Card><View><CellGroup /></View></Card>` 一样贴边、一样拿得到边界提示。边界是：若某个组件在自身内部才渲染 `CellGroup`、不让它出现在 `Card` 的 children 树里，`Card` 就无从识别，这类内容按根 `className` 自行定制。
 
-遍历会**跳过声明了「脱离文档流」的浮层**（`markCardEdgeOutOfFlow`）。原因：边界判定是渲染期静态遍历，而浮层关闭时渲染 `null`；只看 element 树的话，`<Card><CellGroup /><Popup open={false}>…</Popup></Card>` 里面板 children 会被当成排在 CellGroup 后面的可见内容，贴着卡片底的那条线就多画出来。已声明：`Popup` / `Overlay` / `Drawer` / `Dropdown` / `Dialog`；`Toast` / `Loading` 是行内组件、可见时确实占内容流，不声明。新增的浮层类组件若可能渲染 `null`，应当同样声明，`tests/card.test.mjs` 会逐个校验名单。
+遍历会**跳过声明了「脱离文档流」的浮层**（`markCardEdgeOutOfFlow`）。原因：边界判定是渲染期静态遍历，而浮层关闭时渲染 `null`；只看 element 树的话，`<Card><CellGroup /><Popup open={false}>…</Popup></Card>` 里面板 children 会被当成排在 CellGroup 后面的可见内容，贴着卡片底的那条线就多画出来。已声明：`Popup` / `Overlay` / `Drawer` / `Dropdown` / `Dialog`；`Loading` 是行内组件、可见时确实占内容流，不声明。新增的浮层类组件若可能渲染 `null`，应当同样声明，`tests/card.test.mjs` 会逐个校验名单。
 
 因此卡的 `color`（内置色名或自定义色值）能透到 Cell 行，不会被白底盖住。`CellGroup` 的 `inset` / `frame` 服务于它独立作为卡片使用时的形态，组合写法不依赖它们；组内线设置（`dividerTone`）仍归 `CellGroup`，见 [Cell 单元格](cell.md)。
 
@@ -217,5 +217,5 @@ export const Sections = () => (
 - 2026-11-17：头/底分区线由 `--mptk-border-faint` 升到 `--mptk-border`，与 CellGroup 外框/标题线同为一级结构线，深浅口径统一
 - 2026-11-16 13:48:23：按压反馈抬手后 70ms 恢复（PRESS_STAY_TIME）
 - 2026-11-17：CellGroup 位置档注入改为穿透包装层（原来只扫 body 顶层，内容被 View 包一层时全部落回 `none`，上下框线消失）
-- 2026-11-17：位置档改成边界提示（上 / 下边界两个布尔）：底线归前一块画（每个分组封口，最后一个元素不画），上边界只在前面是普通内容时画，分组处恒好一条线；浮层跳过说明同步改写，`Overlay` / `Drawer` / `Dropdown` / `Dialog` 补上脱离文档流声明（`Toast` / `Loading` 是行内组件，不声明）
+- 2026-11-17：位置档改成边界提示（上 / 下边界两个布尔）：底线归前一块画（每个分组封口，最后一个元素不画），上边界只在前面是普通内容时画，分组处恒好一条线；浮层跳过说明同步改写，`Overlay` / `Drawer` / `Dropdown` / `Dialog` 补上脱离文档流声明（`Loading` 是行内组件，不声明）
 - 2026-11-17：边界遍历补上 `{list.map(…)}` 的数组与 `{cond && …}` 留下的 `false` / `null`：以前数组被当成一块「普通内容」，前一组因此多勾一条底线、数组里的组整块拿不到提示（这就是卡片里「标题上方多一条线」的来源）；`hasCardEdgeContent` 同步跳过脱离文档流的子树

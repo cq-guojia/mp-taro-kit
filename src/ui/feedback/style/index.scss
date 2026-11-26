@@ -4,18 +4,6 @@
    不再依赖基础图标包的 loading 字形，也不再受字体在线加载与 currentColor 影响。 */
 @use '../spinner/style/index' as spinner;
 
-.mptk-fb-toast {
-  background-color: var(--mptk-surface-2);
-  border-radius: var(--mptk-radius-sm);
-  padding-top: var(--mptk-space-2);
-  padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-2);
-  padding-left: var(--mptk-space-4);
-  color: var(--mptk-fg);
-  font-size: var(--mptk-font-md);
-  line-height: var(--mptk-line-md);
-}
-
 .mptk-fb-loading {
   display: flex;
   align-items: center;

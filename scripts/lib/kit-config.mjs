@@ -150,8 +150,6 @@ export function validateConfig(config) {
       }
     }
   }
-  if (!(Number(config.runtime?.toastDuration) > 0)) errors.push('runtime.toastDuration 必须 > 0')
-  if (!(Number(config.runtime?.notifyLimit) > 0)) errors.push('runtime.notifyLimit 必须 > 0')
   if (!(Number(config.runtime?.core?.timeout) > 0)) errors.push('runtime.core.timeout 必须 > 0')
   if (!CONTROL_SIZE_TIERS.includes(config.runtime?.controlSizeDefault)) {
     errors.push(`runtime.controlSizeDefault 必须是 ${CONTROL_SIZE_TIERS.join('/')}`)
@@ -239,10 +237,7 @@ function tsLiteral(value, indent = '  ') {
 export function renderDesignGenerated(config) {
   return GENERATED_HEADER('design 层默认常量') +
     `\nexport const CONTROL_SIZE_DEFAULT: ${CLICKABLE_SIZE_TIERS.map((tier) => `'${tier}'`).join(' | ')} = ${JSON.stringify(config.runtime.controlSizeDefault)}\n` +
-    `\nexport const KIT_RUNTIME_DEFAULTS = ${tsLiteral({
-      toastDuration: config.runtime.toastDuration,
-      notifyLimit: config.runtime.notifyLimit,
-    })}\n`
+    `\nexport const KIT_RUNTIME_DEFAULTS = ${tsLiteral({})}\n`
 }
 
 /** runtime 层的完整默认表：供配置槽、core 默认值、命令式 API 读取。 */
@@ -252,8 +247,6 @@ export function renderRuntimeGenerated(config) {
     `\nexport interface KitConfigDefaults {\n` +
     `  schemaVersion: number\n` +
     `  runtime: {\n` +
-    `    toastDuration: number\n` +
-    `    notifyLimit: number\n` +
     `    controlSizeDefault: ${CLICKABLE_SIZE_TIERS.map((tier) => `'${tier}'`).join(' | ')}\n` +
     `    dialog: {\n` +
     `      confirmText: string\n` +

@@ -68,7 +68,6 @@ test('遮罩只有一份实现：Drawer / Dropdown 不再自绘遮罩，Dialog �
     assert.match(read(file), /<Overlay\b/, `${file} 没用 layout 的 Overlay`)
   }
   assert.match(read('src/ui/infra/DialogHost.tsx'), /<ContentPopup\b/, '命令式 Dialog 没走共用浮层底座')
-  assert.doesNotMatch(read('src/ui/infra/ToastHost.tsx'), /<Overlay\b/, 'Toast 不许带遮罩')
   assert.doesNotMatch(read('src/ui/infra/LoadingHost.tsx'), /<Overlay\b/, 'Loading 不许带遮罩')
 })
 
@@ -1111,7 +1110,7 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   const catalog = read('demo/src/catalog.ts')
 
   assert.doesNotMatch(overlayPage, /<Popup|<Drawer|<Dialog/, '遮罩页不许出现使用者：遮罩不知道谁在用')
-  assert.doesNotMatch(overlayPage, /showToast|Open|open=\{/, '遮罩页只演示压暗与点击，不演别人的行为')
+  assert.doesNotMatch(overlayPage, /Open|open=\{/, '遮罩页只演示压暗与点击，不演别人的行为')
   assert.match(overlayPage, /<Overlay\b/, '遮罩页缺遮罩本体')
   assert.match(overlayPage, /'默认'/, '遮罩四档里默认档要排在最前')
   assert.match(

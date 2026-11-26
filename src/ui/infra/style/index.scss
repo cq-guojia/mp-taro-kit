@@ -8,7 +8,7 @@
   color: var(--mptk-fg);
 }
 
-/* 四件宿主共用一张全屏层：拆分命令宿主时只给兼容层写了定位，三件独立宿主因此不进页面视口。
+/* 宿主共用一张全屏层：拆分命令宿主时只给兼容层写了定位，独立宿主因此不进页面视口。
    容器本身不吃点击，只有真正弹出的子树恢复命中。 */
 .mptk-overlay-host,
 .mptk-toast-host,
@@ -27,10 +27,58 @@
 .mptk-overlay-host > .mptk-toast-host,
 .mptk-overlay-host > .mptk-dialog-host,
 .mptk-overlay-host > .mptk-loading-host,
-.mptk-toast-host > .mptk-toast,
+.mptk-toast-host > .mptk-toast-track,
 .mptk-dialog-host > .mptk-popup,
 .mptk-loading-host > .mptk-loading {
   pointer-events: auto;
+}
+
+/* Toast 宿主只做定位与堆叠；卡片本体样式在 ui/feedback/toast/style。 */
+.mptk-toast-host--top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.mptk-toast-host--bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.mptk-toast-host--center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mptk-toast-outside {
+  position: fixed;
+  top: var(--mptk-s-zero);
+  right: var(--mptk-s-zero);
+  bottom: var(--mptk-s-zero);
+  left: var(--mptk-s-zero);
+}
+
+.mptk-toast-track {
+  display: flex;
+  flex-direction: column;
+  width: 640rpx;
+}
+
+.mptk-toast-track--bottom {
+  flex-direction: column-reverse;
+}
+
+.mptk-toast-track--stack .mptk-toast + .mptk-toast {
+  margin-top: calc(-1 * var(--mptk-space-3));
+}
+
+.mptk-toast-track--stack.mptk-toast-track--expanded .mptk-toast + .mptk-toast {
+  margin-top: var(--mptk-space-2);
 }
 
 .mptk-loading {
@@ -43,15 +91,6 @@
   color: var(--mptk-fg-2);
   font-size: var(--mptk-font-md);
   line-height: var(--mptk-line-md);
-}
-
-.mptk-toast {
-  background-color: var(--mptk-surface-2);
-  border-radius: var(--mptk-radius-sm);
-  padding-top: var(--mptk-space-2);
-  padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-2);
-  padding-left: var(--mptk-space-4);
 }
 
 /* 命令式对话框的面板 / 头 / 底栏全走 ContentPopup，这里只管 body 内的说明。 */

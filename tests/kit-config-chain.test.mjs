@@ -45,7 +45,6 @@ test('别名与合并：CSS 运行时别名原样保留，配置层别名解析�
   assert.throws(() => resolveAlias('@blue', cyclic, 'light'), /成环/)
 
   assert.throws(() => mergeConfig(defaults, { base: { '--mptk-not-exist': '1px' } }), /不是可配项/)
-  assert.throws(() => mergeConfig(defaults, { runtime: { notifyLimit: '3' } }), /类型不符/)
   assert.equal(
     mergeConfig(defaults, { base: { '--mptk-radius-md': '13px' } }).base['--mptk-radius-md'],
     '13px',
@@ -117,44 +116,6 @@ test('发布链：CLI / 纯函数 / 默认表与源码逐字一致，两个出�
 
 test('运行时契约：默认表、core 默认值与命令式 API 都读同一份配置', async () => {
   const config = await import(pathToFileURL(path.join(root, 'dist/runtime/kit-config.js')).href)
-  assert.equal(config.getKitConfig().runtime.toastDuration, defaults.runtime.toastDuration)
-  assert.equal(config.getKitConfig().runtime.notifyLimit, defaults.runtime.notifyLimit)
   assert.equal(config.getKitConfig().runtime.core.timeout, defaults.runtime.core.timeout)
-
-  const changed = config.setKitConfig({ runtime: { toastDuration: 4321 } })
-  assert.equal(changed.runtime.toastDuration, 4321)
-  assert.equal(config.getKitConfig().runtime.notifyLimit, defaults.runtime.notifyLimit, '局部覆盖不能抹掉其余默认值')
-  config.setKitConfig({ runtime: { toastDuration: defaults.runtime.toastDuration } })
 })
 
-test('最终生效行为：Toast 按配置的时长自动消失，hide / clear 不留悬空定时器', async (t) => {
-  const ui = await import(pathToFileURL(path.join(root, 'dist/ui/index.js')).href)
-  const duration = defaults.runtime.toastDuration
-  // Node 的 mock timers 只接管 setTimeout；clearTimeout 走原生实现，对 mock 句柄是空操作，
-  // 但库自己会同步删掉 toastTimers 里的句柄，所以不影响「不留悬空回调」的断言。
-  t.mock.timers.enable({ apis: ['setTimeout'] })
-  try {
-    ui.resetUIForTests()
-    ui.markHostMounted('toast')
-    ui.markHostMounted('dialog')
-    ui.markHostMounted('loading')
-
-    const id = ui.showToast('配置时长')
-    assert.equal(ui.uiState().notices.getSnapshot().length, 1)
-    assert.equal(ui.uiState().toastTimers.has(id), true)
-    t.mock.timers.tick(duration - 1)
-    assert.equal(ui.uiState().notices.getSnapshot().length, 1, '没到配置时长不该消失')
-    t.mock.timers.tick(1)
-    assert.equal(ui.uiState().notices.getSnapshot().length, 0, '到点必须由库自己关掉')
-    assert.equal(ui.uiState().toastTimers.size, 0, '定时器句柄要自己清掉')
-
-    const sticky = ui.showToast('常驻', 'info', 0)
-    t.mock.timers.tick(duration * 2)
-    assert.equal(ui.uiState().notices.getSnapshot().length, 1, 'duration=0 表示常驻')
-    assert.equal(ui.hideToast(sticky), true)
-    assert.equal(ui.uiState().toastTimers.size, 0)
-    ui.resetUIForTests()
-  } finally {
-    t.mock.timers.reset()
-  }
-})

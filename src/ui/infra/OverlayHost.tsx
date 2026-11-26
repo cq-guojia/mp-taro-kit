@@ -1,6 +1,6 @@
 import { View } from '@tarojs/components'
-import { DialogHost } from './DialogHost.js'
 import { ToastHost } from './ToastHost.js'
+import { DialogHost } from './DialogHost.js'
 import { LoadingHost } from './LoadingHost.js'
 import { useThemeDark } from './use-theme.js'
 

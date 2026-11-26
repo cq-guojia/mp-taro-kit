@@ -1,4 +1,4 @@
-// @mptk-inputs:1a4148c341f3
+// @mptk-inputs:e2eaede83781
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（当前生效配置与可配项清单）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -3459,24 +3459,6 @@ export const KIT_CONFIG_ROWS: KitConfigRow[] = [
       "value": "100%",
       "unit": "",
       "note": "s-kf-full",
-    },
-    {
-      "key": "runtime.toastDuration",
-      "label": "运行时默认 · toastDuration",
-      "group": "runtime",
-      "groupLabel": "运行时默认",
-      "value": "2000",
-      "unit": "ms",
-      "note": "toastDuration",
-    },
-    {
-      "key": "runtime.notifyLimit",
-      "label": "运行时默认 · notifyLimit",
-      "group": "runtime",
-      "groupLabel": "运行时默认",
-      "value": "3",
-      "unit": "",
-      "note": "notifyLimit",
     },
     {
       "key": "runtime.controlSizeDefault",

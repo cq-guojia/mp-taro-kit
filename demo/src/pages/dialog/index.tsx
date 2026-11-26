@@ -4,7 +4,6 @@ import { Button } from 'mp-taro-kit/ui/actions'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
 import { alert, confirm, type DialogOptions, type DialogType } from 'mp-taro-kit/ui/commands/dialog'
-import { showToast } from 'mp-taro-kit/ui'
 
 import 'mp-taro-kit/ui/actions/style'
 import 'mp-taro-kit/ui/card/style'
@@ -103,7 +102,6 @@ export default function DialogPage() {
           else resolve(true)
         }, 1200)
       }),
-      onFailed: () => showToast('操作失败，弹窗保持打开，可再点一次重试'),
     })
   }
 

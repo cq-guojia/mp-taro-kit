@@ -1,12 +1,10 @@
-// @mptk-inputs:c9c4fb392972
+// @mptk-inputs:9a928edd32b8
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（runtime 层默认表）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
 export interface KitConfigDefaults {
   schemaVersion: number
   runtime: {
-    toastDuration: number
-    notifyLimit: number
     controlSizeDefault: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
     dialog: {
       confirmText: string
@@ -28,8 +26,6 @@ export interface KitConfigDefaults {
 export const DEFAULT_KIT_CONFIG: KitConfigDefaults = {
     "schemaVersion": 1,
     "runtime": {
-      "toastDuration": 2000,
-      "notifyLimit": 3,
       "controlSizeDefault": "sm",
       "dialog": {
         "confirmText": "确定",

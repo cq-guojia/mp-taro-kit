@@ -1,6 +1,6 @@
 /**
  * 产物级按需引入自检：不是看源码里"理论上可摇"，而是把 dist 的对话框子入口真打包一次，
- * 逐字检查没有把 Toast / Loading / FloatingAction 等无关宿主与组件带进来。
+ * 逐字检查没有把 Loading / FloatingAction 等无关宿主与组件带进来。
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -22,10 +22,10 @@ const esbuild = (() => {
   return existsSync(binary) ? binary : null
 })()
 
-function bundle(names, dir) {
+function bundle(names, dir, from = entry) {
   const source = join(dir, 'entry.mjs')
   const out = join(dir, `${names.join('-')}.js`)
-  writeFileSync(source, `import { ${names.join(', ')} } from ${JSON.stringify(entry)}\nglobalThis.__mptk = { ${names.join(', ')} }\n`)
+  writeFileSync(source, `import { ${names.join(', ')} } from ${JSON.stringify(from)}\nglobalThis.__mptk = { ${names.join(', ')} }\n`)
   execFileSync(esbuild, [
     '--bundle',
     '--format=esm',
@@ -40,12 +40,12 @@ function bundle(names, dir) {
   return readFileSync(out, 'utf8')
 }
 
-test('对话框子入口只带自己的宿主，不连带 Toast / Loading / FloatingAction', { skip: esbuild === null && '本机没有 esbuild 二进制' }, () => {
+test('对话框子入口只带自己的宿主，不连带 Loading / FloatingAction', { skip: esbuild === null && '本机没有 esbuild 二进制' }, () => {
   const dir = mkdtempSync(join(tmpdir(), 'mptk-shake-'))
   try {
     const output = bundle(['confirm'], dir)
     assert.match(output, /\bconfirm\b/)
-    for (const gone of ['ToastHost', 'LoadingHost', 'FloatingAction', 'showToast', 'showLoading', 'mptk-toast', 'mptk-fab']) {
+    for (const gone of ['LoadingHost', 'FloatingAction', 'showLoading', 'mptk-fab']) {
       assert.doesNotMatch(output, new RegExp(`\\b${gone}\\b`), `只引 confirm 却带进了 ${gone}`)
     }
   } finally {
@@ -53,15 +53,28 @@ test('对话框子入口只带自己的宿主，不连带 Toast / Loading / Floa
   }
 })
 
-test('引 confirm + DialogHost 只带 ContentPopup，不带 Toast / Loading / FloatingAction', { skip: esbuild === null && '本机没有 esbuild 二进制' }, () => {
+test('引 confirm + DialogHost 只带 ContentPopup，不带 Loading / FloatingAction', { skip: esbuild === null && '本机没有 esbuild 二进制' }, () => {
   const dir = mkdtempSync(join(tmpdir(), 'mptk-shake-'))
   try {
     const output = bundle(['confirm', 'DialogHost'], dir)
     for (const kept of ['DialogHost', 'ContentPopup', 'confirm']) {
       assert.match(output, new RegExp(`\\b${kept}\\b`), `对话框产物缺 ${kept}`)
     }
-    for (const gone of ['ToastHost', 'LoadingHost', 'FloatingAction', 'showToast', 'showLoading', 'mptk-toast', 'mptk-fab']) {
+    for (const gone of ['LoadingHost', 'FloatingAction', 'showLoading', 'mptk-fab']) {
       assert.doesNotMatch(output, new RegExp(`\\b${gone}\\b`), `对话框产物混进了 ${gone}`)
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('Toast 子入口只带自己的宿主，不连带 Dialog / Loading / FloatingAction', { skip: esbuild === null && '本机没有 esbuild 二进制' }, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mptk-shake-'))
+  try {
+    const output = bundle(['showToast'], dir, join(root, 'dist/ui/commands/toast/index.js'))
+    assert.match(output, /\bshowToast\b/)
+    for (const gone of ['DialogHost', 'LoadingHost', 'FloatingAction', 'showLoading', 'mptk-fab']) {
+      assert.doesNotMatch(output, new RegExp(`\\b${gone}\\b`), `只引 showToast 却带进了 ${gone}`)
     }
   } finally {
     rmSync(dir, { recursive: true, force: true })

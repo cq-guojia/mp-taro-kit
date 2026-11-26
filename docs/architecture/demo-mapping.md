@@ -8,14 +8,14 @@
 
 ## 2. 目录树
 
-小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 17 个展示页；基础规范组下的主题配置、设计基础与尺寸各成一页，不共用一个展示页，也不对应单个 `ui` 子域。
+小程序是线性页面栈，没有网页常驻侧栏，目录必须单独成页；展示端按能力域分页，便于 Skyline 与 WebView 逐页对照。共 1 个索引页 + 22 个展示页；基础规范组下的主题配置、设计基础与尺寸各成一页，不共用一个展示页，也不对应单个 `ui` 子域。Toast 独立成页（原与 Loading 挤在反馈页）。
 
 以下是约定的目录结构，每个节点后的备注说明该路径的职责与对应的库侧能力域；骨架屏只在 `catalog.ts` 预留 id，树中不生成节点。
 
 ```text
 demo/                                               # 仓库内的 Taro 小程序宿主
 ├── package.json                                    # 演示站清单：mp-taro-kit 用 workspace:*，并装宿主 peer 与 Taro Vite 编译链
-├── app.config.ts                                   # 页面路由真源：pages 共 18 项，由 src/app.config.ts 转发给 Taro
+├── app.config.ts                                   # 页面路由真源：pages 共 23 项，由 src/app.config.ts 转发给 Taro
 ├── project.config.json                             # 微信开发者工具工程配置：工程名 / appid / 编译设置；不含 renderer
 ├── tsconfig.json                                   # 演示站 TS 配置：jsx 用 react-jsx、target 用 es2020
 ├── babel.config.js                                 # Taro React + Vite 的 babel 预设，编译期使用
@@ -27,14 +27,14 @@ demo/                                               # 仓库内的 Taro 小程�
     ├── app.config.ts                               # Taro 入口配置：转发根目录 app.config.ts，满足 sourceRoot 约定
     ├── theme.json                                  # 官方 DarkMode 变量配置：明暗两档窗口/导航底色，编译后自动进产物根
     ├── app.tsx                                     # 宿主入口：createKitApp 一条接入（faces/安全区/主题/命令宿主）、引 theme-runtime
-    ├── catalog.ts                                  # 单一事实源：17 个展示页 + 9 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
+    ├── catalog.ts                                  # 单一事实源：22 个展示页 + 10 组菜单；页含 id / path / summary / examples，菜单条目含 label / status / pageId
     ├── app.scss                                    # 演示站全局样式：只写 var(--mptk-*)，不硬编码颜色
     ├── components/                                 # 演示站共用组件：页面外壳、示例块与统一头部
     │   ├── DemoBlock.tsx                           # 单个示例外壳；另导出 DemoPage 页壳，按 catalog 铺块并把正文交给 DemoShell
     │   ├── DemoNav.tsx                             # 统一头部：标题前 logo；栈内有上一页则返回箭头，直达的子页则为小房子回首页；入口页用 home 声明，两者都不出
     │   ├── DemoSettings.tsx                        # 站级设置面板：底部裸壳 Popup（高度按内容撑开），单组 CellGroup 放明暗模式 / 编译模式 / 当前版本；由 DemoShell 每页挂载
     │   └── DemoShell.tsx                           # 页面外壳：固定视口高度 View + scroll-view；右侧列常驻设置入口，导航栏在滚动区外
-    └── pages/                                      # 演示站页面：1 个索引页 + 18 个展示页
+    └── pages/                                      # 演示站页面：1 个索引页 + 22 个展示页
         ├── index/index.tsx                         # 目录页：主题三态与 menu 分组都用 Card 壳，页面级卡片统一挂 .demo-card 拿左右与纵向留白
         ├── theme-config/index.tsx                  # 主题配置：三张 Card 用 title 做标题、列表是不带标题的 CellGroup，色条上写色板名字；页面级卡片同样挂 .demo-card
         ├── design-foundation/index.tsx             # 设计基础：中性灰阶、色相与明暗两套，独立成页
@@ -44,14 +44,18 @@ demo/                                               # 仓库内的 Taro 小程�
         ├── form/index.tsx                          # src/ui/form/：Switch，一页只放一个组件
         ├── segmented/index.tsx                     # src/ui/form/：Segmented，与 Switch 各占一页
         ├── icon/index.tsx                          # src/ui/icon/：按命名空间分组铺出各图标库的 glyph 与类名
-        ├── feedback/index.tsx                      # src/ui/feedback/：Dialog、Loader、Loading、Toast
+        ├── toast/index.tsx                         # src/ui/feedback/toast/：命令式轻提示，基础 / 折叠堆叠 / 操作按钮
+        ├── feedback/index.tsx                      # src/ui/feedback/：Loader、Loading（Dialog 与 Toast 各自独立成页）
         ├── display/index.tsx                       # src/ui/display/：只放 Cell / CellGroup；与 Card 的组合归本页末组（向上引用）
         ├── badge/index.tsx                         # src/ui/display/：Badge，独立成页
+        ├── tag/index.tsx                           # src/ui/display/：Tag，独立成页
         ├── divider/index.tsx                       # src/ui/display/：Divider，独立成页
         ├── card/index.tsx                          # src/ui/card/：Card 通用卡片容器，只列自身能力与宿主手搓内容
         ├── navigation/index.tsx                    # src/ui/navigation/：NavBar、Drawer、Dropdown
+        ├── layout/index.tsx                        # src/ui/layout/：常驻浮动按钮，四档位置与阈值回顶
         ├── overlay/index.tsx                       # src/ui/layout/：Overlay 一份遮罩，只演自己，不演使用者
         ├── popup/index.tsx                         # src/ui/layout/：顶部统一配置 + 位置档 + 关闭按钮位置
+        ├── dialog/index.tsx                        # 命令式 alert / confirm 共用 ContentPopup 视觉，顶部配置驱动
         ├── foundation/index.tsx                    # design + runtime + utils + core 四域合并：换肤、单例、工具、configure 注入
         └── commands/index.tsx                      # ui/commands.ts + state.ts + infra/OverlayHost：命令式 API
 ```
@@ -78,8 +82,8 @@ demo/                                               # 仓库内的 Taro 小程�
 - 基础规范组按「使用者查规范」的场景归类，不按 `src/ui/` 目录归类；「主题配置」「设计基础」与「尺寸」各指向自己的展示页，一页只装一件事，不把几块内容并回同页。三页各有自己的示例块，路由由 `pages` 派生；`tests/foundations.test.mjs` 断言各页独立、内容不串页。取值依据见[设计基础](design-foundation.md)，演示站不复制正文。
 - 三页职责固定：「主题配置」是**配置项清单**（基础配置 / 颜色配置 / 其他控件配置，颜色给出明暗色值与标准色相名），回答「默认值是什么、在哪改」；「设计基础」是**取值依据**（灰阶层级与色相分档的理由）；「尺寸」是**档位标尺**（逐档铺开看比例）。配置页只列**不传时真有默认值**的项，必须由调用方传的项不列；同一条取值允许在配置页出现一次，但只列值与档位名，不重复讲理由。
 - 整页就是内容本体的页标 `bare`，并让示例的 `title` 留空：页壳不渲染示例块卡片与标题区，卡片直接铺在页面底色上。不再出现「示例块卡片里再套 Card」的双层卡；主题配置页就是这种形态。
-- 分组判据按「使用者找组件时的场景」，不按 `src/ui/` 的目录；库侧路径仍是 `ui/feedback` / `ui/layout`，目录不反向约束 exports。浮层类按「用户要做什么」收进「浮层与弹出」组，组内四档顺序固定：通用容器（`Popup`，内容是消费方塞的）→ 确认对话（`Dialog`，问一个二选一）→ 操作面板（`ActionSheet` / `ShareSheet` / `DropdownMenu` / `Popover`，给一组候选挑一个）→ 轻提示（`Toast` / `Notify` / `Loading`，只告知不用回应）。`Overlay` 遮罩归基础组件——它是下拉 / 气泡 / Popup 共用的底层能力，不是弹窗专属；`Drawer` 取消，侧滑由 `Popup` 的左右档吸收，菜单不再有独立抽屉条目（Vant / antd-mobile / NutUI 均无独立 Drawer）。命令式 `alert` / `confirm` / `showToast` / `showLoading` 仍在「命令式 API」组，与组件式按调用方式分开。
-- **演示按使用者分页，被引用的下层只演自己**：遮罩不知道谁会用它，所以遮罩页只演示压暗、浓度、底色、点击策略，不出现 Popup / Dialog；Popup 用它做出来的成品归 Popup 页，下拉归导航页，Toast / Loading 归反馈页。Dialog 单独成页，以 `alert` / `confirm` 命令为展示主体，沿用 Popup 页「顶部配置统一控制下方演示」的写法；声明式 `Dialog` 不另起菜单。抽屉已从菜单移除（侧滑并入 Popup 左右档），演示页暂留、由使用者逐个调整。`tests/layout.test.mjs` 断言遮罩页不出现使用者。
+- 分组判据按「使用者找组件时的场景」，不按 `src/ui/` 的目录；库侧路径仍是 `ui/feedback` / `ui/layout`，目录不反向约束 exports。浮层类按「用户要做什么」收进「浮层与弹出」组，组内四档顺序固定：通用容器（`Popup`，内容是消费方塞的）→ 确认对话（`Dialog`，问一个二选一）→ 操作面板（`ActionSheet` / `DropdownMenu`，给一组候选挑一个）→ 轻提示（`Toast` / `Loading`，只告知不用回应）。`ShareSheet`、`Popover`、`Notify` 已从菜单移除：分享渠道属业务、Vant Weapp 无 Popover、Notify 与 Toast 能力重合。`Overlay` 遮罩归基础组件——它是下拉 / 气泡 / Popup 共用的底层能力，不是弹窗专属；`Drawer` 取消，侧滑由 `Popup` 的左右档吸收，菜单不再有独立抽屉条目（Vant / antd-mobile / NutUI 均无独立 Drawer）。命令式 `alert` / `confirm` / `showLoading` 仍在「命令式 API」组，与组件式按调用方式分开；`showToast` 以组件式轻提示页演示，命令 API 见 [Toast 轻提示](../api/toast.md)。
+- **演示按使用者分页，被引用的下层只演自己**：遮罩不知道谁会用它，所以遮罩页只演示压暗、浓度、底色、点击策略，不出现 Popup / Dialog；Popup 用它做出来的成品归 Popup 页，下拉归导航页，Loading 归反馈页。Dialog 单独成页，以 `alert` / `confirm` 命令为展示主体，沿用 Popup 页「顶部配置统一控制下方演示」的写法；声明式 `Dialog` 不另起菜单。抽屉已从菜单移除（侧滑并入 Popup 左右档），演示页暂留、由使用者逐个调整。`tests/layout.test.mjs` 断言遮罩页不出现使用者。
 - 每个页面必须走 `DemoShell`：外壳 `height: 100vh` + `scroll-view type="custom"`，页面 json 配 `disableScroll: true`。Skyline 不支持页面全局滚动，绕开外壳写普通容器会让超屏内容滚不到；平台依据见 [Skyline 渲染引擎](../dependencies/skyline-rendering.md)。
 - 站级设置入口由 `DemoShell` 每页固定挂进右侧浮动列（id `demo-settings`），不并入页面 `actions`、不受 `hideActions` 屏蔽；面板 `DemoSettings` 用底部 `Popup` 默认 `panel` 档（高度由三行内容撑开），单组 `CellGroup` 无标题、Cell 无副标题，去上下外框线（`border={false}`）且分隔线不内缩（`dividerInset={false}`），放明暗模式 / 编译模式 / 当前版本三项；关闭按钮用核心默认位置（外右上）。这是 demo 自己的调试能力，不进 `catalog.ts` 演示页。编译模式如实标注：`renderer` 是 `app.config.ts` 的编译期配置，运行时无切换 API；confirm 后只重启运行环境，真正切引擎靠开发者工具「开发调试 → Switch Render」或改配置重编译。
 - 控件的效果展示归演示站；props、组内行为与用法代码归 `docs/api/<组件>.md`（如 [Cell 单元格](../api/cell.md)、[Switch 开关](../api/switch.md)、[Segmented 分段选择](../api/segmented.md)），演示站不展示代码。演示站不反向引用 `docs/`，因为消费端看不到仓库内部文档。
@@ -151,3 +155,4 @@ demo/                                               # 仓库内的 Taro 小程�
 - 2026-11-22：页面级卡片间距统一收口到 .demo-card（左右与底部均取 --mptk-space-4），删除 .demo-cards 包裹层；首页主题块与 menu、主题配置页按此对齐，Cell 页块内组合 Card 改用 .demo-stack 避免双重缩进
 - 2026-11-25 12:10:47：Dialog 独立成页并以 alert / confirm 为展示主体，沿用 Popup 页配置驱动写法
 - 2026-11-25：菜单原文一律保留；页面标题由 pageTitleOf 按唯一 ready 入口取菜单 label，多入口显示 X；删掉全站多对一的旧口径
+- 2026-11-26：Toast 从反馈页拆出独立展示页（基础 / 折叠堆叠 / 操作按钮三例）；展示页 22、路由 23、菜单 10 组按 catalog 真值同步，目录树补齐 toast / tag / layout / dialog 节点

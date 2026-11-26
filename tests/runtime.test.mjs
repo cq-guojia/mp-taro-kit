@@ -5,7 +5,6 @@ import {
   isSuccess,
   createSingleton,
   createOverlayStack,
-  createNotifyCenter,
   createLoadingSlot,
 } from '../dist/runtime/index.js'
 
@@ -86,38 +85,6 @@ test('overlay-stack：状态真变才通知，无效操作返回兜底不抛', (
   assert.equal(stack.getSnapshot().length, 1)
 })
 
-test('notify：队列上限挤掉最旧，文案与 tone 原样保留', () => {
-  const center = createNotifyCenter(2)
-  const idOne = center.show('第一条')
-  center.show('第二条', 'warn')
-  center.show('第三条', 'error')
-  assert.deepEqual(center.getSnapshot().map((notice) => notice.text), ['第二条', '第三条'])
-  assert.equal(center.getSnapshot()[0].tone, 'warn')
-  assert.equal(center.dismiss(idOne), false)
-  assert.equal(center.dismiss(999), false)
-  assert.equal(center.clear().length, 2)
-  assert.equal(center.getSnapshot().length, 0)
-  assert.deepEqual(center.clear(), [])
-})
-
-test('notify：非法 limit 回落到默认档，默认 tone 为 info', () => {
-  const center = createNotifyCenter(0)
-  let hits = 0
-  const off = center.subscribe(() => {
-    hits += 1
-  })
-  center.show('a')
-  center.show('b')
-  center.show('c')
-  center.show('d')
-  assert.equal(center.getSnapshot().length, 3)
-  assert.equal(center.getSnapshot()[0].text, 'b')
-  assert.equal(center.getSnapshot()[0].tone, 'info')
-  assert.equal(hits, 4)
-  off()
-  center.show('e')
-  assert.equal(hits, 4)
-})
 
 test('loading-slot：句柄配对，重复 hide 不误关别人的', () => {
   const slot = createLoadingSlot()

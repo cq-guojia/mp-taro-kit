@@ -26,6 +26,10 @@ export interface OverlayLifecycle<T> {
   dismiss(id: number): T | undefined
   /** 卸载 / reset 兜底：一次性物理移除全部并逐个结算。 */
   clear(settleAll?: (payload: T) => void): void
+  /** 条目当前 scope，跨页交接时读取。 */
+  scopeOf(id: number): OverlayScope
+  /** 跨页交接：改挂到当前栈顶页；只对 open 条目生效。 */
+  setScope(id: number, scope: OverlayScope): boolean
   /** 异步回调代际校验：id 仍在、未关闭、seq 一致。 */
   isCurrent(id: number, seq: number): boolean
   /**
@@ -44,6 +48,8 @@ export function createOverlayLifecycle<T>(stack: OverlayStack<T>): OverlayLifecy
   const scopes = new Map<number, OverlayScope>()
   const owners = new Map<number, string>()
   const seqs = new Map<number, number>()
+  // scope 交接不改栈，但订阅者必须重渲染，否则旧页宿主继续持有条目。
+  const scopeListeners = new Set<() => void>()
   let seq = 0
   // useSyncExternalStore 要求快照引用稳定：底层次数不变就必须返回同一个数组，
   // 否则 React 认为每次 render 快照都变，重复更新直到 #185。
@@ -60,7 +66,12 @@ export function createOverlayLifecycle<T>(stack: OverlayStack<T>): OverlayLifecy
       return cachedSnapshot
     },
     subscribe(listener: () => void): () => void {
-      return stack.subscribe(listener)
+      const offStack = stack.subscribe(listener)
+      scopeListeners.add(listener)
+      return () => {
+        offStack()
+        scopeListeners.delete(listener)
+      }
     },
     seqOf(id: number): number {
       return seqs.get(id) ?? 0
@@ -109,6 +120,17 @@ export function createOverlayLifecycle<T>(stack: OverlayStack<T>): OverlayLifecy
       seqs.clear()
       scopes.clear()
       owners.clear()
+    },
+    scopeOf(id: number): OverlayScope {
+      return scopes.get(id)
+    },
+    setScope(id: number, scope: OverlayScope): boolean {
+      const entry = stack.getSnapshot().find((item) => item.id === id)
+      if (entry === undefined || entry.phase !== 'open' || !scopes.has(id)) return false
+      if (scopes.get(id) === scope) return false
+      scopes.set(id, scope)
+      for (const listener of scopeListeners) listener()
+      return true
     },
     isCurrent(id: number, checkSeq: number): boolean {
       const entry = stack.getSnapshot().find((item) => item.id === id)

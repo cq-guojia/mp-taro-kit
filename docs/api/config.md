@@ -1,6 +1,6 @@
 # 统一配置
 
-本库把「名字对应一个值」的项全部收进一份配置：颜色、字号、行高、圆角、间距、控件高度档、透明度、动效时长与缓动、层级、组件视觉值、纯几何与算法结构常量、运行时默认（Toast 时长 / 通知上限 / 默认尺寸档 / core 五项）、微信窗口主题字段。**没有「不可配」清单，没有第二期**；`component` 与 `structure` 两组改了会影响控件几何与布局，允许改但需回归双端渲染。
+本库把「名字对应一个值」的项全部收进一份配置：颜色、字号、行高、圆角、间距、控件高度档、透明度、动效时长与缓动、层级、组件视觉值、纯几何与算法结构常量、运行时默认（默认尺寸档 / core 五项）、微信窗口主题字段。**没有「不可配」清单，没有第二期**；`component` 与 `structure` 两组改了会影响控件几何与布局，允许改但需回归双端渲染。
 
 唯一真源是项目根 `kit.config.mjs`（库侧完整默认表）与消费方项目根同名的差异文件。库默认表里**每一项都在同一列写了行尾注释**，说明这一项定义的是什么；唯一超过对齐列的 SVG 遮罩值拆成两行字符串拼接，首行照样带注释。`src/design/_tokens.scss`、`src/design/_keyframes.scss`、`src/*/kit-config.generated.ts`、`src/<宿主>/kit-swatches.generated.scss`、`src/<宿主>/theme.json` 等全部是**生成物**，头上有「请勿手改」与输入指纹，手改会在自检里报漂移。
 
@@ -29,7 +29,7 @@
 | `light` / `dark` | object | 两套键同名同数 | 语义色与颜色 token。 |
 | `component` | object | 值必须是字符串 | 组件原本写死的视觉取值：遮罩与层级、描边宽、滑块投影、Switch 五档几何、Spinner / Loader 时长与幅度。 |
 | `structure` | object | 值必须是字符串 | 纯几何 / 算法结构常量：`0`、`100%`、`50%`、`flex-grow`、旋转、缩放、渐变角度、关键帧百分比、缓动关键字。 |
-| `runtime` | object | `toastDuration` / `notifyLimit` / `core.timeout` 必须 > 0；`controlSizeDefault` ∈ `sm\|md\|lg` | Toast 自动消失时长、通知队列上限、默认尺寸档、core 五项默认。 |
+| `runtime` | object | `core.timeout` 必须 > 0；`controlSizeDefault` ∈ `sm\|md\|lg` | 默认尺寸档、core 五项默认。 |
 | `window` | object | 明暗各四个字段 | 微信官方窗口主题；`theme.json` 由它生成，与 `--mptk-surface-base` 同源。 |
 
 值有三种形态，生成器区别对待：
@@ -120,7 +120,7 @@ Taro 4 的 `Kernel` 只读配置里列出的 `plugins` 名单并逐项 `resolve.
 
 ## 验证边界
 
-产物级核实只算「值真的进了 CSS / JSON / TS」：`page` 与 `.mptk-dark` 的实际层叠、窗口首帧白闪、Toast 计时、配置页运行时展示值，仍须 Skyline 与 WebView 双端实机验证，编译通过不等于双端验证通过。
+产物级核实只算「值真的进了 CSS / JSON / TS」：`page` 与 `.mptk-dark` 的实际层叠、窗口首帧白闪、配置页运行时展示值，仍须 Skyline 与 WebView 双端实机验证，编译通过不等于双端验证通过。
 
 ### 相关
 

@@ -1,11 +1,8 @@
 import { createSingleton } from '../runtime/singleton.js'
-import { getKitConfig } from '../runtime/kit-config.js'
 import { createOverlayStack } from '../runtime/overlay-stack.js'
 import type { OverlayStack } from '../runtime/overlay-stack.js'
 import { createOverlayLifecycle } from './infra/overlay-lifecycle.js'
 import type { OverlayLifecycle } from './infra/overlay-lifecycle.js'
-import { createNotifyCenter } from '../runtime/notify.js'
-import type { NotifyCenter } from '../runtime/notify.js'
 import { createLoadingSlot } from '../runtime/loading-slot.js'
 import type { LoadingSlot } from '../runtime/loading-slot.js'
 import type { ButtonSize } from './actions/Button.js'
@@ -68,13 +65,38 @@ interface DialogPayloadCommon {
 /** 弹窗条目的载荷：命令式 API 只把待渲染数据推进栈，resolve 由 <DialogHost /> 调用。 */
 export type DialogPayload = DialogPayloadCommon & { readonly kind: 'alert' | 'confirm' }
 
+/** Toast 只存可序列化 descriptor；ReactNode / onClick / resolve 一律不进全局 store。 */
+export type ToastTone = 'info' | 'success' | 'warning' | 'error'
+export type ToastPosition = 'top' | 'bottom' | 'center'
+
+export interface ToastActionDescriptor {
+  readonly key: string
+  readonly text: string
+  readonly tone?: ToastTone
+}
+
+export interface ToastPayload {
+  readonly title?: string
+  readonly description: string
+  readonly tone: ToastTone
+  readonly icon?: string
+  readonly closeButton: boolean
+  readonly action?: ToastActionDescriptor
+  readonly position: ToastPosition
+  readonly enableStacking: boolean
+  readonly visibleToasts: number
+  readonly duration: number
+  readonly createdAt: number
+  /** 绝对到期时间：计时与切页兜底共用同一时钟。 */
+  readonly expiresAt: number
+}
+
 /**
  * 三类命令式能力的宿主挂载计数。Taro 的 App 组件在每个页面 React root 都渲染，
  * 同一时刻多页各有一份宿主；布尔标记会因任一页卸载就把全局标成 false，
  * 其他活着的页再调命令会误报「未挂载」。计数让"还有一份活着"就可用。
  */
 export interface HostMountState {
-  toast: number
   dialog: number
   loading: number
   /** 未来命令式浮层按 key 计数，无需改类型。 */
@@ -85,11 +107,16 @@ export interface UIState {
   readonly overlays: OverlayStack<DialogPayload>
   /** 命令弹窗的通用生命周期；与 overlays 共享同一份栈。 */
   readonly dialogLifecycle: OverlayLifecycle<DialogPayload>
-  readonly notices: NotifyCenter
+  readonly toasts: OverlayStack<ToastPayload>
+  readonly toastLifecycle: OverlayLifecycle<ToastPayload>
   readonly loading: LoadingSlot
   readonly hosts: HostMountState
   readonly loadingHandles: Set<number>
-  readonly toastTimers: Map<number, ReturnType<typeof setTimeout>>
+  /** 当前页有宿主的计数；按 scope 校验，避免别页有宿主却误判当前页可用。 */
+  readonly toastHostScopes: Map<string, number>
+  readonly toastTimers: Map<number, readonly ReturnType<typeof setTimeout>[]>
+  /** 命令层回调，不放进 payload；Host 按 id / seq / phase 守卫后调用。 */
+  readonly toastCallbacks: Map<number, (key: string) => void>
   /** 每条弹窗只归一个 Host 渲染；Taro 每页都渲染 App 时避免多份宿主重复出框。 */
 }
 
@@ -97,14 +124,18 @@ export interface UIState {
 export function uiState(): UIState {
   return createSingleton<UIState>('ui', () => {
     const overlays = createOverlayStack<DialogPayload>()
+    const toasts = createOverlayStack<ToastPayload>()
     return {
       overlays,
       dialogLifecycle: createOverlayLifecycle(overlays),
-      notices: createNotifyCenter(getKitConfig().runtime.notifyLimit),
+      toasts,
+      toastLifecycle: createOverlayLifecycle(toasts),
       loading: createLoadingSlot(),
-      hosts: { toast: 0, dialog: 0, loading: 0 },
+      hosts: { dialog: 0, toast: 0, loading: 0 },
       loadingHandles: new Set<number>(),
-      toastTimers: new Map<number, ReturnType<typeof setTimeout>>(),
+      toastHostScopes: new Map<string, number>(),
+      toastTimers: new Map<number, readonly ReturnType<typeof setTimeout>[]>(),
+      toastCallbacks: new Map<number, (key: string) => void>(),
     }
   })
 }

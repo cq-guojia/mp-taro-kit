@@ -115,15 +115,12 @@ test('未挂载 <OverlayHost /> 时命令式 API 每次都抛错，不静默降�
   ui.resetUIForTests()
   assert.equal(allMounted(), false)
   for (const call of [
-    () => ui.showToast('x'),
     () => ui.showLoading(),
     () => ui.alert('x'),
     () => ui.confirm('x'),
   ]) {
     assert.throws(call, /OverlayHost|挂载/)
   }
-  assert.throws(() => ui.showToast('y'), /OverlayHost|挂载/)
-  assert.equal(ui.uiState().notices.getSnapshot().length, 0)
   assert.equal(ui.uiState().overlays.getSnapshot().length, 0)
 })
 
@@ -132,31 +129,15 @@ test('挂载标记与跨副本状态：ESM / CJS 共享同一份单例', () => {
   const esmNames = Object.keys(ui).sort()
   const cjsNames = Object.keys(cjs).sort()
   assert.deepEqual(cjsNames, esmNames)
-  assert.ok(esmNames.length >= 10)
+  assert.ok(esmNames.length >= 7)
   cjs.markHostMounted('toast')
   cjs.markHostMounted('dialog')
   cjs.markHostMounted('loading')
   assert.equal(allMounted(), true)
-  cjs.showToast('from-cjs')
-  assert.equal(ui.uiState().notices.getSnapshot()[0].text, 'from-cjs')
   cjs.markHostUnmounted('toast')
   cjs.markHostUnmounted('dialog')
   cjs.markHostUnmounted('loading')
   assert.equal(allMounted(), false)
-})
-
-test('showToast / hideToast / clearToasts 与通知队列上限', () => {
-  ui.resetUIForTests()
-  mountAll()
-  const first = ui.showToast('a')
-  ui.showToast('b', 'error')
-  assert.equal(ui.uiState().notices.getSnapshot().length, 2)
-  assert.equal(ui.uiState().notices.getSnapshot()[1].tone, 'error')
-  assert.equal(ui.hideToast(first), true)
-  assert.equal(ui.hideToast(first), false)
-  assert.equal(ui.clearToasts().length, 1)
-  for (let i = 0; i < 5; i += 1) ui.showToast(String(i))
-  assert.equal(ui.uiState().notices.getSnapshot().length, 3)
 })
 
 test('showLoading / hideLoading 句柄配对，重复 hide 不误关别人的', () => {
@@ -170,6 +151,37 @@ test('showLoading / hideLoading 句柄配对，重复 hide 不误关别人的', 
   assert.equal(ui.uiState().loading.getSnapshot().active, true)
   assert.equal(ui.hideLoading(b), true)
   assert.equal(ui.uiState().loading.getSnapshot().active, false)
+})
+
+test('showToast 推可序列化载荷，close 幂等，scope 交接不丢有效期', () => {
+  ui.resetUIForTests()
+  mountAll()
+  const id = ui.showToast({
+    title: '标题',
+    description: '内容',
+    tone: 'success',
+    closeButton: true,
+    action: { key: 'undo', text: '撤销' },
+    enableStacking: true,
+    visibleToasts: 3,
+    duration: 0,
+  })
+  const lifecycle = ui.uiState().toastLifecycle
+  const entry = lifecycle.getSnapshot().find((item) => item.id === id)
+  assert.ok(entry, 'Toast 必须入栈')
+  assert.equal(entry.payload.description, '内容')
+  assert.equal(entry.payload.tone, 'success')
+  assert.equal(entry.payload.closeButton, true)
+  assert.equal(entry.payload.enableStacking, true)
+  assert.equal(entry.payload.expiresAt, Number.POSITIVE_INFINITY)
+  assert.equal(typeof entry.payload.onAction, 'undefined', '回调不许进载荷')
+  assert.equal(lifecycle.setScope(id, 'next-page'), true, '跨页 scope 必须可交接')
+  assert.equal(lifecycle.scopeOf(id), 'next-page')
+  assert.equal(ui.closeToast(id), true)
+  assert.equal(ui.closeToast(id), false, 'close 必须幂等')
+  assert.equal(lifecycle.finish(id), true)
+  assert.equal(ui.hideToast(id), false, '已关闭后 hide 返回 false')
+  assert.equal(lifecycle.getSnapshot().length, 0)
 })
 
 test('confirm() 推栈并由关闭动作 resolve true / false', async () => {
@@ -311,14 +323,12 @@ test('Button 的忙碌上报在成功与失败两条路径成对', () => {
   assert.doesNotMatch(source, /isPopupLockExempt|usePopupLock|lockedByPopup/, '不再散写闸门判定')
 })
 
-test('resetUIForTests 清空栈、通知、loading 与挂载标记', () => {
+test('resetUIForTests 清空栈、loading 与挂载标记', () => {
   mountAll()
-  ui.showToast('x')
   ui.showLoading()
   ui.confirm('y').catch(() => {})
   ui.resetUIForTests()
   assert.equal(allMounted(), false)
-  assert.equal(ui.uiState().notices.getSnapshot().length, 0)
   assert.equal(ui.uiState().overlays.getSnapshot().length, 0)
   assert.equal(ui.uiState().loading.getSnapshot().active, false)
 })
@@ -1142,7 +1152,7 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
   assert.doesNotMatch(demo, /confirmText: '知道了'|confirmText: '继续'|cancelText: '取消'/, '演示页不该自造按钮文案，走配置默认')
   assert.match(demo, /onAction: \(\) => true/, '稍后按钮点击后应直接关闭')
   assert.doesNotMatch(demo, /title="关闭路径"|title="四向偏移"/, '关闭与偏移不该进演示配置区')
-  assert.match(demo, /onFailed: \(\) => showToast\([^)]*\)/, '失败闸门要有可见反馈，不是静默吞掉')
+  assert.doesNotMatch(demo, /showToast/, '演示页不再依赖 Toast 命令')
   assert.match(demo, /lockExceptions: \[\]/, '异步屏蔽显式清空默认例外，连取消一起锁')
   assert.match(demo, /lockExceptions: \['later'\]/, '异步例外按 key 放行')
   assert.match(demo, /onAction: \(key\) => key === 'submit'/, '异步例外按动作 key 触发')

@@ -3,7 +3,7 @@
 export { createKitApp, type CreateKitAppOptions, type CommandHost, type ThemeConfig } from './create-kit-app.js'
 export { createTaroFaces } from './taro-faces.js'
 export { KitPage, useKitPageScroll, type KitPageProps, type KitAction } from './KitPage.js'
-// 三件命令宿主也从这里导出，createKitApp 的 hosts 参数直接用这里的组件。
+// 命令宿主也从这里导出，createKitApp 的 hosts 参数直接用这里的组件。
 export { ToastHost, type ToastHostProps } from '../ui/infra/ToastHost.js'
 export { DialogHost, type DialogHostProps } from '../ui/infra/DialogHost.js'
 export { LoadingHost, type LoadingHostProps } from '../ui/infra/LoadingHost.js'

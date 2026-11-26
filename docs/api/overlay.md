@@ -57,7 +57,7 @@
 
 ## 外部状态源驱动的浮层：通用生命周期
 
-凡是“显隐由 store / 命令控制”的浮层（命令弹窗、未来的 Toast/Loading 动画化、登录窗等），统一走两层，禁止为某个能力单独造一套：
+凡是“显隐由 store / 命令控制”的浮层（命令弹窗、未来的 Loading 动画化、登录窗等），统一走两层，禁止为某个能力单独造一套：
 
 1. **视觉层**：所有动画底座都用 `usePresence`，并在真正承载退场的节点上接 `onExited`。关闭信号只翻 `open=false`，不许直接卸载节点或删数据。
 2. **状态层**：`createOverlayLifecycle(stack)` 把“逻辑关闭 → 等 `onExited` → 物理清理”做成通用状态机，对外方法：
@@ -92,7 +92,7 @@
 | `--mptk-c-layer-overlay` | 900 | 遮罩 |
 | `--mptk-c-layer-panel` | 910 | 面板 / Dialog 面板 |
 | `--mptk-c-layer-popover` | 920 | 下拉面板、锚定浮窗 |
-| `--mptk-c-layer-host` | 1000 | `OverlayHost`（Toast / Loading / Dialog 挂载点） |
+| `--mptk-c-layer-host` | 1000 | `OverlayHost` / `ToastHost` / `DialogHost` / `LoadingHost`（命令宿主挂载点） |
 
 同一档出现多个实例时，按挂载顺序后进在上（DOM 顺序天然满足）；跨档一律以上表为准。
 
@@ -163,3 +163,4 @@
 - 2026-11-22：查实真根因（Taro 更新归级到 Page.setData，浮层与 ScrollView 同级增删令原生 scroll-view 重建、scrollTop 归零）。改为节点层级隔离：滚动区带稳定 key、浮层放进恒定存在的隔离容器；撤销全局锁 / 切 scroll-y / 记位置跳回三套无效方案
 - 2026-11-25 15:31:08：同步命令式 Dialog 的关闭叉与遮罩点击契约
 - 2026-11-26：通用浮层生命周期契约精确化——`open()` 只返回 id（代际用 `seqOf`）；`clear()` 只结算仍 `open` 的条目，不重复结算已 `close` 的 `exiting`；`claim/owns/getSnapshot` 在 render 期被调用，自定义实现不得通知订阅者（否则触发 React #185）
+- 2026-11-26：层级表挂载点补 `ToastHost`/`DialogHost`/`LoadingHost`；`createOverlayLifecycle` 增 `scopeOf` / `setScope` 供 Toast 跨页交接（scope 变化不通知 stack 订阅者，另有独立 scope 订阅）

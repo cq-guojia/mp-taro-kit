@@ -164,7 +164,6 @@ function verifyIndependently(config, rootDir) {
     }
     const design = readFileSync(path.join(rootDir, 'src/design/kit-config.generated.ts'), 'utf8')
     assert.match(design, new RegExp(`CONTROL_SIZE_DEFAULT[^=]*=\\s*${JSON.stringify(config.runtime.controlSizeDefault)}`))
-    assert.match(design, new RegExp(`"toastDuration":\\s*${config.runtime.toastDuration}`))
     const runtime = readFileSync(path.join(rootDir, 'src/runtime/kit-config.generated.ts'), 'utf8')
     assert.match(runtime, /export interface KitConfigDefaults/, 'runtime 生成物必须是显式接口，不能退化成 typeof 常量')
     assert.match(runtime, new RegExp(`"timeout":\\s*${config.runtime.core.timeout}`))

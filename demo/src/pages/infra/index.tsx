@@ -5,7 +5,6 @@ import { Card } from 'mp-taro-kit/ui/card'
 import {
   SafeArea,
   useLoadingState,
-  useNotices,
   useOverlayEntries,
 } from 'mp-taro-kit/ui/infra'
 
@@ -16,7 +15,6 @@ import { DemoPage } from '../../components/DemoBlock'
 
 export default function InfraPage() {
   const [position, setPosition] = useState<'top' | 'bottom'>('bottom')
-  const notices = useNotices()
   const loading = useLoadingState()
   const overlays = useOverlayEntries()
 
@@ -43,10 +41,9 @@ export default function InfraPage() {
     if (id === 'use-store') {
       return (
         <View>
-          <Text className="demo-note">{`notices: ${notices.length}`}</Text>
           <Text className="demo-note">{`overlays: ${overlays.length}`}</Text>
           <Text className="demo-note">{`loading.active: ${loading.active ? 'true' : 'false'}`}</Text>
-          <Text className="demo-note">三个 hook 订阅同一个跨副本单例，到命令式 API 页触发后会变化。</Text>
+          <Text className="demo-note">两个 hook 订阅同一个跨副本单例，到命令式 API 页触发后会变化。</Text>
         </View>
       )
     }

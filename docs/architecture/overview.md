@@ -16,7 +16,7 @@
 |---|---|---|---|
 | `src/design` | `--mptk-*` 样式变量的编译期落点（`_tokens.scss` 由配置生成）；`index.ts` 导出配置常量 | 取值真源在项目根 `kit.config.mjs` | React、Taro、其他能力域 |
 | `src/utils` | 零依赖纯函数：日期、字符串、数值、路径、i18n 注册表 | 无 | 其他能力域、DOM、宿主模块 |
-| `src/runtime` | Promise 判定、跨副本单例、覆盖层栈、通知队列、loading 句柄 | 无（与 `utils`、`design` 同层） | `core`、`ui`、宿主模块 |
+| `src/runtime` | Promise 判定、跨副本单例、覆盖层栈、loading 句柄 | 无（与 `utils`、`design` 同层） | `core`、`ui`、宿主模块 |
 | `src/core` | 路由、请求、存储、小程序能力的注入式封装 | `utils`、`runtime` | `ui`、宿主 router / store / constants、`@tarojs/taro` 类型 |
 | `src/ui` | 控件与命令式 API；按控件语义分子域，当前含 `infra`、`actions`、`feedback`、`display`、`navigation`、`layout`、`form`、`icon`、`card` | `runtime`、`design` 的 CSS 变量契约 | `core`、宿主业务模块 |
 | `demo/` | 仓库内的 Taro 小程序宿主目录，使用方法与效果展示的真源 | 本库全部能力域 | 无 |
@@ -41,12 +41,13 @@
 3. 缺字段或非对象当场抛；未配置时每次调用抛带修复指引的 Error。
 4. 平台异常与脏数据按约定返回兜底值，不抛给页面。
 
-### 3.3 命令式弹窗
+### 3.3 命令式反馈
 
-1. 宿主在页面基座挂一次 `<OverlayHost />`；渲染期即置挂载标记，早于 `useEffect`，避免宿主 `onLoad` 阶段误抛。
-2. `showToast` / `showLoading` / `alert` / `confirm` 先同步检查挂载状态，再向 `runtime` 的栈或队列推入载荷。
-3. `<OverlayHost />` 订阅全局状态并渲染反馈组件；`confirm` 由操作 resolve 出布尔值，`alert` 解析即关闭。
-4. 未挂载时每次调用抛带修复指引的 Error；`hideToast` / `hideLoading` 不检查挂载状态。
+1. 宿主在 app 入口按需把 `ToastHost` / `DialogHost` / `LoadingHost` 配进 `createKitApp` 的 `hosts`；由 `KitPage` 在每页页面树渲染。渲染期即置挂载标记，早于 `useEffect`，避免宿主 `onLoad` 阶段误抛。`<OverlayHost />` 只是三件的兼容组合。
+2. `showToast` / `showLoading` / `alert` / `confirm` 先同步检查对应宿主挂载状态，再向模块级栈推入载荷；未挂载时每次调用抛带修复指引的 Error。`hideToast` / `hideLoading` 不检查。
+3. 宿主订阅全局状态并渲染反馈组件；`confirm` 由操作 resolve 出布尔值，`alert` 解析即关闭；`showToast` 返回 id，`closeToast` 逻辑关闭。
+4. Dialog 与 Loading 共用一份 `overlay-stack`；Toast 另有一份 `toastLifecycle`（共用 `createOverlayLifecycle` 底座），载荷只放可序列化 descriptor，`expiresAt` 是唯一时间真值。`navigateTo` 后仍在有效期的 Toast 按 scope 交接给新栈顶页，同一时刻只有当前页宿主渲染，避免退出页面把提示一起带走。
+5. Dialog 的 owner 固定在发起页（`id` 认领）；Toast 的 owner 随当前页 scope 交接——两者的认领策略不同，见 [Toast 轻提示](../api/toast.md)。
 
 ## 4. 部署
 
@@ -65,7 +66,7 @@
 - `core` 与 `ui` 必须平级互不 import，依赖方向不得反向。
 - 样式必须用长写属性、不得依赖 Skyline 独占手势 API：Skyline 是主路径，WebView 必须可用，简写属性内的 `var()` 不生效。
 - 所有 exports 目标必须在 `dist/` 下，CSS 以外出口必须同时给出 `types` / `import` / `require` 三个条件；禁止 `miniprogram` 字段与 `./skyline` 出口。
-- 宿主页面基座必须挂一次 `<OverlayHost />`；否则命令式 API 不可用。
+- 宿主必须在 `createKitApp` 的 `hosts` 里按需挂上要用的命令宿主（`ToastHost` / `DialogHost` / `LoadingHost`）；缺哪个就调哪个 API 会当场抛错。`<OverlayHost />` 是三件的兼容组合，不是必选项。
 - 包管理器必须只用 pnpm，锁文件只保留 `pnpm-lock.yaml`。
 
 ## 6. 术语
@@ -76,7 +77,7 @@
 | 宿主 | import 本库的 Taro 小程序 | 接入方、消费端 |
 | 能力域 | `src/` 下的五个顶层目录 | 层 |
 | token | `--mptk-*` 样式变量 | 样式变量 |
-| 命令式 API | `showToast` / `alert` / `confirm` 等无需 JSX 的调用 | 无 |
+| 命令式 API | `alert` / `confirm` 等无需 JSX 的调用 | 无 |
 
 ## 更新日志
 
@@ -87,3 +88,4 @@
 - 2026-11-11 20:06:19：补全真源源码路径
 - 2026-11-13 15:13:41：ui 子域清单按源码列全并补 card，不再写死数量
 - 2026-11-15 00:20:59：架构表、构建步骤与样式约定改写真源反转
+- 2026-11-26：命令式反馈链路补 Toast 独立 lifecycle / 可序列化载荷 / scope 交接；装配口径改为按需宿主（三件 Host，OverlayHost 仅兼容组合）

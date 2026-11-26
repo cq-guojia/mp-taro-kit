@@ -3,7 +3,7 @@ export { ToastHost, type ToastHostProps } from './ToastHost.js'
 export { DialogHost, type DialogHostProps } from './DialogHost.js'
 export { LoadingHost, type LoadingHostProps } from './LoadingHost.js'
 export { SafeArea, type SafeAreaProps } from './SafeArea.js'
-export { useOverlayEntries, useNotices, useLoadingState } from './use-store.js'
+export { useOverlayEntries, useLoadingState } from './use-store.js'
 export {
   createOverlayLifecycle,
   type OverlayLifecycle,

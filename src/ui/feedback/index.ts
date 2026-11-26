@@ -1,4 +1,3 @@
-export { Toast, type ToastProps } from './Toast.js'
 export { Loading, type LoadingProps } from './Loading.js'
 export { Loader, type LoaderProps, type LoaderVariant, type LoaderSize } from './Loader.js'
 export { Dialog, type DialogProps } from './Dialog.js'

@@ -338,19 +338,43 @@ export const pages: CatalogPage[] = [
     ],
   },
   {
+    id: 'toast',
+    title: 'Toast 轻提示',
+    path: 'pages/toast/index',
+    summary: '命令式轻提示：基础、堆叠与操作按钮',
+    examples: [
+      {
+        id: 'toast-basic',
+        title: '基础轻提示',
+        hint: 'showToast：tone / closeButton',
+        usage: '',
+        imports: ['mp-taro-kit/ui/commands/toast', 'mp-taro-kit/ui/feedback/toast/style'],
+        renderNotes: '各自计时，关闭叉显式开启',
+      },
+      {
+        id: 'toast-stacked',
+        title: '折叠堆叠',
+        hint: 'enableStacking / visibleToasts：点任意一条展开整叠',
+        usage: '',
+        imports: ['mp-taro-kit/ui/commands/toast'],
+        renderNotes: '超过上限的整条隐藏；小程序无 hover',
+      },
+      {
+        id: 'toast-action',
+        title: '带操作按钮',
+        hint: 'action + onAction：命令层回调，不进全局载荷',
+        usage: '',
+        imports: ['mp-taro-kit/ui/commands/toast'],
+        renderNotes: '',
+      },
+    ],
+  },
+  {
     id: 'feedback',
     title: '反馈',
     path: 'pages/feedback/index',
     summary: '反馈类声明式组件',
     examples: [
-      {
-        id: 'toast',
-        title: '轻提示',
-        hint: 'Toast',
-        usage: '',
-        imports: ['mp-taro-kit/ui/feedback', 'mp-taro-kit/ui/feedback/style'],
-        renderNotes: '',
-      },
       {
         id: 'loading',
         title: '加载中',
@@ -844,14 +868,6 @@ export const pages: CatalogPage[] = [
     summary: '无需 JSX 的调用，返回 Promise',
     examples: [
       {
-        id: 'toast-command',
-        title: '轻提示',
-        hint: 'showToast / hideToast / clearToasts；前置：按能力挂对应宿主，未挂直接抛错',
-        usage: '',
-        imports: ['mp-taro-kit/ui/commands/toast'],
-        renderNotes: '',
-      },
-      {
         id: 'loading-command',
         title: '加载句柄',
         hint: 'showLoading / hideLoading',
@@ -1035,12 +1051,9 @@ export const menu: MenuGroup[] = [
       { id: 'dialog', label: 'Dialog 弹出框', status: 'ready', pageId: 'dialog' },
       // 三 · 操作面板：给一组候选挑一个
       { id: 'action-sheet', label: 'ActionSheet 动作面板', status: 'planned' },
-      { id: 'share-sheet', label: 'ShareSheet 分享面板', status: 'planned' },
       { id: 'dropdown-menu', label: 'DropdownMenu 下拉菜单', status: 'ready', pageId: 'navigation' },
-      { id: 'popover', label: 'Popover 气泡弹出框', status: 'planned' },
       // 四 · 轻提示：只告知，不用回应（命令式版本仍在「命令式 API」组）
-      { id: 'toast', label: 'Toast 轻提示', status: 'ready', pageId: 'feedback' },
-      { id: 'notify', label: 'Notify 消息通知', status: 'planned' },
+      { id: 'toast', label: 'Toast 轻提示', status: 'ready', pageId: 'toast' },
       { id: 'loading', label: 'Loading 加载', status: 'ready', pageId: 'feedback' },
     ],
   },
@@ -1122,7 +1135,6 @@ export const menu: MenuGroup[] = [
     id: 'commands',
     title: '命令式 API',
     entries: [
-      { id: 'command-toast', label: '轻提示', status: 'ready', pageId: 'commands' },
       { id: 'command-loading', label: '加载句柄', status: 'ready', pageId: 'commands' },
     ],
   },

@@ -42,30 +42,30 @@ export default createKitApp(App, {
 
 ## 用哪个挂哪个（按能力）
 
-命令式宿主拆成三件，各自只挂需要的那份，且**都从 `mp-taro-kit/app` 导出**：
+命令宿主拆成三件，各自只挂需要的那份，且**都从 `mp-taro-kit/app` 导出**：
 
 | 宿主 | 能力 | 遮罩 |
 |---|---|---|
-| `ToastHost` | `showToast` / `hideToast` / `clearToasts` | 无 |
+| `ToastHost` | `showToast` / `hideToast` / `closeToast` | 无（全屏定位层，同一时刻只有当前页宿主渲染） |
 | `DialogHost` | `alert` / `confirm` | 有（基于 `ContentPopup` 底座，遮罩与锁滚动随浮层） |
 | `LoadingHost` | `showLoading` / `hideLoading` | 无 |
 | `LoginDialogHost` | 渲染 `setLoginDialog` 注册的业务登录窗 | 由业务 UI 决定 |
 
-四件宿主（含兼容组合 `OverlayHost`）共用 `ui/infra/style` 里的一张 `fixed` 全屏层：容器 `pointer-events: none`，只有真正弹出的子树按类名恢复命中（WXSS 会整条丢弃 `> *` 这类通配符选择器）。拆宿主时必须四件都在这条选择器里，少一件就会出现「命令有返回但屏幕没东西」。宿主样式需宿主应用显式引入 `mp-taro-kit/ui/infra/style`。
+三件命令宿主（`ToastHost` / `DialogHost` / `LoadingHost`）加兼容组合 `OverlayHost` 共用 `ui/infra/style` 里的一张 `fixed` 全屏层：容器 `pointer-events: none`，只有真正弹出的子树按类名恢复命中（WXSS 会整条丢弃 `> *` 这类通配符选择器）。拆宿主时必须这几件都在这条选择器里，少一件就会出现「命令有返回但屏幕没东西」。宿主样式需宿主应用显式引入 `mp-taro-kit/ui/infra/style`。
 
-宿主由 `KitPage` 从注册表取出、渲染在每页页面树里；不用 `KitPage` 的页面需要自行渲染同一批宿主，否则命令会因宿主未挂载而抛错。`createKitApp` 注入 Taro 页面栈读取器，命令调用时取栈顶页实例的稳定 id；`KitPage` 把本页实例 id 通过上下文传给宿主。Taro 会保留上一页的页面树，`DialogHost` 只认领同 id 的弹窗，避免旧页宿主抢走当前页的对话框，也不受分包 route 前缀影响。手动挂载且不在 `KitPage` 内的宿主只认领没有页面身份的弹窗。
+宿主由 `KitPage` 从注册表取出、渲染在每页页面树里；不用 `KitPage` 的页面需要自行渲染同一批宿主，否则命令会因宿主未挂载而抛错。`createKitApp` 注入 Taro 页面栈读取器，命令调用时取栈顶页实例的稳定 id；`KitPage` 把本页实例 id 通过上下文传给宿主。Taro 会保留上一页的页面树，`DialogHost` 只认领同 id 的弹窗，避免旧页宿主抢走当前页的对话框，也不受分包 route 前缀影响。手动挂载且不在 `KitPage` 内的宿主只认领没有页面身份的弹窗。`ToastHost` 与之不同：Toast 按 scope 交接，`navigateTo` 后仍在有效期内的条目转挂到新栈顶页，由当前页宿主认领续显（见 [Toast 轻提示](toast.md)）。
 
 默认一件都不挂。用哪个命令就从 `mp-taro-kit/app` 显式 import 对应宿主，传进 `hosts`：
 
 ```tsx
-import { createKitApp, ToastHost, DialogHost } from 'mp-taro-kit/app'
+import { createKitApp, DialogHost } from 'mp-taro-kit/app'
 
 export default createKitApp(App, {
-  hosts: [ToastHost, DialogHost],  // 只挂 Toast 与 Dialog，不挂 Loading
+  hosts: [DialogHost],  // 只挂 Dialog，不挂 Loading
 })
 ```
 
-`hosts` 控制的是**挂载与能力校验**（没挂就调对应 API 会当场抛错）。**命令 API 另走精确子入口，由调用方在自己文件里 import**：`mp-taro-kit/ui/commands/toast`（`showToast` / `hideToast` / `clearToasts`）、`.../dialog`（`alert` / `confirm`）、`.../loading`（`showLoading` / `hideLoading`）。`mp-taro-kit/ui` 的汇总出口保留作兼容，但会带进全部命令代码，要按需就用子入口。`tests/tree-shaking.test.mjs` 用真实打包探针锁定三入口互不带入。
+`hosts` 控制的是**挂载与能力校验**（没挂就调对应 API 会当场抛错）。**命令 API 另走精确子入口，由调用方在自己文件里 import**：`.../toast`（`showToast` / `hideToast` / `closeToast`）、`.../dialog`（`alert` / `confirm`）、`.../loading`（`showLoading` / `hideLoading`）。`mp-taro-kit/ui` 的汇总出口保留作兼容，但会带进全部命令代码，要按需就用子入口。`tests/tree-shaking.test.mjs` 用真实打包探针锁定入口互不带入。
 
 没挂对应宿主就调对应 API，同步抛带修复指引的 Error，错误点名缺失的宿主并给出准确 import 路径——不会静默失效（老项目用事件总线广播时漏挂就静默无 UI，这个坑不再重演）。
 
@@ -117,12 +117,12 @@ function MyPage() {
 登录窗这类业务弹窗不进核心库。业务在入口注册一次 UI，并把 `LoginDialogHost` 加进 `hosts` 让它能渲染：
 
 ```tsx
-import { createKitApp, ToastHost, DialogHost, LoginDialogHost, setLoginDialog, requireLogin } from 'mp-taro-kit/app'
+import { createKitApp, DialogHost, LoginDialogHost, setLoginDialog, requireLogin } from 'mp-taro-kit/app'
 
 setLoginDialog(({ resolve }) => <MyLoginDialog onDone={resolve} />)
 
 export default createKitApp(App, {
-  hosts: [ToastHost, DialogHost, LoginDialogHost],
+  hosts: [DialogHost, LoginDialogHost],
 })
 
 // 业务任意位置：未登录时弹窗，登录成功才继续
@@ -180,7 +180,7 @@ export default function IndexPage() {
 // pages/settings/index.tsx
 import { ScrollView, View } from '@tarojs/components'
 import { KitPage } from 'mp-taro-kit/app/kit-page'
-import { showToast } from 'mp-taro-kit/ui/commands/toast'
+import { alert } from 'mp-taro-kit/ui/commands/dialog'
 
 export default function SettingsPage() {
   return (
@@ -190,7 +190,7 @@ export default function SettingsPage() {
         {
           id: 'help',
           icon: 'common.base:bangzhu',
-          onClick: () => showToast('帮助中心'),
+          onClick: () => void alert('帮助中心'),
         },
       ]}
     >
@@ -222,13 +222,13 @@ export default function SettingsPage() {
 
 ```tsx
 // app.tsx：注册 + 把渲染宿主加进 hosts
-import { createKitApp, ToastHost, DialogHost, LoginDialogHost, setLoginDialog } from 'mp-taro-kit/app'
+import { createKitApp, DialogHost, LoginDialogHost, setLoginDialog } from 'mp-taro-kit/app'
 import MyLoginDialog from './components/MyLoginDialog'
 
 setLoginDialog(({ resolve }) => <MyLoginDialog onDone={resolve} />)
 
 export default createKitApp(App, {
-  hosts: [ToastHost, DialogHost, LoginDialogHost],
+  hosts: [DialogHost, LoginDialogHost],
 })
 ```
 
@@ -260,6 +260,8 @@ async function submit() {
 - 2026-11-25 14:48:15：补四件命令宿主共用 fixed 全屏层的契约，说明拆分时漏定位会让命令弹层不进页面视口
 - 2026-11-25 14:49:52：补 WXSS 丢弃通配符选择器的限制，命中选择器改按子节点类名逐条列出
 - 2026-11-25 14:55:54：命令宿主改由 KitPage 在每页页面树渲染，createKitApp 只登记注册表
+- 2026-11-26：删除旧 ToastHost、Toast 组件/命令/队列/配置键，命令宿主一度收缩为 Dialog / Loading
+- 2026-11-26：Toast 在独立 lifecycle 上重建，命令宿主恢复为 Toast / Dialog / Loading 三件；宿主归属用 scope 交接，命令 API 补 `.../toast` 子入口
 - 2026-11-25 15:15:13：命令载荷按发起页 route 归属，避免 Taro 保留的旧页宿主抢走当前页对话框
 - 2026-11-25 15:31:08：命令归属改由 app 层注入 Taro 页面栈读取器，载荷记录页面实例 id，不再依赖渲染写入的全局 route
 - 2026-11-26 09:10:27：当前页身份只读 `getCurrentPages()` 栈顶，不再优先取 `getCurrentInstance().page`；全局主题更新导致保留页重渲染时，命令不会再归属到旧页

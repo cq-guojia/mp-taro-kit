@@ -28,7 +28,8 @@ docs/                                               # 项目文档库入口
 │   ├── popup.md                                    # Popup 五档与裸壳、关闭按钮三轴、ImagePopup 图片弹窗尺寸模型
 │   ├── segmented.md                                # Segmented 的 items 契约、两种指示器与异步切换
 │   ├── switch.md                                   # Switch 的两种形状、五档尺寸与异步切换
-│   └── tag.md                                      # 标签的高度刻度、底色形态、圆角档与图标规则，以及与 Badge 的边界
+│   ├── tag.md                                      # 标签的高度刻度、底色形态、圆角档与图标规则，以及与 Badge 的边界
+│   └── toast.md                                    # Toast 命令式轻提示：可序列化载荷、scope 交接、平铺与折叠堆叠
 ├── development/                                    # 本地开发、构建与验证约定
 │   └── build-and-test.md                           # 构建与自检顺序、工程约定，以及实机验证不在这套自检内的边界
 └── dependencies/                                   # 外部依赖的已核实行为与已知坑
@@ -77,3 +78,4 @@ docs/                                               # 项目文档库入口
 - 2026-11-20：索引补 api/app.md（createKitApp 一条接入、三件按需宿主、KitPage 页面壳、登录窗注册口）；back-to-top 描述同步为一次节点命令
 - 2026-11-21：索引补 api/content-popup.md（ContentPopup 内容弹窗：三档头部、背景三作用域、按钮两轴与外伸徽标）
 - 2026-11-24 11:10:13：索引按字典序归位 api/content-popup.md
+- 2026-11-26：索引补 api/toast.md（命令式轻提示：可序列化载荷、独立 lifecycle、scope 交接、平铺与折叠堆叠）

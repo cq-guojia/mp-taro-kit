@@ -1,28 +1,11 @@
-import { useState } from 'react'
 import { View, Text } from '@tarojs/components'
-import { Button } from 'mp-taro-kit/ui/actions'
-import { Loader, Loading, Spinner, Toast } from 'mp-taro-kit/ui/feedback'
+import { Loader, Loading, Spinner } from 'mp-taro-kit/ui/feedback'
 
-import 'mp-taro-kit/ui/actions/style'
 import 'mp-taro-kit/ui/feedback/style'
 import { DemoPage } from '../../components/DemoBlock'
 
 export default function FeedbackPage() {
-  const [toastVisible, setToastVisible] = useState(true)
-
   const render = (id: string) => {
-    if (id === 'toast') {
-      return (
-        <View>
-          <Toast text="这是一条轻提示" tone="success" visible={toastVisible} />
-          <View className="demo-row">
-            <Button className="demo-item" onClick={() => setToastVisible(!toastVisible)}>
-              切换 visible
-            </Button>
-          </View>
-        </View>
-      )
-    }
     if (id === 'loading') {
       return (
         <View>

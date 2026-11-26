@@ -1,0 +1,72 @@
+/* Toast 展示层：只用长写属性，避免 Skyline 静默丢弃简写 / var() 兜底。 */
+
+.mptk-toast {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 40px;
+  padding-top: var(--mptk-space-2);
+  padding-right: var(--mptk-space-3);
+  padding-bottom: var(--mptk-space-2);
+  padding-left: var(--mptk-space-3);
+  border-radius: var(--mptk-radius-md);
+  background-color: var(--mptk-surface-1);
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-sm);
+  line-height: var(--mptk-line-sm);
+  transition: transform var(--mptk-dur-fast) ease-out;
+}
+
+.mptk-toast--exiting {
+  opacity: 0;
+}
+
+.mptk-toast--success {
+  color: var(--mptk-c-dialog-type-fg-success);
+}
+
+.mptk-toast--warning {
+  color: var(--mptk-c-dialog-type-fg-warning);
+}
+
+.mptk-toast--error {
+  color: var(--mptk-c-dialog-type-fg-error);
+}
+
+.mptk-toast--info {
+  color: var(--mptk-c-dialog-type-fg-info);
+}
+
+.mptk-toast__icon {
+  margin-right: var(--mptk-space-2);
+}
+
+.mptk-toast__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.mptk-toast__title {
+  color: var(--mptk-fg);
+  font-size: var(--mptk-font-sm);
+  font-weight: 600;
+  line-height: var(--mptk-line-sm);
+}
+
+.mptk-toast__description {
+  color: var(--mptk-fg-2);
+  font-size: var(--mptk-font-xs);
+  line-height: var(--mptk-line-xs);
+}
+
+.mptk-toast__action {
+  margin-left: var(--mptk-space-3);
+  color: var(--mptk-fg-on-accent);
+}
+
+.mptk-toast__close {
+  margin-left: var(--mptk-space-2);
+  color: var(--mptk-fg-3);
+}
