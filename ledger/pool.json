@@ -1,5 +1,6 @@
 {
   "tasks": {
+    "20261126-0107-7308-修复主题切换后弹窗串页": {"category": "缺陷修复", "created": "2026-11-26 01:07:44", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["弹窗", "页面身份", "主题切换", "Taro"], "title": "修复主题切换后弹窗串页", "updated": "2026-11-26 01:07:44", "worklog": "worklog/202611/26-0107-7308-修复主题切换后弹窗串页.md"}
   },
   "version": "20261022000000"
 }
