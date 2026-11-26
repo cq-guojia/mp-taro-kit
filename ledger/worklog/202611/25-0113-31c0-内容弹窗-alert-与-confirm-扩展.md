@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-26 07:51:29 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 09:19:42 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -408,3 +408,4 @@
 - 2026-11-26 07:34:40 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · demo 四处修正：confirm 滑块默认竖线（库不传参口径核查已是 joined，无需改库）、默认样式改纯标题+内容+按钮去掉 type、异步闸门按钮进 Cell 居右走默认型号、四块拆成独立 Card。253 项测试与全套门禁通过，产物核对 joined/spaced 默认值与 Cell 结构。未提交，待看效果。
 - 2026-11-26 07:42:16 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 删顶部配置区头部滑块及配套状态；alert/confirm/自定义三处配置区各加图片头按钮（复用延伸示例图与 -30 偏移），默认样式按钮改名默认；253 项测试与全套门禁通过，产物核对四按钮文案与 headerImage。未提交，待看效果。
 - 2026-11-26 07:51:29 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站 8 张示例图补齐原始宽高：popup 页集中 NATURAL 表并在 13 处传参 spread，dialog 图片头内联 1080×587；253 项测试与全套门禁通过，产物核对 7 组尺寸真值。未提交。
+- 2026-11-26 09:19:42 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 收尾更新：异步闸门能力已独立成任务 20261126-0819-f810 完成（闸门单一真源、转圈与屏蔽解耦、三按钮演示、264 项测试与全门禁通过）；本任务的 alert/confirm 演示与图片尺寸此前已落地。现按用户要求结案。
