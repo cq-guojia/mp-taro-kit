@@ -1123,7 +1123,7 @@ test('Dialog 独立展示页用 alert / confirm，并沿用 Popup 页的配置�
   for (const label of ['默认', 'icon外伸', '信息头', '图片头']) {
     assert.ok(demo.includes(`>${label}</Button>`), `配置区缺 ${label} 按钮`)
   }
-  assert.match(demo, /mode === 'image' \? \{ headerImage: \{ src: HEADER_IMAGE, offset: \{ top: -30 \} \} \}/, '图片头按钮该带延伸示例图')
+  assert.match(demo, /headerImage: \{ src: HEADER_IMAGE, offset: \{ top: -30 \}, naturalWidth: 1080, naturalHeight: 587 \}/, '图片头按钮该带延伸示例图与原始尺寸')
   assert.doesNotMatch(demo, /size="xs"\s+onClick=\{\(\) => open\(/, '配置区按钮走默认型号，不用 XS')
   for (const kind of ['alert', 'confirm', 'custom']) {
     assert.ok(demo.includes(`openVariant('${kind}'`), `${kind} 未接共用配置区`)

@@ -864,8 +864,8 @@ test('关闭按钮偏移：四向值作为 CSS 变量落到真实按钮节点，
   const demoPage = readFileSync(join(root, 'demo/src/pages/popup/index.tsx'), 'utf8')
   assert.doesNotMatch(demoPage, /叉偏移|closeOffset=/, '演示站不再展示关闭叉偏移')
   assert.match(demoPage, />上延伸</, '新增上延伸入口')
-  assert.match(demoPage, /imageGeom === 'rise'\s*\n?\s*\? \{ src: HEADER_RISE_UP, offset: \{ top: -30 \} \}/, '上延伸：默认头部背景 + 上伸 30')
-  assert.match(demoPage, /imageGeom === 'both'\s*\n?\s*\? \{ src: HEADER_RISE_BOTH, offset: \{ top: -30, bottom: -50 \} \}/, '上下双伸：上 30 下 50')
+  assert.match(demoPage, /imageGeom === 'rise'\s*\n?\s*\? \{ src: HEADER_RISE_UP, offset: \{ top: -30 \}, \.\.\.NATURAL\.riseUp \}/, '上延伸：默认头部背景 + 上伸 30 + 原始尺寸')
+  assert.match(demoPage, /imageGeom === 'both'\s*\n?\s*\? \{ src: HEADER_RISE_BOTH, offset: \{ top: -30, bottom: -50 \}, \.\.\.NATURAL\.riseBoth \}/, '上下双伸：上 30 下 50 + 原始尺寸')
   assert.match(demoPage, /popup-header-rise-up\.png/, '上延伸图片走仓库 raw 地址')
   assert.match(demoPage, /popup-header-rise-both\.png/, '上下双伸图片走仓库 raw 地址')
   for (const name of ['popup-header-rise-up.png', 'popup-header-rise-both.png']) {

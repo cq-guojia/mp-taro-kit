@@ -1258,9 +1258,11 @@ test('演示站按使用者分页：遮罩页只演遮罩，弹出层页只留�
   assert.match(popupPage, /\{ src: ACTION_BTN_IMAGE, height: 36,/, '图片按钮项传 src + 定高')
   // 单图 / 多图翻页用两张正常高度图，长图不参与翻页、只用于长图滚动档。
   // 回归：每屏给确定宽、不锁高——高度随各图比例变，矮图矮高图高、不压变形；宽统一 320 减半两边留白。
-  assert.match(popupPage, /const GALLERY_SLIDES: ImagePopupSlide\[\] = \[\s*\{ src: IMAGE_A, width: 320 \},\s*\{ src: IMAGE_B, width: 320 \},?\s*\]/, '多图翻页用 IMAGE_A + IMAGE_B，每屏给确定宽不锁高')
+  assert.match(popupPage, /const GALLERY_SLIDES: ImagePopupSlide\[\] = \[\s*\{ src: IMAGE_A, width: 320, \.\.\.NATURAL\.a \},\s*\{ src: IMAGE_B, width: 320, \.\.\.NATURAL\.b \},?\s*\]/, '多图翻页用 IMAGE_A + IMAGE_B，每屏给确定宽不锁高且带原始尺寸')
   assert.match(popupPage, /slides=\{imageMulti \? GALLERY_SLIDES : GALLERY_SLIDES\.slice\(0, 1\)\}/, '单图 / 多图翻页共用两张正常高度图，长图不参与')
-  assert.match(popupPage, /return \{ src: LONG_IMAGE, width: 320, maxHeight: 320, fit: 'scroll' \}/, '长图档宽 320 + maxHeight 320，视口贴合图片且不太高')
+  assert.match(popupPage, /return \{ src: LONG_IMAGE, width: 320, maxHeight: 320, fit: 'scroll', \.\.\.NATURAL\.long \}/, '长图档宽 320 + maxHeight 320 + 原始尺寸，视口贴合图片且不太高')
+  assert.match(popupPage, /const NATURAL = \{[\s\S]*?naturalWidth: 1080, naturalHeight: 1080[\s\S]*?naturalWidth: 750, naturalHeight: 14186[\s\S]*?naturalWidth: 231, naturalHeight: 71[\s\S]*?\}/, '示例图原始尺寸表要含本地图、长图与图片按钮图')
+  assert.equal((popupPage.match(/\.\.\.NATURAL\./g) ?? []).length, 13, '每张示例图传参都要带上原始尺寸，不留靠 onLoad 回灌的')
   // 关闭位：定宽 / 长图滚动用默认外下中，定高档演示外下右。
   assert.match(popupPage, /const SIZE_CLOSE_POSITION: Record<ImageSizeMode, PopupClosePosition>/, '尺寸档到关闭位的映射表缺失')
   assert.match(popupPage, /width: 'below-center'/, '定宽档关闭位应是外下中')

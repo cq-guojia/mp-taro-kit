@@ -65,7 +65,9 @@ export default function DialogPage() {
       ...(mode === 'external'
         ? { badge: { content: { kind: 'icon' as const, name: 'common.base:riqi' } } }
         : null),
-      ...(mode === 'image' ? { headerImage: { src: HEADER_IMAGE, offset: { top: -30 } } } : null),
+      ...(mode === 'image'
+        ? { headerImage: { src: HEADER_IMAGE, offset: { top: -30 }, naturalWidth: 1080, naturalHeight: 587 } }
+        : null),
     }
     if (kind === 'alert') {
       void alert('标题、内容与 icon，底部只有完成，没有正确与不正确', { ...shared, confirmText: '完成' })

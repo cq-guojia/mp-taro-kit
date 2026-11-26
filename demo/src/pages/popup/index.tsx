@@ -180,21 +180,39 @@ const HEADER_RISE_UP = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/
 const HEADER_RISE_BOTH = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-rise-both.png'
 /* 头部透明异形图与其余异形图同源，走本项目 raw 地址，不随产物打包。 */
 const HEADER_TRANSPARENT = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-transparent-rocket.png'
-const HEADER_IMAGE_SLIDE: { src: string; width: number } = { src: HEADER_IMAGE, width: 320 }
 const LONG_IMAGE = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/content/image/4965/d278336e-af7d-4c83-a423-727495583650.webp'
 const ACTION_BTN_IMAGE = 'https://t-cdn-oss.qswnet.com/file/zuche/lottery-center/image/1fc1dcb1-a8f8-444f-941c-d9b5caa12003.png'
+
+/* 示例图原始像素：本地图取文件头，CDN 图实测下载。传给控件后首帧就按真实比例占位，不等 onLoad 回灌再跳。 */
+const NATURAL = {
+  a: { naturalWidth: 1080, naturalHeight: 1080 },
+  b: { naturalWidth: 943, naturalHeight: 1212 },
+  search: { naturalWidth: 741, naturalHeight: 537 },
+  riseUp: { naturalWidth: 1080, naturalHeight: 587 },
+  riseBoth: { naturalWidth: 1080, naturalHeight: 763 },
+  transparent: { naturalWidth: 1080, naturalHeight: 587 },
+  long: { naturalWidth: 750, naturalHeight: 14186 },
+  actionBtn: { naturalWidth: 231, naturalHeight: 71 },
+} as const
+
+const HEADER_IMAGE_SLIDE: { src: string; width: number; naturalWidth: number; naturalHeight: number } = {
+  src: HEADER_IMAGE,
+  width: 320,
+  ...NATURAL.search,
+}
 
 /* 第一类「图片」：单图用 A，多图翻页用 A + B（都是正常高度，无长图）。
    每屏给确定宽、不锁高——图片按各自真实比例撑高：矮图框就矮、高图框就高，不压变形。 */
 const GALLERY_SLIDES: ImagePopupSlide[] = [
-  { src: IMAGE_A, width: 320 },
-  { src: IMAGE_B, width: 320 },
+  { src: IMAGE_A, width: 320, ...NATURAL.a },
+  { src: IMAGE_B, width: 320, ...NATURAL.b },
 ]
 
 /* 第二类「带按钮」两种类型，默认居中；两个库按钮顺带演示按钮之间的默认间距。 */
 const ACTION_BUTTON_SLIDE: ImagePopupSlide = {
   src: IMAGE_A,
   width: 320,
+  ...NATURAL.a,
   actions: [
     { text: '取消', type: 'default', size: 'md', onClick: () => undefined },
     { text: '查看详情', type: 'primary', size: 'md', onClick: () => undefined },
@@ -203,8 +221,9 @@ const ACTION_BUTTON_SLIDE: ImagePopupSlide = {
 const ACTION_IMAGE_SLIDE: ImagePopupSlide = {
   src: IMAGE_A,
   width: 320,
+  ...NATURAL.a,
   actions: [
-    { src: ACTION_BTN_IMAGE, height: 36, onClick: () => undefined },
+    { src: ACTION_BTN_IMAGE, height: 36, ...NATURAL.actionBtn, onClick: () => undefined },
   ],
 }
 
@@ -224,10 +243,10 @@ const SIZE_CLOSE_POSITION: Record<ImageSizeMode, PopupClosePosition> = {
 }
 
 function sizeDemoSlide(mode: ImageSizeMode): ImagePopupSlide {
-  if (mode === 'width') return { src: IMAGE_A, width: 320 }
-  if (mode === 'height') return { src: IMAGE_A, height: 240 }
+  if (mode === 'width') return { src: IMAGE_A, width: 320, ...NATURAL.a }
+  if (mode === 'height') return { src: IMAGE_A, height: 240, ...NATURAL.a }
   // 长图：给确定宽让面板贴合图片、滚动条落在图片右缘；视口限高 320px 不变，不顶满屏。
-  return { src: LONG_IMAGE, width: 320, maxHeight: 320, fit: 'scroll' }
+  return { src: LONG_IMAGE, width: 320, maxHeight: 320, fit: 'scroll', ...NATURAL.long }
 }
 
 const SAMPLE_LINES = [
@@ -682,13 +701,13 @@ export default function PopupPage() {
             subtitle={contentVariant === 'title' ? '开启后将自动备份新增的照片与视频' : undefined}
             image={contentVariant === 'image'
               ? imageGeom === 'transparent'
-                ? { src: HEADER_TRANSPARENT }
+                ? { src: HEADER_TRANSPARENT, ...NATURAL.transparent }
                 : imageGeom === 'wide'
-                  ? { src: HEADER_IMAGE, width: 400, align: 'center' }
+                  ? { src: HEADER_IMAGE, width: 400, align: 'center', ...NATURAL.search }
                   : imageGeom === 'rise'
-                    ? { src: HEADER_RISE_UP, offset: { top: -30 } }
+                    ? { src: HEADER_RISE_UP, offset: { top: -30 }, ...NATURAL.riseUp }
                     : imageGeom === 'both'
-                      ? { src: HEADER_RISE_BOTH, offset: { top: -30, bottom: -50 } }
+                      ? { src: HEADER_RISE_BOTH, offset: { top: -30, bottom: -50 }, ...NATURAL.riseBoth }
                       : contentMode === 'image-bg' ? HEADER_IMAGE_SLIDE : GALLERY_SLIDES[0]
               : undefined}
             headerBackground={headerBackground}
