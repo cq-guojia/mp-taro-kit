@@ -143,6 +143,8 @@ export interface DialogOptions {
   onConfirm?: () => unknown
   /** 自定义按钮的异步闸门，key 为按钮 key。 */
   onAction?: (key: string) => unknown
+  /** 闸门拒绝（onConfirm/onAction 返回 Promise 后 reject 或显式 false）时回调，弹窗保持打开可重试。 */
+  onFailed?: (key: string) => void
 }
 
 function pushDialog(
@@ -212,6 +214,7 @@ function pushDialog(
     lockExceptions: options.lockExceptions ?? (kind === 'confirm' ? ['cancel'] : []),
     pageKey,
     onConfirm: options.onConfirm,
+    onFailed: options.onFailed,
     ...(kind === 'confirm' ? { onAction: options.onAction } : null),
     resolve,
   }, pageKey)

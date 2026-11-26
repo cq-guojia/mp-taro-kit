@@ -57,6 +57,8 @@ interface DialogPayloadCommon {
   readonly resolve: (confirmed: boolean) => void
   /** 确定前的异步闸门：返回 Promise 期间转圈并整框屏蔽，reject / false 保持打开可重试。 */
   readonly onConfirm?: () => unknown
+  /** 闸门拒绝（reject / 显式 false）时的反馈，Promise 期间保持打开可重试。 */
+  readonly onFailed?: (key: string) => void
 }
 
 /** 弹窗条目的载荷：命令式 API 只把待渲染数据推进栈，resolve 由 <DialogHost /> 调用。 */

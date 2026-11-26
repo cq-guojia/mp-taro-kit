@@ -67,3 +67,24 @@ test('引 confirm + DialogHost 只带 ContentPopup，不带 Toast / Loading / Fl
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+test('闸门判定可单独打包：零平台依赖，不带 React / Taro / 任何控件', { skip: esbuild === null && '本机没有 esbuild 二进制' }, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mptk-shake-'))
+  try {
+    const gateEntry = join(root, 'dist/ui/infra/popup-lock/decide.js')
+    const source = join(dir, 'gate-entry.mjs')
+    const out = join(dir, 'gate.js')
+    writeFileSync(source, `import { decideGate } from ${JSON.stringify(gateEntry)}\nglobalThis.__gate = decideGate\n`)
+    execFileSync(esbuild, [
+      '--bundle', '--format=esm', '--platform=neutral',
+      source, `--outfile=${out}`,
+    ], { stdio: 'pipe' })
+    const output = readFileSync(out, 'utf8')
+    assert.match(output, /\bdecideGate\b/, '闸门判定没进产物')
+    for (const gone of ['react', 'useContext', '@tarojs', 'mptk-btn', 'DialogHost']) {
+      assert.doesNotMatch(output, new RegExp(`\\b${gone}\\b`), `纯判定产物混进了 ${gone}`)
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})

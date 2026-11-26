@@ -895,16 +895,25 @@ test('退场完成信号只有一个真源：presence 用同一个 timer 卸载�
 test('异步 confirm 成功：busy 保持到 onExited，退场帧不翻 loading/catchMove', () => {
   const host = read('src/ui/infra/DialogHost.tsx')
   const success = /\(result\) => \{([\s\S]*?)\n\s+\},\n\s+\(\) => \{/.exec(host)?.[1] ?? ''
-  assert.match(success, /if \(result === false\)/, '闸门拒绝必须单独分支解 busy，保持打开可重试')
+  assert.match(success, /if \(result === false\)/, '闸门拒绝必须单独分支，保持打开可重试')
   assert.equal(
-    (success.match(/setBusy\(id, false\)/g) ?? []).length,
+    (success.match(/\bfail\(\)/g) ?? []).length,
     1,
-    '成功回调只解一次 busy：仅在 result=false 的拒绝分支内',
+    '成功回调只走一次失败出口：仅在 result=false 的拒绝分支内',
   )
-  assert.match(success, /setBusy\(id, false\)\s*\n\s*return/, '拒绝分支解 busy 后立即 return，不落到成功路径')
+  assert.match(success, /fail\(\)\s*\n\s*return/, '拒绝分支调用失败出口后立即 return，不落到成功路径')
   assert.match(success, /requestClose\(id, key === 'confirm'\)/, '成功走逻辑关闭')
+  // 失败出口是全命令式动作共用的单一实现：只结算自己的动作，reject 与 false 都走它。
+  const fail = /const fail = \(\): void => \{([\s\S]*?)\n\s+\}/.exec(host)?.[1] ?? ''
+  assert.match(fail, /settleAction\(id, key\)/, '失败只结算自己的动作，不误清并发的例外动作')
+  assert.match(fail, /payload\.onFailed\?\.\(key\)/, '失败出口把失败交给载荷的反馈契约')
+  assert.equal(
+    (host.match(/\bfail\(\)/g) ?? []).length,
+    2,
+    'false 分支与 reject 分支都走同一个失败出口，没有第二套',
+  )
   const finish = /const finish = \(id: number\): void => \{([\s\S]*?)\n\s+\}/.exec(host)?.[1] ?? ''
-  assert.match(finish, /setBusy\(id, false\)/, 'busy 只在 finish（onExited 驱动）清理')
+  assert.match(finish, /settleAction\(id, key\)/, 'busy 只在 finish（onExited 驱动）逐个清理')
   assert.match(finish, /dialogLifecycle\.finish\(id\)/, 'finish 做物理清理')
 })
 

@@ -1,6 +1,7 @@
 import { View } from '@tarojs/components'
 import type { ReactNode } from 'react'
 import { PRESS_STAY_TIME } from '../../infra/press.js'
+import { useControlGate } from '../../infra/popup-lock/index.js'
 import { resolveCellState, type CellArrowDirection, type CellSize, type CellValueSize } from './state.js'
 
 export interface CellProps {
@@ -30,6 +31,8 @@ export interface CellProps {
   arrowDirection?: CellArrowDirection
   /** 短路 onClick 与点击反馈，并置灰。 */
   disabled?: boolean
+  /** 浮层锁里的身份；配在 Popup 的 lockExceptions 里即可在整框屏蔽时仍可点。 */
+  lockKey?: string
   onClick?: () => void
   className?: string
 }
@@ -50,9 +53,11 @@ export function Cell({
   isLink = false,
   arrowDirection,
   disabled = false,
+  lockKey,
   onClick,
   className,
 }: CellProps) {
+  const gate = useControlGate(lockKey)
   const state = resolveCellState({
     center,
     border,
@@ -60,9 +65,9 @@ export function Cell({
     valueSize,
     isLink,
     arrowDirection,
-    disabled,
+    disabled: disabled || gate.locked,
     onClick,
-    className,
+    className: [className, gate.exempt ? 'mptk-cell--lock-exempt' : ''].filter(Boolean).join(' '),
   })
   const content = value ?? children
   const showArrow = isLink && rightIcon === undefined

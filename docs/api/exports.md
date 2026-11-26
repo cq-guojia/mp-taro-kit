@@ -16,6 +16,7 @@
 | `mp-taro-kit/ui` | `dist/ui/index.d.ts` | `dist/ui/index.js` | `dist/ui/index.cjs` | 纯逻辑、命令式 API 与类型，不 re-export 组件；命令汇总出口，要按需改用下面的子入口 |
 | `mp-taro-kit/ui/commands/toast` / `.../dialog` / `.../loading` | 有 | 有 | 有 | 命令式 API 的按能力子入口：分别只带 toast / dialog / loading 命令，互不串入；`dialog` 同时导出 `DialogHost` 与载荷类型，API 与宿主同进口 |
 | `mp-taro-kit/ui/*` | `dist/ui/*/index.d.ts` | `dist/ui/*/index.js` | `dist/ui/*/index.cjs` | 子域出口；`*` 可穿透多段，组件级与图标包级细路径同走这条 |
+| `mp-taro-kit/ui/infra/popup-lock` | 有 | 有 | 有 | 浮层闸门：`decideGate` 唯一判定、`mergeNestedLock` 嵌套例外合并、`useControlGate` 控件接入协议、`PopupLockContext` / `usePopupLock` 状态广播与兼容别名；`decide.ts` 为零平台依赖的纯判定，Node 自检可直接加载 |
 | `mp-taro-kit/app/kit-page` | `dist/app/kit-page.d.ts` | `dist/app/kit-page.js` | `dist/app/kit-page.cjs` | KitPage 精确出口，浮动列样式随它自带；只引 `createKitApp` 不带这份样式 |
 | `mp-taro-kit/ui/*/style` | 无 | 无 | 无 | 字符串出口，`*` 可穿透多段，指向对应单元的 `style/index.css` |
 | `mp-taro-kit/ui/display/icon` | 有 | 有 | 有 | `Icon` 组件；出口同时带全量图标样式（`@font-face` 只声明不下载，字体按使用懒加载） |
@@ -64,9 +65,13 @@
 
 命令式宿主按能力拆成三件独立组件，各自只挂需要的那份：`ToastHost`（不带遮罩）、`DialogHost`（唯一带遮罩）、`LoadingHost`（不带遮罩）。`<OverlayHost />` 是三件的兼容组合出口，新代码不必用。`showToast` / `showLoading` / `alert` / `confirm` **按能力**同步检查对应宿主是否已挂载；没挂就调对应 API 每次抛带修复指引的 Error（错误点名 `ToastHost` / `DialogHost` / `LoadingHost`）。`hideToast` / `hideLoading` / `clearToasts` 不检查。`confirm` 以 Promise 解析出布尔值，`alert` 解析即关闭。`DialogHost` 同时可从 `mp-taro-kit/ui/commands/dialog` 取得，不必再从 `mp-taro-kit/app` 翻宿主。
 
+浮层闸门（`mp-taro-kit/ui/infra/popup-lock`）是全库唯一判定：`decideGate(state, key)` 对「blocked 且未被 `lockExceptions` 放行」给出 `locked`，Popup 广播的状态与命令式 Dialog 投影出的状态形状一致；嵌套浮层用 `mergeNestedLock` 合并，例外取**交集**——任意一层没放行就锁住，内层的例外不能绕过外层锁。可交互控件统一用 `useControlGate(key?)` 接入，把自己的 `disabled` 与裁决取或、例外时保留命中；`Button` / `Switch` / `Segmented` / `Cell` 已接入，新增控件须走同一协议，不得自建第二套 `blocked && !exceptions.includes(key)`。WebView 的 CSS 命中层为这四类控件的例外子树恢复 `pointer-events: auto`，Skyline 另由面板 `catchMove` 与控件逻辑门兜底，双端同口径。
+
+**屏蔽与转圈是两回事**：闸门只决定「能不能点」，置灰是它的可见反馈；转圈只属于真的在跑异步的那个动作。命令式 Dialog 用 `activeRef` 按弹窗记活跃动作 key 集合，例外允许并发，只有最后一个动作 settle 才解锁整框；正在跑的按钮转圈且不灰，其余被锁的按钮置灰不转圈，例外按钮保持常态。`onFailed` 在 reject / 显式 false 时回调且弹窗保持打开可重试；动作返回 `false` 即「闸门拒绝、保持打开」，不自动关闭。
+
 `mp-taro-kit/ui/infra` 另导出通用浮层生命周期 `createOverlayLifecycle` / `useOverlayLifecycle` 及 `OverlayLifecycle` 等类型；`mp-taro-kit/runtime` 导出 `OverlayPhase` 类型。外部状态源驱动的浮层（命令弹窗、未来动画化的 Toast/Loading 等）统一走 `open → close（逻辑关闭，标 exiting 并结算一次）→ onExited → finish（物理清理）`；`dismiss` 做宿主卸载时的强制单项兜底，`clear` 做全局 reset 兜底，`isCurrent(id, seq)` 让异步回调在关闭或重开后作废。细则见[遮罩与浮层底座](overlay.md)。
 
-对话框命令的载荷是判别联合：`title` / 说明默认都进 `ContentPopup` 的 body，不碰 header 框；给了 `icon` 时，`title` / `note` / `icon` 改走 `ContentPopup` 的文字头，与 Popup 页共用同一套图标与字号渲染，body 只留说明。`actions` 的按钮文案、颜色与尺寸复用 Button 轴，尺寸默认 `md`（与 Popup 底栏按钮同型号），确定蓝 / 取消灰，`layout` 三档为 `spaced`（横排等分铺满）/ `stack`（竖排）/ `joined`（竖线等分）。`position` / `width` / `closeable`（默认 `false`）/ `maskClosable`（默认 `false`，开启时映射为取消）/ `badge` / `headerImage` / `offsets` 都是数据化配置，不接 ReactNode。`onConfirm` 是可选的异步闸门：返回 Promise 期间按钮转圈并触发整框锁，reject 或返回 `false` 保持打开可重试；成功才走“逻辑关闭 → 退场完成 → 物理出栈”，Promise 在逻辑关闭时即结算，不延迟一个动画周期，退场期间保持 busy/lock 且忽略 `lockExceptions`，按钮转圈与文案不在动画里回退。`lockExceptions` 默认放行 `cancel`。`resetUIForTests` 清栈时会把挂起的 Promise settle 掉。产物级断言在 `tests/tree-shaking.test.mjs`，只引对话框能力不会带进 Toast / Loading / FloatingAction。
+对话框命令的载荷是判别联合：`title` / 说明默认都进 `ContentPopup` 的 body，不碰 header 框；给了 `icon` 时，`title` / `note` / `icon` 改走 `ContentPopup` 的文字头，与 Popup 页共用同一套图标与字号渲染，body 只留说明。`actions` 的按钮文案、颜色与尺寸复用 Button 轴，尺寸默认 `md`（与 Popup 底栏按钮同型号），确定蓝 / 取消灰，`layout` 三档为 `spaced`（横排等分铺满）/ `stack`（竖排）/ `joined`（竖线等分）。`position` / `width` / `closeable`（默认 `false`）/ `maskClosable`（默认 `false`，开启时映射为取消）/ `badge` / `headerImage` / `offsets` 都是数据化配置，不接 ReactNode。`onConfirm` / `onAction` 是可选的异步闸门：动作返回 Promise 期间整框锁住，**只有该动作按钮自己转圈**，其余非例外按钮置灰可见（不是一起转圈），例外按钮保持常态；例外允许并发，只有最后一个活跃动作结束才解锁。reject 或返回 `false` 保持打开可重试，其中 `false` 即「完成但留在原地」，不自动关闭；成功才走“逻辑关闭 → 退场完成 → 物理出栈”，Promise 在逻辑关闭时即结算，不延迟一个动画周期，退场期间保持 busy/lock 且忽略 `lockExceptions`，按钮转圈与文案不在动画里回退。`lockExceptions` 默认放行 `cancel`。`resetUIForTests` 清栈时会把挂起的 Promise settle 掉。产物级断言在 `tests/tree-shaking.test.mjs`，只引对话框能力不会带进 Toast / Loading / FloatingAction。
 
 ### Cell / CellGroup 的组内行为
 
@@ -306,3 +311,4 @@ runtime 的 safe-area 单例零平台依赖，只存注入快照；Popup / Drawe
 - 2026-11-25 22:25:18：`ui/card` 的 `CardProps` 删除 `title` / `subtitle` / `extra` / `headerDivider`，标题统一走同单元的 `CardHead`，不再兼容老写法
 - 2026-11-25 23:12:08：`ui/card` 结构类新增 `mptk-card__content`：body 恒满宽，普通内容的左右留白下沉到这一层，标题横线与 CellGroup 组级线都通到卡片边
 - 2026-11-25 23:52:13：`ui/card` 标题类新增 `mptk-card-head--divider-top`，与 `--divider` 共用 `var(--mptk-border)` 线档；上下间距由标题的线类自带
+- 2026-11-26 17:06:57：补浮层闸门单一判定：decideGate/mergeNestedLock 嵌套例外取交集、useControlGate 统一接入，屏蔽与转圈解耦（只有活跃动作转圈、其余置灰），例外并发按 key 集合结算

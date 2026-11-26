@@ -4,6 +4,7 @@ import { Button } from 'mp-taro-kit/ui/actions'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
 import { alert, confirm, type DialogOptions, type DialogType } from 'mp-taro-kit/ui/commands/dialog'
+import { showToast } from 'mp-taro-kit/ui'
 
 import 'mp-taro-kit/ui/actions/style'
 import 'mp-taro-kit/ui/card/style'
@@ -92,7 +93,7 @@ export default function DialogPage() {
   const openBusy = () => {
     void confirm('第一次模拟失败保持打开，第二次成功才关闭', {
       ...sharedOptions(),
-      title: '异步闸门',
+      title: '异步',
       layout: 'stack',
       onConfirm: () => new Promise<boolean>((resolve, reject) => {
         setTimeout(() => {
@@ -102,6 +103,36 @@ export default function DialogPage() {
           else resolve(true)
         }, 1200)
       }),
+      onFailed: () => showToast('操作失败，弹窗保持打开，可再点一次重试'),
+    })
+  }
+
+  const openBusyBlock = () => {
+    void confirm('转圈期间确定 / 取消 / 右上叉 / 点遮罩全锁住，转完停在这儿不关闭', {
+      ...sharedOptions(),
+      title: '异步屏蔽',
+      closeable: true,
+      maskClosable: true,
+      lockExceptions: [],
+      // 返回 false = 闸门拒绝：转圈结束、解锁，但弹窗保持打开，可反复观察屏蔽效果。
+      onConfirm: () => new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 1800)),
+    })
+  }
+
+  const openBusyExempt = () => {
+    void confirm('先点「开始异步」：转圈期只有「仍可点」能中断，右上叉 / 遮罩 / 开始异步全锁住', {
+      ...sharedOptions(),
+      title: '异步例外',
+      closeable: true,
+      maskClosable: true,
+      actions: [
+        { key: 'later', text: '仍可点', type: 'default', variant: 'soft' },
+        { key: 'submit', text: '开始异步', type: 'primary' },
+      ],
+      lockExceptions: ['later'],
+      onAction: (key) => key === 'submit'
+        ? new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 2000))
+        : undefined,
     })
   }
 
@@ -162,7 +193,15 @@ export default function DialogPage() {
     if (id === 'busy') {
       return (
         <CellGroup>
-          <Cell value={<Button onClick={openBusy}>异步确认（失败可重试）</Button>} />
+          <Cell
+            value={
+              <View className="demo-row">
+                <Button className="demo-item" onClick={openBusy}>异步</Button>
+                <Button className="demo-item" onClick={openBusyBlock}>异步屏蔽</Button>
+                <Button className="demo-item" onClick={openBusyExempt}>异步例外</Button>
+              </View>
+            }
+          />
         </CellGroup>
       )
     }

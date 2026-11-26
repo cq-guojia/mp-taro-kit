@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { CONTROL_SIZE_DEFAULT } from '../../../design/index.js'
 import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
+import { useControlGate } from '../../infra/popup-lock/index.js'
 import { Spinner } from '../../feedback/spinner/index.js'
 
 /** 控件高度档，取值来自 --mptk-control-h-*。 */
@@ -36,6 +37,8 @@ export interface SwitchProps {
    * 给图标 / 文字型开关用，避免整块变色跟图标抢注意力。默认 false（关灰、开主色）。
    */
   keepColor?: boolean
+  /** 浮层锁里的身份；配在 Popup 的 lockExceptions 里即可在整框屏蔽时仍可操作。 */
+  lockKey?: string
   className?: string
 }
 
@@ -52,11 +55,13 @@ export function Switch({
   loading = false,
   loadingContent,
   keepColor = false,
+  lockKey,
   className,
 }: SwitchProps) {
-  const { display, busy, change } = useAsyncChange(checked, onChange, disabled, loading, onFailed)
+  const gate = useControlGate(lockKey)
+  const { display, busy, change } = useAsyncChange(checked, onChange, disabled || gate.locked, loading, onFailed)
   const on = display
-  const locked = disabled || loading || busy
+  const locked = disabled || gate.locked || loading || busy
   const { className: colorClass, inlineColor } = resolveControlColor('mptk-switch', color)
   /* 圆形形态没有两侧，开 / 关内容放进滑块里。 */
   const thumbContent = shape === 'round' ? (on ? onContent : offContent) : undefined
@@ -75,6 +80,7 @@ export function Switch({
     busy ? 'mptk-switch--busy' : '',
     busy && hasContent ? 'mptk-switch--breathe' : '',
     keepColor ? 'mptk-switch--keep-color' : '',
+    gate.exempt ? 'mptk-switch--lock-exempt' : '',
     className,
   ]
   /* 轨道底色是状态色本身的真源，自定义色值只在选中态内联：关态必须留给 track 灰。

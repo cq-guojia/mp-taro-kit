@@ -13,8 +13,8 @@ import {
   type PopupPosition,
 } from './close-position.js'
 import { markCardEdgeOutOfFlow } from '../infra/card-edge.js'
-import { PopupLockContext, isPopupLockExempt, usePopupLock } from '../infra/popup-lock.js'
-import type { PopupLockState } from '../infra/popup-lock.js'
+import { PopupLockContext, isPopupLockExempt, usePopupLock, mergeNestedLock } from '../infra/popup-lock/index.js'
+import type { PopupLockState } from '../infra/popup-lock/index.js'
 import { Overlay, type OverlayOpacity, type OverlayTone } from './Overlay.js'
 import { MOTION_DURATION, usePresence } from './presence.js'
 import { isTopAnchored, resolveBottomInset, resolveTopInset, TOP_BREATH_PX, type TopInsetLevel } from './safe-inset.js'
@@ -140,13 +140,11 @@ export function Popup({
   const outerLock = usePopupLock()
   if (!mounted) return null
 
-  // 嵌套浮层继承外层锁；两层的例外合并，内层能放行的控件在外层也放行。
-  const lockState: PopupLockState = {
-    blocked: busy || locked || outerLock.blocked,
-    exceptions: lockExceptions === undefined
-      ? outerLock.exceptions
-      : [...outerLock.exceptions, ...lockExceptions],
-  }
+  // 嵌套浮层继承外层锁；例外必须两层都放行才算放行，避免内层绕过外层锁。
+  const lockState: PopupLockState = mergeNestedLock(
+    outerLock,
+    { blocked: busy || locked, exceptions: lockExceptions },
+  )
   const blocked = lockState.blocked
   const overlayExempt = isPopupLockExempt('overlay', lockState)
 

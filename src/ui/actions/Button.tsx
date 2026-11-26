@@ -3,7 +3,7 @@ import { View, Text } from '@tarojs/components'
 import type { CSSProperties, ReactNode } from 'react'
 import { isThenable, isSuccess } from '../../runtime/thenable.js'
 import { CONTROL_SIZE_DEFAULT } from '../../design/index.js'
-import { isPopupLockExempt, usePopupLock } from '../infra/popup-lock.js'
+import { useControlGate } from '../infra/popup-lock/index.js'
 import { Icon } from '../display/icon/Icon.js'
 import { PRESS_STAY_TIME } from '../infra/press.js'
 import { Spinner } from '../feedback/spinner/Spinner.js'
@@ -22,9 +22,10 @@ export type ButtonRadius = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'pill'
 
 /**
  * 加载时圈放哪：
- * - `auto`（默认）由「按钮有没有被钉死宽度」决定 —— `block` 或传了 `width` / `style.width` 走 `inline`，否则走 `circle`；
- * - `inline` 文字保留、圈插在前面，按钮可能被撑宽，适合宽度有富余的场景；
- * - `circle` 文字隐形占位、圈居中，按钮尺寸一点不动。
+ * - `auto`（默认）只由「按钮有没有前置图标」决定 —— 有 `icon` / `glyph` 时圈顶替图标位，
+ *   没有时文字隐形占位、圈居中；两者按钮尺寸都一点不动（与宽度是否钉死无关）；
+ * - `inline` 文字保留、圈插在前面，可能撑宽按钮，仅作宽度有富余时的显式逃生口；
+ * - `circle` 强制文字隐形占位、圈居中，忽略有无图标。
  */
 export type ButtonLoadingMode = 'auto' | 'inline' | 'circle'
 
@@ -111,8 +112,7 @@ export function Button({
 }: ButtonProps) {
   const [busy, setBusy] = useState(false)
   const inFlight = useRef(false)
-  const lock = usePopupLock()
-  const lockedByPopup = lock.blocked && !isPopupLockExempt(lockKey, lock)
+  const gate = useControlGate(lockKey)
   const loading = loadingProp || busy
 
   const settleBusy = (value: boolean): void => {
@@ -122,9 +122,13 @@ export function Button({
   }
 
   const handleClick = (): void => {
-    if (disabled || loading || inFlight.current || lockedByPopup) return
+    if (disabled || loading || inFlight.current || gate.locked) return
     const result = onClick?.()
-    if (!isThenable(result)) return
+    // 同步返回 false 也是「操作没成」：不转圈，但要兑现 onFailed 契约。
+    if (!isThenable(result)) {
+      if (!isSuccess(result)) onFailed?.()
+      return
+    }
     settleBusy(true)
     void Promise.resolve(result).then(
       (value) => {
@@ -143,11 +147,14 @@ export function Button({
   const iconOnly = !hasLabel && hasIcon
   const label = loading && loadingText !== undefined ? loadingText : children
   const hasRenderedLabel = label !== undefined && label !== null
-  const fixedWidth = block || width !== undefined || (style !== undefined && style.width !== undefined)
-  const settledMode = loadingMode === 'auto' ? (fixedWidth ? 'inline' : 'circle') : loadingMode
-  // 只有「没图标、有文字」才轮到 spinCircle：有图标时圈顶替图标位，宽度本来就不动。
+  /* 圈落点只由「有无前置图标」决定，与按钮是否定宽无关：
+     有图标时圈顶替图标位（走 mptk-btn__icon 槽），没图标时文字隐形占位、圈居中（spinCircle）。
+     只有显式 loadingMode 才覆盖这条默认语义：circle 强制整枚转圈，inline 保留文字插前面。 */
   const spinCircle =
-    loading && settledMode === 'circle' && !hasIcon && loadingText === undefined && hasRenderedLabel
+    loading &&
+    loadingText === undefined &&
+    hasRenderedLabel &&
+    (loadingMode === 'circle' || (loadingMode === 'auto' && !hasIcon))
   const spinnerClass = spinCircle ? 'mptk-btn__spinner' : 'mptk-btn__spinner mptk-btn__icon'
 
   const names = [
@@ -160,8 +167,10 @@ export function Button({
     iconOnly ? 'mptk-btn--icon-only' : '',
     spinCircle ? 'mptk-btn--spin-circle' : '',
     loading ? 'mptk-btn--loading' : '',
-    lock.blocked && isPopupLockExempt(lockKey, lock) ? 'mptk-btn--lock-exempt' : '',
-    disabled ? 'mptk-btn--disabled' : '',
+    gate.exempt ? 'mptk-btn--lock-exempt' : '',
+    // 闸门锁住的按钮要显出不可点状态，不能只在 handleClick 里静默拦掉；
+    // 正在转圈的那个不灰（loading 是它的可感知反馈），其余被锁的一律置灰。
+    disabled || (gate.locked && !loading) ? 'mptk-btn--disabled' : '',
     className,
   ]
   const widthStyle: CSSProperties | undefined =

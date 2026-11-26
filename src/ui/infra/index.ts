@@ -11,6 +11,17 @@ export {
   type OverlayScope,
 } from './overlay-lifecycle.js'
 export { useOverlayLifecycle, type OverlayLifecycleView } from './use-overlay-lifecycle.js'
+export {
+  decideGate,
+  mergeNestedLock,
+  useControlGate,
+  usePopupLock,
+  isPopupLockExempt,
+  usePopupLocked,
+  PopupLockContext,
+  type PopupLockState,
+  type GateDecision,
+} from './popup-lock/index.js'
 export { PageShell, type PageShellProps } from './PageShell.js'
 export { useThemeSnapshot, useThemeDark } from './use-theme.js'
 export {

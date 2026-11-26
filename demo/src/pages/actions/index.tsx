@@ -181,7 +181,7 @@ export default function ActionsPage() {
       return (
         <View>
           <Text className="demo-note">
-            点一下看三种落法：不定宽只留圈、定宽或 loadingMode=&quot;inline&quot; 在前面插圈、有图标则顶替图标位
+            点一下看落法：有图标则图标位顶替圈、没图标则文字隐形、整枚转圈（定宽也一样，宽度不动）；只有显式 loadingMode=&quot;inline&quot; 才在文字前插圈
           </Text>
           <View className="demo-row">
             <Button className="demo-item" onClick={sleep}>

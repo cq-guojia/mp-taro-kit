@@ -5,6 +5,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { CONTROL_SIZE_DEFAULT } from '../../../design/index.js'
 import { resolveControlColor, type ControlColor } from '../control-color.js'
 import { useAsyncChange } from '../useAsyncChange.js'
+import { useControlGate } from '../../infra/popup-lock/index.js'
 
 /* 量不到段宽时的重试预算：动态容器首拍布局未稳，按帧重试到稳；上限防死循环。 */
 const MAX_MEASURE_ATTEMPTS = 30
@@ -55,6 +56,8 @@ export interface SegmentedProps<T extends string = string> {
   disabled?: boolean
   /** 外部驱动的等待态；等待时指示器底色呼吸，位置、尺寸与文字都不变。 */
   loading?: boolean
+  /** 浮层锁里的身份；配在 Popup 的 lockExceptions 里即可在整框屏蔽时仍可操作。 */
+  lockKey?: string
   className?: string
 }
 
@@ -92,10 +95,12 @@ export function Segmented<T extends string = string>({
   color,
   disabled = false,
   loading = false,
+  lockKey,
   className,
 }: SegmentedProps<T>) {
-  const { display, busy, change } = useAsyncChange(value, onChange, disabled, loading, onFailed)
-  const locked = disabled || loading || busy
+  const gate = useControlGate(lockKey)
+  const { display, busy, change } = useAsyncChange(value, onChange, disabled || gate.locked, loading, onFailed)
+  const locked = disabled || gate.locked || loading || busy
   const activeIndex = Math.max(0, items.findIndex((item) => item.value === display))
   const percent = items.length > 0 ? 100 / items.length : 0
   const { className: colorClass, inlineColor } = resolveControlColor('mptk-seg', color)
@@ -200,6 +205,7 @@ export function Segmented<T extends string = string>({
     colorClass,
     locked ? 'mptk-seg--locked' : '',
     busy ? 'mptk-seg--busy' : '',
+    gate.exempt ? 'mptk-seg--lock-exempt' : '',
     className,
   ]
 

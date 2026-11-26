@@ -226,7 +226,7 @@ export const pages: CatalogPage[] = [
       {
         id: 'button-loading',
         title: '加载',
-        hint: '有图标时圈顶替图标位；没图标时按宽度自动选：不定宽只显示圈，定宽或明确指定才在前面插圈',
+        hint: '有图标时圈顶替图标位；没图标时文字隐形、整枚转圈（定宽也一样，宽度不动）；显式 inline 才在文字前插圈',
         usage: '<Button onClick={async () => {...}}>按钮</Button> <Button loadingMode="inline" width={200}>按钮</Button>',
         imports: ['mp-taro-kit/ui/actions', 'mp-taro-kit/ui/actions/style'],
         renderNotes: 'onClick 返回 Promise 即自动 loading 并防连点；circle 模式文字隐形占位，按钮宽度一点不动',
@@ -790,10 +790,10 @@ export const pages: CatalogPage[] = [
       {
         id: 'busy',
         title: '异步闸门',
-        hint: 'onConfirm 返回 Promise 期间整框屏蔽；第一次失败、第二次成功',
-        usage: 'confirm("说明", { onConfirm: () => Promise<boolean> })',
+        hint: '异步 / 异步屏蔽 / 异步例外：转圈期默认放行取消，可清空例外全锁，或只留一个按钮可点',
+        usage: 'confirm("说明", { onConfirm, lockExceptions: [], actions, onAction })',
         imports: ['mp-taro-kit/ui/commands/dialog', 'mp-taro-kit/ui/actions'],
-        renderNotes: 'WebView 靠 pointer-events，Skyline 靠 catchMove + 控件门；未真机验证',
+        renderNotes: '异步：失败保持打开可重试；屏蔽：开叉与遮罩也点不动；例外：只放行「仍可点」；未真机验证',
       },
     ],
   },

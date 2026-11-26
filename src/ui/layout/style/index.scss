@@ -80,7 +80,12 @@
   pointer-events: none;
 }
 
-.mptk-popup--blocked .mptk-btn--lock-exempt {
+/* 例外子树恢复命中：Button / Switch / Segmented / Cell 四类可交互控件同口径，
+   与各自 useControlGate 的逻辑门双端一致；没有这条，WebView 下逻辑放行也收不到点击。 */
+.mptk-popup--blocked .mptk-btn--lock-exempt,
+.mptk-popup--blocked .mptk-switch--lock-exempt,
+.mptk-popup--blocked .mptk-seg--lock-exempt,
+.mptk-popup--blocked .mptk-cell--lock-exempt {
   pointer-events: auto;
 }
 

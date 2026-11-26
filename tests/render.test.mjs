@@ -110,6 +110,7 @@ const server = await import('react-dom/server')
 const renderToStaticMarkup = server.renderToStaticMarkup ?? server.default.renderToStaticMarkup
 const h = React.createElement
 
+const { Button } = await import('../dist/ui/actions/index.js')
 const { Card, CardHead } = await import('../dist/ui/card/index.js')
 const { CellGroup, Cell } = await import('../dist/ui/display/cell/index.js')
 const { Overlay, Popup, ImagePopup } = await import('../dist/ui/layout/index.js')
@@ -119,6 +120,7 @@ const { closeOffsetVars } = await import('../dist/ui/layout/edge-offset.js')
 const { Drawer, Dropdown } = await import('../dist/ui/navigation/index.js')
 const { Dialog, Loading, Toast } = await import('../dist/ui/feedback/index.js')
 const { DialogHost } = await import('../dist/ui/infra/DialogHost.js')
+const { PopupLockContext, decideGate } = await import('../dist/ui/infra/popup-lock/index.js')
 const { KitPageKeyContext } = await import('../dist/ui/infra/page-key-context.js')
 const { setPageKeyProvider } = await import('../dist/runtime/page-route.js')
 const { setThemeMode, resetThemeForTests } = await import('../dist/runtime/index.js')
@@ -1237,6 +1239,54 @@ test('宽度与整框锁在渲染节点上生效，只有例外按钮保留可�
     buttons.filter((button) => !button.className.includes('mptk-btn--lock-exempt')).map((button) => button.text),
     ['被锁住'],
   )
+})
+
+test('Button loading 语义正交：有 icon 顶替图标位，无 icon 整枚转圈，定宽也不改落点', () => {
+  // 有图标：圈落在 mptk-btn__icon 槽位，文字保留，不套 spin-layer。
+  const withIcon = render(h(Button, { loading: true, icon: 'common.base:home' }, '确定'))
+  assert.match(withIcon, /mptk-btn__spinner mptk-btn__icon/)
+  assert.doesNotMatch(withIcon, /mptk-btn--spin-circle/)
+  assert.match(withIcon, />确定</, '有图标时文字保留')
+
+  // 无图标：文字隐形占位、圈进铺满层（spinCircle），尺寸不动。
+  const noIcon = render(h(Button, { loading: true }, '确定'))
+  assert.match(noIcon, /mptk-btn--spin-circle/)
+  assert.match(noIcon, /mptk-btn__spin-layer/)
+  assert.match(noIcon, /mptk-btn__spinner(?! mptk-btn__icon)/)
+
+  // 定宽按钮无图标仍走整枚转圈：不再因钉死宽度改成 inline 插文字前。
+  const fixed = render(h(Button, { loading: true, width: 200 }, '确定'))
+  assert.match(fixed, /mptk-btn--spin-circle/)
+  assert.match(fixed, /width:\s*200px/, '定宽仍然生效，只是不再改变圈的落点')
+
+  // 显式逃生口保留：loadingMode=inline 时圈插文字前、文字不隐藏。
+  const inline = render(h(Button, { loading: true, loadingMode: 'inline' }, '确定'))
+  assert.doesNotMatch(inline, /mptk-btn--spin-circle/)
+  assert.match(inline, /mptk-btn__spinner mptk-btn__icon/)
+  assert.match(inline, />确定</)
+})
+
+test('闸门禁用态与转圈态正交：被锁的按钮置灰但没有圈，转圈的按钮不灰', () => {
+  const locked = { blocked: true, exceptions: ['exempt'] }
+  const inside = (node) => h(PopupLockContext.Provider, { value: locked }, node)
+
+  // 被闸门锁住：看得见不可点（--disabled），但绝不能转圈。
+  const blocked = render(inside(h(Button, { lockKey: 'confirm' }, '确定')))
+  assert.match(blocked, /mptk-btn--disabled/, '被锁的按钮要显出禁用态')
+  assert.doesNotMatch(blocked, /mptk-btn__spinner/, '被锁不是转圈')
+
+  // 白名单例外：既不灰也不转圈。
+  const exempt = render(inside(h(Button, { lockKey: 'exempt' }, '仍可点')))
+  assert.doesNotMatch(exempt, /mptk-btn--disabled|mptk-btn__spinner/, '例外按钮保持常态')
+
+  // 正在跑的那个：只有它有圈，且不跟着变灰。
+  const pending = render(inside(h(Button, { lockKey: 'confirm', loading: true }, '确定')))
+  assert.match(pending, /mptk-btn__spinner/, '正在跑的按钮转圈')
+  assert.doesNotMatch(pending, /mptk-btn--disabled/, '转圈按钮不置灰，反馈要醒目')
+
+  // 判定本身：locked 只表达「不可点」，不等于 loading。
+  assert.deepEqual(decideGate(locked, 'confirm'), { blocked: true, exempt: false, locked: true })
+  assert.equal(decideGate(locked, 'confirm').locked, true)
 })
 
 test('命令式对话框三形态共用 ContentPopup 视觉，默认无叉且宽度可配', async () => {
