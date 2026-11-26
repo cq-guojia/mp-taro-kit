@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-26 12:35:50 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 12:41:15 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -34,6 +34,8 @@
 
 - 2026-11-26 Sonner Native 交互核实（看用户给的截图后查源码）：移动端没有 hover，`src/types.ts` 把 `expand?: boolean` 注释掉并写明 `hover not supported on mobile`。堆叠展开靠 tap：`src/gestures.tsx` 的 `Gesture.Tap().onEnd` 把坐标交给上层，`src/toaster.tsx` 通过 `toggleExpand()` 切换当前 channel 的展开状态，首次点展开（露出 description / action，卡片长高、堆叠重排），再点收起回 `visibleToasts` 数量。关闭走 `closeButton` 或 swipe：`swipeToDismissDirection='left'` 阈值为屏宽 25%；`'up'` 阈值 16px，且底部 toast 实际是下滑；反向拖动带弹性阻力，小于 16px 弹回。动画靠 Reanimated 3 + Gesture Handler，小程序不能照搬，只能借交互语法（tap 展开 + 位置感知滑动 + 可见条数 + 关闭叉）。
 
+- 2026-11-26 在线示例核实：https://sonner-native.netlify.app/ 是 Docusaurus 文档站，手机打开只有文档和代码块，不能实际点/滑 Toast；官方 README 提供 Expo Snack 入口 https://snack.expo.dev/@gunnartorfis/sonner-native （作者账号 @gunnartorfis，手机装 Expo Go 后扫码可在真机运行），另有录屏 https://github.com/user-attachments/assets/ccc428ca-37c3-4589-9e8c-f414c40d764c （重定向后 content-type=video/quicktime）可直接看动效。
+
 ## Conclusion
 
 已建任务并完成前置整理：三个菜单占位移除、Toast 独立空页建好、前因后果登记。Toast 组件契约与 demo 内容尚未实现，未跑构建与自检，双端实机未验证。
@@ -49,3 +51,4 @@
 - 2026-11-26 11:58:32 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按用户新口径改找独立 Toast 控件候选：Sonner / react-hot-toast / toastify-js / notyf，另有 Mobbin / Dribbble / UISDC 视觉参考；已写入工作日志，等用户选定抄谁
 - 2026-11-26 12:30:18 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户纠正上一轮候选不是移动端；改给 sonner-native / react-native-toast-message / AlertToast 与 Mobbin / UISDC 移动端视觉参考，工作日志已同步
 - 2026-11-26 12:35:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 查 sonner-native 源码确认移动端无 hover：tap 切换展开/收起，swipe 关闭阈值 left=屏宽25%、up=16px且底部方向反转；已记入工作日志
+- 2026-11-26 12:41:15 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 核实 sonner-native 在线演示：官网仅文档不可交互，官方 Expo Snack 可在手机 Expo Go 真机运行，README 另有 .mov 录屏链接
