@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-26 06:11:55 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 06:18:10 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -316,6 +316,12 @@
 
 **门禁实测**：build 414 产物 → test 252 全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对三条旧文案（解析即关 / 外伸固定类型 / 普通图标按类型上色）均已清除，新配置区三按钮文案仍在。未提交。
 
+### 2026-11-26 最后一排按钮改默认型号
+
+用户要求：「最后一排那个按钮不要用 XS，用默认的型号。」三个按钮（默认样式 / icon外伸 / 信息头）去掉 `size="xs"`，走 Button 默认档；其余示例按钮的 XS 不变。测试加断言锁住这一排不再显式传 XS。
+
+**门禁实测**：build 414 产物 → test 252 全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对 `dialog/index.js` 里 `jsx(Button,{className:"demo-item",onClick:…})` 无 size 字段。未提交。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -355,3 +361,4 @@
 - 2026-11-25 15:40:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标再缩 4px：圈仍 32px 不变，内部图标 22→18px；237 项测试与全套门禁通过，产物核对 64/4/36rpx。未提交，等看效果。
 - 2026-11-26 06:07:47 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站 alert 下新增配置 CellGroup：按钮滑块（横排/竖线，默认横排）+ 内置 icon 滑块（成功/失败/警告/信息，默认信息）+ 三按钮（默认样式/icon外伸/信息头），三按钮都读滑块且默认样式只有完成按钮；252 项测试与全套门禁通过，产物核对两档四档与三按钮文案。未提交，待看效果。
 - 2026-11-26 06:11:55 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除 alert 旧按钮：删掉 layoutRow(openAlert) 与两行 TYPES.map，连同 openAlert / openTyped 函数；新配置 CellGroup 完全替代。252 项测试与全套门禁通过，产物核对三条旧文案已清除、新三按钮仍在。未提交，待看效果。
+- 2026-11-26 06:18:10 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 最后一排三个按钮去掉 size=xs 改走默认型号，其余示例按钮 XS 不变；252 项测试与全套门禁通过，产物核对无 size 字段。未提交，待看效果。
