@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-26 07:34:40 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 07:42:16 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -342,6 +342,16 @@
 
 **门禁实测**：build 414 产物 → test 253 全过 → guard / pack → demo build:weapp → codelint 13 文件 → docwriter 无 FAIL。产物核对 `useState("joined")` 1 次 / `useState("spaced")` 2 次，异步按钮 `x(Cell,{value:x(Button,{onClick:q,…})})` 无 size 字段，页面无手写 `mptk-card__title`。未提交。
 
+### 2026-11-26 删头部滑块、三处加图片头按钮
+
+用户要求：① 删掉顶部配置区的「头部」滑块；② alert / confirm / 自定义按钮三处都加「图片头」按钮；③ 默认样式按钮文字改「默认」；④「默认样式的 icon 是信息头」。
+
+**落点**：`demo/src/pages/dialog/index.tsx` 删 `HEADERS` / `HeaderMode` / `header` state / `headerOptions()` 与顶部「头部」Cell，`sharedOptions()` 只留标题与宽度（busy 用）。`AlertMode` 加 `'image'`，`openVariant` 在 image 档带 `headerImage:{src:HEADER_IMAGE,offset:{top:-30}}`（复用原延伸示例图，不写死宽度）；`variantConfig` 的按钮改为「默认 / icon外伸 / 信息头 / 图片头」四个。
+
+**按理解处理**：用户原话「默认样式的 icon 是信息头」按「icon 头那档就是信息头按钮」理解，没有推翻上一轮「默认样式是纯标题+内容+按钮、不带图标」的定稿；若原意是让「默认」按钮也带信息头样式，需再确认。
+
+**门禁实测**：build 414 产物 → test 253 全过 → guard / pack → demo build:weapp → codelint 13 文件 → docwriter 无 FAIL。产物核对顶部无「头部」cell 标题、四个按钮文案各一次、`headerImage:{src:j,offset:{top:-30}}` 生效。未提交。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -384,3 +394,4 @@
 - 2026-11-26 06:18:10 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 最后一排三个按钮去掉 size=xs 改走默认型号，其余示例按钮 XS 不变；252 项测试与全套门禁通过，产物核对无 size 字段。未提交，待看效果。
 - 2026-11-26 07:09:58 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · confirm 与自定义按钮改为 alert 同款排列：上面按钮/内置 icon 两滑块，下面默认样式/icon外伸/信息头三按钮；配置区共用、三组 state 独立，旧形态按钮行全删。252 项测试与全套门禁通过，产物核对旧文案已清。未提交，待看效果。
 - 2026-11-26 07:34:40 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · demo 四处修正：confirm 滑块默认竖线（库不传参口径核查已是 joined，无需改库）、默认样式改纯标题+内容+按钮去掉 type、异步闸门按钮进 Cell 居右走默认型号、四块拆成独立 Card。253 项测试与全套门禁通过，产物核对 joined/spaced 默认值与 Cell 结构。未提交，待看效果。
+- 2026-11-26 07:42:16 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 删顶部配置区头部滑块及配套状态；alert/confirm/自定义三处配置区各加图片头按钮（复用延伸示例图与 -30 偏移），默认样式按钮改名默认；253 项测试与全套门禁通过，产物核对四按钮文案与 headerImage。未提交，待看效果。
