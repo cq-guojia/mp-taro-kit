@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-26 14:11:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 14:38:28 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -25,7 +25,7 @@
 
 ## Next
 
-按上面清单实现：先改配置与 store/lifecycle/page-route，再写 Toast 命令/宿主/样式，再补 demo、出口、文档、测试，最后跑全部门禁并核对 `demo/dist/pages/toast`。
+实施已完成、门禁全绿。用户验收看三处：演示站 Toast 页（基础 / 折叠堆叠 / 带撤销按钮三例）的平铺与点开成列表交互、`navigateTo` 后 Toast 由新页续显、Skyline/WebView 双端真机手势与动画（未验前不宣称与 Reanimated 等价）。若要结案，用户明确说「结束/关闭任务」后走 `close`。
 
 ## Process
 
@@ -45,10 +45,11 @@
 - 2026-11-26 用户拍板全量重构：现有 Toast 实现全部删除，不留兼容；新 Toast 与 Dialog 共用一套全局命令宿主协议（模块级 store + id + token/scope 认领 + 当前页唯一渲染 + `expiresAt`）。差异只在内容形态：Dialog 有 Promise 结算/锁定，Toast 有计时与堆叠展开。显示交互继续抄 sonner-native 的两种形态。
 
 - 2026-11-26 架构 + 前端双重复核（只读，两个独立 agent）：① 现有 Dialog 的 owner 是「发起页唯一」，不是「当前页唯一」——`navigateTo` 后弹窗留在旧页、Promise 悬挂；照搬会让 Toast 在隐藏页渲染或过期才出现。修正为 scope 交接 + 当前页唯一渲染。② `ensureMounted` 只看全局计数，不证明当前页有宿主；修正为按 scope 校验。③ ReactNode / `onClick` 进全局 store 会把旧页闭包留在 `Symbol.for` 单例里、跨页点击打到错误页面；修正为 descriptor 载荷 + 命令层回调 + `isCurrent` 守卫。④ `expiresAt` 不能在 render 期改 store；timer 幂等 + effect 兜底。⑤ 宿主卸载禁止全局 clear，只按 owner 清。⑥ `createKitApp` 的 hosts 不在 fingerprint 内，重复配置会覆盖注册表，接入时避免隐式全局单写。前端侧：⑦ 不实测 `toastHeights`，用固定档高 + CSS transition；⑧ 安全区用 `safeAreaState()` 注入，`env()`仅兜底；⑨ 展开态透明层显式 `catchMove={false}` + 逐类 pointer-events；⑩ 不提供声明式 Toast，故不加 `markCardEdgeOutOfFlow`；⑪ demo 页不打 `section`（`tests/ui.test.mjs:773-775` 会红）；⑫ 避免 `var()` fallback / `inset` / 简写等 Skyline 会静默丢弃的写法。
+- 2026-11-26 实施期踩坑：`demo/src/pages/toast/index.tsx` 与 `index.config.ts` 上一轮只建了空文件占位（0 字节），Node test 只读 catalog 声明、不编译页面所以没暴露；`pnpm --filter mp-taro-kit-demo build:weapp` 以 Rollup `MISSING_EXPORT: "default" is not exported by src/pages/toast/index.tsx` 抓出。按 dialog 页结构补齐三例（基础四 tone + 关闭叉 / 推四条堆叠 / action+onAction 撤销）后 demo build=0。教训：新增演示页的编译只有 demo build 能验，`build+test+guard` 全绿不等于演示站能看。
 
 ## Conclusion
 
-最终方案已复核并落入本工作日志：旧 Toast 已全量删除且门禁全绿；下一步按最终方案实现统一底座上的新 Toast（含 demo、出口、文档、测试），完成后再跑 `build → test → guard → demo build:weapp → 产物核对`。Skyline / WebView 双端手势与动画真机验证前不宣称可用。
+最终方案已复核并落入工作日志，且已按清单实施完成：新 Toast 走独立 `toastLifecycle`（复用 `createOverlayLifecycle` 底座），可序列化 descriptor 载荷、命令层 `onAction` 回调、`expiresAt` 唯一时间真值、scope 交接 + 当前页唯一渲染；命令 `showToast` / `hideToast` / `closeToast` / `clearToasts` / `retargetToasts` / `sweepExpiredToasts`，宿主 `ToastHost`，精确子入口 `ui/commands/toast`，演示站独立 Toast 页三例，文档 `api/toast.md` 及出口/架构/映射同步。全量门禁：build=0（dist 418 产物）、test=263/263、guard=0、codelint=52 文件全过、demo build:weapp=0；产物核对 `demo/dist/pages/toast/{index.js,json,wxml,wxss}` 齐全、`app.json` 路由含 `pages/toast/index`、页内 4 处 `showToast` 与 `enableStacking` 证实非空壳。Skyline / WebView 双端手势与动画真机验证前不宣称与 Reanimated 等价。独立性限制：命令式宿主由 `KitPage` 在每页页面树渲染，靠模块级单例 + scope 交接实现「全局唯一、当前页唯一渲染」，不是 App 根节点常驻一棵宿主树。
 
 ## Execution Log
 
@@ -67,3 +68,4 @@
 - 2026-11-26 13:32:34 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 补录全量重构决定：旧 Toast 全部删除不留兼容；新 Toast 与 Dialog 共用全局命令宿主协议（模块级 store + token/scope 认领 + 当前页唯一渲染 + expiresAt），显示交互抄 sonner-native
 - 2026-11-26 14:04:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 旧 Toast 实现已全量删除：组件/宿主/命令/队列/配置键/样式/导出/demo/测试/文档/生成物均清理；build=0、test=261/261、guard=0、demo build=0、codelint=0。仓库仅剩工作日志中的 Toast 字样
 - 2026-11-26 14:11:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 架构+前端复核完成，修正跨页 scope 交接、descriptor 载荷、TTL 执行点、scoped ensureMounted、宿主交接清理等漏洞；最终方案已写入工作日志，开始实施
+- 2026-11-26 14:38:28 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 实施完成：新 Toast 独立 lifecycle + 可序列化载荷 + scope 交接落地，demo 空页补齐（MISSING_EXPORT 根因）；全量门禁 build/test263/guard/codelint/demo build 全绿，产物核对 pages/toast 四件套齐全，worklog 正文已同步
