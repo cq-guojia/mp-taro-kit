@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-26 06:18:10 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 07:09:58 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -322,6 +322,16 @@
 
 **门禁实测**：build 414 产物 → test 252 全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对 `dialog/index.js` 里 `jsx(Button,{className:"demo-item",onClick:…})` 无 size 字段。未提交。
 
+### 2026-11-26 confirm 与自定义按钮对齐 alert 排列
+
+用户要求：「confirm 和自定义按钮也是按照 alert 这样的排列方式去排，上面两个滑块，下面是几个按钮的示例。」
+
+**落点**：`demo/src/pages/dialog/index.tsx` 把 `ALERT_LAYOUTS` 改成三块共用的 `BUTTON_LAYOUTS` + `ButtonLayout` 类型，抽出 `variantConfig(layout, setLayout, type, setType, open)` 生成「按钮 / 内置 icon 两滑块 + 默认样式 / icon外伸 / 信息头三按钮」，三块各自一组 state（均默认 spaced / info，互不牵连）。`openVariant(kind, mode, layout, type)` 统一构造载荷，alert 保留「完成」单按钮、confirm 保留原 resolve 文案、自定义按钮保留橙色强调与 `lockExceptions`。旧 `layoutRow` / `openConfirm` / `openCustomActions` / `withLayout` / `LAYOUTS` 全删；busy 仍走 `sharedOptions()`。
+
+**回归**：测试断言改为「配置区只写一份、三组 state 各自独立、三块都接 `openVariant`、旧形态行不残留」，并去掉被共用参数占用的 `setLayout` 代理断言。
+
+**门禁实测**：build 414 产物 → test 252 全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对旧「竖排按钮」文案已清，配置区与三按钮文案在。未提交。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -362,3 +372,4 @@
 - 2026-11-26 06:07:47 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站 alert 下新增配置 CellGroup：按钮滑块（横排/竖线，默认横排）+ 内置 icon 滑块（成功/失败/警告/信息，默认信息）+ 三按钮（默认样式/icon外伸/信息头），三按钮都读滑块且默认样式只有完成按钮；252 项测试与全套门禁通过，产物核对两档四档与三按钮文案。未提交，待看效果。
 - 2026-11-26 06:11:55 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除 alert 旧按钮：删掉 layoutRow(openAlert) 与两行 TYPES.map，连同 openAlert / openTyped 函数；新配置 CellGroup 完全替代。252 项测试与全套门禁通过，产物核对三条旧文案已清除、新三按钮仍在。未提交，待看效果。
 - 2026-11-26 06:18:10 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 最后一排三个按钮去掉 size=xs 改走默认型号，其余示例按钮 XS 不变；252 项测试与全套门禁通过，产物核对无 size 字段。未提交，待看效果。
+- 2026-11-26 07:09:58 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · confirm 与自定义按钮改为 alert 同款排列：上面按钮/内置 icon 两滑块，下面默认样式/icon外伸/信息头三按钮；配置区共用、三组 state 独立，旧形态按钮行全删。252 项测试与全套门禁通过，产物核对旧文案已清。未提交，待看效果。
