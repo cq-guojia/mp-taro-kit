@@ -894,12 +894,12 @@ test('退场完成信号只有一个真源：presence 用同一个 timer 卸载�
 
 test('异步 confirm 成功：busy 保持到 onExited，退场帧不翻 loading/catchMove', () => {
   const host = read('src/ui/infra/DialogHost.tsx')
-  const success = /\(result\) => \{([\s\S]*?)\n\s+\},\n\s+\(\) => \{/.exec(host)?.[1] ?? ''
-  assert.match(success, /if \(result === false\)/, '闸门拒绝必须单独分支，保持打开可重试')
+  const success = /\(value\) => \{([\s\S]*?)\n\s+\},\n\s+\(\) => \{/.exec(host)?.[1] ?? ''
+  assert.match(success, /if \(!isSuccess\(value\)\)/, '闸门拒绝必须单独分支，保持打开可重试')
   assert.equal(
     (success.match(/\bfail\(\)/g) ?? []).length,
     1,
-    '成功回调只走一次失败出口：仅在 result=false 的拒绝分支内',
+    '成功回调只走一次失败出口：仅在 isSuccess=false 的拒绝分支内',
   )
   assert.match(success, /fail\(\)\s*\n\s*return/, '拒绝分支调用失败出口后立即 return，不落到成功路径')
   assert.match(success, /requestClose\(id, true\)/, '成功一律走逻辑关闭并 resolve(true)，取消 / 叉 / 遮罩才 false')

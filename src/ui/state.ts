@@ -57,11 +57,11 @@ interface DialogPayloadCommon {
   /** 发起页面的稳定实例 id；由 KitPage 提供，避免上一页遗留宿主抢到弹窗。 */
   readonly pageKey?: string
   readonly resolve: (confirmed: boolean) => void
-  /** 确定前的异步闸门：返回 Promise 期间转圈并整框屏蔽，reject / false 保持打开可重试。 */
+  /** 确定前的异步闸门：仅返回 Promise 时转圈并整框屏蔽，同步返回不转圈，reject / false 保持打开可重试。 */
   readonly onConfirm?: () => unknown
-  /** 自定义按钮（含键为 confirm 的自定义按钮）的异步闸门，key 为按钮 key。 */
+  /** 自定义按钮（含键为 confirm 的自定义按钮）的异步闸门，key 为按钮 key；同步返回不转圈。 */
   readonly onAction?: (key: string) => unknown
-  /** 闸门拒绝（reject / 显式 false）时的反馈，Promise 期间保持打开可重试。 */
+  /** 闸门拒绝（reject / 显式 false / 同步抛错）时的反馈，保持打开可重试。 */
   readonly onFailed?: (key: string) => void
 }
 

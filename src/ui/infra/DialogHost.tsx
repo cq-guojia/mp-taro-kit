@@ -10,6 +10,7 @@ import { useOverlayLifecycle } from './use-overlay-lifecycle.js'
 import type { OverlayLifecycleEntry } from './overlay-lifecycle.js'
 import { useThemeDark } from './use-theme.js'
 import { decideGate, type PopupLockState } from './popup-lock/index.js'
+import { isThenable, isSuccess } from '../../runtime/thenable.js'
 
 export interface DialogHostProps {
   className?: string
@@ -131,7 +132,6 @@ export function DialogHost({ className }: DialogHostProps) {
       return
     }
     const seq = state.dialogLifecycle.seqOf(id)
-    startAction(id, key)
     // 默认集合的 confirm 走 onConfirm；自定义集合里即使 key 叫 confirm 也走 onAction，
     // 否则调用方给自定义按钮挂的异步闸门会被静默丢掉（alert 的自定义按钮同理）。
     const task = !payload.customActions && key === 'confirm'
@@ -139,30 +139,43 @@ export function DialogHost({ className }: DialogHostProps) {
       : payload.onAction
         ? () => payload.onAction?.(key)
         : undefined
+    // 同步回调不登记活跃动作：转圈 / 整框锁只属于真的返回 thenable 的动作。
+    let result: unknown
+    try {
+      result = task?.()
+    } catch {
+      if (state.dialogLifecycle.isCurrent(id, seq) && mountedRef.current) payload.onFailed?.(key)
+      return
+    }
+    if (!isThenable(result)) {
+      if (!state.dialogLifecycle.isCurrent(id, seq) || !mountedRef.current) return
+      if (isSuccess(result)) requestClose(id, true)
+      else payload.onFailed?.(key)
+      return
+    }
+    startAction(id, key)
     const fail = (): void => {
       // 闸门拒绝：只结束自己这个动作；还有别的例外动作在跑时整框锁保持。
       settleAction(id, key)
       payload.onFailed?.(key)
     }
-    void Promise.resolve()
-      .then(() => task?.())
-      .then(
-        (result) => {
-          if (!state.dialogLifecycle.isCurrent(id, seq) || !mountedRef.current) return
-          if (result === false) {
-            fail()
-            return
-          }
-          // 成功：busy 留到 onExited → finish，退场帧不翻 busy/catchMove/loading，与声明式 Popup 同帧。
-          // 取消 / 叉 / 遮罩已各自传 false；能走到这里的都是成功动作，自定义 key 也算确认。
-          requestClose(id, true)
-        },
-        () => {
-          // reject 保持打开可重试，只解 busy。
-          if (!state.dialogLifecycle.isCurrent(id, seq) || !mountedRef.current) return
+    void Promise.resolve(result).then(
+      (value) => {
+        if (!state.dialogLifecycle.isCurrent(id, seq) || !mountedRef.current) return
+        if (!isSuccess(value)) {
           fail()
-        },
-      )
+          return
+        }
+        // 成功：busy 留到 onExited → finish，退场帧不翻 busy/catchMove/loading，与声明式 Popup 同帧。
+        // 取消 / 叉 / 遮罩已各自传 false；能走到这里的都是成功动作，自定义 key 也算确认。
+        requestClose(id, true)
+      },
+      () => {
+        // reject 保持打开可重试，只解 busy。
+        if (!state.dialogLifecycle.isCurrent(id, seq) || !mountedRef.current) return
+        fail()
+      },
+    )
   }
 
   const actionsOf = (id: number, entry: OverlayLifecycleEntry<DialogPayload>): ContentPopupAction[] => {

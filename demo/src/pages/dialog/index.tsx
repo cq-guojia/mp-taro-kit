@@ -120,7 +120,7 @@ export default function DialogPage() {
   }
 
   const openBusyExempt = () => {
-    void confirm('先点「开始异步」：转圈期只有「仍可点」能中断，右上叉 / 遮罩 / 开始异步全锁住', {
+    void confirm('先点「开始异步」：转圈期只有「仍可点」能点掉弹窗（按确认结算），右上叉 / 遮罩 / 开始异步全锁住', {
       ...sharedOptions(),
       title: '异步例外',
       closeable: true,

@@ -89,7 +89,12 @@ test('命令式动作与 UI 层共用同一判定，cancel 不再绕过闸门', 
   assert.match(host, /payload\.onFailed\?\.\(key\)/, '失败出口真被调用，不是空契约')
   // 转圈与屏蔽解耦：loading 只认正在跑的动作 key，不再把所有被锁按钮一起转。
   assert.match(host, /spinning = pending\.includes\(action\.key\)/, '只有用户点的那个按钮转圈')
-  assert.match(host, /startAction\(id, key\)/, '点下时登记正在跑的动作')
+  // 登记必须以 thenable 为界：同步回调（含 undefined / false）不该进 pendingKeys 骗出一个圈。
+  const start = run.indexOf('startAction(id, key)')
+  const thenableCheck = run.indexOf('if (!isThenable(result))')
+  assert.ok(thenableCheck >= 0 && start > thenableCheck, 'startAction 必须排在 thenable 判定之后')
+  assert.match(run, /if \(!isThenable\(result\)\) \{[\s\S]*?return\n[ ]{4}\}/, '同步返回直接结算，不登记转圈')
+  assert.match(host, /import \{ isThenable, isSuccess \} from '\.\.\/\.\.\/runtime\/thenable\.js'/, '复用全库 thenable 判定，不另写一套')
   assert.match(host, /disabled:\s*decision\.locked && !spinning/, '其余被锁按钮置灰，转圈的那个不灰')
   assert.doesNotMatch(host, /loading:\s*decideGate\([^)]*\)\.locked/, '闸门判定结果不能直接当 loading')
   // 例外允许并发：按弹窗 + key 记在飞行动作数，同 key 重入也不能被先结束者提前解锁。

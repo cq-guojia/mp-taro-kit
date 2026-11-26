@@ -41,7 +41,7 @@ import 'mp-taro-kit/ui/layout/content-popup/style'
 
 ### 整框交互锁
 
-`busy` / `locked` 一开，整块面板进入屏蔽：关闭叉与点遮罩两条关闭路径都封住，内部按钮的 `onClick` 由锁上下文门控，不会误触发宿主回调。屏蔽是「不可点」的可见状态——非例外按钮置灰，但**不转圈**；转圈只属于真正跑异步的那个动作，由命令式 Dialog 的活跃动作 key 或调用方显式传的 `loading` 决定，两者互不替代。`lockExceptions` 列出的 `lockKey` 仍可点，命令式确认框默认放行 `cancel`；嵌套浮层只有「锁住的层」才施加例外约束，两层都锁时例外取交集：内层没锁时不吃掉外层例外，内层锁住但没声明例外时也不继承外层放行。`Button` 的 `onBusyChange` 在内部 loading 起止各上报一次（`true` / `false` 成对），供外层把按钮自己的转圈状态接成整框锁。
+`busy` / `locked` 一开，整块面板进入屏蔽：关闭叉与点遮罩两条关闭路径都封住，内部按钮的 `onClick` 由锁上下文门控，不会误触发宿主回调。屏蔽是「不可点」的可见状态——非例外按钮置灰，但**不转圈**；转圈只属于真正跑异步的那个动作，由命令式 Dialog 的活跃动作 key 或调用方显式传的 `loading` 决定，两者互不替代。命令式动作只有返回 Promise（thenable）才登记为在飞行动作、才转圈；同步返回不锁框、不转圈。`lockExceptions` 列出的 `lockKey` 仍可点，命令式确认框默认放行 `cancel`；嵌套浮层只有「锁住的层」才施加例外约束，两层都锁时例外取交集：内层没锁时不吃掉外层例外，内层锁住但没声明例外时也不继承外层放行。`Button` 的 `onBusyChange` 在内部 loading 起止各上报一次（`true` / `false` 成对），供外层把按钮自己的转圈状态接成整框锁。
 
 WebView 侧用 `pointer-events: none` + 例外子树 `auto` 命中（Button / Switch / Segmented / Cell 四类同口径）；Skyline 侧不能只靠 `pointer-events`，另由面板的 `catchMove` 与控件逻辑门兜底。这条是源码与编译产物级核实，尚未做 Skyline / WebView 双端真机观感验证。
 
