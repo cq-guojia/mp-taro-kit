@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-26 11:58:32 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 12:30:18 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -15,7 +15,7 @@
 
 ## To Do
 
-- 调研 Toast 参考：用户明确否决「大而全组件库里的通用 Toast」（Vant / antd-mobile / TDesign 等，样式为兼容所有场景而平庸），要求找以 Toast 为主角的独立控件 / 有创意的视觉。已给候选：Sonner、react-hot-toast、toastify-js、notyf（独立库），Mobbin / Dribbble / UISDC 文章（视觉与手法）；Vant Weapp Toast README 仍留作同端 API 基线。等用户看完选定抄谁。
+- 调研 Toast 参考：用户先否决「大而全组件库里的通用 Toast」，又否决上一轮给的 Web 独立库（Sonner / react-hot-toast / toastify-js / notyf 都不是移动端）。用户要求必须是移动端。移动端候选：sonner-native（RN，1.4k）、react-native-toast-message（RN，2.1k）、AlertToast（SwiftUI，2.4k）；小程序独立 Toast 库只有 wepy-com-toast（105 star，2017 年后未更新）等低质量项目。移动端视觉参考：Mobbin Toast/Snackbar 真实 App 截图、UISDC Toast 设计文章。Vant Weapp Toast README 仍留作同端 API 基线。等用户看完选定抄谁。
 - 定 Toast 契约：声明式与命令式边界、位置/类型/时长/队列、与 Loading 的分离、`NoticeTone` 语义是否保留。
 - 落码：`src/ui/feedback/Toast.tsx`、`src/ui/commands.ts` 的 showToast/hideToast、`src/runtime/notify.ts` 队列、`src/ui/infra/ToastHost.tsx` 与样式。
 - 填 `demo/src/pages/toast/index.tsx` 空页，按一页一组件铺示例；更新 `docs/api/` 对应契约与出口登记。
@@ -23,14 +23,14 @@
 
 ## Next
 
-等用户从「独立 Toast 控件」候选里选定要抄的对象后，先写 `docs/api/toast.md` 契约，再按契约改 `src/ui/feedback/Toast.tsx:12` 与 `demo/src/pages/toast/index.tsx:4`；本轮只完成占位、空页与候选调研。
+等用户从「移动端 Toast」候选里选定要抄的对象后，先写 `docs/api/toast.md` 契约，再按契约改 `src/ui/feedback/Toast.tsx:12` 与 `demo/src/pages/toast/index.tsx:4`；本轮只完成占位、空页与移动端候选调研。
 
 ## Process
 
 - 2026-11-26 会话纠正：Vant Weapp 无 Popover（GitHub `youzan/vant-weapp` 的 `packages/` 无该目录），H5 版才有 `reference` 插槽气泡菜单；此前把 H5 示例当 Weapp 口径是错的。
 - 2026-11-26 会话纠正：Vant Weapp Notify 原文仅「在页面顶部展示消息提示」，API 只有 `top` 距离与 `safeAreaInsetTop`，无 `position=top|bottom`；该能力是 H5 版口径。
 - 本轮产物：`demo/src/catalog.ts` 删三项菜单占位，Toast 改指 `pages/toast/index`；反馈页移除 Toast 示例；新增 `demo/src/pages/toast/index.tsx` 空页与 `index.config.ts`；`docs/architecture/demo-mapping.md` 同步分组与分页口径。
-- 2026-11-26 二次调研：按用户新口径换成独立 Toast 控件。Sonner（13.3k，https://sonner.emilkowal.ski/）以 opinionated 默认、堆叠/visibleToasts/expand、六位置与位置感知滑动关闭、promise/action、richColors 最有辨识度；react-hot-toast（11k）、toastify-js（2.5k）、notyf（约 2.8k）为备选。视觉灵感：Mobbin Toast/Snackbar 真实 App 截图、Dribbble `notification-toast`、UISDC《4个方法帮你快速做出吸睛的 Toast 设计》（破形/异形/背板/冷暖对比/颜色呼应）。这些是 Web/RN 实现，代码不直接搬，只借交互与视觉语法；Skyline 下手势与异形需另验。
+- 2026-11-26 二次调研（已被用户纠正）：上一轮给的 Sonner / react-hot-toast / toastify-js / notyf 都是 Web DOM 库，不是移动端，作废为代码参照；其中 Sonner 的堆叠/action/promise/位置感知手势仍可作为交互语法参考。真正的移动端候选：sonner-native（gunnartorfis/sonner-native-toasts，1.4k，https://sonner-native.netlify.app/，RN 版 Sonner：promise/action/swipe/暗色）、react-native-toast-message（calintamas，约 2.1k，键盘感知、自定义布局）、AlertToast（SwiftUI，2.4k，https://elai950.github.io/AlertToast/，Apple 风格多形态）。小程序独立 Toast 库：wepy-com-toast（105 star，2017 后未更新）、mp-toast-component（3 star），不足以当标准。移动端视觉参考：Mobbin Toast/Snackbar 真实 App 截图、UISDC《4个方法帮你快速做出吸睛的 Toast 设计》（破形/异形/背板/冷暖对比/颜色呼应）。这些都不是 Taro/小程序代码，落地仍需按本库约定重写；Skyline 下手势与异形需另验。
 
 ## Conclusion
 
@@ -45,3 +45,4 @@
 - 2026-11-26 11:43:51 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 交付前门禁卡住：pnpm run build && demo build:weapp 命令无返回结果，未见 pnpm/vite/taro 进程；产物未核对，构建状态记为未验证
 - 2026-11-26 11:48:16 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 构建卡点已解：终止旧进程后重定向日志重跑，pnpm run build 与 demo build:weapp 均成功；产物核对 demo/dist/pages/toast/{index.js,json,wxml} 存在，app.json 路由含 pages/toast/index，dist 无三个已移除组件字样
 - 2026-11-26 11:58:32 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按用户新口径改找独立 Toast 控件候选：Sonner / react-hot-toast / toastify-js / notyf，另有 Mobbin / Dribbble / UISDC 视觉参考；已写入工作日志，等用户选定抄谁
+- 2026-11-26 12:30:18 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户纠正上一轮候选不是移动端；改给 sonner-native / react-native-toast-message / AlertToast 与 Mobbin / UISDC 移动端视觉参考，工作日志已同步
