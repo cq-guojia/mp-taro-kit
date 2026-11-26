@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-26 13:32:34 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 14:04:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -62,3 +62,4 @@
 - 2026-11-26 12:47:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纠正上一轮对 sonner-native 的描述：isExpanded 不控制 description/action 字段显示，只改堆叠位置与动画；多条时 visibleToasts 超限整条隐藏，默认回退 3；已改工作日志
 - 2026-11-26 13:17:19 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户拍板抄 sonner-native 显示与交互（平铺/折叠点开成列表），内容槽暂定标题/内容/icon/关闭叉/定制按钮；触发必须全局唯一，下轮讨论；Vant Weapp 函数式 API 为页面级 getCurrentPages+selectComponent，不满足全局；当前 KitPage 每页挂 host 导致退出页面 toast 视觉消失，已记入工作日志
 - 2026-11-26 13:32:34 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 补录全量重构决定：旧 Toast 全部删除不留兼容；新 Toast 与 Dialog 共用全局命令宿主协议（模块级 store + token/scope 认领 + 当前页唯一渲染 + expiresAt），显示交互抄 sonner-native
+- 2026-11-26 14:04:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 旧 Toast 实现已全量删除：组件/宿主/命令/队列/配置键/样式/导出/demo/测试/文档/生成物均清理；build=0、test=261/261、guard=0、demo build=0、codelint=0。仓库仅剩工作日志中的 Toast 字样
