@@ -22,6 +22,8 @@ export interface OverlayProps {
   lockScroll?: boolean
   /** 进出场时长（ms），0 = 不做动画 */
   duration?: number
+  /** 退场动画完成后触发一次，见 Popup */
+  onExited?: () => void
   className?: string
 }
 
@@ -36,9 +38,10 @@ export function Overlay({
   onClick,
   lockScroll = true,
   duration = MOTION_DURATION,
+  onExited,
   className,
 }: OverlayProps) {
-  const { mounted, open } = usePresence(visible, duration)
+  const { mounted, open } = usePresence(visible, duration, { onExited })
   if (!mounted) return null
 
   const numeric = typeof opacity === 'number'

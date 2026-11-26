@@ -14,6 +14,8 @@ export interface DropdownProps {
   closable?: boolean
   lockScroll?: boolean
   duration?: number
+  /** 退场动画完成后触发一次，见 Popup */
+  onExited?: () => void
   className?: string
 }
 
@@ -26,9 +28,10 @@ export function Dropdown({
   closable = true,
   lockScroll = true,
   duration = MOTION_DURATION,
+  onExited,
   className,
 }: DropdownProps) {
-  const { mounted, open: shown } = usePresence(open, duration)
+  const { mounted, open: shown } = usePresence(open, duration, { onExited })
   if (!mounted) return null
 
   const names = ['mptk-dropdown', shown ? 'mptk-dropdown--open' : '']

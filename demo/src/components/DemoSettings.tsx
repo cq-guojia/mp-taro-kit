@@ -45,9 +45,9 @@ function restartForRenderer(): void {
     restart.call(Taro, { path: 'pages/index/index' })
     return
   }
-  const wxRestart = (typeof wx !== 'undefined' ? wx : undefined) as
-    | { restartMiniProgram?: (option: { path: string }) => void }
-    | undefined
+  const wxRestart = (globalThis as {
+    wx?: { restartMiniProgram?: (option: { path: string }) => void }
+  }).wx
   if (typeof wxRestart?.restartMiniProgram === 'function') {
     wxRestart.restartMiniProgram({ path: 'pages/index/index' })
   }

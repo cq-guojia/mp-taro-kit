@@ -147,6 +147,12 @@ export type ContentPopupAction = ImagePopupAction
 
 export interface ContentPopupProps {
   open: boolean
+  /** 首帧的展开状态；false = 先挂载关闭态、下一帧再展开。见 Popup */
+  initialOpen?: boolean
+  /** 命令弹窗专用旧别名，等价于 initialOpen=false；新调用方用 initialOpen */
+  animateOnMount?: boolean
+  /** 退场动画完成后触发一次，见 Popup */
+  onExited?: () => void
   position?: ContentPopupPosition
   onClose?: () => void
   variant?: ContentPopupVariant
@@ -512,6 +518,9 @@ function renderActions(
  */
 export function ContentPopup({
   open,
+  initialOpen,
+  animateOnMount = false,
+  onExited,
   position = 'center',
   onClose,
   variant = 'title',
@@ -861,6 +870,9 @@ export function ContentPopup({
   return (
     <Popup
       open={open}
+      initialOpen={initialOpen}
+      animateOnMount={animateOnMount}
+      onExited={onExited}
       position={resolvedPosition}
       overlay={overlay}
       overlayTone={overlayTone}

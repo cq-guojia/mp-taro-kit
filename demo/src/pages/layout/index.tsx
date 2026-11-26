@@ -126,7 +126,7 @@ export default function LayoutPage() {
         <CellGroup>
           <Cell
             title="位置"
-            value={<Segmented items={POSITIONS} value={position} onChange={(next) => setPosition(next as FloatingActionPosition)} />}
+            value={<Segmented<FloatingActionPosition> items={POSITIONS} value={position} onChange={setPosition} />}
           />
           <Cell
             title="显隐"
@@ -134,15 +134,15 @@ export default function LayoutPage() {
           />
           <Cell
             title="大小"
-            value={<Segmented items={SIZES} value={size} onChange={(next) => setSize(next as ButtonSize)} />}
+            value={<Segmented<ButtonSize> items={SIZES} value={size} onChange={setSize} />}
           />
           <Cell
             title="描边"
-            value={<Segmented items={BORDERS} value={variant} onChange={(next) => setVariant(next as ButtonVariant)} />}
+            value={<Segmented<ButtonVariant> items={BORDERS} value={variant} onChange={setVariant} />}
           />
           <Cell
             title="圆角"
-            value={<Segmented items={RADII} value={radius} onChange={(next) => setRadius(next as ButtonRadius)} />}
+            value={<Segmented<ButtonRadius> items={RADII} value={radius} onChange={setRadius} />}
           />
           <Cell
             title="背景"
@@ -150,11 +150,11 @@ export default function LayoutPage() {
           />
           <Cell
             title="回顶阈值"
-            value={<Segmented items={THRESHOLDS} value={threshold} onChange={setThreshold} />}
+            value={<Segmented<string> items={THRESHOLDS} value={threshold} onChange={setThreshold} />}
           />
           <Cell
             title="回顶动画"
-            value={<Segmented items={BACK_DURATIONS} value={backDuration} onChange={setBackDuration} />}
+            value={<Segmented<string> items={BACK_DURATIONS} value={backDuration} onChange={setBackDuration} />}
           />
         </CellGroup>
       </View>

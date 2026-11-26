@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import ts from 'typescript'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
 const read = (file) => readFileSync(join(root, file), 'utf8')
@@ -202,4 +203,49 @@ test('demo 一条接入 + 页面壳统一走 KitPage', () => {
   // ScrollView 是 KitPage 直接子节点才能被认领；主路径不写死 id / enhanced。
   assert.match(shell, /<KitPage[^>]*>[\s\S]*?<DemoNav[\s\S]*?<ScrollView/, 'ScrollView 不是 KitPage 直接子节点')
   assert.match(shell, /enhanced=\{scrollViewId !== undefined\}/, '主路径还自己写了 enhanced')
+})
+
+/** 用 Taro 桩加载 current-page，避免把 Taro runtime 拉进 Node 测试。 */
+function loadCurrentPageWith(taroStub) {
+  const source = read('src/app/current-page.ts')
+  const { outputText } = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  })
+  const mod = { exports: {} }
+  new Function('exports', 'module', 'require', outputText)(mod.exports, mod, (id) => {
+    if (id !== '@tarojs/taro') throw new Error(`意外的 require: ${id}`)
+    return { default: taroStub }
+  })
+  return mod.exports
+}
+
+test('当前页身份只取页面栈顶，不被执行上下文实例带偏', () => {
+  assert.doesNotMatch(read('src/app/current-page.ts'), /getCurrentInstance/, '命令身份不许读执行上下文实例')
+  const pageA = {}
+  const pageB = {}
+  const api = loadCurrentPageWith({
+    getCurrentPages: () => [pageA, pageB],
+    getCurrentInstance: () => ({ page: pageA }),
+  })
+  assert.equal(api.currentPageKeyFromTaro(), api.pageKeyOf(pageB), '栈顶 B 页才是当前页')
+  assert.notEqual(api.currentPageKeyFromTaro(), api.pageKeyOf(pageA), '执行上下文的 A 页不能成为身份')
+})
+
+test('页面栈为空时当前页身份为空串，不猜一个页面', () => {
+  const api = loadCurrentPageWith({
+    getCurrentPages: () => [],
+    getCurrentInstance: () => ({ page: {} }),
+  })
+  assert.equal(api.currentPageKeyFromTaro(), '', '页面栈为空时不能退回执行上下文实例')
+})
+
+test('页面宿主身份首次渲染固定，全局重渲染不会改写', () => {
+  const source = read('src/app/KitPage.tsx')
+  assert.doesNotMatch(source, /mptk-debug/, '诊断日志不许留在源码')
+  assert.doesNotMatch(source, /const pageKey = pageKeyOf\(Taro\.getCurrentInstance\(\)\.page\)/, '不能每次渲染重取宿主身份')
+  assert.match(
+    source,
+    /if \(pageKeyRef\.current === undefined\) \{\s*pageKeyRef\.current = pageKeyOf\(Taro\.getCurrentInstance\(\)\.page\) \?\? null\s*\}/,
+    '宿主身份只在首次渲染取一次',
+  )
 })

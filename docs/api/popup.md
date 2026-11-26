@@ -192,6 +192,8 @@ import 'mp-taro-kit/ui/layout/style'
 | `open` | boolean | 必填 | 是否显示；关闭后按 Popup 的退场时长卸载 |
 | `slides` | `ImagePopupSlide[]` | 必填 | 一屏一项：一张 `src` + 自己的尺寸字段 / `actions` / `actionsAlign` / `onClick`；一组即单图无翻页，多组出 Swiper + 红点；空数组不渲染任何东西 |
 | `onClose` | `() => void` | — | 关闭回调（关闭叉 / 点遮罩都走它）；不传则不渲染关闭叉 |
+| `onExited` | `() => void` | — | 退场动画完成、节点卸载后触发一次；外部状态源据此做物理清理 |
+| `initialOpen` | boolean | 等于 `open` | 首帧展开状态；`false` = 先挂载关闭态、下一帧展开。通用旋钮，`animateOnMount` 是命令侧旧别名 |
 | `closePosition` | `PopupClosePosition` | — | 关闭按钮位置，沿用 Popup 档；不传按形态取底座默认（top / center 外下中，bottom 外上中） |
 | `showIndicators` | boolean | `true` | 多图是否显示原生红点（`indicator-dots`） |
 | `closeable` | boolean | `true` | 显示关闭叉（**默认与 Popup 的 `false` 不同**）；底部弹出的徽标头默认 `false`，显式传 `true` 可覆盖 |

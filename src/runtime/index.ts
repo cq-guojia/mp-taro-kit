@@ -4,6 +4,7 @@ export { createSingleton } from './singleton.js'
 export {
   createOverlayStack,
   type OverlayEntry,
+  type OverlayPhase,
   type OverlayStack,
 } from './overlay-stack.js'
 export {

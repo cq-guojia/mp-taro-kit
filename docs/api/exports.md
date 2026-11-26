@@ -8,7 +8,7 @@
 |---|---|---|---|---|
 | `mp-taro-kit` | `dist/index.d.ts` | `dist/index.js` | `dist/index.cjs` | 五个能力域的具名汇总出口 |
 | `mp-taro-kit/design` | `dist/design/index.d.ts` | `dist/design/index.js` | `dist/design/index.cjs` | 设计层常量：控件默认尺寸档 `CONTROL_SIZE_DEFAULT` |
-| `mp-taro-kit/runtime` | `dist/runtime/index.d.ts` | `dist/runtime/index.js` | `dist/runtime/index.cjs` | 单例、覆盖层栈、通知队列、loading 句柄 |
+| `mp-taro-kit/runtime` | `dist/runtime/index.d.ts` | `dist/runtime/index.js` | `dist/runtime/index.cjs` | 单例、覆盖层栈（含 `phase` 与 `markExiting/finishExiting`）、通知队列、loading 句柄 |
 | `mp-taro-kit/config` | `dist/runtime/kit-config.d.ts` | `dist/runtime/kit-config.js` | `dist/runtime/kit-config.cjs` | 统一配置契约：`KitConfig` / `defineKitConfig` / `setKitConfig` / `getKitConfig` / `DEFAULT_KIT_CONFIG`；见[统一配置](config.md) |
 | `mp-taro-kit/plugin` | `dist/plugin/index.d.ts` | `dist/plugin/index.mjs` | `dist/plugin/index.cjs` | Taro 4 构建插件，把配置生成挂进编译链；包根另有 `plugin/index.js` 物理入口供 `resolve.sync` 解析；见[统一配置](config.md) |
 | `mp-taro-kit/utils` | `dist/utils/index.d.ts` | `dist/utils/index.js` | `dist/utils/index.cjs` | 纯函数与 i18n 注册口 |
@@ -64,7 +64,9 @@
 
 命令式宿主按能力拆成三件独立组件，各自只挂需要的那份：`ToastHost`（不带遮罩）、`DialogHost`（唯一带遮罩）、`LoadingHost`（不带遮罩）。`<OverlayHost />` 是三件的兼容组合出口，新代码不必用。`showToast` / `showLoading` / `alert` / `confirm` **按能力**同步检查对应宿主是否已挂载；没挂就调对应 API 每次抛带修复指引的 Error（错误点名 `ToastHost` / `DialogHost` / `LoadingHost`）。`hideToast` / `hideLoading` / `clearToasts` 不检查。`confirm` 以 Promise 解析出布尔值，`alert` 解析即关闭。`DialogHost` 同时可从 `mp-taro-kit/ui/commands/dialog` 取得，不必再从 `mp-taro-kit/app` 翻宿主。
 
-对话框命令的载荷是判别联合：`title` / 说明默认都进 `ContentPopup` 的 body，不碰 header 框；给了 `icon` 时，`title` / `note` / `icon` 改走 `ContentPopup` 的文字头，与 Popup 页共用同一套图标与字号渲染，body 只留说明。`actions` 的按钮文案、颜色与尺寸复用 Button 轴，尺寸默认 `md`（与 Popup 底栏按钮同型号），确定蓝 / 取消灰，`layout` 三档为 `spaced`（横排等分铺满）/ `stack`（竖排）/ `joined`（竖线等分）。`position` / `width` / `closeable`（默认 `false`）/ `maskClosable`（默认 `false`，开启时映射为取消）/ `badge` / `headerImage` / `offsets` 都是数据化配置，不接 ReactNode。`onConfirm` 是可选的异步闸门：返回 Promise 期间按钮转圈并触发整框锁，reject 或返回 `false` 保持打开可重试，成功才出栈并 resolve；`lockExceptions` 默认放行 `cancel`。`resetUIForTests` 清栈时会把挂起的 Promise settle 掉。产物级断言在 `tests/tree-shaking.test.mjs`，只引对话框能力不会带进 Toast / Loading / FloatingAction。
+`mp-taro-kit/ui/infra` 另导出通用浮层生命周期 `createOverlayLifecycle` / `useOverlayLifecycle` 及 `OverlayLifecycle` 等类型；`mp-taro-kit/runtime` 导出 `OverlayPhase` 类型。外部状态源驱动的浮层（命令弹窗、未来动画化的 Toast/Loading 等）统一走 `open → close（逻辑关闭，标 exiting 并结算一次）→ onExited → finish（物理清理）`；`dismiss` 做宿主卸载时的强制单项兜底，`clear` 做全局 reset 兜底，`isCurrent(id, seq)` 让异步回调在关闭或重开后作废。细则见[遮罩与浮层底座](overlay.md)。
+
+对话框命令的载荷是判别联合：`title` / 说明默认都进 `ContentPopup` 的 body，不碰 header 框；给了 `icon` 时，`title` / `note` / `icon` 改走 `ContentPopup` 的文字头，与 Popup 页共用同一套图标与字号渲染，body 只留说明。`actions` 的按钮文案、颜色与尺寸复用 Button 轴，尺寸默认 `md`（与 Popup 底栏按钮同型号），确定蓝 / 取消灰，`layout` 三档为 `spaced`（横排等分铺满）/ `stack`（竖排）/ `joined`（竖线等分）。`position` / `width` / `closeable`（默认 `false`）/ `maskClosable`（默认 `false`，开启时映射为取消）/ `badge` / `headerImage` / `offsets` 都是数据化配置，不接 ReactNode。`onConfirm` 是可选的异步闸门：返回 Promise 期间按钮转圈并触发整框锁，reject 或返回 `false` 保持打开可重试；成功才走“逻辑关闭 → 退场完成 → 物理出栈”，Promise 在逻辑关闭时即结算，不延迟一个动画周期，退场期间保持 busy/lock 且忽略 `lockExceptions`，按钮转圈与文案不在动画里回退。`lockExceptions` 默认放行 `cancel`。`resetUIForTests` 清栈时会把挂起的 Promise settle 掉。产物级断言在 `tests/tree-shaking.test.mjs`，只引对话框能力不会带进 Toast / Loading / FloatingAction。
 
 ### Cell / CellGroup 的组内行为
 

@@ -135,7 +135,12 @@ export function KitPage({
   }
 
   const hosts = kitHosts()
-  const pageKey = pageKeyOf(Taro.getCurrentInstance().page)
+  /* 身份只在页面首次渲染时取一次：全局 store 重渲染保留页时，当前实例会指向活跃页。 */
+  const pageKeyRef = useRef<string | null | undefined>(undefined)
+  if (pageKeyRef.current === undefined) {
+    pageKeyRef.current = pageKeyOf(Taro.getCurrentInstance().page) ?? null
+  }
+  const pageKey = pageKeyRef.current
 
   return (
     <KitPageScrollContext.Provider value={onScroll}>

@@ -2,6 +2,8 @@ import { createSingleton } from '../runtime/singleton.js'
 import { getKitConfig } from '../runtime/kit-config.js'
 import { createOverlayStack } from '../runtime/overlay-stack.js'
 import type { OverlayStack } from '../runtime/overlay-stack.js'
+import { createOverlayLifecycle } from './infra/overlay-lifecycle.js'
+import type { OverlayLifecycle } from './infra/overlay-lifecycle.js'
 import { createNotifyCenter } from '../runtime/notify.js'
 import type { NotifyCenter } from '../runtime/notify.js'
 import { createLoadingSlot } from '../runtime/loading-slot.js'
@@ -72,28 +74,34 @@ export interface HostMountState {
   toast: number
   dialog: number
   loading: number
+  /** 未来命令式浮层按 key 计数，无需改类型。 */
+  [kind: string]: number
 }
 
 export interface UIState {
   readonly overlays: OverlayStack<DialogPayload>
+  /** 命令弹窗的通用生命周期；与 overlays 共享同一份栈。 */
+  readonly dialogLifecycle: OverlayLifecycle<DialogPayload>
   readonly notices: NotifyCenter
   readonly loading: LoadingSlot
   readonly hosts: HostMountState
   readonly loadingHandles: Set<number>
   readonly toastTimers: Map<number, ReturnType<typeof setTimeout>>
   /** 每条弹窗只归一个 Host 渲染；Taro 每页都渲染 App 时避免多份宿主重复出框。 */
-  readonly dialogOwners: Map<number, string>
 }
 
 /** 全局唯一状态：跨副本单例保证主包 / 分包各副本看到同一份栈、队列与挂载计数。 */
 export function uiState(): UIState {
-  return createSingleton<UIState>('ui', () => ({
-    overlays: createOverlayStack<DialogPayload>(),
-    notices: createNotifyCenter(getKitConfig().runtime.notifyLimit),
-    loading: createLoadingSlot(),
-    hosts: { toast: 0, dialog: 0, loading: 0 },
-    loadingHandles: new Set<number>(),
-    toastTimers: new Map<number, ReturnType<typeof setTimeout>>(),
-    dialogOwners: new Map<number, string>(),
-  }))
+  return createSingleton<UIState>('ui', () => {
+    const overlays = createOverlayStack<DialogPayload>()
+    return {
+      overlays,
+      dialogLifecycle: createOverlayLifecycle(overlays),
+      notices: createNotifyCenter(getKitConfig().runtime.notifyLimit),
+      loading: createLoadingSlot(),
+      hosts: { toast: 0, dialog: 0, loading: 0 },
+      loadingHandles: new Set<number>(),
+      toastTimers: new Map<number, ReturnType<typeof setTimeout>>(),
+    }
+  })
 }

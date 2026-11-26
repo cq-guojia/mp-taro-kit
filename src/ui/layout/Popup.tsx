@@ -42,6 +42,15 @@ export type PopupContentPadding = number | Partial<Record<'top' | 'right' | 'bot
 
 export interface PopupProps {
   open: boolean
+  /**
+   * 首帧的展开状态；false = 先挂载关闭态、下一帧再展开，首帧也有进场过渡。
+   * 通用旋钮，任何「先挂载进场的浮层」都能用；animateOnMount 是它的命令侧旧别名。
+   */
+  initialOpen?: boolean
+  /** 命令弹窗专用旧别名，等价于 initialOpen=false；新调用方用 initialOpen */
+  animateOnMount?: boolean
+  /** 退场动画完成后触发一次；外部状态源据此做物理清理，逻辑关闭只翻 open */
+  onExited?: () => void
   position?: PopupPosition
   children?: ReactNode
   onClose?: () => void
@@ -95,6 +104,9 @@ export interface PopupProps {
 /** 弹出层：遮罩 + 定位面板，面板高度由 children 撑开；超高要滚由调用方在 children 里包 scroll-view 并给高。 */
 export function Popup({
   open,
+  initialOpen,
+  animateOnMount = false,
+  onExited,
   position = 'bottom',
   children,
   onClose,
@@ -121,7 +133,10 @@ export function Popup({
   locked = false,
   lockExceptions,
 }: PopupProps) {
-  const { mounted, open: shown } = usePresence(open, duration)
+  const { mounted, open: shown } = usePresence(open, duration, {
+    initialOpen: initialOpen ?? (animateOnMount ? false : open),
+    onExited,
+  })
   const outerLock = usePopupLock()
   if (!mounted) return null
 

@@ -212,9 +212,16 @@ test('关掉不立即卸载：五个浮层都走 presence，并且有进出场�
     'src/ui/layout/Popup.tsx',
     'src/ui/navigation/Drawer.tsx',
     'src/ui/navigation/Dropdown.tsx',
+    'src/ui/infra/DialogHost.tsx',
   ]) {
     const src = read(file)
-    assert.match(src, /usePresence\(/, `${file} 没走 presence`)
+    if (file.endsWith('DialogHost.tsx')) {
+      assert.match(src, /initialOpen=\{false\}/, '命令弹窗没从关闭态进场')
+      assert.match(src, /onExited=\{\(\) => finish\(id\)\}/, '命令弹窗没接退场完成回调')
+      assert.doesNotMatch(src, /setTimeout\(/, '命令弹窗不应自己另起退场计时')
+    } else {
+      assert.match(src, /usePresence\(/, `${file} 没走 presence`)
+    }
     assert.doesNotMatch(src, /if \(!open\) return null/, `${file} 关掉就卸载，动画播不出来`)
   }
 
@@ -871,6 +878,36 @@ test('关闭按钮：自绘几何居中的叉 + 三种底形 + 按形态分档�
   )
 })
 
+test('退场完成信号只有一个真源：presence 用同一个 timer 卸载并回调，不监听 transitionend', () => {
+  const source = read('src/ui/layout/presence.ts')
+  assert.match(source, /onExited\?: \(\) => void/, '缺 onExited 契约')
+  assert.match(source, /onExitedRef\.current = onExited/, '回调必须存 ref，不能放进 effect deps 让计时重跑')
+  assert.match(source, /duration <= 0/, 'duration=0 也要触发完成回调')
+  assert.doesNotMatch(source, /transitionend|afterClose/, '完成点不能用 transitionend，也不该再叫 afterClose')
+  const host = read('src/ui/infra/DialogHost.tsx')
+  assert.doesNotMatch(host, /MOTION_DURATION/, '宿主不应再自己持有时长常量')
+  assert.match(host, /onExited=\{\(\) => finish\(id\)\}/, '宿主应由 onExited 驱动物理清理')
+  assert.doesNotMatch(host, /busy=\{busyIds\.includes\(id\) \|\| exiting\}/, '退场帧翻转 busy 给同一个 panel 加 mptk-popup--blocked，打断 CSS transition')
+  assert.doesNotMatch(host, /locked=\{exiting\}/, '退场帧翻转 locked 会翻 catchMove，Skyline 下打断原生层动画')
+  assert.match(host, /busy=\{busyIds\.includes\(id\)\}/, '退场期锁状态必须与声明式 Popup 一致')
+})
+
+test('异步 confirm 成功：busy 保持到 onExited，退场帧不翻 loading/catchMove', () => {
+  const host = read('src/ui/infra/DialogHost.tsx')
+  const success = /\(result\) => \{([\s\S]*?)\n\s+\},\n\s+\(\) => \{/.exec(host)?.[1] ?? ''
+  assert.match(success, /if \(result === false\)/, '闸门拒绝必须单独分支解 busy，保持打开可重试')
+  assert.equal(
+    (success.match(/setBusy\(id, false\)/g) ?? []).length,
+    1,
+    '成功回调只解一次 busy：仅在 result=false 的拒绝分支内',
+  )
+  assert.match(success, /setBusy\(id, false\)\s*\n\s*return/, '拒绝分支解 busy 后立即 return，不落到成功路径')
+  assert.match(success, /requestClose\(id, key === 'confirm'\)/, '成功走逻辑关闭')
+  const finish = /const finish = \(id: number\): void => \{([\s\S]*?)\n\s+\}/.exec(host)?.[1] ?? ''
+  assert.match(finish, /setBusy\(id, false\)/, 'busy 只在 finish（onExited 驱动）清理')
+  assert.match(finish, /dialogLifecycle\.finish\(id\)/, 'finish 做物理清理')
+})
+
 test('进出场时长只有一个真源：JS 毫秒值与配置 token 必须同值', () => {
   const source = read('src/ui/layout/presence.ts')
   const constant = Number(/MOTION_DURATION = (\d+)/.exec(source)?.[1])
@@ -1378,7 +1415,7 @@ test('演示页与文档同步 ContentPopup 三档', () => {
   assert.doesNotMatch(page, /badgeBackground/, 'demo 不再写死徽标纯色，配色统一走库 token')
   assert.match(page, /tone: contentMode === 'square' \? 'green'/, 'demo 按形态给 tone 色名，不写色值')
   assert.match(page, /title="底部按钮"/, '演示页缺底栏配置入口 Cell')
-  assert.match(page, /title="底部按钮"\s+value=\{<Segmented items=\{FOOTER_SHAPES\} value=\{footerKind\} onChange=\{setFooterKind\} \/>\}/, '底栏形态切换直接放在 Cell 上，与「形状」同一处')
+  assert.match(page, /title="底部按钮"\s+value=\{<Segmented<FooterKind> items=\{FOOTER_SHAPES\} value=\{footerKind\} onChange=\{setFooterKind\} \/>\}/, '底栏形态切换直接放在 Cell 上，与「形状」同一处')
   assert.ok(page.indexOf('title="底部按钮"') < page.indexOf('title="文字头"'), '底部按钮 Cell 必须排在分组首位')
   for (const label of ['单按钮', '竖排', '横排', '竖线']) {
     assert.match(page, new RegExp(`value: '${label === '竖排' ? 'stack' : label === '横排' ? 'row' : label === '竖线' ? 'joined' : 'single'}', label: '${label}'`), `外层配置缺 ${label} 档`)

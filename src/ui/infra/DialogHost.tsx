@@ -6,7 +6,8 @@ import type { DialogPayload } from '../state.js'
 import { ContentPopup } from '../layout/content-popup/ContentPopup.js'
 import type { ContentPopupAction } from '../layout/content-popup/ContentPopup.js'
 import { KitPageKeyContext } from './page-key-context.js'
-import { useOverlayEntries } from './use-store.js'
+import { useOverlayLifecycle } from './use-overlay-lifecycle.js'
+import type { OverlayLifecycleEntry } from './overlay-lifecycle.js'
 import { useThemeDark } from './use-theme.js'
 
 export interface DialogHostProps {
@@ -22,43 +23,43 @@ let hostSeq = 0
 export function DialogHost({ className }: DialogHostProps) {
   const dark = useThemeDark()
   const pageKey = useContext(KitPageKeyContext)
-  const overlays = useOverlayEntries()
+  const state = uiState()
   const [token] = useState(() => {
     hostSeq += 1
     return `mptk-dialog-host-${String(hostSeq)}`
   })
+  const { entries, mountedRef } = useOverlayLifecycle(state.dialogLifecycle, {
+    token,
+    scope: pageKey,
+  })
   const [busyIds, setBusyIds] = useState<readonly number[]>([])
   const busyRef = useRef<Set<number>>(new Set())
-  const state = uiState()
 
-  // Taro 会保留上一页页面树：undefined 是手动全局宿主，null 是拿不到身份的页面宿主，都不抢页面弹窗。
-  const owns = (entry: { payload: DialogPayload }): boolean => pageKey === undefined
-    ? entry.payload.pageKey === undefined || entry.payload.pageKey === ''
-    : pageKey !== null && entry.payload.pageKey === pageKey
-  for (const entry of overlays) {
-    if (owns(entry) && !state.dialogOwners.has(entry.id)) state.dialogOwners.set(entry.id, token)
-  }
-  const visible = overlays.filter((entry) => owns(entry) && state.dialogOwners.get(entry.id) === token)
+  // useOverlayLifecycle 已按 scope 认领；这里只取归本宿主的条目。
+  const visible = entries.filter((entry) => state.dialogLifecycle.owns(entry.id, token))
 
   useEffect(() => {
     markHostMounted('dialog')
     return () => {
       markHostUnmounted('dialog')
       // 宿主卸载时它认领的弹窗就地收尾，不能把 Promise 留在半空。
-      for (const [id, owner] of state.dialogOwners) {
-        if (owner !== token) continue
-        state.dialogOwners.delete(id)
-        const entry = uiState().overlays.dismiss(id)
-        if (entry !== undefined) entry.resolve(false)
+      // 退场中的条目已在 close 结算过，只解仍 open 的，避免二次结算覆盖用户选择。
+      const snapshot = state.dialogLifecycle.getSnapshot()
+      const owned = state.dialogLifecycle.release(token)
+      for (const id of owned) {
+        const payload = state.dialogLifecycle.dismiss(id)
+        if (payload !== undefined && snapshot.find((entry) => entry.id === id)?.phase === 'open') {
+          payload.resolve(false)
+        }
       }
       if (uiState().hosts.dialog <= 0) {
-        for (const payload of uiState().overlays.clear()) payload.resolve(false)
-        state.dialogOwners.clear()
+        state.dialogLifecycle.clear((payload) => payload.resolve(false))
       }
     }
   }, [token])
 
   const setBusy = (id: number, value: boolean): void => {
+    if (!mountedRef.current) return
     if (value) busyRef.current.add(id)
     else busyRef.current.delete(id)
     setBusyIds((ids) => value
@@ -66,61 +67,86 @@ export function DialogHost({ className }: DialogHostProps) {
       : ids.filter((item) => item !== id))
   }
 
-  const dismiss = (id: number, confirmed: boolean): void => {
-    if (busyRef.current.has(id)) return
-    const entry = uiState().overlays.dismiss(id)
-    state.dialogOwners.delete(id)
-    if (entry !== undefined) entry.resolve(confirmed)
+  /**
+   * 逻辑关闭：只标 exiting 并结算一次，节点留在树上等退场完成；
+   * finish 由 ContentPopup 的 onExited 驱动，届时再清 busy / owner / 载荷。
+   */
+  const requestClose = (id: number, confirmed: boolean): void => {
+    state.dialogLifecycle.close(id, (payload) => payload.resolve(confirmed))
   }
 
-  const runAction = (id: number, payload: DialogPayload, key: string) => {
-    if (busyRef.current.has(id)) return
+  const finish = (id: number): void => {
+    setBusy(id, false)
+    state.dialogLifecycle.finish(id)
+  }
+
+  const runAction = (id: number, entry: OverlayLifecycleEntry<DialogPayload>, key: string): void => {
+    const payload = entry.payload
+    // 已结算 / 退场中 / 卸载后不再受理任何动作。
+    if (entry.phase !== 'open' || !mountedRef.current) return
     if (key === 'cancel') {
-      dismiss(id, false)
+      requestClose(id, false)
       return
     }
+    // 忙碌期只放行 lockExceptions 命中的 key；与 UI 层的放行口径一致。
+    if (busyRef.current.has(id) && !payload.lockExceptions.includes(key)) return
+    const seq = state.dialogLifecycle.seqOf(id)
     setBusy(id, true)
     const task = key === 'confirm'
       ? payload.onConfirm
       : payload.kind === 'confirm'
         ? () => payload.onAction?.(key)
         : undefined
-    return Promise.resolve()
+    void Promise.resolve()
       .then(() => task?.())
       .then(
         (result) => {
-          setBusy(id, false)
-          if (result !== false) dismiss(id, key === 'confirm')
+          if (!state.dialogLifecycle.isCurrent(id, seq) || !mountedRef.current) return
+          if (result === false) {
+            // 闸门拒绝：保持打开，只解 busy 让用户重试。
+            setBusy(id, false)
+            return
+          }
+          // 成功：busy 留到 onExited → finish，退场帧不翻 busy/catchMove/loading，与声明式 Popup 同帧。
+          requestClose(id, key === 'confirm')
         },
         () => {
+          // reject / false 保持打开可重试，只解 busy。
+          if (!state.dialogLifecycle.isCurrent(id, seq) || !mountedRef.current) return
           setBusy(id, false)
         },
       )
   }
 
-  const actionsOf = (id: number, payload: DialogPayload): ContentPopupAction[] =>
-    payload.actions.map((action) => ({
+  const actionsOf = (id: number, entry: OverlayLifecycleEntry<DialogPayload>): ContentPopupAction[] => {
+    const payload = entry.payload
+    const busy = busyIds.includes(id)
+    return payload.actions.map((action) => ({
       text: action.text,
       type: action.type,
       variant: action.variant,
       size: action.size,
       color: action.color,
+      loading: busy && !payload.lockExceptions.includes(action.key),
       loadingText: action.loadingText,
       lockKey: action.key,
-      onClick: () => runAction(id, payload, action.key),
+      onClick: () => runAction(id, entry, action.key),
     }))
+  }
 
   return (
     <View className={['mptk-dialog-host', dark ? 'mptk-dark' : '', className].filter(Boolean).join(' ')}>
       {visible.map((entry) => {
+        const id = entry.id
         const payload = entry.payload
-        const busy = busyIds.includes(entry.id)
-        const layout = payload.layout
-        const actions = actionsOf(entry.id, payload)
+        const exiting = entry.phase === 'exiting'
+        const open = !exiting
         return (
           <ContentPopup
-            key={entry.id}
-            open
+            key={id}
+            open={open}
+            initialOpen={false}
+            onExited={() => finish(id)}
             position={payload.position}
             width={payload.width}
             variant={payload.badge !== undefined ? 'badge' : payload.headerImage !== undefined ? 'image' : 'title'}
@@ -135,16 +161,17 @@ export function DialogHost({ className }: DialogHostProps) {
             closeable={payload.closeable}
             closable={payload.maskClosable}
             closeOffset={payload.offsets}
-            busy={busy}
+            busy={busyIds.includes(id)}
+            locked={false}
             lockExceptions={payload.lockExceptions}
-            onClose={() => dismiss(entry.id, false)}
+            onClose={() => requestClose(id, false)}
             footerConfig={{
-              layout: layout === 'stack' ? 'stack' : 'row',
-              separation: layout === 'joined' ? 'joined' : 'spaced',
-              divider: layout === 'joined',
-              ratios: layout === 'stack' ? undefined : actions.map(() => 1),
+              layout: payload.layout === 'stack' ? 'stack' : 'row',
+              separation: payload.layout === 'joined' ? 'joined' : 'spaced',
+              divider: payload.layout === 'joined',
+              ratios: payload.layout === 'stack' ? undefined : payload.actions.map(() => 1),
             }}
-            actions={actions}
+            actions={actionsOf(id, entry)}
           >
             <View className="mptk-dialog__body">
               <View className="mptk-dialog__description"><Text>{payload.content.description}</Text></View>

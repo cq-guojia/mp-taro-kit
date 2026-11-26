@@ -10,7 +10,7 @@ import type {
 } from './layout/content-popup/ContentPopup.js'
 import type { EdgeOffset } from './layout/edge-offset.js'
 
-type HostKind = 'toast' | 'dialog' | 'loading'
+type HostKind = string
 
 /** 宿主名由调用方传字面量：只引 dialog 命令时产物里不会留下 toast / loading 的名字。 */
 function ensureMounted(kind: HostKind, hint: string): void {
@@ -152,6 +152,7 @@ function pushDialog(
   resolve: (confirmed: boolean) => void,
 ): void {
   const dialogConfig = getKitConfig().runtime.dialog
+  const pageKey = currentPageKey()
   // 默认形态按载荷区分：confirm 不传参走竖线，自定义按钮走横排；调用方显式传了以它为准。
   const layout = options.layout ?? (options.actions === undefined && kind === 'confirm' ? 'joined' : 'spaced')
   // joined 档沿用 ContentPopup 底栏自带的 ghost 文字按钮，不把配置的 variant 灌进去改坏它。
@@ -187,7 +188,7 @@ function pushDialog(
       content: { kind: 'icon' as const, name: icon ?? DIALOG_TYPE_ICON[options.type] },
       tone: DIALOG_TYPE_TONE[options.type],
     }
-  uiState().overlays.push({
+  uiState().dialogLifecycle.open({
     kind,
     content: {
       variant: icon === undefined ? 'text' : 'icon',
@@ -209,11 +210,11 @@ function pushDialog(
     headerImage: options.headerImage,
     offsets: options.offsets,
     lockExceptions: options.lockExceptions ?? (kind === 'confirm' ? ['cancel'] : []),
-    pageKey: currentPageKey(),
+    pageKey,
     onConfirm: options.onConfirm,
     ...(kind === 'confirm' ? { onAction: options.onAction } : null),
     resolve,
-  })
+  }, pageKey)
 }
 
 /** 解析即关闭；不返回用户选择。 */
@@ -239,8 +240,7 @@ export function resetUIForTests(): void {
   state.toastTimers.clear()
   for (const id of state.loadingHandles) state.loading.hide(id)
   state.loadingHandles.clear()
-  for (const payload of state.overlays.clear()) payload.resolve(false)
-  state.dialogOwners.clear()
+  state.dialogLifecycle.clear((payload) => payload.resolve(false))
   state.notices.clear()
   state.hosts.toast = 0
   state.hosts.dialog = 0

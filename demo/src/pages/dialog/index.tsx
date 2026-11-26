@@ -146,11 +146,11 @@ export default function DialogPage() {
           <CellGroup>
             <Cell
               title="宽度"
-              value={<Segmented items={[...WIDTHS]} value={widthMode} onChange={(next) => setWidthMode(next as WidthMode)} />}
+              value={<Segmented<WidthMode> items={[...WIDTHS]} value={widthMode} onChange={setWidthMode} />}
             />
             <Cell
               title="头部"
-              value={<Segmented items={[...HEADERS]} value={header} onChange={(next) => setHeader(next as HeaderMode)} />}
+              value={<Segmented<HeaderMode> items={[...HEADERS]} value={header} onChange={setHeader} />}
             />
           </CellGroup>
         </View>

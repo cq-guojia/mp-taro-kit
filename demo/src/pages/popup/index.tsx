@@ -178,8 +178,8 @@ const HEADER_IMAGE = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/ma
 /* 图片头延伸演示：两张异形图各自放进 assets/popup，按老规矩走仓库 raw 地址。 */
 const HEADER_RISE_UP = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-rise-up.png'
 const HEADER_RISE_BOTH = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-rise-both.png'
-/* 尚未入库的新素材走产物本地路径（由 config/index.js 的 copy 拷入），不依赖远端 raw 地址。 */
-const HEADER_TRANSPARENT = '/assets/popup-header-transparent-rocket.png'
+/* 头部透明异形图与其余异形图同源，走本项目 raw 地址，不随产物打包。 */
+const HEADER_TRANSPARENT = 'https://raw.githubusercontent.com/cq-guojia/mp-taro-kit/main/assets/popup/popup-header-transparent-rocket.png'
 const HEADER_IMAGE_SLIDE: { src: string; width: number } = { src: HEADER_IMAGE, width: 320 }
 const LONG_IMAGE = 'https://cdn-oss.qswnet.com/file/zuche/wechatminiprogram/user/content/image/4965/d278336e-af7d-4c83-a423-727495583650.webp'
 const ACTION_BTN_IMAGE = 'https://t-cdn-oss.qswnet.com/file/zuche/lottery-center/image/1fc1dcb1-a8f8-444f-941c-d9b5caa12003.png'
@@ -343,7 +343,7 @@ export default function PopupPage() {
           <CellGroup title="关闭按钮">
             <Cell
               title="形状"
-              value={<Segmented items={SHAPES} value={closeShape} onChange={(next) => setCloseShape(next as PopupCloseShape)} />}
+              value={<Segmented<PopupCloseShape> items={SHAPES} value={closeShape} onChange={setCloseShape} />}
             />
             <Cell
               title="描边"
@@ -357,11 +357,11 @@ export default function PopupPage() {
           <CellGroup title="面板">
             <Cell
               title="圆角尺寸"
-              value={<Segmented items={ROUND_SIZES} value={roundSize} onChange={(next) => setRoundSize(next as PopupRoundSize)} />}
+              value={<Segmented<PopupRoundSize> items={ROUND_SIZES} value={roundSize} onChange={setRoundSize} />}
             />
             <Cell
               title="遮罩"
-              value={<Segmented items={MASKS} value={mask} onChange={(next) => setMask(next as MaskLevel)} />}
+              value={<Segmented<MaskLevel> items={MASKS} value={mask} onChange={setMask} />}
             />
             <Cell
               title="点遮罩关闭"
@@ -369,7 +369,7 @@ export default function PopupPage() {
             />
             <Cell
               title="让位"
-              value={<Segmented items={INSETS} value={insetTop} onChange={(next) => setInsetTop(next as PopupInsetTop)} />}
+              value={<Segmented<PopupInsetTop> items={INSETS} value={insetTop} onChange={setInsetTop} />}
             />
           </CellGroup>
         </View>
@@ -604,7 +604,7 @@ export default function PopupPage() {
           <CellGroup>
             <Cell
               title="底部按钮"
-              value={<Segmented items={FOOTER_SHAPES} value={footerKind} onChange={setFooterKind} />}
+              value={<Segmented<FooterKind> items={FOOTER_SHAPES} value={footerKind} onChange={setFooterKind} />}
             />
             <Cell
               title="文字头"

@@ -86,7 +86,7 @@
     "build": "node scripts/build.mjs",
     "gen:config": "node scripts/gen-kit-config.mjs --lib && node scripts/gen-kit-config.mjs --host --config demo/kit.config.mjs --out demo/src",
     "icons": "node scripts/icons.mjs",
-    "test": "node scripts/check.mjs && node --test tests/*.test.mjs",
+    "test": "node scripts/check.mjs && node --test tests/*.test.mjs && pnpm --filter mp-taro-kit-demo exec tsc --noEmit -p tsconfig.json",
     "guard": "node scripts/check.mjs --release"
   },
   "peerDependencies": {

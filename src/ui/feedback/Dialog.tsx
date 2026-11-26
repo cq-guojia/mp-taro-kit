@@ -14,6 +14,8 @@ export interface DialogProps {
   showCancel?: boolean
   onConfirm?: () => void
   onCancel?: () => void
+  /** 退场动画完成后触发一次，见 Popup */
+  onExited?: () => void
   className?: string
   /** 与命令式共用的三档形态、位置与宽度；视觉由 ContentPopup 一份承担。 */
   layout?: 'spaced' | 'stack' | 'joined'
@@ -36,6 +38,7 @@ export function Dialog({
   showCancel = true,
   onConfirm,
   onCancel,
+  onExited,
   className,
   layout = 'spaced',
   position = 'center',
@@ -66,6 +69,7 @@ export function Dialog({
   return (
     <ContentPopup
       open={open}
+      onExited={onExited}
       className={['mptk-fb-dialog', className].filter(Boolean).join(' ')}
       position={position}
       width={width}

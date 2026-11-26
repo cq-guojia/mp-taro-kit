@@ -14,6 +14,8 @@ export interface FloatingActionProps extends ButtonProps {
   visible?: boolean
   /** 进出场时长（ms），0 立即卸载；只管 JS 卸载时机，过渡曲线走 --mptk-c-motion-duration。 */
   duration?: number
+  /** 退场动画完成后触发一次，见 Popup */
+  onExited?: () => void
   /** 半透明底（默认）；关掉走 Button 原生底色。传 color 时让位给自定义色。 */
   translucent?: boolean
 }
@@ -26,6 +28,7 @@ export interface FloatingActionProps extends ButtonProps {
 export function FloatingAction({
   visible = true,
   duration = MOTION_DURATION,
+  onExited,
   size = 'sm',
   type = 'default',
   variant = 'outline',
@@ -35,7 +38,7 @@ export function FloatingAction({
   style,
   ...buttonProps
 }: FloatingActionProps) {
-  const { mounted, open } = usePresence(visible, duration)
+  const { mounted, open } = usePresence(visible, duration, { onExited })
   if (!mounted) return null
 
   const names = [

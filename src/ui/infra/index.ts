@@ -4,6 +4,13 @@ export { DialogHost, type DialogHostProps } from './DialogHost.js'
 export { LoadingHost, type LoadingHostProps } from './LoadingHost.js'
 export { SafeArea, type SafeAreaProps } from './SafeArea.js'
 export { useOverlayEntries, useNotices, useLoadingState } from './use-store.js'
+export {
+  createOverlayLifecycle,
+  type OverlayLifecycle,
+  type OverlayLifecycleEntry,
+  type OverlayScope,
+} from './overlay-lifecycle.js'
+export { useOverlayLifecycle, type OverlayLifecycleView } from './use-overlay-lifecycle.js'
 export { PageShell, type PageShellProps } from './PageShell.js'
 export { useThemeSnapshot, useThemeDark } from './use-theme.js'
 export {

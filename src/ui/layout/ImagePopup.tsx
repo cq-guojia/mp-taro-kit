@@ -51,6 +51,8 @@ export interface ImagePopupProps {
   open: boolean
   slides: ImagePopupSlide[]
   onClose?: () => void
+  /** 退场动画完成后触发一次，见 Popup */
+  onExited?: () => void
   /** 关闭按钮位置，沿用 Popup 现有档；不传按形态取底座默认（top / center 外下中，bottom 外上中） */
   closePosition?: PopupClosePosition
   /** 关闭按钮四向微调，叠加在 closePosition 档位之上；正=向内收、负=向外伸。 */
@@ -217,6 +219,7 @@ export function ImagePopup({
   open,
   slides,
   onClose,
+  onExited,
   closePosition,
   closeOffset,
   closeable = true,
@@ -286,6 +289,7 @@ export function ImagePopup({
   return (
     <Popup
       open={open}
+      onExited={onExited}
       position="center"
       surface={surface}
       className="mptk-image-popup__panel"

@@ -4,7 +4,7 @@
 
 `mp-taro-kit/ui/layout`：`Overlay`、`OverlayProps`、`OverlayTone`、`OverlayOpacity`、`Popup`、`PopupProps`、`PopupPosition`、`PopupCloseShape`、`PopupClosePosition`、`PopupInsetTop`、`PopupRoundSize`、`PopupSurface`、`PopupContentPadding`、`ImagePopup`、`ImagePopupProps`、`ImagePopupSlide`、`ImagePopupAction`、`ImagePopupActionsAlign`、`ImageSizeInput`、`ImageWidthSpec`、`ImageHeightSpec`、`ImageFitMode`、`ImageSizeToken`、`ImageNaturalSize`、`ResolvedImageSize`、`MOTION_DURATION`
 `mp-taro-kit/ui/navigation`：`Drawer`、`Dropdown`（遮罩引用 layout 那一份）
-`mp-taro-kit/ui/infra`：`OverlayHost`（命令式 Dialog 也挂同一份遮罩）。
+`mp-taro-kit/ui/infra`：`OverlayHost`（命令式 Dialog 也挂同一份遮罩）；`createOverlayLifecycle` / `useOverlayLifecycle` / `OverlayLifecycle` 等通用浮层生命周期工具（外部状态源驱动显隐时用，见下）。
 `mp-taro-kit/ui/layout/style`、`mp-taro-kit/ui/navigation/style`、`mp-taro-kit/ui/infra/style`：各自组件样式出口，宿主显式引一次
 
 **全库只有一份遮罩实现**（`.mptk-overlay`），浮层只声明「要不要遮罩、点遮罩关不关」。谁的样式里再写 `position: fixed` 的全屏蒙层，就是又造了第二份，测试会拦。
@@ -32,7 +32,7 @@
 | 点击回调 | Vant `click-overlay` 事件、antd `onMaskClick` | 取，`onClick`，与 `closable` 各管各的 |
 | 滚动穿透 | Vant / NutUI `lockScroll`、TDesign `preventScrollThrough` | 取，`lockScroll`，走 `catchMove` |
 | 进场 / 退场时长 | Vant `duration`(300)、TDesign `duration` | 取，`duration`，`0` = 不动画 |
-| 动画结束回调 | antd `afterShow` / `afterClose` | 不取：小程序的卸载时机由 presence 内部管，回调没有消费方 |
+| 动画结束回调 | antd `afterShow` / `afterClose` | 取 `onExited`：退场完成的唯一信号，外部状态源据此做物理清理；计时仍由 presence 内部管，不另起时钟 |
 | 挂载点 / portal | Vant `rootPortal`、TDesign `attach`、antd `getContainer` | 不取：浮层是 `position: fixed`，挂页面根即可，多一层抽象没有收益 |
 | 自定义 `z-index` | TDesign 暴露 11000 / 11500，Vant 100 | 不取：暴露 z 等于把层级链作废，本库只给一条链 |
 | 镂空 / 聚光灯遮罩 | 四家都没有 | 不取，等真需求 |
@@ -52,7 +52,34 @@
 | `onClick` | () => void | — | 任何点击都回调，不管关不关 |
 | `lockScroll` | boolean | `true` | 遮罩挂 `catchMove` 吞掉背后页面的触摸冒泡 |
 | `duration` | number | `MOTION_DURATION`（300） | 进出场时长，`0` = 立即卸载 |
+| `onExited` | () => void | — | 退场动画完成、节点卸载后触发一次；外部状态源据此做物理清理 |
 | `className` | string | — | 追加根类名 |
+
+## 外部状态源驱动的浮层：通用生命周期
+
+凡是“显隐由 store / 命令控制”的浮层（命令弹窗、未来的 Toast/Loading 动画化、登录窗等），统一走两层，禁止为某个能力单独造一套：
+
+1. **视觉层**：所有动画底座都用 `usePresence`，并在真正承载退场的节点上接 `onExited`。关闭信号只翻 `open=false`，不许直接卸载节点或删数据。
+2. **状态层**：`createOverlayLifecycle(stack)` 把“逻辑关闭 → 等 `onExited` → 物理清理”做成通用状态机，对外方法：
+
+| 方法 | 语义 |
+|---|---|
+| `open(payload, scope)` | 入栈并捕获 scope，返回 id；代际用 `seqOf(id)` 取 |
+| `close(id, settle)` | 逻辑关闭：只标 `phase='exiting'`、结算一次；重复调用返回 false |
+| `finish(id)` | 退场完成：物理移除 + 释放归属；迟到/重复调用返回 false |
+| `dismiss(id)` | 强制单项移除（宿主卸载兜底）：跳过退场，交还 payload 并清掉全部映射 |
+| `clear(settleAll)` | 卸载/reset 兜底：一次性物理移除全部，只结算仍 `open` 的条目（`exiting` 已由 `close` 结算过） |
+| `seqOf(id)` | 当前代际，异步回调开始时取、完成后交给 `isCurrent` 校验 |
+| `isCurrent(id, seq)` | 校验 id 仍在、未关闭、代际一致，否则作废旧回调 |
+| `claim(id, owner, scope)` / `owns(id, owner)` | 宿主按 scope 认领 / 查询归属；exiting 条目不重新认领 |
+| `release(owner)` | 宿主卸载时释放它认领的全部条目，交还 id 供调用方结算；**不做物理删除** |
+| `getSnapshot()` / `subscribe()` | 稳定引用快照与订阅，供 `useSyncExternalStore` 直接消费 |
+
+`useOverlayLifecycle(lifecycle, { token, scope })` 负责订阅与按 scope 认领。它在 render 期调用 `claim` / `owns` / `getSnapshot`；自定义 `OverlayLifecycle` 实现在这三个方法里**不得通知订阅者**，否则等于 render 期同步更新 store，会触发 React #185 无限更新。内置实现已满足。
+
+`runtime/overlay-stack` 只加 `phase` 与 `markExiting/finishExiting`，`dismiss` 仍是“立即物理删除”的强制路径；runtime 不持计时器、CSS 或 React 回调。`scope` 语义沿用页面身份：`undefined` = 全局宿主只认无归属条目，`null` = 不认领，`string` = 只认同名页面。新接一个命令式浮层只需实现它的 `open/finish` 适配 + 接 `onExited`，不再复制状态机。
+
+`Popup` / `ContentPopup` / `ImagePopup` / `Dialog` 等组件都有 `onExited`；声明式用法不传时零成本。`initialOpen=false` 让首帧以关闭态挂载、下一帧展开，`animateOnMount` 是它的命令侧旧别名。
 
 ## 层级链
 
@@ -135,3 +162,4 @@
 - 2026-11-21：废弃「记 scrollTop 再 scrollTo 跳回」（浮层在 KitPage 外拿不到 context、恢复从不执行）。改全局锁切 `scroll-y`——实测 Skyline 下仍回顶，一并废弃
 - 2026-11-22：查实真根因（Taro 更新归级到 Page.setData，浮层与 ScrollView 同级增删令原生 scroll-view 重建、scrollTop 归零）。改为节点层级隔离：滚动区带稳定 key、浮层放进恒定存在的隔离容器；撤销全局锁 / 切 scroll-y / 记位置跳回三套无效方案
 - 2026-11-25 15:31:08：同步命令式 Dialog 的关闭叉与遮罩点击契约
+- 2026-11-26：通用浮层生命周期契约精确化——`open()` 只返回 id（代际用 `seqOf`）；`clear()` 只结算仍 `open` 的条目，不重复结算已 `close` 的 `exiting`；`claim/owns/getSnapshot` 在 render 期被调用，自定义实现不得通知订阅者（否则触发 React #185）

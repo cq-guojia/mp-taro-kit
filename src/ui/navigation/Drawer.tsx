@@ -19,6 +19,8 @@ export interface DrawerProps {
   closable?: boolean
   lockScroll?: boolean
   duration?: number
+  /** 退场动画完成后触发一次，见 Popup */
+  onExited?: () => void
   className?: string
 }
 
@@ -32,9 +34,10 @@ export function Drawer({
   closable = true,
   lockScroll = true,
   duration = MOTION_DURATION,
+  onExited,
   className,
 }: DrawerProps) {
-  const { mounted, open: shown } = usePresence(open, duration)
+  const { mounted, open: shown } = usePresence(open, duration, { onExited })
   if (!mounted) return null
 
   // 抽屉与 Popup 左右档同口径：面板贴边，让位单独加在内容上。
