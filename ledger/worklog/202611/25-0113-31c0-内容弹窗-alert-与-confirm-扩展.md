@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-26 07:09:58 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 07:34:40 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -332,6 +332,16 @@
 
 **门禁实测**：build 414 产物 → test 252 全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对旧「竖排按钮」文案已清，配置区与三按钮文案在。未提交。
 
+### 2026-11-26 demo 对话框四处修正
+
+用户提四点：① confirm 默认就是竖线排布，滑块选到竖线、用户不传库默认也是竖线；② 默认样式不是信息头那种，是纯标题 + 内容 + 下面按钮；③ 异步闸门按钮也进 Cell 居右，尺寸走默认；④ alert / confirm / 自定义 / 异步四块各自独立 Card，不再合成一张多标题卡。
+
+**核查**：`src/ui/commands.ts:157` 的 `options.layout ?? (options.actions === undefined && kind === 'confirm' ? 'joined' : 'spaced')` 已是「confirm 不传走竖线」，库侧无需改；问题在 demo 的 `confirmLayout` 默认写成了 spaced。
+
+**落点**：`demo/src/pages/dialog/index.tsx` —— confirm state 默认改 joined；`openVariant` 的 `shared` 在 `mode === 'default'` 时不放 `type`（纯标题+内容+按钮），外伸/信息头仍带 type；busy 分支改成 `Cell value={<Button onClick={openBusy}>…</Button>}`（Cell 的 `__value` flex 居右，按钮不传 size）；四块改为 `cases.map(example => <DemoBlock key example>)`，页面不再直接 import `Card` / `CardHead`。
+
+**门禁实测**：build 414 产物 → test 253 全过 → guard / pack → demo build:weapp → codelint 13 文件 → docwriter 无 FAIL。产物核对 `useState("joined")` 1 次 / `useState("spaced")` 2 次，异步按钮 `x(Cell,{value:x(Button,{onClick:q,…})})` 无 size 字段，页面无手写 `mptk-card__title`。未提交。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -373,3 +383,4 @@
 - 2026-11-26 06:11:55 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 清除 alert 旧按钮：删掉 layoutRow(openAlert) 与两行 TYPES.map，连同 openAlert / openTyped 函数；新配置 CellGroup 完全替代。252 项测试与全套门禁通过，产物核对三条旧文案已清除、新三按钮仍在。未提交，待看效果。
 - 2026-11-26 06:18:10 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 最后一排三个按钮去掉 size=xs 改走默认型号，其余示例按钮 XS 不变；252 项测试与全套门禁通过，产物核对无 size 字段。未提交，待看效果。
 - 2026-11-26 07:09:58 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · confirm 与自定义按钮改为 alert 同款排列：上面按钮/内置 icon 两滑块，下面默认样式/icon外伸/信息头三按钮；配置区共用、三组 state 独立，旧形态按钮行全删。252 项测试与全套门禁通过，产物核对旧文案已清。未提交，待看效果。
+- 2026-11-26 07:34:40 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · demo 四处修正：confirm 滑块默认竖线（库不传参口径核查已是 joined，无需改库）、默认样式改纯标题+内容+按钮去掉 type、异步闸门按钮进 Cell 居右走默认型号、四块拆成独立 Card。253 项测试与全套门禁通过，产物核对 joined/spaced 默认值与 Cell 结构。未提交，待看效果。
