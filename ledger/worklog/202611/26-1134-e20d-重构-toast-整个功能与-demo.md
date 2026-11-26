@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-26 12:41:15 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 12:47:57 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -32,7 +32,7 @@
 - 本轮产物：`demo/src/catalog.ts` 删三项菜单占位，Toast 改指 `pages/toast/index`；反馈页移除 Toast 示例；新增 `demo/src/pages/toast/index.tsx` 空页与 `index.config.ts`；`docs/architecture/demo-mapping.md` 同步分组与分页口径。
 - 2026-11-26 二次调研（已被用户纠正）：上一轮给的 Sonner / react-hot-toast / toastify-js / notyf 都是 Web DOM 库，不是移动端，作废为代码参照；其中 Sonner 的堆叠/action/promise/位置感知手势仍可作为交互语法参考。真正的移动端候选：sonner-native（gunnartorfis/sonner-native-toasts，1.4k，https://sonner-native.netlify.app/，RN 版 Sonner：promise/action/swipe/暗色）、react-native-toast-message（calintamas，约 2.1k，键盘感知、自定义布局）、AlertToast（SwiftUI，2.4k，https://elai950.github.io/AlertToast/，Apple 风格多形态）。小程序独立 Toast 库：wepy-com-toast（105 star，2017 后未更新）、mp-toast-component（3 star），不足以当标准。移动端视觉参考：Mobbin Toast/Snackbar 真实 App 截图、UISDC《4个方法帮你快速做出吸睛的 Toast 设计》（破形/异形/背板/冷暖对比/颜色呼应）。这些都不是 Taro/小程序代码，落地仍需按本库约定重写；Skyline 下手势与异形需另验。
 
-- 2026-11-26 Sonner Native 交互核实（看用户给的截图后查源码）：移动端没有 hover，`src/types.ts` 把 `expand?: boolean` 注释掉并写明 `hover not supported on mobile`。堆叠展开靠 tap：`src/gestures.tsx` 的 `Gesture.Tap().onEnd` 把坐标交给上层，`src/toaster.tsx` 通过 `toggleExpand()` 切换当前 channel 的展开状态，首次点展开（露出 description / action，卡片长高、堆叠重排），再点收起回 `visibleToasts` 数量。关闭走 `closeButton` 或 swipe：`swipeToDismissDirection='left'` 阈值为屏宽 25%；`'up'` 阈值 16px，且底部 toast 实际是下滑；反向拖动带弹性阻力，小于 16px 弹回。动画靠 Reanimated 3 + Gesture Handler，小程序不能照搬，只能借交互语法（tap 展开 + 位置感知滑动 + 可见条数 + 关闭叉）。
+- 2026-11-26 Sonner Native 交互核实（看用户截图后查源码，含一次纠正）：移动端没有 hover，`src/types.ts` 把 `expand?: boolean` 注释掉并写明 `hover not supported on mobile`。**纠正**：此前说「收起只露标题、展开才露 description/action」是 Web Sonner 的行为；sonner-native 的 `src/toast.tsx` 里 `isExpanded` 只参与位置和动画计算，不字段级控制 title/description/action/icon/closeButton 的显示。多条时：`enableStacking` 为真才按 `visibleToasts` 限制（positioner 回退值 3），超出的**整条隐藏**，不是露边；`toast.tsx` 按 `distanceFromFront` 判定，top-center 前端是 index 0，其余是最大 index；堆叠顺序由 `getOrderedToastIds(..., enableStacking)` 决定，top-center 先反转数组。`src/toaster.tsx` 用实测 `toastHeights` / `toastHeightsVersion` 与 `isExpanded` 驱动下层位移/层级/动画。点击 toast 由 `src/gestures.tsx` 的 Tap 交给上层 `toggleExpand(channel)`，切换整叠展开/收起；`src/positioner.tsx` 的堆叠外点击区域只在展开时计算并用于收起，`center` 位置禁用展开/收起。关闭走 `closeButton` 或 swipe：left 阈值屏宽 25%、up 阈值 16px 且底部实际下滑，反向拖有弹性阻力。动画靠 Reanimated 3 + Gesture Handler，小程序只能借交互语法。
 
 - 2026-11-26 在线示例核实：https://sonner-native.netlify.app/ 是 Docusaurus 文档站，手机打开只有文档和代码块，不能实际点/滑 Toast；官方 README 提供 Expo Snack 入口 https://snack.expo.dev/@gunnartorfis/sonner-native （作者账号 @gunnartorfis，手机装 Expo Go 后扫码可在真机运行），另有录屏 https://github.com/user-attachments/assets/ccc428ca-37c3-4589-9e8c-f414c40d764c （重定向后 content-type=video/quicktime）可直接看动效。
 
@@ -52,3 +52,4 @@
 - 2026-11-26 12:30:18 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 用户纠正上一轮候选不是移动端；改给 sonner-native / react-native-toast-message / AlertToast 与 Mobbin / UISDC 移动端视觉参考，工作日志已同步
 - 2026-11-26 12:35:50 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 查 sonner-native 源码确认移动端无 hover：tap 切换展开/收起，swipe 关闭阈值 left=屏宽25%、up=16px且底部方向反转；已记入工作日志
 - 2026-11-26 12:41:15 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 核实 sonner-native 在线演示：官网仅文档不可交互，官方 Expo Snack 可在手机 Expo Go 真机运行，README 另有 .mov 录屏链接
+- 2026-11-26 12:47:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纠正上一轮对 sonner-native 的描述：isExpanded 不控制 description/action 字段显示，只改堆叠位置与动画；多条时 visibleToasts 超限整条隐藏，默认回退 3；已改工作日志
