@@ -1,7 +1,7 @@
 # 20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展: 内容弹窗 alert 与 confirm 扩展
 
 - **Tags**: 弹窗, alert, confirm, 交互锁
-- **Status**: doing · 2026-11-25 15:40:56 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-26 06:07:47 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-25 01:13:13 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -298,6 +298,16 @@
 
 **门禁实测**：gen:config → build 408 → test 237 全过 → guard / pack → demo build:weapp → codelint 38 文件 → docwriter 无 FAIL。产物核对 token 为 64 / 4 / 36rpx（圈 32px、描边 2px、图标 18px）。未提交，等用户看效果。
 
+### 2026-11-26 演示站 alert 配置区
+
+用户要求：alert 示例下面加一个 CellGroup——第一格标题「按钮」+ 两档滑块（横排按钮 / 竖线，默认横排）；第二格标题「内置 icon」+ 四档滑块（成功 / 失败 / 警告 / 信息，默认信息）；第三格无标题，右侧三个按钮「默认样式 / icon外伸 / 信息头」。三个按钮都读上面两个滑块的选择；默认样式是标题 + 内容 + icon，底部只有一个「完成」，不区分正确与错误。
+
+**落点**：`demo/src/pages/dialog/index.tsx` 加 `ALERT_LAYOUTS`（spaced / joined）、`alertLayout` 与 `alertType` 两个 state（默认 spaced / info）、`openAlertVariant(mode)` 共用构造，三种头部形态只差 `note` / `badge`；三个按钮都传 `type: alertType` 与 `layout: alertLayout`，`confirmText:'完成'`。原有三行示例按钮保留不动。
+
+**门禁实测**：build 414 产物 → test 252 项全过 → guard / pack → demo build:weapp → codelint → docwriter 全过。产物核对 `dialog/index.js` 有 `value:"spaced"` / `value:"joined"` 两档、`value:"(success|error|warning|info)"` 四档、三个按钮文案的 unicode 转义与 `confirmText:"\u5b8c\u6210"`。未提交。
+
+**待确认**：用户原话「下面有两个完成」「第二个滑块就是忽略 / 那两个花花的选择」口语化较重，按「一个完成按钮、三按钮都跟两个滑块走」实现，等用户看效果后确认。
+
 ## Conclusion
 
 命令式与声明式双通道已收敛到 `ContentPopup` 一份视觉；说明走 body，标题按头部形态排布（title 档内联图标侧、image / badge 档独立标题行），三形态、位置、宽度、头部配置与整框交互锁都按方案落码；按需引入已做产物级断言而非只看源码。演示站按用户逐条细化完成：菜单原文全部保留，多入口页标题用 `X` 标出待调整；按钮与图片头按 Popup 口径纠正，演示只展示效果不展示结果文案；默认文案与按钮样式已集中到 kit.config.mjs 一处可配。已知边界：Host 卸载释放的归属要等下一次栈变化才被其它 Host 重认；弹窗动效未修（`DialogHost` 的 `open` 写死 true）；Skyline / WebView 双端真机观感尚未验证；当前改动未提交，待用户明确指令。
@@ -335,3 +345,4 @@
 - 2026-11-25 15:26:53 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 圆环口径定稿：外径回到原图标 28px（border-box 含 2px 描边），内图标 22px 居中；仅固定 type 图标加圈，显式 icon/自定义颜色回到无圈原大小。237 项测试与全套门禁通过，产物核对 56/4/44rpx。未提交，等看效果。
 - 2026-11-25 15:35:43 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 纠正圆环尺寸误读：圈恢复原来的 32px（撤掉 border-box），只把内部图标缩到 22px 居中；显式 icon 仍不加圈。237 项测试与全套门禁通过，产物核对 64/4/44rpx。未提交，等看效果。
 - 2026-11-25 15:40:56 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 固定类型图标再缩 4px：圈仍 32px 不变，内部图标 22→18px；237 项测试与全套门禁通过，产物核对 64/4/36rpx。未提交，等看效果。
+- 2026-11-26 06:07:47 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 演示站 alert 下新增配置 CellGroup：按钮滑块（横排/竖线，默认横排）+ 内置 icon 滑块（成功/失败/警告/信息，默认信息）+ 三按钮（默认样式/icon外伸/信息头），三按钮都读滑块且默认样式只有完成按钮；252 项测试与全套门禁通过，产物核对两档四档与三按钮文案。未提交，待看效果。

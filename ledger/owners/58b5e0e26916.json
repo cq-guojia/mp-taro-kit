@@ -1,7 +1,7 @@
 {
   "identity": {"uuid": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6"},
   "tasks": {
-    "20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展": {"category": "方案设计", "created": "2026-11-25 01:13:13", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-25 01:14:33", "status": "doing", "tags": ["弹窗", "alert", "confirm", "交互锁"], "title": "内容弹窗 alert 与 confirm 扩展", "updated": "2026-11-25 15:40:56", "worklog": "worklog/202611/25-0113-31c0-内容弹窗-alert-与-confirm-扩展.md"},
+    "20261125-0113-31c0-内容弹窗-alert-与-confirm-扩展": {"category": "方案设计", "created": "2026-11-25 01:13:13", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-25 01:14:33", "status": "doing", "tags": ["弹窗", "alert", "confirm", "交互锁"], "title": "内容弹窗 alert 与 confirm 扩展", "updated": "2026-11-26 06:07:47", "worklog": "worklog/202611/25-0113-31c0-内容弹窗-alert-与-confirm-扩展.md"},
     "20261125-0946-e087-卡片多标题成组展示": {"category": "组件", "created": "2026-11-25 09:46:01", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "owner_name": "GuoJia-Agent", "started": "2026-11-25 09:46:19", "status": "doing", "tags": ["卡片", "多标题", "分组容器", "演示站"], "title": "卡片多标题成组展示", "updated": "2026-11-25 13:59:24", "worklog": "worklog/202611/25-0946-e087-卡片多标题成组展示.md"}
   },
   "version": "20261022000000"
