@@ -72,7 +72,7 @@ export function ToastHost({ className }: ToastHostProps) {
     return pageKey === undefined ? scope === undefined || scope === '' : scope === pageKey
   })
 
-  const position: ToastPosition = scoped[0]?.payload.position ?? 'top'
+  const position: ToastPosition = scoped[0]?.payload.position ?? 'bottom'
   // enableStacking / visibleToasts 是 Toaster 级配置；expanded 是交互态。
   // 折叠只是表现形式，点开后就是平铺：所有「当前怎么画」的决策统一认 stacked 这一个派生量。
   const { enableStacking: foldingEnabled, visibleToasts: limit } = config
@@ -148,7 +148,12 @@ export function ToastHost({ className }: ToastHostProps) {
           const gap = 8
           let y: number
           if (stacked) {
-            y = h(visible[0]?.id ?? entry.id) + index * STACK_GAP - h(entry.id)
+            // 原版 position-utils：top 前端在 index 0、y 为正；bottom/center 前端在末尾、y 为负。
+            const frontIndex = position === 'top' ? 0 : visible.length - 1
+            const frontHeight = h(visible[frontIndex]?.id ?? entry.id)
+            const distance = position === 'top' ? index : visible.length - 1 - index
+            const offset = frontHeight + distance * STACK_GAP - h(entry.id)
+            y = position === 'top' ? offset : -offset
           } else if (position === 'top') {
             y = 0
             for (let i = 0; i < index; i += 1) y += h(visible[i]?.id ?? entry.id) + gap

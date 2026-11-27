@@ -31,9 +31,12 @@ const TONE_ICON: Record<ToastTone, string> = {
 type ClickLike = { stopPropagation?: () => void }
 
 export function ToastView({ payload, exiting, scale, y, domId, zIndex, onOpen, onClose, onAction, onTouchStart, onTouchEnd }: ToastViewProps) {
+  // 顶部从容器顶往下排（top:0 + 正 y），底部从容器底往上排（bottom:0 + 负 y）。
+  // 底部若也用 top:0，卡片会从屏幕底边往下长，真机只露出半截。
+  const bottomAligned = payload.position === 'bottom' || payload.position === 'center'
   const style: CSSProperties = {
     position: 'absolute',
-    top: 0,
+    ...(bottomAligned ? { bottom: 0 } : { top: 0 }),
     right: 0,
     left: 0,
     transform: `translateY(${String(y)}px) scaleX(${String(scale)})`,

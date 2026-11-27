@@ -15,7 +15,7 @@ const id = showToast({
   action: { key: 'undo', text: '撤销' },
   onAction: (key) => doAction(key),
   duration: 3000,
-  position: 'top',
+  position: 'bottom',
   enableStacking: false,
   visibleToasts: 3,
 })
@@ -37,7 +37,7 @@ hideToast(id)
 
 ## 显示与交互
 
-- 默认平铺：顶部往下长、底部往上长，各自计时、各自消失；不做 hover。
+- 默认平铺，**默认位置为底部**（`position: 'bottom'`，底部往上长）；传 `position: 'top'` 改为顶部往下长。各自计时、各自消失；不做 hover。
 - `enableStacking: true`：折叠成一摞，下层只露 8px 边，并按 sonner-native 的 `scaleX` 横向收窄（每层多收 `2 × 8px / 屏宽`，下限 80%；只改视觉宽度不改布局宽度，避免文字重排），点任意一条整叠展开为全宽竖排列表，点外部或再点收起。**折叠只是表现形式，点开后按平铺逻辑显示所有条**，不受 `visibleToasts` 限制；展开态全局一份（默认折叠），展开时暂停全部计时、收起时按剩余时间恢复、关闭到剩 1 条自动收起。`visibleToasts` 默认 3，**只在真正堆叠时裁剪**，超出的整条隐藏。
 - 移除一条后余项按 600ms easeOutQuart 平滑补位，不瞬移；卡片绝对定位、位置由 `transform` 过渡驱动。卡片高度按真实内容实测（标题 / 描述 / action 按钮高度都算进去），首帧兜底 70px。
 - 顶部 / 底部在安全区之外另留 16px，与卡片左右边距一致。

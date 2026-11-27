@@ -170,6 +170,7 @@ test('showToast 推可序列化载荷，close 幂等，scope 交接不丢有效�
   const entry = lifecycle.getSnapshot().find((item) => item.id === id)
   assert.ok(entry, 'Toast 必须入栈')
   assert.equal(entry.payload.description, '内容')
+  assert.equal(entry.payload.position, 'bottom', '不传 position 时默认底部')
   assert.equal(entry.payload.tone, 'success')
   assert.equal(entry.payload.closeButton, true)
   assert.equal(entry.payload.enableStacking, true)
@@ -232,6 +233,16 @@ test('Toast 位置补间：绝对定位 + transform transition，移除后 y 改
   assert.match(css, /transition: transform var\(--mptk-c-toast-stack-dur\)/, '位置变化必须走 600ms 补间')
   assert.match(host, /const stacked = foldingEnabled && !isExpanded/, '必须把「当前是否堆叠」提升为单一派生量')
   assert.match(host, /stacked \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, 'visibleToasts 只在真正堆叠时裁剪')
+})
+
+test('Toast 底部锚定 bottom:0，堆叠 y 按位置区分前端方向与符号', () => {
+  const host = read('../src/ui/infra/ToastHost.tsx')
+  const view = read('../src/ui/feedback/toast/ToastView.tsx')
+  assert.match(view, /bottomAligned = payload\.position === 'bottom' \|\| payload\.position === 'center'/, '底部/居中必须识别为从容器底往上排')
+  assert.match(view, /bottomAligned \? \{ bottom: 0 \} : \{ top: 0 \}/, '底部不能写死 top:0，否则卡片从屏幕底边往下长只露半截')
+  assert.match(host, /const frontIndex = position === 'top' \? 0 : visible\.length - 1/, '堆叠前端：top 在 index 0，bottom 在末尾')
+  assert.match(host, /const distance = position === 'top' \? index : visible\.length - 1 - index/, '距前端层数按位置反向')
+  assert.match(host, /y = position === 'top' \? offset : -offset/, 'bottom 的 y 必须为负，卡片才从底部往上叠')
 })
 
 test('Toast 折叠点开即平铺：所有布局决策统一由 stacked 派生，展开后不限条数', () => {

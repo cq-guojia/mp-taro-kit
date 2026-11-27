@@ -252,7 +252,7 @@ export function showToast(options: ToastOptions | string): number {
     icon: opts.icon,
     closeButton: opts.closeButton ?? false,
     action: opts.action,
-    position: opts.position ?? 'top',
+    position: opts.position ?? 'bottom',
     enableStacking: opts.enableStacking ?? false,
     visibleToasts: opts.visibleToasts ?? 3,
     duration,
