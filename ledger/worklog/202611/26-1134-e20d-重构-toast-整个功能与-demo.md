@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 17:25:11 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 17:32:04 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -25,7 +25,11 @@
 
 ## Next
 
-折叠点开即平铺（单一派生量 `stacked = foldingEnabled && !isExpanded`）：裁剪/缩放/y/层级/track class 统一认 stacked，展开后不限条数显示所有条；外部收起层绑 `isExpanded && foldingEnabled`，点条目切换绑 foldingEnabled。275/275 全绿、产物核对 `v=f&&!p, y=v?x.slice(0,Math.max(1,h)):x` 落盘。改动未提交，等用户看效果。
+默认位置改为底部（已提交待定）：`commands.ts:255` 与 `ToastHost.tsx:75` 两处兜底 `'top'→'bottom'`，文档示例与正文同步，`ui.test.mjs` 补 `payload.position === 'bottom'` 行为断言；275/275 全绿、产物核对 `dist/ui/commands.js` 的 `position: opts.position ?? 'bottom'` 落盘。未提交，等用户真机看底部效果。
+
+配色待定：用户反馈明暗两态都"特别不显"，给了 AlertToast（https://elai950.github.io/AlertToast/）作参考，另找了三个可看效果的参考待挑：RN-Tosty 四套明暗主题（https://codestz.github.io/rn-tosty/docs/theming/built-in-themes）、perfect-toast Live Demo（https://perfect-toast-chi.vercel.app，四色 + 明暗）、c2n Toast Gallery（https://code2nguyen.github.io/web-components/components/toast/gallery，浅底+语义描边+深色文字）。尚未改任何颜色。
+
+折叠点开即平铺（已提交 1821a25）：单一派生量 `stacked = foldingEnabled && !isExpanded`，裁剪/缩放/y/层级/track class 统一认 stacked，展开后不限条数显示所有条；外部收起层绑 `isExpanded && foldingEnabled`，点条目切换绑 foldingEnabled。275/275 全绿、产物核对 `v=f&&!p, y=v?x.slice(0,Math.max(1,h)):x` 落盘。
 
 折叠边按 sonner-native 原版修对：下层卡片改为 `scaleX` 横向收窄（每层 `2×8px/屏宽`、下限 80%、top 前端在 index 0 其余在末尾），替换写死的 `1 - index*0.04`；产物核对 `const Pt=8;function At(e,t,o,l){const n="top"===o?e:t-e-1,a=Pt*n*2;return Math.max(.8,1-a/l)}` 落盘。
 
@@ -101,8 +105,10 @@
 - 2026-11-27 15:55:33 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 尺寸定稿：圆环 24px/内图标 12px；按钮 xs + default/soft 半透明描边 + radius lg。产物核对 48rpx 圆环与按钮配置落盘，273/273 全绿
 - 2026-11-27 用户再调：按钮离正文间距太大，确认当前 16px（`--mptk-space-4`）后减半到 8px（`--mptk-space-2`）；圆环保持 24px，内图标 12→10px。改 `src/ui/feedback/toast/style/index.scss` 的 `.mptk-toast__action` / `.mptk-toast__icon`，测试同步 `font-size` 断言并补按钮间距断言，`docs/api/toast.md` 同步。产物核对 `.mptk-toast__icon{font-size:20rpx}` / `.mptk-toast__action{margin-top:var(--mptk-space-2)}` 真实落盘；273/273 全绿、codelint 5 文件、guard、demo build 全绿。改动未提交，等用户看效果。
 - 2026-11-28 用户报折叠边不对并问原版行为。重查 sonner-native main 源码：`position-utils.ts` 有 `effectiveEnableStacking = enableStacking && !isExpanded`（展开确实切非重叠布局、间距 `stackGap=8`）、`toast.tsx` 的 `isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts` 无 `isExpanded`（展开仍限 3 条，与原版一致）、`use-toast-animations.ts` 折叠只做 `scaleX = max(0.8, 1 - 2*stackGap*multiplier/屏宽)`、`constants.ts` stackGap=8/gap=14/visibleToasts=3。确认旧的 `scale = max(0.88, 1 - index*0.04)` 是真 bug。修 `src/ui/infra/ToastHost.tsx`：引入 `STACK_GAP=8` 与 `stackScaleX`（按位置决定前端方向、按屏宽算、下限 0.8），用 `Taro.getWindowInfo().windowWidth` 取屏宽，删写死等比缩放；新增回归测试，`docs/api/toast.md` 同步。产物核对 `const Pt=8;function At(e,t,o,l){…Math.max(.8,1-a/l)}` 与 `useState(()=>Taro.getWindowInfo().windowWidth)` 真实落盘；274/274 全绿、codelint 3 文件、guard、demo build 全绿。本轮只修边，未动展开条数限制，等用户看效果。
+- 2026-11-28 用户要求默认从顶部改到底部看效果：改 `src/ui/commands.ts:255` 与 `src/ui/infra/ToastHost.tsx:75` 两处 `'top'→'bottom'`，`docs/api/toast.md` 示例与正文同步（新增「默认位置为底部」说明），`tests/ui.test.mjs` 在 showToast 载荷测试补 `payload.position === 'bottom'` 行为断言。build/test 275/guard/demo build 全绿，`dist/ui/commands.js` 产物核对 `position: opts.position ?? 'bottom'` 真实落盘。配色问题同轮提出：明暗两态都「特别不显」，给了 AlertToast 链接；另找了 RN-Tosty（四套明暗主题，含精确色值）、perfect-toast（Live Demo + 四色明暗）、c2n Toast Gallery（浅底+语义描边+深色文字，可直接看效果）三个参考，待用户挑配色后再改，未动任何色值。
 - 2026-11-28 用户要求前端讨论最合理交互逻辑、不打补丁。只读分析（code-explorer）定位根因：`ToastHost.tsx` 里「当前是否真的按堆叠渲染」概念已散落在 `:143/:148/:165`，却没命名也没贯彻到裁剪(80)/外部层(139)/onOpen(166)/track class(140)，导致同刻口径分裂。定方案 B：引入 `foldingEnabled=stacking`（支持折叠）与 `stacked=foldingEnabled&&!isExpanded`（当前形态）两个派生量，布局决策（裁剪/缩放/y/层级/track class）统一认 stacked，外部层绑 `isExpanded&&foldingEnabled`、onOpen 绑 foldingEnabled。否掉方案 C（展开时改全局 config，会污染 store/计时器/自动收起）。实现集中 `ToastHost.tsx` 一处，store 与计时器不动；新增回归测试锁单一真源，`docs/api/toast.md` 同步。新增条目按现有 keyframes 淡入即到位、无位移过渡（写 transform 会覆盖 inline 导致跳位，代码注释已警告），收起时多余条目瞬时卸载、保留条目走 600ms transform 补间——两处均明确接受。产物核对 `{enableStacking:f,visibleToasts:h}=c,v=f&&!p,y=v?x.slice(0,Math.max(1,h)):x` 落盘；275/275 全绿、codelint 3 文件、guard、demo build 全绿。未提交，等用户看效果。
 - 2026-11-27 16:01:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮与正文间距 16→8px（space-4→space-2）、内图标 12→10px；产物核对 20rpx/space-2 落盘，273/273 全绿，未提交等验收
 - 2026-11-27 16:38:18 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 折叠边按 sonner-native 原版修对：scaleX 按屏宽算、下限 0.8、位置决定前端方向；274/274 全绿、产物核对公式落盘，未提交等验收
 - 2026-11-27 17:22:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 折叠点开即平铺：引入 stacked=foldingEnabled&&!isExpanded 单一真源，裁剪/缩放/y/层级/交互统一口径，展开后不限条数；275/275 全绿、产物核对派生量落盘，未提交等验收
 - 2026-11-27 17:25:11 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 提交 1821a25 并推送：折叠点开即平铺统一 stacked 单一真源、折叠边按原版 scaleX 收窄；docs/api/toast.md 已同步，275/275 全绿
+- 2026-11-27 17:32:04 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 默认位置 top→bottom（两处兜底+文档+测试），275/275 全绿、产物核对落盘；配色待用户从 AlertToast/RN-Tosty/perfect-toast/c2n Gallery 中挑，未动色值
