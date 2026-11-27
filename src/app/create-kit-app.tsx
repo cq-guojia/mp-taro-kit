@@ -6,6 +6,7 @@ import { setPageKeyProvider } from '../runtime/page-route.js'
 import { createSingleton } from '../runtime/singleton.js'
 import { currentPageKeyFromTaro } from './current-page.js'
 import { setKitHosts, type CommandHost } from './kit-hosts.js'
+import { setWindowBackgroundSync } from './kit-window-background.js'
 import { createTaroFaces } from './taro-faces.js'
 
 export type { CommandHost } from './kit-hosts.js'
@@ -93,6 +94,9 @@ export function createKitApp<P extends { children?: ReactNode }>(
 
     const onDarkChange =
       options.theme?.onDarkChange ?? ((dark: boolean) => applyWindowBackground(dark, themeConfig))
+    // 页面切换会把窗口色重置回官方 DarkMode 配置；注册给 KitPage 在每次 onShow 重刷。
+    // 业务自定义 onDarkChange 时同样要同步：它只覆盖「主题变化」的副作用，不含页面切换。
+    setWindowBackgroundSync(themeConfig === undefined ? null : (dark) => applyWindowBackground(dark, themeConfig))
     setThemeMode(options.theme?.mode ?? 'auto', {
       systemDark: () => Taro.getSystemInfoSync().theme === 'dark',
       onSystemDarkChange: (notify) => {

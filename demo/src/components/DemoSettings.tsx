@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { setThemeMode, type ThemeMode } from 'mp-taro-kit/runtime'
+import { type ThemeMode } from 'mp-taro-kit/runtime'
 import { useThemeSnapshot } from 'mp-taro-kit/ui/infra'
 import { confirm } from 'mp-taro-kit/ui/commands/dialog'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
 import { Segmented } from 'mp-taro-kit/ui/form/segmented'
 import { Popup } from 'mp-taro-kit/ui/layout'
+import { setDemoThemeMode, setMenuScope, useMenuScope } from '../settings'
+import type { MenuScope } from '../settings-core'
 
 import 'mp-taro-kit/ui/display/style'
 import 'mp-taro-kit/ui/form/segmented/style'
@@ -32,6 +34,11 @@ const RENDERER_ITEMS: { value: RendererMode; label: string }[] = [
 
 const CURRENT_RENDERER: RendererMode = __MTPK_RENDERER__ === 'WebView' ? 'webview' : 'skyline'
 
+const MENU_SCOPE_ITEMS: { value: MenuScope; label: string }[] = [
+  { value: 'developed', label: '仅已开发' },
+  { value: 'all', label: '显示全部' },
+]
+
 /**
  * 渲染引擎是 app.config.ts 的编译期配置，小程序运行时没有切换 API：
  * 微信只在开发者工具菜单「开发调试 → Switch Render」提供开发版强切。
@@ -55,6 +62,7 @@ function restartForRenderer(): void {
 
 export function DemoSettings({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { mode } = useThemeSnapshot()
+  const menuScope = useMenuScope()
   const [targetRenderer, setTargetRenderer] = useState<RendererMode>(CURRENT_RENDERER)
 
   const changeRenderer = (next: RendererMode): void => {
@@ -78,7 +86,13 @@ export function DemoSettings({ open, onClose }: { open: boolean; onClose: () => 
           <Cell
             title="明暗模式"
             value={
-              <Segmented items={THEME_ITEMS} value={mode} onChange={(next) => setThemeMode(next)} />
+              <Segmented items={THEME_ITEMS} value={mode} onChange={(next) => setDemoThemeMode(next)} />
+            }
+          />
+          <Cell
+            title="菜单显示"
+            value={
+              <Segmented items={MENU_SCOPE_ITEMS} value={menuScope} onChange={(next) => setMenuScope(next)} />
             }
           />
           <Cell

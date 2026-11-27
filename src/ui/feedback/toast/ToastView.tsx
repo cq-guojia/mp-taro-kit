@@ -8,6 +8,7 @@ export interface ToastViewProps {
   readonly payload: ToastPayload
   readonly exiting: boolean
   readonly scale: number
+  readonly y: number
   readonly zIndex?: number
   readonly onOpen?: () => void
   readonly onClose?: () => void
@@ -18,8 +19,15 @@ export interface ToastViewProps {
 
 type ClickLike = { stopPropagation?: () => void }
 
-export function ToastView({ payload, exiting, scale, zIndex, onOpen, onClose, onAction, onTouchStart, onTouchEnd }: ToastViewProps) {
-  const style: CSSProperties = { transform: `scaleX(${String(scale)})`, position: 'relative', zIndex }
+export function ToastView({ payload, exiting, scale, y, zIndex, onOpen, onClose, onAction, onTouchStart, onTouchEnd }: ToastViewProps) {
+  const style: CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    left: 0,
+    transform: `translateY(${String(y)}px) scaleX(${String(scale)})`,
+    zIndex,
+  }
   const names = [
     'mptk-toast',
     `mptk-toast--${payload.tone}`,

@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useContext, useEffect, useRef, useSyncExternalStore } from 'react'
 import { View } from '@tarojs/components'
 import type { CommonEventFunction } from '@tarojs/components'
 import { useDidShow } from '@tarojs/taro'
-import { markHostMounted, markHostUnmounted, closeToast, retargetToasts, sweepExpiredToasts } from '../commands.js'
+import { markHostMounted, markHostUnmounted, closeToast, retargetToasts, sweepExpiredToasts, subscribeToastExpansion, getToastExpansion, setToastExpansion } from '../commands.js'
 import { uiState } from '../state.js'
 import type { ToastPosition } from '../state.js'
 import { KitPageKeyContext } from './page-key-context.js'
@@ -33,7 +33,7 @@ export function ToastHost({ className }: ToastHostProps) {
   const getSnapshot = useCallback(() => lifecycle.getSnapshot(), [lifecycle])
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
   const mounted = useRef(true)
-  const [expanded, setExpanded] = useState<Readonly<Record<string, boolean>>>({})
+  const isExpanded = useSyncExternalStore(subscribeToastExpansion, getToastExpansion, getToastExpansion)
   const touches = useRef<Record<number, TouchPoint>>({})
 
   useEffect(() => {
@@ -63,11 +63,11 @@ export function ToastHost({ className }: ToastHostProps) {
   const stacking = scoped[0]?.payload.enableStacking ?? false
   const limit = scoped[0]?.payload.visibleToasts ?? 3
   const ordered = position === 'top' ? [...scoped].reverse() : scoped
-  const visible = ordered.slice(0, Math.max(1, limit))
-  const isExpanded = expanded[position] === true
+  // sonner-native：visibleToasts 只在 enableStacking 时裁剪；平铺不限条数。
+  const visible = stacking ? ordered.slice(0, Math.max(1, limit)) : ordered
 
   const toggle = (): void => {
-    setExpanded((prev) => ({ ...prev, [position]: !isExpanded }))
+    setToastExpansion(!isExpanded)
   }
 
   const onAction = (id: number, seq: number, key: string): void => {
@@ -108,12 +108,24 @@ export function ToastHost({ className }: ToastHostProps) {
           const seq = lifecycle.seqOf(entry.id)
           const behind = stacking && !isExpanded && index > 0
           const scale = behind ? Math.max(0.88, 1 - index * 0.04) : 1
+          // 固定档高补间（sonner-native position-utils 用实测高度；本库按前端复核结论用 70 档高）。
+          const height = 70
+          const gap = isExpanded ? 8 : 14
+          let y: number
+          if (stacking && !isExpanded) {
+            y = index * 8
+          } else if (position === 'top') {
+            y = index * (height + gap)
+          } else {
+            y = -(visible.length - 1 - index) * (height + gap)
+          }
           return (
             <ToastView
               key={entry.id}
               payload={entry.payload}
               exiting={entry.phase === 'exiting'}
               scale={scale}
+              y={y}
               zIndex={stacking && !isExpanded ? visible.length - index : 1}
               onOpen={stacking ? toggle : undefined}
               onClose={() => closeToast(entry.id)}

@@ -152,20 +152,21 @@
   color: var(--mptk-c-toast-fg-2);
 }
 
-/* keyframes 数值一律字面量：与 kit.config 的 enter-dur / ease-out / ease-in-out 对应项一一对应。 */
+/* 只淡入淡出：位置 y 由宿主写进 inline transform 并用 transition 补间（sonner-native 的 withTiming）。
+   keyframes 里不许写 transform，否则动画期间会覆盖 inline transform、结束后跳位。 */
 @keyframes mptk-toast-enter-top {
-  #{kf.$mptk-kf-0} { opacity: 0; transform: translateY(-20px); }
-  #{kf.$mptk-kf-full} { opacity: 1; transform: translateY(0); }
+  #{kf.$mptk-kf-0} { opacity: 0; }
+  #{kf.$mptk-kf-full} { opacity: 1; }
 }
 @keyframes mptk-toast-enter-bottom {
-  #{kf.$mptk-kf-0} { opacity: 0; transform: translateY(50px); }
-  #{kf.$mptk-kf-full} { opacity: 1; transform: translateY(0); }
+  #{kf.$mptk-kf-0} { opacity: 0; }
+  #{kf.$mptk-kf-full} { opacity: 1; }
 }
 @keyframes mptk-toast-exit-top {
-  #{kf.$mptk-kf-0} { opacity: 1; transform: translateY(0); }
-  #{kf.$mptk-kf-full} { opacity: 0; transform: translateY(-150px); }
+  #{kf.$mptk-kf-0} { opacity: 1; }
+  #{kf.$mptk-kf-full} { opacity: 0; }
 }
 @keyframes mptk-toast-exit-bottom {
-  #{kf.$mptk-kf-0} { opacity: 1; transform: translateY(0); }
-  #{kf.$mptk-kf-full} { opacity: 0; transform: translateY(150px); }
+  #{kf.$mptk-kf-0} { opacity: 1; }
+  #{kf.$mptk-kf-full} { opacity: 0; }
 }

@@ -63,31 +63,17 @@
   left: var(--mptk-s-zero);
 }
 
-/* 卡片宽 = 视口宽 - 左右各 16px（sonner-native marginHorizontal:16）。 */
+/* 卡片宽 = 视口宽 - 左右各 16px（sonner-native marginHorizontal:16）。
+   卡片在 ToastHost 里按 y 绝对定位；y 变化走 transform 补间（sonner-native 的 withTiming）。 */
 .mptk-toast-track {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   width: calc(100% - 32px);
 }
 
-/* 平铺相邻间距 14px（sonner-native gap:14）：top 向下、bottom 向上。 */
-.mptk-toast-track > .mptk-toast + .mptk-toast {
-  margin-top: var(--mptk-c-toast-gap);
-}
-
-.mptk-toast-track--bottom {
-  flex-direction: column-reverse;
-}
-
-/* 折叠成一摞：下层向上顶到只露一条 8px 的边（sonner-native stackGap:8），
-   下层用 scaleX 微缩露出边缘；展开后按 gap 铺开成竖排列表。 */
-.mptk-toast-track--stack > .mptk-toast + .mptk-toast {
-  margin-top: calc(-1 * (var(--mptk-c-toast-estimated-h) - var(--mptk-c-toast-stack-gap)));
-  transition: margin-top var(--mptk-c-toast-stack-dur) var(--mptk-c-toast-ease-out);
-}
-
-.mptk-toast-track--stack.mptk-toast-track--expanded > .mptk-toast + .mptk-toast {
-  margin-top: var(--mptk-c-toast-stack-gap);
+/* 每条的 y 由 ToastHost 算出写进 transform；移除前面的卡片后余项 y 改变，
+   这条 transition 让它们平滑上移，而不是瞬间跳位。 */
+.mptk-toast-track > .mptk-toast {
+  transition: transform var(--mptk-c-toast-stack-dur) var(--mptk-c-toast-ease-out);
 }
 
 .mptk-loading {

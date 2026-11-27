@@ -38,7 +38,8 @@ hideToast(id)
 ## 显示与交互
 
 - 默认平铺：顶部往下长、底部往上长，各自计时、各自消失；不做 hover。
-- `enableStacking: true`：折叠成一摞，点任意一条整叠展开为全宽竖排列表，点外部或再点收起；`visibleToasts` 默认 3，超出的整条隐藏。
+- `enableStacking: true`：折叠成一摞，下层只露 8px 边，点任意一条整叠展开为全宽竖排列表，点外部或再点收起；展开态全局一份（默认折叠），展开时暂停全部计时、收起时按剩余时间恢复、关闭到剩 1 条自动收起。`visibleToasts` 默认 3，**只在堆叠时裁剪**（平铺不限条数），超出的整条隐藏。
+- 移除一条后余项按 600ms easeOutQuart 平滑补位，不瞬移；卡片绝对定位、位置由 `transform` 过渡驱动。
 - 关闭叉默认关闭，显式 `closeButton: true` 开启；触摸滑动关闭为离散阈值实现，Skyline/WebView 双端真机未验证前不宣称与 Reanimated 等价。
 
 ## 装配
@@ -54,3 +55,7 @@ export default createKitApp(App, { hosts: [ToastHost] })
 ## 变更
 
 - 2026-11-26：旧 Toast 全量删除后重建，接入统一全局命令宿主底座；显示交互参照 sonner-native。
+
+## 更新日志
+
+- 2026-11-27 18:02:04：补记 Toast 模块级 store 与每页无状态宿主重构的更新日志

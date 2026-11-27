@@ -1,7 +1,8 @@
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { setThemeMode, type ThemeMode } from 'mp-taro-kit/runtime'
+import { type ThemeMode } from 'mp-taro-kit/runtime'
 import { useThemeSnapshot } from 'mp-taro-kit/ui/infra'
+import { setDemoThemeMode, useMenuScope } from '../../settings'
 import { Card, CardHead } from 'mp-taro-kit/ui/card'
 import { Tag } from 'mp-taro-kit/ui/display'
 import { Cell, CellGroup } from 'mp-taro-kit/ui/display/cell'
@@ -29,6 +30,7 @@ const THEME_ITEMS: { value: ThemeMode; label: string }[] = [
 /** 目录页：品牌信息、主题热切换开关，下面按 menu 的固定分组铺单元格。 */
 export default function IndexPage() {
   const { mode, dark } = useThemeSnapshot()
+  const menuScope = useMenuScope()
   const go = (pageId: string | undefined) => {
     if (pageId === undefined) return
     void Taro.navigateTo({ url: `/${pagePathOf(pageId)}` })
@@ -53,23 +55,29 @@ export default function IndexPage() {
         <Segmented
           items={THEME_ITEMS}
           value={mode}
-          onChange={(next) => { setThemeMode(next) }}
+          onChange={(next) => { setDemoThemeMode(next) }}
         />
       </Card>
-      {menu.map((group) => (
-        <Card key={group.id} className="demo-card">
-          <CardHead><View className="mptk-card__title">{group.title}</View></CardHead>
-          <CellGroup>
-            {group.entries.map((entry) =>
-              entry.status === 'ready' ? (
-                <Cell key={entry.id} title={entry.label} isLink onClick={() => go(entry.pageId)} />
-              ) : (
-                <Cell key={entry.id} title={entry.label} disabled />
-              ),
-            )}
-          </CellGroup>
-        </Card>
-      ))}
+      {menu.map((group) => {
+        const entries = menuScope === 'all'
+          ? group.entries
+          : group.entries.filter((entry) => entry.status === 'ready')
+        if (entries.length === 0) return null
+        return (
+          <Card key={group.id} className="demo-card">
+            <CardHead><View className="mptk-card__title">{group.title}</View></CardHead>
+            <CellGroup>
+              {entries.map((entry) =>
+                entry.status === 'ready' ? (
+                  <Cell key={entry.id} title={entry.label} isLink onClick={() => go(entry.pageId)} />
+                ) : (
+                  <Cell key={entry.id} title={entry.label} disabled />
+                ),
+              )}
+            </CellGroup>
+          </Card>
+        )
+      })}
     </DemoShell>
   )
 }

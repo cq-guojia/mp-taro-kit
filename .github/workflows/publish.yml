@@ -23,6 +23,8 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
+      # demo/dist 不入库，产物断言读它，必须先编译演示站再跑测试
+      - run: pnpm --filter mp-taro-kit-demo build:weapp
       - run: pnpm test
       # dist/ 为空时直接失败，避免误打 tag 发出只有 README 的空包
       - run: pnpm run guard

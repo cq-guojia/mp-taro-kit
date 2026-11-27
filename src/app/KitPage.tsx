@@ -1,7 +1,8 @@
 import '../ui/layout/floating-action/style/index.css'
 import { createContext, useCallback, useContext, useRef, type ReactNode } from 'react'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import { ScrollView } from '@tarojs/components'
+import { getThemeSnapshot } from '../runtime/index.js'
 import {
   BackToTop,
   FloatingAction,
@@ -13,6 +14,7 @@ import {
 import { KitPageKeyContext } from '../ui/infra/page-key-context.js'
 import { pageKeyOf } from './current-page.js'
 import { kitHosts } from './kit-hosts.js'
+import { syncWindowBackground } from './kit-window-background.js'
 import { injectFirstScrollView } from './scroll-inject.js'
 
 interface ScrollNode {
@@ -84,6 +86,12 @@ export function KitPage({
     internalIdRef.current = `mptk-kit-scroll-${++scrollIdSeq}`
   }
   const { visible, onScroll } = useBackToTop({ visibilityHeight })
+
+  // 官方 DarkMode 按系统主题画首帧；每次页面显示按当前主题重刷窗口色，
+  // 覆盖用户自设主题与系统相反时滑入露出的相反色。
+  useDidShow(() => {
+    syncWindowBackground(getThemeSnapshot().dark)
+  })
 
   // 没显式给 id 就自动认领 children 里的第一个 ScrollView：注入 id / enhanced / onScroll。
   // 认领不到就保持原样、回顶静默无效——不报错、不隐藏按钮。

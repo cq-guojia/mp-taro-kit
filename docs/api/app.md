@@ -21,7 +21,8 @@ export default createKitApp(App, {
 1. `configure(createTaroFaces(faces), core)` —— 13 个平台方法走 Taro 默认实现，业务用 `faces` 覆盖差异项。
 2. `configureSafeArea` —— 取 `getWindowInfo().statusBarHeight` + `getMenuButtonBoundingClientRect()` 注入顶部真值，取 `screenHeight - safeArea.bottom` 注入底部横条真值（Skyline 下 `env()` 取不到）。
 3. `setThemeMode(mode, faces)` —— 默认跟随系统，`theme.onDarkChange` 默认用 `themeConfig` 同步窗口背景。
-4. 把命令宿主写进注册表；实际渲染由 `KitPage` 在每页页面树中完成。Taro 的 App 根节点不投影成页面可见子树，宿主留在 App 根节点会让命令「有返回但看不见」。
+4. 把窗口背景同步函数写进注册表：`KitPage` 在每次 `onShow` 时按当前主题重刷窗口色。官方 DarkMode 配置按系统主题画首帧，用户自设主题与系统相反时会在页面滑入露出相反色；按页重刷覆盖这一帧。未配 `themeConfig` 时登记为空，库不越权改窗口色。
+5. 把命令宿主写进注册表；实际渲染由 `KitPage` 在每页页面树中完成。Taro 的 App 根节点不投影成页面可见子树，宿主留在 App 根节点会让命令「有返回但看不见」。
 
 初始化按配置指纹去重：相同配置只做一次；配置变了（改 faces / 主题，或 HMR 重载）整体重放，不静默吞掉新配置。
 
@@ -266,3 +267,4 @@ async function submit() {
 - 2026-11-25 15:31:08：命令归属改由 app 层注入 Taro 页面栈读取器，载荷记录页面实例 id，不再依赖渲染写入的全局 route
 - 2026-11-26 09:10:27：当前页身份只读 `getCurrentPages()` 栈顶，不再优先取 `getCurrentInstance().page`；全局主题更新导致保留页重渲染时，命令不会再归属到旧页
 - 2026-11-26 10:43:53：`KitPage` 的宿主身份改为首次渲染时固定；原来每次渲染都从执行上下文取 page，主题更新会让保留页宿主拿到活跃页身份并抢走弹窗。命令弹窗补首帧关闭态进场与退场保留，动画与 Popup 同档
+- 2026-11-27 19:01:29：窗口背景按页重刷：createKitApp 登记、KitPage onShow 同步，修自设主题转场闪相反色

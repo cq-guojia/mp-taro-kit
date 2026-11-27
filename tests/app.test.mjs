@@ -102,6 +102,28 @@ test('createKitApp 配置指纹 guard 与按需宿主', () => {
   assert.match(page, /<Host key=\{`mptk-command-host-/, 'KitPage 没在页面树里渲染宿主')
 })
 
+/** 窗口色：createKitApp 登记，KitPage 每页 onShow 按当前主题重刷，未配 themeConfig 则不越权。 */
+test('窗口背景色按页重刷，覆盖自设主题与系统相反的转场首帧', () => {
+  const src = read('src/app/create-kit-app.tsx')
+  assert.match(src, /setWindowBackgroundSync\(/, 'createKitApp 没登记窗口色同步')
+  assert.match(
+    src,
+    /setWindowBackgroundSync\(themeConfig === undefined \? null : \(dark\) => applyWindowBackground\(dark, themeConfig\)\)/,
+    '未配 themeConfig 时必须登记 null，不越权改窗口色',
+  )
+
+  const page = read('src/app/KitPage.tsx')
+  assert.match(page, /useDidShow\(/, 'KitPage 没挂页面显示生命周期')
+  assert.match(page, /syncWindowBackground\(getThemeSnapshot\(\)\.dark\)/, '页面显示时没按当前主题重刷窗口色')
+
+  const registry = read('src/app/kit-window-background.ts')
+  assert.match(registry, /createSingleton/, '窗口色注册表没走跨副本单例')
+  assert.match(registry, /slot\(\)\.sync\?\.\(dark\)/, '未登记时同步必须静默无效')
+
+  assert.equal(existsSync(join(root, 'dist/app/kit-window-background.js')), true, 'dist 缺窗口色注册表')
+  assert.match(read('dist/app/KitPage.js'), /syncWindowBackground/, '产物丢了按页重刷')
+})
+
 /** KitPage：每页包一层的页面壳，默认回顶可关、业务项可加，不碰受控 scrollTop。 */
 test('KitPage 默认回顶可关可加，滚动回执只读不回写', () => {
   const src = read('src/app/KitPage.tsx')

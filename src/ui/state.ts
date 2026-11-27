@@ -115,8 +115,12 @@ export interface UIState {
   /** 当前页有宿主的计数；按 scope 校验，避免别页有宿主却误判当前页可用。 */
   readonly toastHostScopes: Map<string, number>
   readonly toastTimers: Map<number, readonly ReturnType<typeof setTimeout>[]>
+  /** 退场后物理移除的计时器：独立于关闭计时器，避免 close 时误删导致 exiting 节点永久残留。 */
+  readonly toastFinishTimers: Map<number, ReturnType<typeof setTimeout>>
   /** 命令层回调，不放进 payload；Host 按 id / seq / phase 守卫后调用。 */
   readonly toastCallbacks: Map<number, (key: string) => void>
+  /** 折叠堆叠的展开态：全局一份（sonner-native 的 channel 态），所有页宿主同步。 */
+  readonly toastExpansion: { expanded: boolean; listeners: Set<() => void>; collapseAt: number }
   /** 每条弹窗只归一个 Host 渲染；Taro 每页都渲染 App 时避免多份宿主重复出框。 */
 }
 
@@ -135,7 +139,9 @@ export function uiState(): UIState {
       loadingHandles: new Set<number>(),
       toastHostScopes: new Map<string, number>(),
       toastTimers: new Map<number, readonly ReturnType<typeof setTimeout>[]>(),
+      toastFinishTimers: new Map<number, ReturnType<typeof setTimeout>>(),
       toastCallbacks: new Map<number, (key: string) => void>(),
+      toastExpansion: { expanded: false, listeners: new Set<() => void>(), collapseAt: 0 },
     }
   })
 }

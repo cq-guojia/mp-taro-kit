@@ -8,10 +8,10 @@ const root = fileURLToPath(new URL('../', import.meta.url))
 const read = (file) => readFileSync(join(root, file), 'utf8')
 
 /**
- * demo 站专属设置面板：右侧列常驻入口 + 底部半屏弹窗，含明暗、编译模式、版本三项。
+ * demo 站专属设置面板：右侧列常驻入口 + 底部半屏弹窗，含明暗、菜单显示、编译模式、版本四项。
  * 这是 demo 自己的能力，不做成库的演示页。
  */
-test('demo 设置面板：每页常驻入口，底部面板按内容撑高，三项齐全', () => {
+test('demo 设置面板：每页常驻入口，底部面板按内容撑高，四项齐全', () => {
   const shell = read('demo/src/components/DemoShell.tsx')
   const panel = read('demo/src/components/DemoSettings.tsx')
 
@@ -69,18 +69,19 @@ test('demo 设置面板：每页常驻入口，底部面板按内容撑高，三
   assert.match(panel, /<CellGroup border=\{false\}/, '不要 CellGroup 上下的 border')
   assert.match(panel, /dividerInset=\{false\}/, 'Cell 分隔线不要内缩那种 border')
 
-  // 两处分段控件走库默认档（CONTROL_SIZE_DEFAULT = sm），不写死 xs：滑块比原来大一档。
-  assert.equal((panel.match(/<Segmented\b/g) ?? []).length, 2, '明暗 / 编译两处分段控件')
+  // 三处分段控件走库默认档（CONTROL_SIZE_DEFAULT = sm），不写死 xs：滑块比原来大一档。
+  assert.equal((panel.match(/<Segmented\b/g) ?? []).length, 3, '明暗 / 菜单显示 / 编译三处分段控件')
   assert.doesNotMatch(panel, /<Segmented[\s\S]{0,120}?size="xs"/, '分段控件不该写死 xs，按默认档摆')
 
-  // 三项：明暗模式复用 setThemeMode / useThemeSnapshot，编译模式，版本用编译期常量。
-  assert.match(panel, /setThemeMode\(next\)/, '明暗模式没接 setThemeMode')
+  // 四项：明暗与菜单显示走持久化写入口，编译模式，版本用编译期常量。
+  assert.match(panel, /setDemoThemeMode\(next\)/, '明暗模式没接持久化写入口')
   assert.match(panel, /useThemeSnapshot\(\)/, '明暗模式没读当前主题')
+  assert.match(panel, /title="菜单显示"/, '缺菜单显示项')
   assert.match(panel, /title="编译模式"/, '缺编译模式项')
   assert.match(panel, /title="当前版本"/, '缺版本项')
   assert.match(panel, /__MTPK_VERSION__/, '版本没用编译期常量')
   assert.match(panel, /__MTPK_BUILD_ID__/, '版本没带编译号')
-  assert.equal((panel.match(/<Cell\b/g) ?? []).length, 3, '应该正好三项：明暗 / 编译 / 版本')
+  assert.equal((panel.match(/<Cell\b/g) ?? []).length, 4, '应该正好四项：明暗 / 菜单显示 / 编译 / 版本')
 
   // 每页都挂同一个壳：所有展示页经 DemoPage→DemoShell，入口不落在某个页面里。
   assert.match(read('demo/src/components/DemoBlock.tsx'), /<DemoShell/, 'DemoPage 没走 DemoShell')
@@ -106,11 +107,11 @@ test('编译模式：confirm 确认后重启，如实标注引擎切换路径', 
   assert.doesNotMatch(panel, /setRenderer|switchRenderer/, '不存在运行时切 renderer 的 API，不能假装调用')
 })
 
-/** 产物核对：设置面板与三项文案真进演示站包，中文以 \uXXXX 形式存在。 */
-test('演示站产物含设置面板与三项', () => {
+/** 产物核对：设置面板与四项文案真进演示站包，中文以 \uXXXX 形式存在。 */
+test('演示站产物含设置面板与四项', () => {
   const bundle = read('demo/dist/common.js')
   const esc = (text) => `\\u${[...text].map((c) => c.charCodeAt(0).toString(16).padStart(4, '0')).join('\\u')}`
-  for (const label of ['设置', '明暗模式', '编译模式', '当前版本', '重启', 'Switch Render']) {
+  for (const label of ['设置', '明暗模式', '菜单显示', '仅已开发', '显示全部', '编译模式', '当前版本', '重启', 'Switch Render']) {
     assert.ok(bundle.includes(label) || bundle.includes(esc(label)), `产物缺设置项文案：${label}`)
   }
   assert.match(bundle, /demo-settings/, '产物缺设置入口 id')

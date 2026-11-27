@@ -17,15 +17,15 @@
 ```bash
 pnpm install --frozen-lockfile
 pnpm run build
+pnpm --filter mp-taro-kit-demo build:weapp
 pnpm test
 pnpm run guard
 pnpm pack --dry-run
-pnpm --filter mp-taro-kit-demo build:weapp
 ```
 
 `pnpm run build` 的第一步是 `gen:config --lib`：把 `kit.config.mjs` 算成 `_tokens.scss` / `_keyframes.scss` 与 `*.generated.ts`，再清空重建 `dist/`，做 TS 双遍编译、Sass 编译，并把生成器 CLI、纯函数依赖、默认表与 Taro 插件复制进发布产物；同一次构建也会刷新 `demo/src` 的宿主生成物（`app-theme.scss` / `theme.json` / `kit-config.generated.ts` / `kit-swatches.generated.scss`），保证全仓产物与配置一致。契约见[统一配置](../api/config.md)。
 
-`pnpm test` 先跑 `scripts/check.mjs` 的包清单自检（其中对 `--lib` / `--host` 各跑一次 `gen:config --check`：独立重算期望、输入指纹与变异测试），再由 Node test runner 跑 `tests/*.test.mjs`；`pnpm run guard` 走 `--release`，追加校验 `dist/` 非空、根入口三件套与统一配置发布产物齐全。演示站构建消费同一个 `dist/`，必须排在 `build` 之后，产物落在 `demo/dist/`。演示站的 `taro build` 由 `plugins: ['mp-taro-kit/plugin']` 自动触发生成，不需要额外命令。
+`pnpm test` 先跑 `scripts/check.mjs` 的包清单自检（其中对 `--lib` / `--host` 各跑一次 `gen:config --check`：独立重算期望、输入指纹与变异测试），再由 Node test runner 跑 `tests/*.test.mjs`；`pnpm run guard` 走 `--release`，追加校验 `dist/` 非空、根入口三件套与统一配置发布产物齐全。演示站构建消费同一个 `dist/`，必须排在 `build` 之后；又因 `tests/demo-settings.test.mjs` 读 `demo/dist/common.js` 做产物断言、而 `demo/dist/` 不入库，构建还必须排在 `test` 之前，否则干净环境（含 CI）必然失败。演示站的 `taro build` 由 `plugins: ['mp-taro-kit/plugin']` 自动触发生成，不需要额外命令。
 
 ## 测试
 
@@ -36,6 +36,8 @@ pnpm --filter mp-taro-kit-demo build:weapp
 | `tests/core.test.mjs` | 注入校验、请求、路由、存储、小程序能力兜底 |
 | `tests/ui.test.mjs` | 挂载契约、命令式 API、ESM / CJS 双端、组件 `.d.ts` 真类型零诊断、样式不硬编码颜色、组件级出口与 Cell 状态机、演示站菜单与示例渲染分支、演示站不渲染代码 |
 | `tests/kit-config-chain.test.mjs` | 配置真源全量锚点、别名与合并、库 / 宿主两模式产物、变异敏感性、发布链三个出口、运行时契约 |
+| `tests/demo-settings.test.mjs` | 设置面板四项入口与结构、编译模式真实性、演示站产物文案 |
+| `tests/demo-settings-storage.test.mjs` | 设置缓存脏值/缺失/字符串解析、入口与开关的持久化接线 |
 
 断言全部读取 `dist/` 产物、`kit.config.mjs` 与 `demo/` 源码，期望值取自配置而非写死默认值，无外部服务依赖。
 
@@ -59,3 +61,4 @@ pnpm --filter mp-taro-kit-demo build:weapp
 - 2026-11-11 22:30:25：断言总数 45，补演示站不渲染代码
 - 2026-11-14 23:43:34：补 gen:config 构建前置、配置链回归测试与门禁顺序
 - 2026-11-15 00:40:41：构建说明补 _keyframes.scss 与 kit-swatches.generated.scss
+- 2026-11-27 18:01:57：门禁顺序修正：演示站构建前移到 test 之前，补设置与持久化测试覆盖

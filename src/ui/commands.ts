@@ -97,25 +97,105 @@ function clearToastTimers(id: number): void {
   state.toastTimers.delete(id)
 }
 
-/** 逻辑关闭一条 Toast；幂等，退场完成后由宿主 finish。 */
+function clearToastFinishTimer(id: number): void {
+  const state = uiState()
+  const timer = state.toastFinishTimers.get(id)
+  if (timer !== undefined) clearTimeout(timer)
+  state.toastFinishTimers.delete(id)
+}
+
+/** 退场完成后物理移除。由「关闭成功」驱动，与关闭来源（到点 / 关闭叉 / swipe / action）无关。 */
+function scheduleToastFinish(id: number): void {
+  const state = uiState()
+  clearToastFinishTimer(id)
+  const timer = setTimeout(() => {
+    state.toastFinishTimers.delete(id)
+    state.toastLifecycle.finish(id)
+    state.toastCallbacks.delete(id)
+    state.toastTimers.delete(id)
+  }, 300)
+  ;(timer as { unref?: () => void }).unref?.()
+  state.toastFinishTimers.set(id, timer)
+}
+
+/** 逻辑关闭一条 Toast；幂等，退场完成后由独立 timer 物理移除，节点不再占位。 */
 export function closeToast(id: number): boolean {
   clearToastTimers(id)
-  return uiState().toastLifecycle.close(id)
+  const state = uiState()
+  const closed = state.toastLifecycle.close(id)
+  if (closed) {
+    scheduleToastFinish(id)
+    const remaining = state.toastLifecycle.getSnapshot().filter((entry) => entry.phase === 'open').length
+    if (state.toastExpansion.expanded && remaining <= 1) {
+      state.toastExpansion.collapseAt = 0
+      setToastExpansion(false)
+    }
+  }
+  return closed
 }
 
 export function hideToast(id: number): boolean {
   const state = uiState()
+  const closed = state.toastLifecycle.close(id)
+  if (!closed) return false
+  clearToastTimers(id)
+  clearToastFinishTimer(id)
   state.toastCallbacks.delete(id)
-  const closed = closeToast(id)
-  if (closed) state.toastLifecycle.finish(id)
-  return closed
+  state.toastLifecycle.finish(id)
+  return true
 }
 
 export function clearToasts(): void {
   const state = uiState()
   for (const id of [...state.toastTimers.keys()]) clearToastTimers(id)
+  for (const id of [...state.toastFinishTimers.keys()]) clearToastFinishTimer(id)
   state.toastCallbacks.clear()
   state.toastLifecycle.clear()
+  state.toastExpansion.expanded = false
+  for (const listener of state.toastExpansion.listeners) listener()
+}
+
+/** 订阅全局展开态；ToastHost 用它驱动 useSyncExternalStore。 */
+export function subscribeToastExpansion(listener: () => void): () => void {
+  const expansion = uiState().toastExpansion
+  expansion.listeners.add(listener)
+  return () => expansion.listeners.delete(listener)
+}
+
+/** 当前是否展开（sonner-native 按 channel 存，本库无 channel 概念故全局一份）。 */
+export function getToastExpansion(): boolean {
+  return uiState().toastExpansion.expanded
+}
+
+/**
+ * 展开时暂停所有 Toast 计时（sonner-native expand 的 pauseAllTimers）；
+ * 收起时按 expiresAt 剩余时间重排，并加 100ms 冷却防误触即刻重展开。
+ */
+export function setToastExpansion(next: boolean): boolean {
+  const state = uiState()
+  const expansion = state.toastExpansion
+  if (expansion.expanded === next) return false
+  const now = Date.now()
+  if (!next && now - expansion.collapseAt < 100) return false
+  expansion.expanded = next
+  if (next) {
+    for (const id of [...state.toastTimers.keys()]) clearToastTimers(id)
+  } else {
+    expansion.collapseAt = now
+    for (const entry of state.toastLifecycle.getSnapshot()) {
+      if (entry.phase !== 'open' || !Number.isFinite(entry.payload.expiresAt)) continue
+      const remaining = entry.payload.expiresAt - now
+      if (remaining <= 0) {
+        closeToast(entry.id)
+        continue
+      }
+      const timer = setTimeout(() => closeToast(entry.id), remaining)
+      ;(timer as { unref?: () => void }).unref?.()
+      state.toastTimers.set(entry.id, [timer])
+    }
+  }
+  for (const listener of expansion.listeners) listener()
+  return true
 }
 
 /** 页面跨页交接：把仍有效的 Toast 改挂到当前栈顶页，由新页宿主续显剩余时间。 */
@@ -129,6 +209,7 @@ export function retargetToasts(scope: string): void {
 
 /** 绝对到期兜底；timer 只负责及时触发，切页 / 前台恢复也调它。 */
 export function sweepExpiredToasts(now = Date.now()): void {
+  if (uiState().toastExpansion.expanded) return
   const lifecycle = uiState().toastLifecycle
   for (const entry of lifecycle.getSnapshot()) {
     if (entry.phase === 'open' && now >= entry.payload.expiresAt) closeToast(entry.id)
@@ -160,10 +241,8 @@ export function showToast(options: ToastOptions | string): number {
   if (opts.onAction !== undefined) state.toastCallbacks.set(id, opts.onAction)
   if (duration > 0) {
     const closeTimer = setTimeout(() => closeToast(id), duration)
-    const finishTimer = setTimeout(() => state.toastLifecycle.finish(id), duration + 160)
     ;(closeTimer as ReturnType<typeof setTimeout> & { unref?: () => void }).unref?.()
-    ;(finishTimer as ReturnType<typeof setTimeout> & { unref?: () => void }).unref?.()
-    state.toastTimers.set(id, [closeTimer, finishTimer])
+    state.toastTimers.set(id, [closeTimer])
   }
   return id
 }

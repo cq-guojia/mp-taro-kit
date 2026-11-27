@@ -153,7 +153,7 @@ test('showLoading / hideLoading 句柄配对，重复 hide 不误关别人的', 
   assert.equal(ui.uiState().loading.getSnapshot().active, false)
 })
 
-test('showToast 推可序列化载荷，close 幂等，scope 交接不丢有效期', () => {
+test('showToast 推可序列化载荷，close 幂等，scope 交接不丢有效期', async () => {
   ui.resetUIForTests()
   mountAll()
   const id = ui.showToast({
@@ -179,9 +179,58 @@ test('showToast 推可序列化载荷，close 幂等，scope 交接不丢有效�
   assert.equal(lifecycle.scopeOf(id), 'next-page')
   assert.equal(ui.closeToast(id), true)
   assert.equal(ui.closeToast(id), false, 'close 必须幂等')
-  assert.equal(lifecycle.finish(id), true)
   assert.equal(ui.hideToast(id), false, '已关闭后 hide 返回 false')
-  assert.equal(lifecycle.getSnapshot().length, 0)
+  await new Promise((resolve) => setTimeout(resolve, 360))
+  assert.equal(lifecycle.getSnapshot().length, 0, '退场结束后必须物理移除，否则透明节点会永久拦截点击、折叠层不会回位')
+})
+
+test('Toast 关掉上面一条后，下面一条必须补位（退场条目不占位）', async () => {
+  ui.resetUIForTests()
+  mountAll()
+  const lifecycle = ui.uiState().toastLifecycle
+  const first = ui.showToast({ description: '第一条', duration: 0 })
+  const second = ui.showToast({ description: '第二条', duration: 0 })
+  assert.equal(ui.closeToast(first), true)
+  assert.equal(lifecycle.getSnapshot().map((e) => e.phase).join(','), 'exiting,open')
+  await new Promise((resolve) => setTimeout(resolve, 360))
+  assert.deepEqual(lifecycle.getSnapshot().map((e) => e.id), [second], '旧条目物理移除后只剩第二条，余项 y 变化走 transform 补间')
+})
+
+test('Toast 展开态全局唯一：展开暂停计时、收起恢复、剩 1 条自动收起', async () => {
+  ui.resetUIForTests()
+  mountAll()
+  const state = ui.uiState()
+  assert.equal(ui.getToastExpansion(), false, '默认折叠')
+  ui.showToast({ description: 'a', duration: 120, enableStacking: true })
+  ui.showToast({ description: 'b', duration: 120, enableStacking: true })
+  ui.showToast({ description: 'c', duration: 120, enableStacking: true })
+  assert.equal(state.toastTimers.size, 3)
+  assert.equal(ui.setToastExpansion(true), true)
+  assert.equal(ui.getToastExpansion(), true)
+  assert.equal(state.toastTimers.size, 0, '展开必须暂停计时（sonner-native pauseAllTimers）')
+  await new Promise((resolve) => setTimeout(resolve, 180))
+  assert.equal(state.toastLifecycle.getSnapshot().filter((e) => e.phase === 'open').length, 3, '展开期间不得自动消失')
+  ui.setToastExpansion(false)
+  await new Promise((resolve) => setTimeout(resolve, 80))
+  assert.equal(ui.getToastExpansion(), false)
+  ui.resetUIForTests()
+  mountAll()
+  const first = ui.showToast({ description: 'x', duration: 0, enableStacking: true })
+  ui.showToast({ description: 'y', duration: 0, enableStacking: true })
+  ui.setToastExpansion(true)
+  ui.closeToast(first)
+  await new Promise((resolve) => setTimeout(resolve, 360))
+  assert.equal(ui.getToastExpansion(), false, '关闭到剩 1 条必须自动收起')
+})
+
+test('Toast 位置补间：绝对定位 + transform transition，移除后 y 改变有过渡', () => {
+  const host = read('../src/ui/infra/ToastHost.tsx')
+  const view = read('../src/ui/feedback/toast/ToastView.tsx')
+  const css = read('../src/ui/infra/style/index.scss')
+  assert.match(host, /y=\{y\}/, '每条 toast 的 y 必须写进 transform')
+  assert.match(view, /position: 'absolute'/, '卡片必须绝对定位，flex 重排无法过渡')
+  assert.match(css, /transition: transform var\(--mptk-c-toast-stack-dur\)/, '位置变化必须走 600ms 补间')
+  assert.match(host, /stacking \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, 'visibleToasts 只在堆叠时裁剪')
 })
 
 test('confirm() 推栈并由关闭动作 resolve true / false', async () => {
