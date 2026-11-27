@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 13:31:01 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 15:55:33 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -25,7 +25,7 @@
 
 ## Next
 
-间距 8px；tone 图标改字体库 + 圆环（27px 圈 / 2px 描边 / 15px 内图标 / 四周 4px 间距）；action 改库 Button xs。273/273 全绿、产物核对 `size:"xs"` 与 `54rpx` 圆环落盘。改动未提交，等用户看效果。
+间距 8px；tone 图标字体库 + 圆环 **24px**（2px 描边 / 内图标 **12px**）；action 库 Button **xs + soft 半透明浅底描边 + radius lg**。273/273 全绿、产物核对 `size:"xs" variant:"soft" radius:"lg"` 与 `48rpx` 圆环落盘。改动未提交，等用户看效果。
 
 平铺间距已按用户目测从 14px 改 7px（展开仍 8px），产物确认 `?8:7`，272/272 全绿。改动未提交，等用户看间距效果后再定。若验收通过，用户说「结束/关闭任务」后走 `close`。
 
@@ -54,6 +54,7 @@
 
 - 2026-11-26 架构 + 前端双重复核（只读，两个独立 agent）：① 现有 Dialog 的 owner 是「发起页唯一」，不是「当前页唯一」——`navigateTo` 后弹窗留在旧页、Promise 悬挂；照搬会让 Toast 在隐藏页渲染或过期才出现。修正为 scope 交接 + 当前页唯一渲染。② `ensureMounted` 只看全局计数，不证明当前页有宿主；修正为按 scope 校验。③ ReactNode / `onClick` 进全局 store 会把旧页闭包留在 `Symbol.for` 单例里、跨页点击打到错误页面；修正为 descriptor 载荷 + 命令层回调 + `isCurrent` 守卫。④ `expiresAt` 不能在 render 期改 store；timer 幂等 + effect 兜底。⑤ 宿主卸载禁止全局 clear，只按 owner 清。⑥ `createKitApp` 的 hosts 不在 fingerprint 内，重复配置会覆盖注册表，接入时避免隐式全局单写。前端侧：⑦ 不实测 `toastHeights`，用固定档高 + CSS transition；⑧ 安全区用 `safeAreaState()` 注入，`env()`仅兜底；⑨ 展开态透明层显式 `catchMove={false}` + 逐类 pointer-events；⑩ 不提供声明式 Toast，故不加 `markCardEdgeOutOfFlow`；⑪ demo 页不打 `section`（`tests/ui.test.mjs:773-775` 会红）；⑫ 避免 `var()` fallback / `inset` / 简写等 Skyline 会静默丢弃的写法。
 - 2026-11-26 实施期踩坑：`demo/src/pages/toast/index.tsx` 与 `index.config.ts` 上一轮只建了空文件占位（0 字节），Node test 只读 catalog 声明、不编译页面所以没暴露；`pnpm --filter mp-taro-kit-demo build:weapp` 以 Rollup `MISSING_EXPORT: "default" is not exported by src/pages/toast/index.tsx` 抓出。按 dialog 页结构补齐三例（基础四 tone + 关闭叉 / 推四条堆叠 / action+onAction 撤销）后 demo build=0。教训：新增演示页的编译只有 demo build 能验，`build+test+guard` 全绿不等于演示站能看。
+- 2026-11-27 用户定稿尺寸：圆环外径 27→24、内图标 15→12；按钮仍 xs 但改"半透明带边"= `type="default" variant="soft"`（ghost 无边、outline 不透明白底），圆角加大一号 = `radius="lg"`。产物核对 `size:"xs",type:"default",variant:"soft",radius:"lg"` 与 `48rpx` 圆环 / `24rpx` 内图标落盘（样式这次进 `pages/toast/index.wxss`，Taro 按需注入位置会变，不是固定 common.wxss）。273/273 全绿、codelint/guard/demo build 全绿。
 - 2026-11-27 用户再调：tone 图标"太大、要带圈、圈是原 icon 的 3/4、图标与圈留约 4px 间距"。按 Dialog 的 `iconFramed` 结构（外层 slot 画 border 圆环 + 内层缩小字体图标）实现：ToastView 加 `.mptk-toast__icon-ring` 包裹 Icon，环 27px（内图标 15px = 原 20 的 3/4 + 四周各 4px + 2px 描边）、2px 描边、pill 圆角、间距 token space-3；内图标 15px。action 按钮 sm→xs。产物核对 `size:"xs"` 与 `.mptk-toast__icon-ring` 编译为 54rpx/4rpx 落盘。273/273 全绿、codelint/guard/demo build 全绿。demo build 再次因连续跑 build+demo 同批超时（第 4 次），单独重跑 11 秒恢复——这条门禁必须单独跑。
 - 2026-11-27 继续调样式：平铺间距 7→8（三元 `isExpanded ? 8 : 8` 简化为常数 8）；用户不要自绘 tone 图标，要求同 Dialog 的字体库带圈图标——ToastView 改用 `Icon` 组件 + `TONE_ICON` 映射（gou/guanbi/warn/info，与 `DIALOG_TYPE_ICON` 一致），tone class 只上色，删掉 CSS 里全部 data-URI mask；撤销按钮改库 `Button size="sm"`（默认 primary solid），外层 View 只拦冒泡、样式只留 margin，外观交 Button 自己管。产物核对 4 个图标名与 `size:"sm"` 真实落盘，toast 卡片无 mask-image（残留的 mask 是 Spinner 与 CloseGlyph 自己的）。273/273 全绿、codelint 4 文件、guard、demo build 全绿。
 - 2026-11-27 用户目测四项修复 OK 后继续调样式：确认 Toast 默认 icon 是库自绘 SVG（CSS mask data URI，四种 tone 各一；传 `icon` 则用图标字体名覆盖）、关闭叉复用项目既有 `CloseGlyph` 自绘、action 按钮是自定义 `{key,text,tone?}` + `onAction(key)` 回调的独立 View（不是库 Button，样式复刻 sonner-native 胶囊）。平铺相邻间距 14px→7px（展开仍 8px），产物确认 `?8:7`。期间 demo build 再次卡死超时（dist 被清到只剩 project.config.json），移走残留文件后单独重跑 11 秒通过；全门禁 272/272、codelint、guard 绿。
@@ -93,3 +94,4 @@
 - 2026-11-27 11:51:29 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 提交 e353968 后调样式：平铺间距 14→7（展开仍8），产物确认；确认 icon 自绘 SVG/关闭叉复用 CloseGlyph/action 为自定义按钮非库 Button。272/272 全绿
 - 2026-11-27 13:05:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 间距 7→8；tone 图标改 Dialog 同款字体库（gou/guanbi/warn/info），自绘 SVG 删除；action 改库 Button sm。273/273 全绿，产物核对图标名与 size:sm 落盘
 - 2026-11-27 13:31:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · tone 图标改 Dialog iconFramed 结构：27px 圆环+2px描边+15px内图标+四周4px间距；action 按钮 sm→xs。273/273 全绿，产物核对 size:xs 与 54rpx 圆环
+- 2026-11-27 15:55:33 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 尺寸定稿：圆环 24px/内图标 12px；按钮 xs + default/soft 半透明描边 + radius lg。产物核对 48rpx 圆环与按钮配置落盘，273/273 全绿
