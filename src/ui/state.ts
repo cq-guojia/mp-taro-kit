@@ -119,8 +119,18 @@ export interface UIState {
   readonly toastFinishTimers: Map<number, ReturnType<typeof setTimeout>>
   /** 命令层回调，不放进 payload；Host 按 id / seq / phase 守卫后调用。 */
   readonly toastCallbacks: Map<number, (key: string) => void>
-  /** 折叠堆叠的展开态：全局一份（sonner-native 的 channel 态），所有页宿主同步。 */
-  readonly toastExpansion: { expanded: boolean; listeners: Set<() => void>; collapseAt: number }
+  /**
+   * 折叠堆叠的全局态：expanded 是交互态，stacking/visibleToasts 是 Toaster 级配置（sonner-native）。
+   * 全局一份，所有页宿主同步；任一字段变化都通知订阅者。
+   */
+  readonly toastExpansion: {
+    expanded: boolean
+    stacking: boolean
+    visibleToasts: number
+    configSnapshot: { enableStacking: boolean; visibleToasts: number }
+    listeners: Set<() => void>
+    collapseAt: number
+  }
   /** 每条弹窗只归一个 Host 渲染；Taro 每页都渲染 App 时避免多份宿主重复出框。 */
 }
 
@@ -141,7 +151,14 @@ export function uiState(): UIState {
       toastTimers: new Map<number, readonly ReturnType<typeof setTimeout>[]>(),
       toastFinishTimers: new Map<number, ReturnType<typeof setTimeout>>(),
       toastCallbacks: new Map<number, (key: string) => void>(),
-      toastExpansion: { expanded: false, listeners: new Set<() => void>(), collapseAt: 0 },
+      toastExpansion: {
+        expanded: false,
+        stacking: false,
+        visibleToasts: 3,
+        configSnapshot: { enableStacking: false, visibleToasts: 3 },
+        listeners: new Set<() => void>(),
+        collapseAt: 0,
+      },
     }
   })
 }

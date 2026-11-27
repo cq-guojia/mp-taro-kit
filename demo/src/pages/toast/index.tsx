@@ -1,6 +1,6 @@
 import { Text, View } from '@tarojs/components'
 import { Button } from 'mp-taro-kit/ui/actions'
-import { showToast } from 'mp-taro-kit/ui/commands/toast'
+import { showToast, setToastConfig } from 'mp-taro-kit/ui/commands/toast'
 import type { ToastTone } from 'mp-taro-kit/ui'
 
 import 'mp-taro-kit/ui/actions/style'
@@ -18,6 +18,7 @@ const BASIC_TONES: { value: ToastTone; label: string }[] = [
 
 export default function ToastPage() {
   const openBasic = (tone: ToastTone, closeButton: boolean) => {
+    setToastConfig({ enableStacking: false })
     void showToast({
       title: '标题',
       description: `${tone} 轻提示，各自计时、各自消失`,
@@ -41,6 +42,7 @@ export default function ToastPage() {
   }
 
   const openAction = () => {
+    setToastConfig({ enableStacking: false })
     void showToast({
       title: '文件已删除',
       description: '点「撤销」恢复，onAction 只在命令层回调',

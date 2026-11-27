@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useRef, useSyncExternalStore } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { View } from '@tarojs/components'
 import type { CommonEventFunction } from '@tarojs/components'
-import { useDidShow } from '@tarojs/taro'
-import { markHostMounted, markHostUnmounted, closeToast, retargetToasts, sweepExpiredToasts, subscribeToastExpansion, getToastExpansion, setToastExpansion } from '../commands.js'
+import Taro, { useDidShow } from '@tarojs/taro'
+import { markHostMounted, markHostUnmounted, closeToast, retargetToasts, sweepExpiredToasts, subscribeToastExpansion, getToastExpansion, setToastExpansion, getToastConfig } from '../commands.js'
 import { uiState } from '../state.js'
 import type { ToastPosition } from '../state.js'
 import { KitPageKeyContext } from './page-key-context.js'
@@ -34,6 +34,7 @@ export function ToastHost({ className }: ToastHostProps) {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
   const mounted = useRef(true)
   const isExpanded = useSyncExternalStore(subscribeToastExpansion, getToastExpansion, getToastExpansion)
+  const config = useSyncExternalStore(subscribeToastExpansion, getToastConfig, getToastConfig)
   const touches = useRef<Record<number, TouchPoint>>({})
 
   useEffect(() => {
@@ -60,11 +61,31 @@ export function ToastHost({ className }: ToastHostProps) {
   })
 
   const position: ToastPosition = scoped[0]?.payload.position ?? 'top'
-  const stacking = scoped[0]?.payload.enableStacking ?? false
-  const limit = scoped[0]?.payload.visibleToasts ?? 3
+  // sonner-native 的 enableStacking / visibleToasts 是 Toaster 级配置，不是第一条 toast 的字段。
+  const { enableStacking: stacking, visibleToasts: limit } = config
   const ordered = position === 'top' ? [...scoped].reverse() : scoped
   // sonner-native：visibleToasts 只在 enableStacking 时裁剪；平铺不限条数。
   const visible = stacking ? ordered.slice(0, Math.max(1, limit)) : ordered
+
+  /* 卡片高度由内容决定（标题 / 描述 / action 按钮），固定档高会让带 action 的卡片重叠；
+     按 sonner-native 的 allToastHeights 实测，首帧兜底 70，量到后重算 y。 */
+  const [heights, setHeights] = useState<Readonly<Record<number, number>>>({})
+  const measureKey = visible.map((entry) => entry.id).join(',')
+  useEffect(() => {
+    if (visible.length === 0) return
+    const query = Taro.createSelectorQuery()
+    for (const entry of visible) query.select(`#mptk-toast-${String(entry.id)}`).boundingClientRect()
+    query.exec((res) => {
+      const next: Record<number, number> = {}
+      visible.forEach((entry, index) => {
+        const rect = res[index] as { height?: number } | null
+        if (rect !== null && typeof rect?.height === 'number' && rect.height > 0) next[entry.id] = rect.height
+      })
+      if (Object.keys(next).length === 0) return
+      setHeights(next)
+    })
+    // measureKey 随可见条目变化触发重测；visible 里 payload 不变时高度不会变。
+  }, [measureKey])
 
   const toggle = (): void => {
     setToastExpansion(!isExpanded)
@@ -93,7 +114,8 @@ export function ToastHost({ className }: ToastHostProps) {
   }
 
   const safe = safeAreaState().getSnapshot()
-  const inset = position === 'top' ? safe.top : position === 'bottom' ? safe.bottom : 0
+  const edge = 16
+  const inset = (position === 'top' ? safe.top : position === 'bottom' ? safe.bottom : 0) + edge
   const style = position === 'top'
     ? { paddingTop: `${String(inset)}px` }
     : position === 'bottom'
@@ -108,16 +130,18 @@ export function ToastHost({ className }: ToastHostProps) {
           const seq = lifecycle.seqOf(entry.id)
           const behind = stacking && !isExpanded && index > 0
           const scale = behind ? Math.max(0.88, 1 - index * 0.04) : 1
-          // 固定档高补间（sonner-native position-utils 用实测高度；本库按前端复核结论用 70 档高）。
-          const height = 70
+          // 实测高度参与 y 计算（sonner-native position-utils 的 allToastHeights）。
+          const h = (id: number): number => heights[id] ?? 70
           const gap = isExpanded ? 8 : 14
           let y: number
           if (stacking && !isExpanded) {
-            y = index * 8
+            y = h(visible[0]?.id ?? entry.id) + index * 8 - h(entry.id)
           } else if (position === 'top') {
-            y = index * (height + gap)
+            y = 0
+            for (let i = 0; i < index; i += 1) y += h(visible[i]?.id ?? entry.id) + gap
           } else {
-            y = -(visible.length - 1 - index) * (height + gap)
+            y = 0
+            for (let i = visible.length - 1; i > index; i -= 1) y -= h(visible[i]?.id ?? entry.id) + gap
           }
           return (
             <ToastView
@@ -126,6 +150,7 @@ export function ToastHost({ className }: ToastHostProps) {
               exiting={entry.phase === 'exiting'}
               scale={scale}
               y={y}
+              domId={`mptk-toast-${String(entry.id)}`}
               zIndex={stacking && !isExpanded ? visible.length - index : 1}
               onOpen={stacking ? toggle : undefined}
               onClose={() => closeToast(entry.id)}

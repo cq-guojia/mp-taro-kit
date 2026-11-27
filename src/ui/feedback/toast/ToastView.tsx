@@ -9,6 +9,7 @@ export interface ToastViewProps {
   readonly exiting: boolean
   readonly scale: number
   readonly y: number
+  readonly domId?: string
   readonly zIndex?: number
   readonly onOpen?: () => void
   readonly onClose?: () => void
@@ -19,7 +20,7 @@ export interface ToastViewProps {
 
 type ClickLike = { stopPropagation?: () => void }
 
-export function ToastView({ payload, exiting, scale, y, zIndex, onOpen, onClose, onAction, onTouchStart, onTouchEnd }: ToastViewProps) {
+export function ToastView({ payload, exiting, scale, y, domId, zIndex, onOpen, onClose, onAction, onTouchStart, onTouchEnd }: ToastViewProps) {
   const style: CSSProperties = {
     position: 'absolute',
     top: 0,
@@ -38,6 +39,7 @@ export function ToastView({ payload, exiting, scale, y, zIndex, onOpen, onClose,
   ].filter(Boolean).join(' ')
   return (
     <View
+      id={domId}
       className={names}
       style={style}
       onClick={(event: ClickLike) => { event.stopPropagation?.(); onOpen?.() }}

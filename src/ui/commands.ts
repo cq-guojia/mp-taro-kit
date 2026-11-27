@@ -167,6 +167,23 @@ export function getToastExpansion(): boolean {
   return uiState().toastExpansion.expanded
 }
 
+/** 全局配置折叠堆叠与最大可见条数（sonner-native 的 Toaster 级 props，不是每条 toast 字段）。 */
+export function setToastConfig(config: { enableStacking?: boolean; visibleToasts?: number }): void {
+  const expansion = uiState().toastExpansion
+  const nextStacking = config.enableStacking ?? expansion.stacking
+  const nextLimit = config.visibleToasts ?? expansion.visibleToasts
+  if (nextStacking === expansion.stacking && nextLimit === expansion.visibleToasts) return
+  expansion.stacking = nextStacking
+  expansion.visibleToasts = nextLimit
+  expansion.configSnapshot = { enableStacking: nextStacking, visibleToasts: nextLimit }
+  for (const listener of expansion.listeners) listener()
+}
+
+/** 当前全局折叠堆叠配置（返回稳定引用，供 useSyncExternalStore）。 */
+export function getToastConfig(): { enableStacking: boolean; visibleToasts: number } {
+  return uiState().toastExpansion.configSnapshot
+}
+
 /**
  * 展开时暂停所有 Toast 计时（sonner-native expand 的 pauseAllTimers）；
  * 收起时按 expiresAt 剩余时间重排，并加 100ms 冷却防误触即刻重展开。
@@ -223,6 +240,11 @@ export function showToast(options: ToastOptions | string): number {
   const state = uiState()
   const createdAt = Date.now()
   const duration = opts.duration ?? 3000
+  // sonner-native 的 enableStacking / visibleToasts 是 Toaster 级配置：显式传了就更新全局，
+  // 之后所有 Toast 都按这份配置显示，不再由「第一条」决定。
+  if (opts.enableStacking !== undefined || opts.visibleToasts !== undefined) {
+    setToastConfig({ enableStacking: opts.enableStacking, visibleToasts: opts.visibleToasts })
+  }
   const payload: ToastPayload = {
     title: opts.title,
     description: opts.description,
@@ -402,6 +424,9 @@ export function resetUIForTests(): void {
   state.loadingHandles.clear()
   state.dialogLifecycle.clear((payload) => payload.resolve(false))
   clearToasts()
+  state.toastExpansion.stacking = false
+  state.toastExpansion.visibleToasts = 3
+  state.toastExpansion.configSnapshot = { enableStacking: false, visibleToasts: 3 }
   state.hosts.dialog = 0
   state.hosts.toast = 0
   state.hosts.loading = 0

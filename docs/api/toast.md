@@ -22,7 +22,7 @@ const id = showToast({
 hideToast(id)
 ```
 
-`showToast(string)` 等价于只传 `description`，其余取默认值。
+`showToast(string)` 等价于只传 `description`，其余取默认值。`enableStacking` / `visibleToasts` 是**全局配置**（sonner-native 的 Toaster 级 props），显式传就更新全局，之后所有 Toast 都按这份配置显示，不会"先平铺再收成堆叠"；也可直接调用 `setToastConfig({ enableStacking, visibleToasts })` 配置，`getToastConfig()` 读取。
 
 ## 载荷约束
 
@@ -39,7 +39,8 @@ hideToast(id)
 
 - 默认平铺：顶部往下长、底部往上长，各自计时、各自消失；不做 hover。
 - `enableStacking: true`：折叠成一摞，下层只露 8px 边，点任意一条整叠展开为全宽竖排列表，点外部或再点收起；展开态全局一份（默认折叠），展开时暂停全部计时、收起时按剩余时间恢复、关闭到剩 1 条自动收起。`visibleToasts` 默认 3，**只在堆叠时裁剪**（平铺不限条数），超出的整条隐藏。
-- 移除一条后余项按 600ms easeOutQuart 平滑补位，不瞬移；卡片绝对定位、位置由 `transform` 过渡驱动。
+- 移除一条后余项按 600ms easeOutQuart 平滑补位，不瞬移；卡片绝对定位、位置由 `transform` 过渡驱动。卡片高度按真实内容实测（标题 / 描述 / action 按钮高度都算进去），首帧兜底 70px。
+- 顶部 / 底部在安全区之外另留 16px，与卡片左右边距一致。
 - 关闭叉默认关闭，显式 `closeButton: true` 开启；触摸滑动关闭为离散阈值实现，Skyline/WebView 双端真机未验证前不宣称与 Reanimated 等价。
 
 ## 装配

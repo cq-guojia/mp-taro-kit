@@ -233,6 +233,35 @@ test('Toast 位置补间：绝对定位 + transform transition，移除后 y 改
   assert.match(host, /stacking \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, 'visibleToasts 只在堆叠时裁剪')
 })
 
+test('Toast 高度实测而非固定档高：带 action 的卡片也按真实高度排布', () => {
+  const host = read('../src/ui/infra/ToastHost.tsx')
+  const view = read('../src/ui/feedback/toast/ToastView.tsx')
+  assert.match(host, /createSelectorQuery\(\)/, '必须实测卡片高度，固定 70 会让 action 卡片重叠')
+  assert.match(host, /boundingClientRect\(\)/, '必须量 boundingClientRect 取真实高度')
+  assert.match(host, /heights\[id\] \?\? 70/, '首帧用 70 兜底，量到后按实测高度')
+  assert.match(host, /domId=\{`mptk-toast-\$\{String\(entry\.id\)\}`\}/, '卡片必须挂可测的 domId')
+  assert.match(view, /id=\{domId\}/, 'ToastView 必须把 domId 挂到根节点')
+  assert.doesNotMatch(host, /const height = 70[\s\S]*?y = index \* \(height \+ gap\)/, '不允许退回固定档高算 y')
+})
+
+test('Toast 折叠配置全局统一（Toaster 级），不是每条 toast 各自决定', () => {
+  ui.resetUIForTests()
+  mountAll()
+  assert.deepEqual(ui.getToastConfig(), { enableStacking: false, visibleToasts: 3 })
+  ui.setToastConfig({ enableStacking: true })
+  assert.equal(ui.getToastConfig().enableStacking, true)
+  ui.showToast({ description: 'basic', enableStacking: false })
+  assert.equal(ui.getToastConfig().enableStacking, false, 'showToast 显式传 stacking 必须更新全局，而非只作用本条')
+  const node = require('../dist/ui/index.cjs')
+  assert.equal(typeof node.setToastConfig, 'function')
+})
+
+test('Toast 顶部在安全区外再留 16px，与左右卡片间距一致', () => {
+  const host = read('../src/ui/infra/ToastHost.tsx')
+  assert.match(host, /const edge = 16/, '顶部/底部需额外留 16px')
+  assert.match(host, /safe\.top.*\+ edge/, '顶部间距必须叠加安全区')
+})
+
 test('confirm() 推栈并由关闭动作 resolve true / false', async () => {
   ui.resetUIForTests()
   mountAll()

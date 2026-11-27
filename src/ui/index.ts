@@ -15,6 +15,8 @@ export {
   setToastExpansion,
   getToastExpansion,
   subscribeToastExpansion,
+  setToastConfig,
+  getToastConfig,
   showLoading,
   hideLoading,
   alert,
