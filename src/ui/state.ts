@@ -5,7 +5,7 @@ import { createOverlayLifecycle } from './infra/overlay-lifecycle.js'
 import type { OverlayLifecycle } from './infra/overlay-lifecycle.js'
 import { createLoadingSlot } from '../runtime/loading-slot.js'
 import type { LoadingSlot } from '../runtime/loading-slot.js'
-import type { ButtonSize } from './actions/Button.js'
+import type { ButtonSize, ButtonType, ButtonVariant } from './actions/Button.js'
 import type { ContentPopupBadge, ContentPopupImage, ContentPopupPosition } from './layout/content-popup/ContentPopup.js'
 import type { EdgeOffset } from './layout/edge-offset.js'
 
@@ -69,10 +69,18 @@ export type DialogPayload = DialogPayloadCommon & { readonly kind: 'alert' | 'co
 export type ToastTone = 'info' | 'success' | 'warning' | 'error'
 export type ToastPosition = 'top' | 'bottom' | 'center'
 
+/** Toast 操作按钮只描述可序列化外观与身份；行为由 onAction(key) 按 key 驱动。 */
 export interface ToastActionDescriptor {
   readonly key: string
   readonly text: string
-  readonly tone?: ToastTone
+  /** 前置图标，`库名:图标名`，走 Button 的 icon。 */
+  readonly icon?: string
+  /** 语义色档；color 传了任意色值时优先于它。默认 default。 */
+  readonly type?: ButtonType
+  /** 底色形态，默认 soft。 */
+  readonly variant?: ButtonVariant
+  /** 任意品牌色，覆盖 type；#rgb / #rrggbb / rgb() 可完整派生。 */
+  readonly color?: string
 }
 
 export interface ToastPayload {
@@ -81,7 +89,9 @@ export interface ToastPayload {
   readonly tone: ToastTone
   readonly icon?: string
   readonly closeButton: boolean
-  readonly action?: ToastActionDescriptor
+  readonly actions?: readonly ToastActionDescriptor[]
+  /** 该条 toast 所有操作按钮的统一尺寸。 */
+  readonly actionSize: ButtonSize
   readonly position: ToastPosition
   readonly enableStacking: boolean
   readonly visibleToasts: number

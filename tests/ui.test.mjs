@@ -161,7 +161,10 @@ test('showToast 推可序列化载荷，close 幂等，scope 交接不丢有效�
     description: '内容',
     tone: 'success',
     closeButton: true,
-    action: { key: 'undo', text: '撤销' },
+    actions: [
+      { key: 'undo', text: '撤销', type: 'primary', variant: 'solid', icon: 'common.base:gou', color: '#1677ff' },
+      { key: 'later', text: '稍后', type: 'default', variant: 'ghost' },
+    ],
     enableStacking: true,
     visibleToasts: 3,
     duration: 0,
@@ -176,11 +179,25 @@ test('showToast 推可序列化载荷，close 幂等，scope 交接不丢有效�
   assert.equal(entry.payload.enableStacking, true)
   assert.equal(entry.payload.expiresAt, Number.POSITIVE_INFINITY)
   assert.equal(typeof entry.payload.onAction, 'undefined', '回调不许进载荷')
+  assert.deepEqual(entry.payload.actions.map((item) => item.key), ['undo', 'later'], '多个操作按钮必须按序进载荷')
+  assert.equal(entry.payload.actions[0].icon, 'common.base:gou', '按钮图标必须进载荷')
+  assert.equal(entry.payload.actions[0].type, 'primary', '按钮语义色必须进载荷')
+  assert.equal(entry.payload.actions[0].color, '#1677ff', '按钮任意色必须进载荷')
+  assert.equal(entry.payload.actions[1].variant, 'ghost', '按钮底色形态必须进载荷')
+  assert.equal(entry.payload.actionSize, 'xs', '按钮尺寸默认 xs')
   assert.equal(lifecycle.setScope(id, 'next-page'), true, '跨页 scope 必须可交接')
   assert.equal(lifecycle.scopeOf(id), 'next-page')
   assert.equal(ui.closeToast(id), true)
   assert.equal(ui.closeToast(id), false, 'close 必须幂等')
   assert.equal(ui.hideToast(id), false, '已关闭后 hide 返回 false')
+  const sizedId = ui.showToast({ description: '大按钮', actions: [{ key: 'ok', text: '好' }], actionSize: 'sm', duration: 0 })
+  const sized = lifecycle.getSnapshot().find((item) => item.id === sizedId)
+  assert.equal(sized?.payload.actionSize, 'sm', '显式 actionSize 必须进载荷')
+  assert.equal(ui.closeToast(sizedId), true)
+  const defaultId = ui.showToast({ description: '默认时长' })
+  const defaultEntry = lifecycle.getSnapshot().find((item) => item.id === defaultId)
+  assert.equal(defaultEntry?.payload.duration, 4000, '默认时长对齐 sonner-native 的 4 秒')
+  assert.equal(ui.closeToast(defaultId), true)
   await new Promise((resolve) => setTimeout(resolve, 360))
   assert.equal(lifecycle.getSnapshot().length, 0, '退场结束后必须物理移除，否则透明节点会永久拦截点击、折叠层不会回位')
 })
@@ -296,11 +313,18 @@ test('Toast 平铺间距 8px；tone 图标与 Dialog 同款字体库带圆环；
   }
   assert.match(view, /<Icon name=\{payload\.icon \?\? TONE_ICON\[payload\.tone\]\}/, '图标必须走字体库 Icon 组件')
   assert.doesNotMatch(css, /mask-image: url\("data:image\/svg/, '不许再自绘 SVG tone 图标')
-  assert.match(view, /<Button size="xs" type="default" variant="soft" radius="lg"/, 'action 必须是 xs + 半透明浅底描边 + 圆角大一号')
+  assert.match(view, /size=\{payload\.actionSize\}/, '按钮尺寸取统一的 actionSize')
+  assert.match(view, /type=\{action\.type \?\? 'default'\}/, '按钮语义色逐按钮可配')
+  assert.match(view, /variant=\{action\.variant \?\? 'soft'\}/, '按钮底色形态逐按钮可配')
+  assert.match(view, /icon=\{action\.icon\}/, '按钮图标逐按钮可配')
+  assert.match(view, /color=\{action\.color\}/, '按钮任意色逐按钮可配')
+  assert.match(view, /radius="lg"/, '按钮圆角保持大一号')
+  assert.match(view, /payload\.actions\.map\(/, '多个操作按钮必须逐个渲染')
   assert.match(view, /mptk-toast__icon-ring/, 'tone 图标必须套圆环（与 Dialog iconFramed 同结构）')
   assert.match(css, /width: 24px/, '圆环外径 24px')
   assert.match(css, /font-size: 10px/, '内图标 10px')
-  assert.match(css, /\.mptk-toast__action\s*\{[^}]*margin-top:\s*var\(--mptk-space-2\)/, 'action 与正文间距减半到 8px')
+  assert.match(css, /\.mptk-toast__action\s*\{[^}]*margin-top:\s*var\(--mptk-space-1\)/, 'action 与正文间距降到 4px')
+  assert.match(css, /\.mptk-toast__action-item \+ \.mptk-toast__action-item/, '双按钮之间只留一份间距')
   assert.match(css, /\.mptk-toast\s*\{[^}]*border-radius:\s*var\(--mptk-radius-md\)/, '卡片圆角小一号 = 12px')
   assert.match(css, /\.mptk-toast\s*\{[^}]*padding-top:\s*var\(--mptk-space-3\)[^}]*padding-right:\s*var\(--mptk-space-3\)[^}]*padding-bottom:\s*var\(--mptk-space-3\)[^}]*padding-left:\s*var\(--mptk-space-3\)/, '四边内边距小一号 = 12px')
   assert.match(css, /\.mptk-toast__description\s*\{[^}]*margin-top:\s*2px/, '标题与说明间距 2px')

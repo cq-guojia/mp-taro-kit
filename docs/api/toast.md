@@ -12,9 +12,13 @@ const id = showToast({
   description: '内容已同步到云端',
   tone: 'success',
   closeButton: true,
-  action: { key: 'undo', text: '撤销' },
+  actions: [
+    { key: 'undo', text: '撤销', type: 'primary', variant: 'solid', icon: 'common.base:gou' },
+    { key: 'later', text: '稍后', type: 'default', variant: 'ghost' },
+  ],
+  actionSize: 'xs',
   onAction: (key) => doAction(key),
-  duration: 3000,
+  duration: 4000,
   position: 'bottom',
   enableStacking: false,
   visibleToasts: 3,
@@ -26,7 +30,7 @@ hideToast(id)
 
 ## 载荷约束
 
-载荷只放可序列化 descriptor：`title` / `description` / `tone` / `icon` / `closeButton` / `action` / `position` / `enableStacking` / `visibleToasts` / `duration` / `createdAt` / `expiresAt`。**禁止 ReactNode、`onClick`、Promise resolve 进全局 store**。业务回调只作为 `onAction` 命令层字段，由 Host 按 `phase === 'open' && mountedRef.current && isCurrent(id, seq)` 守卫后调用。
+载荷只放可序列化 descriptor：`title` / `description` / `tone` / `icon` / `closeButton` / `actions` / `actionSize` / `position` / `enableStacking` / `visibleToasts` / `duration` / `createdAt` / `expiresAt`。**禁止 ReactNode、`onClick`、Promise resolve 进全局 store**。业务回调只作为 `onAction` 命令层字段，由 Host 按 `phase === 'open' && mountedRef.current && isCurrent(id, seq)` 守卫后调用。
 
 ## 跨页语义
 
@@ -42,7 +46,30 @@ hideToast(id)
 - `enableStacking: true`：折叠成一摞，下层只露 8px 边，并按 sonner-native 的 `scaleX` 横向收窄（每层多收 `2 × 8px / 屏宽`，下限 80%；只改视觉宽度不改布局宽度，避免文字重排）。折叠顺序在所有位置统一「新→旧」：**最新那条最宽、在最上层，往下逐层变窄、藏在后面**；顶部从上方往下叠、底部从下方往上叠只是锚点与 y 符号不同。点任意一条整叠展开为全宽竖排列表，点外部或再点收起。**折叠只是表现形式，点开后按平铺逻辑显示所有条**，不受 `visibleToasts` 限制；展开态全局一份（默认折叠），展开时暂停全部计时、收起时按剩余时间恢复、关闭到剩 1 条自动收起。`visibleToasts` 默认 3，**只在真正堆叠时裁剪**，超出的整条隐藏。
 - 移除一条后余项按 600ms easeOutQuart 平滑补位，不瞬移；卡片绝对定位、位置由 `transform` 过渡驱动。卡片高度按真实内容实测（标题 / 描述 / action 按钮高度都算进去），首帧兜底 70px。
 - 卡片圆角 `--mptk-radius-md`（12px）、四边内边距 `--mptk-space-3`（12px）；主标题与说明之间 2px。卡面在 tone 实底上叠一层极浅的 45° 斜纹（2px 暗纹 + 2px 明底，明档黑 2% / 暗档白 2%），消解纯色生硬感；整条渐变作为 `--mptk-c-toast-stripe` token 明暗同名同数下发。顶部 / 底部在安全区之外另留 16px（卡片左右边距已降为 12px，两者不等）。
-- `action` 是自定义单个操作按钮（`{ key, text, tone? }` + `onAction(key)`），用库 `Button` 的 `xs` 档渲染，与正文间距 8px；`tone` 用与 Dialog 同款字体库图标（勾/叉/警告/信息），外套圆环（24px 圈 / 2px 描边 / 内图标 10px），显式传 `icon` 覆盖。
+- `actions` 是自定义操作按钮数组，可同时放多个，横排、彼此间距 8px，与正文间距 4px。每项字段：
+
+  | 字段 | 含义 |
+  |---|---|
+  | `key` | 按钮身份，必填；`onAction(key)` 按它逐按钮分发事件 |
+  | `text` | 按钮文字，必填 |
+  | `icon` | 前置图标，`库名:图标名`，走库 `Button` 的 icon |
+  | `type` | 语义色档：`default` / `primary` / `success` / `warning` / `danger`，默认 `default` |
+  | `variant` | 底色形态：`solid` / `soft` / `outline` / `ghost`，默认 `soft` |
+  | `color` | 任意色值（`#rgb` / `#rrggbb` / `rgb()`），覆盖 `type` |
+
+  ```ts
+  actions: [
+    { key: 'undo', text: '撤销', type: 'primary', variant: 'solid', icon: 'common.base:gou' },
+    { key: 'later', text: '稍后', type: 'default', variant: 'ghost' },
+  ],
+  actionSize: 'xs',
+  onAction: (key) => {
+    if (key === 'undo') restore()
+    else if (key === 'later') snooze()
+  }
+  ```
+
+  `actionSize` 统一决定该条 toast 所有操作按钮的尺寸（`ButtonSize`，默认 `xs`），不逐按钮配置；`radius` 固定 `lg`。卡片的 tone 图标（勾/叉/警告/信息，24px 圈 / 2px 描边 / 内图标 10px）由 toast 自身的 `tone` 决定，可用 `icon` 覆盖。
 - 关闭叉默认关闭，显式 `closeButton: true` 开启；触摸滑动关闭为离散阈值实现，Skyline/WebView 双端真机未验证前不宣称与 Reanimated 等价。
 
 ## 装配
@@ -62,3 +89,7 @@ export default createKitApp(App, { hosts: [ToastHost] })
 ## 更新日志
 
 - 2026-11-27 18:02:04：补记 Toast 模块级 store 与每页无状态宿主重构的更新日志
+- 2026-11-28 03:08:10：操作按钮从单个 action 扩为 actions 数组，支持双按钮横排、各自按 key 回调
+- 2026-11-28 03:15:52：校正按钮说明：事件按 key 逐按钮定义；外观固定 xs / default / soft / lg，tone? 暂不参与按钮渲染
+- 2026-11-28 03:19:37：操作按钮支持逐按钮 type / variant / color / icon，尺寸统一由 actionSize 配置；移除未生效的 tone?
+- 2026-11-28 03:28:42：默认消失时长从 3000ms 对齐到 sonner-native 的 4000ms

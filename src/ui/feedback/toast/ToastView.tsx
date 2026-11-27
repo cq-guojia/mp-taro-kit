@@ -65,11 +65,23 @@ export function ToastView({ payload, exiting, scale, y, domId, zIndex, onOpen, o
       <View className="mptk-toast__body">
         {payload.title === undefined ? null : <Text className="mptk-toast__title">{payload.title}</Text>}
         <Text className="mptk-toast__description">{payload.description}</Text>
-        {payload.action === undefined ? null : (
+        {payload.actions === undefined || payload.actions.length === 0 ? null : (
           <View className="mptk-toast__action" onClick={(event: ClickLike) => event.stopPropagation?.()}>
-            <Button size="xs" type="default" variant="soft" radius="lg" onClick={() => onAction?.(payload.action?.key ?? 'action')}>
-              {payload.action.text}
-            </Button>
+            {payload.actions.map((action) => (
+              <Button
+                size={payload.actionSize}
+                type={action.type ?? 'default'}
+                variant={action.variant ?? 'soft'}
+                radius="lg"
+                icon={action.icon}
+                color={action.color}
+                key={action.key}
+                className="mptk-toast__action-item"
+                onClick={() => onAction?.(action.key)}
+              >
+                {action.text}
+              </Button>
+            ))}
           </View>
         )}
       </View>

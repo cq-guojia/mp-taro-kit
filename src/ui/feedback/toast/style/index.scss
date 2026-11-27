@@ -129,11 +129,16 @@
   line-height: 20px;
 }
 
-/* action：外观由库 Button（size=xs）自己管，这里只负责在正文下方留出位置。 */
+/* actions：外观由库 Button（size=xs）自己管，这里只负责横排与正文下方留白。 */
 .mptk-toast__action {
+  display: flex;
   flex: none;
+  flex-direction: row;
   align-self: flex-start;
-  margin-top: var(--mptk-space-2);
+  margin-top: var(--mptk-space-1);
+}
+.mptk-toast__action-item + .mptk-toast__action-item {
+  margin-left: var(--mptk-space-2);
 }
 
 .mptk-toast__close {

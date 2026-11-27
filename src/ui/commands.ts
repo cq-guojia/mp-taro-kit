@@ -16,6 +16,7 @@ import type {
   ContentPopupPosition,
 } from './layout/content-popup/ContentPopup.js'
 import type { EdgeOffset } from './layout/edge-offset.js'
+import type { ButtonSize } from './actions/Button.js'
 
 type HostKind = string
 
@@ -71,7 +72,9 @@ export interface ToastOptions {
   readonly tone?: ToastTone
   readonly icon?: string
   readonly closeButton?: boolean
-  readonly action?: ToastActionDescriptor
+  readonly actions?: readonly ToastActionDescriptor[]
+  /** 该条 toast 所有操作按钮的统一尺寸，默认 xs。 */
+  readonly actionSize?: ButtonSize
   readonly position?: ToastPosition
   readonly enableStacking?: boolean
   readonly visibleToasts?: number
@@ -239,7 +242,7 @@ export function showToast(options: ToastOptions | string): number {
   ensureToastHost(scope)
   const state = uiState()
   const createdAt = Date.now()
-  const duration = opts.duration ?? 3000
+  const duration = opts.duration ?? 4000
   // sonner-native 的 enableStacking / visibleToasts 是 Toaster 级配置：显式传了就更新全局，
   // 之后所有 Toast 都按这份配置显示，不再由「第一条」决定。
   if (opts.enableStacking !== undefined || opts.visibleToasts !== undefined) {
@@ -251,7 +254,8 @@ export function showToast(options: ToastOptions | string): number {
     tone: opts.tone ?? 'info',
     icon: opts.icon,
     closeButton: opts.closeButton ?? false,
-    action: opts.action,
+    actions: opts.actions,
+    actionSize: opts.actionSize ?? 'xs',
     position: opts.position ?? 'bottom',
     enableStacking: opts.enableStacking ?? false,
     visibleToasts: opts.visibleToasts ?? 3,
