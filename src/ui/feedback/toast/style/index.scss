@@ -66,40 +66,25 @@
 
 .mptk-toast--exiting { pointer-events: none; }
 
-/* 自绘 tone 图标：20×20 圆底 + 白色字形，遮罩取色由 tone 的 color 注入（currentColor）。 */
-.mptk-toast__icon {
+/* tone 图标：与 Dialog 同结构 —— 外层圆环 + 内层缩小的字体图标，currentColor 由 tone class 注入。
+   圆环 24px、内图标 10px、2px 描边，颜色跟随 tone。 */
+.mptk-toast__icon-ring {
+  display: flex;
   flex: none;
-  width: 20px;
-  height: 20px;
-  margin-right: var(--mptk-space-4);
-  background-color: currentColor;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: 20px 20px;
-  mask-size: 20px 20px;
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v5M12 16h.01'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v5M12 16h.01'/%3E%3C/svg%3E");
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  margin-right: var(--mptk-space-3);
+  border-width: 2px;
+  border-style: solid;
+  border-color: currentColor;
+  border-radius: var(--mptk-radius-pill);
 }
-.mptk-toast__icon--text {
-  background-color: transparent;
-  -webkit-mask-image: none;
-  mask-image: none;
-  font-size: var(--mptk-font-sm);
-  line-height: 20px;
-}
-.mptk-toast--success .mptk-toast__icon {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m8 12 2.5 2.5L16 9'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m8 12 2.5 2.5L16 9'/%3E%3C/svg%3E");
-}
-.mptk-toast--error .mptk-toast__icon {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 9 6 6M15 9l-6 6'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 9 6 6M15 9l-6 6'/%3E%3C/svg%3E");
-}
-.mptk-toast--warning .mptk-toast__icon {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 2 20h20L12 3Z'/%3E%3Cpath d='M12 9v5M12 17h.01'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3 2 20h20L12 3Z'/%3E%3Cpath d='M12 9v5M12 17h.01'/%3E%3C/svg%3E");
+.mptk-toast__icon {
+  font-size: 10px;
+  line-height: 10px;
 }
 
 .mptk-toast__body {
@@ -123,26 +108,11 @@
   line-height: 20px;
 }
 
-/* action：sonner-native 的胶囊按钮 —— radius 999、描边 1、上下 6、左右 14、次级底。 */
+/* action：外观由库 Button（size=xs）自己管，这里只负责在正文下方留出位置。 */
 .mptk-toast__action {
   flex: none;
   align-self: flex-start;
-  margin-top: var(--mptk-space-4);
-  padding-top: 6px;
-  padding-right: 14px;
-  padding-bottom: 6px;
-  padding-left: 14px;
-  border-radius: var(--mptk-radius-pill);
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--mptk-c-toast-action-border);
-  background-color: var(--mptk-c-toast-action-bg);
-}
-.mptk-toast__action-text {
-  color: var(--mptk-c-toast-fg);
-  font-size: var(--mptk-font-sm);
-  font-weight: 600;
-  line-height: 20px;
+  margin-top: var(--mptk-space-2);
 }
 
 .mptk-toast__close {

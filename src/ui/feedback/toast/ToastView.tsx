@@ -1,7 +1,9 @@
 import { Text, View } from '@tarojs/components'
 import type { CommonEventFunction } from '@tarojs/components'
 import type { CSSProperties } from 'react'
-import type { ToastPayload } from '../../state.js'
+import type { ToastPayload, ToastTone } from '../../state.js'
+import { Icon } from '../../display/icon/Icon.js'
+import { Button } from '../../actions/Button.js'
 import { CloseGlyph } from '../close/CloseGlyph.js'
 
 export interface ToastViewProps {
@@ -16,6 +18,14 @@ export interface ToastViewProps {
   readonly onAction?: (key: string) => void
   readonly onTouchStart?: CommonEventFunction
   readonly onTouchEnd?: CommonEventFunction
+}
+
+/** 与 Dialog 的 DIALOG_TYPE_ICON 同一套库内置字体图标：带圈的勾 / 叉 / 警告 / 信息。 */
+const TONE_ICON: Record<ToastTone, string> = {
+  success: 'common.base:gou',
+  error: 'common.base:guanbi',
+  warning: 'common.base:warn',
+  info: 'common.base:info',
 }
 
 type ClickLike = { stopPropagation?: () => void }
@@ -46,18 +56,17 @@ export function ToastView({ payload, exiting, scale, y, domId, zIndex, onOpen, o
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {payload.icon === undefined
-        ? <View className="mptk-toast__icon" aria-hidden="true" />
-        : <Text className="mptk-toast__icon mptk-toast__icon--text">{payload.icon}</Text>}
+      <View className="mptk-toast__icon-ring">
+        <Icon name={payload.icon ?? TONE_ICON[payload.tone]} className="mptk-toast__icon" />
+      </View>
       <View className="mptk-toast__body">
         {payload.title === undefined ? null : <Text className="mptk-toast__title">{payload.title}</Text>}
         <Text className="mptk-toast__description">{payload.description}</Text>
         {payload.action === undefined ? null : (
-          <View
-            className="mptk-toast__action"
-            onClick={(event: ClickLike) => { event.stopPropagation?.(); onAction?.(payload.action?.key ?? 'action') }}
-          >
-            <Text className="mptk-toast__action-text">{payload.action.text}</Text>
+          <View className="mptk-toast__action" onClick={(event: ClickLike) => event.stopPropagation?.()}>
+            <Button size="xs" type="default" variant="soft" radius="lg" onClick={() => onAction?.(payload.action?.key ?? 'action')}>
+              {payload.action.text}
+            </Button>
           </View>
         )}
       </View>

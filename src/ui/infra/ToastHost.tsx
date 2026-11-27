@@ -132,7 +132,7 @@ export function ToastHost({ className }: ToastHostProps) {
           const scale = behind ? Math.max(0.88, 1 - index * 0.04) : 1
           // 实测高度参与 y 计算（sonner-native position-utils 的 allToastHeights）。
           const h = (id: number): number => heights[id] ?? 70
-          const gap = isExpanded ? 8 : 14
+          const gap = 8
           let y: number
           if (stacking && !isExpanded) {
             y = h(visible[0]?.id ?? entry.id) + index * 8 - h(entry.id)

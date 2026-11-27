@@ -244,6 +244,24 @@ test('Toast 高度实测而非固定档高：带 action 的卡片也按真实高
   assert.doesNotMatch(host, /const height = 70[\s\S]*?y = index \* \(height \+ gap\)/, '不允许退回固定档高算 y')
 })
 
+test('Toast 平铺间距 8px；tone 图标与 Dialog 同款字体库带圆环；action 用库 Button xs', () => {
+  const host = read('../src/ui/infra/ToastHost.tsx')
+  const view = read('../src/ui/feedback/toast/ToastView.tsx')
+  const css = read('../src/ui/feedback/toast/style/index.scss')
+  assert.match(host, /const gap = 8/, '平铺间距必须是 8px')
+  assert.match(view, /TONE_ICON: Record<ToastTone, string>/, 'tone 图标必须映射字体库图标名')
+  for (const name of ['common.base:gou', 'common.base:guanbi', 'common.base:warn', 'common.base:info']) {
+    assert.ok(view.includes(name), `缺 Dialog 同款图标 ${name}`)
+  }
+  assert.match(view, /<Icon name=\{payload\.icon \?\? TONE_ICON\[payload\.tone\]\}/, '图标必须走字体库 Icon 组件')
+  assert.doesNotMatch(css, /mask-image: url\("data:image\/svg/, '不许再自绘 SVG tone 图标')
+  assert.match(view, /<Button size="xs" type="default" variant="soft" radius="lg"/, 'action 必须是 xs + 半透明浅底描边 + 圆角大一号')
+  assert.match(view, /mptk-toast__icon-ring/, 'tone 图标必须套圆环（与 Dialog iconFramed 同结构）')
+  assert.match(css, /width: 24px/, '圆环外径 24px')
+  assert.match(css, /font-size: 10px/, '内图标 10px')
+  assert.match(css, /\.mptk-toast__action\s*\{[^}]*margin-top:\s*var\(--mptk-space-2\)/, 'action 与正文间距减半到 8px')
+})
+
 test('Toast 折叠配置全局统一（Toaster 级），不是每条 toast 各自决定', () => {
   ui.resetUIForTests()
   mountAll()
