@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 17:22:00 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 17:25:11 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -105,3 +105,4 @@
 - 2026-11-27 16:01:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮与正文间距 16→8px（space-4→space-2）、内图标 12→10px；产物核对 20rpx/space-2 落盘，273/273 全绿，未提交等验收
 - 2026-11-27 16:38:18 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 折叠边按 sonner-native 原版修对：scaleX 按屏宽算、下限 0.8、位置决定前端方向；274/274 全绿、产物核对公式落盘，未提交等验收
 - 2026-11-27 17:22:00 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 折叠点开即平铺：引入 stacked=foldingEnabled&&!isExpanded 单一真源，裁剪/缩放/y/层级/交互统一口径，展开后不限条数；275/275 全绿、产物核对派生量落盘，未提交等验收
+- 2026-11-27 17:25:11 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 提交 1821a25 并推送：折叠点开即平铺统一 stacked 单一真源、折叠边按原版 scaleX 收窄；docs/api/toast.md 已同步，275/275 全绿
