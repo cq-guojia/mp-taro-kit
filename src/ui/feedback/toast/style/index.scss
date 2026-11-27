@@ -16,12 +16,14 @@
   justify-content: center;
   width: 100%;
   min-height: 52px;
-  padding-top: var(--mptk-space-4);
-  padding-right: var(--mptk-space-4);
-  padding-bottom: var(--mptk-space-4);
-  padding-left: var(--mptk-space-4);
-  border-radius: var(--mptk-radius-lg);
+  padding-top: var(--mptk-space-3);
+  padding-right: var(--mptk-space-3);
+  padding-bottom: var(--mptk-space-3);
+  padding-left: var(--mptk-space-3);
+  border-radius: var(--mptk-radius-md);
   background-color: var(--mptk-c-toast-bg);
+  /* 斜纹叠在 tone 实底上（tone 类只换 background-color），消解纯色的生硬感。 */
+  background-image: var(--mptk-c-toast-stripe);
   box-shadow: 0 4px 12px rgba(0, 0, 0, .106);
   color: var(--mptk-c-toast-fg);
   font-size: var(--mptk-font-sm);
@@ -29,10 +31,29 @@
   opacity: 1;
 }
 
-.mptk-toast--success { color: var(--mptk-c-toast-icon-success); }
-.mptk-toast--warning { color: var(--mptk-c-toast-icon-warning); }
-.mptk-toast--error { color: var(--mptk-c-toast-icon-error); }
-.mptk-toast--info { color: var(--mptk-c-toast-icon-info); }
+/* tone 卡面：浅语义底 + 同色描边 + tone 图标色（currentColor 只给图标环）。
+   标题/描述保持中性深色（--mptk-c-toast-fg / -fg-2）：底色很浅，文字分 tone 反而降低可读性。
+   四组 token 在 kit.config.mjs 明暗同名同数，宿主换品牌色时跟着语义色走。 */
+.mptk-toast--success {
+  background-color: var(--mptk-c-toast-tone-success-bg);
+  border: 1px solid var(--mptk-c-toast-tone-success-border);
+  color: var(--mptk-c-toast-icon-success);
+}
+.mptk-toast--warning {
+  background-color: var(--mptk-c-toast-tone-warning-bg);
+  border: 1px solid var(--mptk-c-toast-tone-warning-border);
+  color: var(--mptk-c-toast-icon-warning);
+}
+.mptk-toast--error {
+  background-color: var(--mptk-c-toast-tone-error-bg);
+  border: 1px solid var(--mptk-c-toast-tone-error-border);
+  color: var(--mptk-c-toast-icon-error);
+}
+.mptk-toast--info {
+  background-color: var(--mptk-c-toast-tone-info-bg);
+  border: 1px solid var(--mptk-c-toast-tone-info-border);
+  color: var(--mptk-c-toast-icon-info);
+}
 
 /* 进场：从屏幕外一点滑入 + 淡入。top 从上方 20px，bottom 从下方 50px。 */
 .mptk-toast--enter-top {

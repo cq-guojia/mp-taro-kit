@@ -25,10 +25,9 @@ function pointOf(event: TouchLike): TouchPoint | undefined {
 const STACK_GAP = 8
 
 /** 原版 use-toast-animations.ts：折叠只做 scaleX 横向收窄，不改布局宽度（避免文字重排）。
- *  离堆叠前端越远收得越多，下限 0.8；top 前端在 index 0，其余位置前端在末尾。 */
-function stackScaleX(index: number, count: number, position: ToastPosition, screenWidth: number): number {
-  const multiplier = position === 'top' ? index : count - index - 1
-  const narrowAmount = STACK_GAP * multiplier * 2
+ *  离堆叠前端越远收得越多，下限 0.8。折叠时所有位置统一「新→旧」排列，index 0 即前端（最新、最宽）。 */
+function stackScaleX(index: number, screenWidth: number): number {
+  const narrowAmount = STACK_GAP * index * 2
   return Math.max(0.8, 1 - narrowAmount / screenWidth)
 }
 
@@ -78,8 +77,11 @@ export function ToastHost({ className }: ToastHostProps) {
   const { enableStacking: foldingEnabled, visibleToasts: limit } = config
   const stacked = foldingEnabled && !isExpanded
   const ordered = position === 'top' ? [...scoped].reverse() : scoped
+  // 折叠时所有位置统一「新→旧」：index 0 最新、最宽、在最上层；越往下越旧越窄。
+  // 平铺保持各位置自己的进出方向（top 新→旧贴顶，bottom 旧→新贴底），不受影响。
+  const stackOrder = [...scoped].reverse()
   // visibleToasts 只在真正堆叠时裁剪；展开后按平铺逻辑显示所有条。
-  const visible = stacked ? ordered.slice(0, Math.max(1, limit)) : ordered
+  const visible = stacked ? stackOrder.slice(0, Math.max(1, limit)) : ordered
 
   /* 卡片高度由内容决定（标题 / 描述 / action 按钮），固定档高会让带 action 的卡片重叠；
      按 sonner-native 的 allToastHeights 实测，首帧兜底 70，量到后重算 y。 */
@@ -142,17 +144,15 @@ export function ToastHost({ className }: ToastHostProps) {
       <View className={['mptk-toast-track', stacked ? 'mptk-toast-track--stack' : '', isExpanded && foldingEnabled ? 'mptk-toast-track--expanded' : '', `mptk-toast-track--${position}`].filter(Boolean).join(' ')}>
         {visible.map((entry, index) => {
           const seq = lifecycle.seqOf(entry.id)
-          const scale = stacked ? stackScaleX(index, visible.length, position, screenWidth) : 1
+          const scale = stacked ? stackScaleX(index, screenWidth) : 1
           // 实测高度参与 y 计算（sonner-native position-utils 的 allToastHeights）。
           const h = (id: number): number => heights[id] ?? 70
           const gap = 8
           let y: number
           if (stacked) {
-            // 原版 position-utils：top 前端在 index 0、y 为正；bottom/center 前端在末尾、y 为负。
-            const frontIndex = position === 'top' ? 0 : visible.length - 1
-            const frontHeight = h(visible[frontIndex]?.id ?? entry.id)
-            const distance = position === 'top' ? index : visible.length - 1 - index
-            const offset = frontHeight + distance * STACK_GAP - h(entry.id)
+            // 折叠统一「新→旧」，前端 index 0（最新、最宽）贴锚点；top y 为正、bottom y 为负。
+            const frontHeight = h(visible[0]?.id ?? entry.id)
+            const offset = frontHeight + index * STACK_GAP - h(entry.id)
             y = position === 'top' ? offset : -offset
           } else if (position === 'top') {
             y = 0

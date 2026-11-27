@@ -232,7 +232,7 @@ test('Toast 位置补间：绝对定位 + transform transition，移除后 y 改
   assert.match(view, /position: 'absolute'/, '卡片必须绝对定位，flex 重排无法过渡')
   assert.match(css, /transition: transform var\(--mptk-c-toast-stack-dur\)/, '位置变化必须走 600ms 补间')
   assert.match(host, /const stacked = foldingEnabled && !isExpanded/, '必须把「当前是否堆叠」提升为单一派生量')
-  assert.match(host, /stacked \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, 'visibleToasts 只在真正堆叠时裁剪')
+  assert.match(host, /stacked \? stackOrder\.slice\(0, Math\.max\(1, limit\)\) : ordered/, 'visibleToasts 只在真正堆叠时裁剪')
 })
 
 test('Toast 底部锚定 bottom:0，堆叠 y 按位置区分前端方向与符号', () => {
@@ -240,16 +240,18 @@ test('Toast 底部锚定 bottom:0，堆叠 y 按位置区分前端方向与符�
   const view = read('../src/ui/feedback/toast/ToastView.tsx')
   assert.match(view, /bottomAligned = payload\.position === 'bottom' \|\| payload\.position === 'center'/, '底部/居中必须识别为从容器底往上排')
   assert.match(view, /bottomAligned \? \{ bottom: 0 \} : \{ top: 0 \}/, '底部不能写死 top:0，否则卡片从屏幕底边往下长只露半截')
-  assert.match(host, /const frontIndex = position === 'top' \? 0 : visible\.length - 1/, '堆叠前端：top 在 index 0，bottom 在末尾')
-  assert.match(host, /const distance = position === 'top' \? index : visible\.length - 1 - index/, '距前端层数按位置反向')
-  assert.match(host, /y = position === 'top' \? offset : -offset/, 'bottom 的 y 必须为负，卡片才从底部往上叠')
+  assert.match(host, /const stackOrder = \[\.\.\.scoped\]\.reverse\(\)/, '折叠顺序统一新→旧，前端 index 0 是最新最宽那条')
+  assert.match(host, /visible = stacked \? stackOrder\.slice/, '折叠裁剪必须基于统一顺序')
+  assert.match(host, /const offset = frontHeight \+ index \* STACK_GAP - h\(entry\.id\)/, '距前端层数统一用 index，不再按位置反向')
+  assert.match(host, /y = position === 'top' \? offset : -offset/, '位置只决定 y 符号：top 往下、bottom 往上')
+  assert.match(host, /zIndex=\{stacked \? visible\.length - index : 1\}/, '最新那条 zIndex 最高，旧的逐层藏到后面')
 })
 
 test('Toast 折叠点开即平铺：所有布局决策统一由 stacked 派生，展开后不限条数', () => {
   const host = read('../src/ui/infra/ToastHost.tsx')
   assert.match(host, /enableStacking: foldingEnabled/, '配置层（是否支持折叠）与交互态必须拆开')
   assert.match(host, /const stacked = foldingEnabled && !isExpanded/, '必须引入 stacked 单一真源')
-  assert.match(host, /stacked \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, '展开后按平铺逻辑显示所有条')
+  assert.match(host, /stacked \? stackOrder\.slice\(0, Math\.max\(1, limit\)\) : ordered/, '展开后按平铺逻辑显示所有条')
   assert.match(host, /scale = stacked \?/, '缩放认 stacked')
   assert.match(host, /if \(stacked\) \{/, 'y 位置认 stacked')
   assert.match(host, /zIndex=\{stacked \?/, '层级认 stacked')
@@ -258,12 +260,13 @@ test('Toast 折叠点开即平铺：所有布局决策统一由 stacked 派生�
   assert.doesNotMatch(host, /stacking && !isExpanded/, '不许再散落重复的组合判断')
 })
 
-test('Toast 折叠边按 sonner-native 横向收窄：按屏宽算 scaleX、下限 0.8、位置决定前端方向', () => {
+test('Toast 折叠边按 sonner-native 横向收窄：按屏宽算 scaleX、下限 0.8、前端统一 index 0', () => {
   const host = read('../src/ui/infra/ToastHost.tsx')
   const view = read('../src/ui/feedback/toast/ToastView.tsx')
   assert.match(host, /const STACK_GAP = 8/, '折叠露出边必须是 stackGap=8')
-  assert.match(host, /position === 'top' \? index : count - index - 1/, '前端方向必须按位置取：top 在 index 0，其余在末尾')
-  assert.match(host, /STACK_GAP \* multiplier \* 2/, '每层收窄量 = 2 × stackGap × 距前端层数')
+  assert.match(host, /function stackScaleX\(index: number, screenWidth: number\)/, '缩放签名不再按位置分叉')
+  assert.match(host, /STACK_GAP \* index \* 2/, '每层收窄量 = 2 × stackGap × 距前端层数（统一 index）')
+  assert.doesNotMatch(host, /count - index - 1/, '不许再按位置反转前端，否则底部会「最小在上」')
   assert.match(host, /Math\.max\(0\.8, 1 - narrowAmount \/ screenWidth\)/, '按屏宽换算且下限 0.8')
   assert.match(host, /Taro\.getWindowInfo\(\)\.windowWidth/, '屏宽必须取真实窗口宽度')
   assert.doesNotMatch(host, /index \* 0\.04/, '不许再用写死的等比缩放')
@@ -285,6 +288,7 @@ test('Toast 平铺间距 8px；tone 图标与 Dialog 同款字体库带圆环；
   const host = read('../src/ui/infra/ToastHost.tsx')
   const view = read('../src/ui/feedback/toast/ToastView.tsx')
   const css = read('../src/ui/feedback/toast/style/index.scss')
+  const kit = read('../kit.config.mjs')
   assert.match(host, /const gap = 8/, '平铺间距必须是 8px')
   assert.match(view, /TONE_ICON: Record<ToastTone, string>/, 'tone 图标必须映射字体库图标名')
   for (const name of ['common.base:gou', 'common.base:guanbi', 'common.base:warn', 'common.base:info']) {
@@ -297,6 +301,30 @@ test('Toast 平铺间距 8px；tone 图标与 Dialog 同款字体库带圆环；
   assert.match(css, /width: 24px/, '圆环外径 24px')
   assert.match(css, /font-size: 10px/, '内图标 10px')
   assert.match(css, /\.mptk-toast__action\s*\{[^}]*margin-top:\s*var\(--mptk-space-2\)/, 'action 与正文间距减半到 8px')
+  assert.match(css, /\.mptk-toast\s*\{[^}]*border-radius:\s*var\(--mptk-radius-md\)/, '卡片圆角小一号 = 12px')
+  assert.match(css, /\.mptk-toast\s*\{[^}]*padding-top:\s*var\(--mptk-space-3\)[^}]*padding-right:\s*var\(--mptk-space-3\)[^}]*padding-bottom:\s*var\(--mptk-space-3\)[^}]*padding-left:\s*var\(--mptk-space-3\)/, '四边内边距小一号 = 12px')
+  assert.match(css, /\.mptk-toast__description\s*\{[^}]*margin-top:\s*2px/, '标题与说明间距 2px')
+  assert.match(css, /\.mptk-toast\s*\{[^}]*background-image:\s*var\(--mptk-c-toast-stripe\)/, '卡片要挂浅斜纹消解生硬')
+  assert.match(kit, /"--mptk-c-toast-stripe": "repeating-linear-gradient\(45deg, rgba\(0, 0, 0, \.02\) 0 2px, transparent 2px 4px\)"/, '明档斜纹：45deg / 2px 暗纹 + 2px 明底 / 黑 .02')
+  assert.match(kit, /"--mptk-c-toast-stripe": "repeating-linear-gradient\(45deg, rgba\(255, 255, 255, \.02\) 0 2px, transparent 2px 4px\)"/, '暗档斜纹：白 .02 / 2+2，同名同数')
+  assert.equal((kit.match(/--mptk-c-toast-stripe/g) ?? []).length, 2, '斜纹 token 必须明暗各一份')
+})
+
+test('Toast 四种 tone 用浅语义底 + 同色描边，文字保持中性色，明暗 token 同名同数', () => {
+  const css = read('../src/ui/feedback/toast/style/index.scss')
+  const kit = read('../kit.config.mjs')
+  for (const tone of ['success', 'error', 'warning', 'info']) {
+    assert.match(css, new RegExp(`\\.mptk-toast--${tone}\\s*\\{[^}]*background-color:\\s*var\\(--mptk-c-toast-tone-${tone}-bg\\)`), `${tone} 必须套浅语义底`)
+    assert.match(css, new RegExp(`\\.mptk-toast--${tone}\\s*\\{[^}]*border:\\s*1px solid var\\(--mptk-c-toast-tone-${tone}-border\\)`), `${tone} 必须有同色描边`)
+    assert.match(css, /\.mptk-toast__title\s*\{[^}]*color:\s*var\(--mptk-c-toast-fg\)/, '标题保持中性深色，不按 tone 分色')
+    assert.match(kit, new RegExp(`"--mptk-c-toast-tone-${tone}-bg"`), `kit.config.mjs 缺 ${tone} 浅底 token`)
+    assert.match(kit, new RegExp(`"--mptk-c-toast-tone-${tone}-border"`), `kit.config.mjs 缺 ${tone} 描边 token`)
+  }
+  assert.equal((kit.match(/--mptk-c-toast-tone-success-bg/g) ?? []).length, 2, 'success 浅底必须明暗各一份')
+  assert.equal((kit.match(/--mptk-c-toast-tone-info-bg/g) ?? []).length, 2, 'info 浅底必须明暗各一份')
+  for (const match of kit.matchAll(/"--mptk-c-toast-tone-(success|error|warning|info)-bg": "([^"]+)"/g)) {
+    assert.match(match[2], /^#[0-9a-f]{6}$/i, `${match[1]} 底色必须是不透明实色，折叠时 rgba/var-soft 会渗出下层卡片`)
+  }
 })
 
 test('Toast 折叠配置全局统一（Toaster 级），不是每条 toast 各自决定', () => {

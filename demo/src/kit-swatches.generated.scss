@@ -1,4 +1,4 @@
-// @mptk-inputs:1b8883f0e0cf
+// @mptk-inputs:3a5b9cf9c2e8
 // 请勿手改：由 scripts/gen-kit-config.mjs 从 kit.config.mjs 生成（演示站色板类名与颜色 token 的对应）。
 // 改皮肤请改 kit.config.mjs 或消费方自己的差异文件，然后重新构建。
 
@@ -395,6 +395,42 @@
   .demo-swatch--c-toast-icon-info {
     --mptk-swatch: var(--mptk-c-toast-icon-info);
     background-color: var(--mptk-c-toast-icon-info);
+  }
+  .demo-swatch--c-toast-tone-success-bg {
+    --mptk-swatch: var(--mptk-c-toast-tone-success-bg);
+    background-color: var(--mptk-c-toast-tone-success-bg);
+  }
+  .demo-swatch--c-toast-tone-success-border {
+    --mptk-swatch: var(--mptk-c-toast-tone-success-border);
+    background-color: var(--mptk-c-toast-tone-success-border);
+  }
+  .demo-swatch--c-toast-tone-error-bg {
+    --mptk-swatch: var(--mptk-c-toast-tone-error-bg);
+    background-color: var(--mptk-c-toast-tone-error-bg);
+  }
+  .demo-swatch--c-toast-tone-error-border {
+    --mptk-swatch: var(--mptk-c-toast-tone-error-border);
+    background-color: var(--mptk-c-toast-tone-error-border);
+  }
+  .demo-swatch--c-toast-tone-warning-bg {
+    --mptk-swatch: var(--mptk-c-toast-tone-warning-bg);
+    background-color: var(--mptk-c-toast-tone-warning-bg);
+  }
+  .demo-swatch--c-toast-tone-warning-border {
+    --mptk-swatch: var(--mptk-c-toast-tone-warning-border);
+    background-color: var(--mptk-c-toast-tone-warning-border);
+  }
+  .demo-swatch--c-toast-tone-info-bg {
+    --mptk-swatch: var(--mptk-c-toast-tone-info-bg);
+    background-color: var(--mptk-c-toast-tone-info-bg);
+  }
+  .demo-swatch--c-toast-tone-info-border {
+    --mptk-swatch: var(--mptk-c-toast-tone-info-border);
+    background-color: var(--mptk-c-toast-tone-info-border);
+  }
+  .demo-swatch--c-toast-stripe {
+    --mptk-swatch: var(--mptk-c-toast-stripe);
+    background-color: var(--mptk-c-toast-stripe);
   }
   .demo-swatch--control-blue {
     --mptk-swatch: var(--mptk-control-blue);

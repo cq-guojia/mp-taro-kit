@@ -230,6 +230,19 @@ export default {
     "--mptk-c-toast-icon-error": "#ff3a41",
     "--mptk-c-toast-icon-warning": "#e37a00",
     "--mptk-c-toast-icon-info": "#286efa",
+    /* Toast tone 卡面：固定不透明浅底 + 同色描边 + tone 图标色，四档同名同数（暗档见下）。
+       底必须是实色：折叠时下层卡片会从上层透出来，rgba soft 会渗色。 */
+    "--mptk-c-toast-tone-success-bg": "#edfaf2",
+    "--mptk-c-toast-tone-success-border": "#86c98d",
+    "--mptk-c-toast-tone-error-bg": "#fdecec",
+    "--mptk-c-toast-tone-error-border": "#f3a1a4",
+    "--mptk-c-toast-tone-warning-bg": "#fef7ec",
+    "--mptk-c-toast-tone-warning-border": "#f0bd7d",
+    "--mptk-c-toast-tone-info-bg": "#eff2fc",
+    "--mptk-c-toast-tone-info-border": "#9db6f6",
+    /* 卡面斜纹：45deg 细条，叠在 tone 实底上消解生硬感。整条渐变作为 token 下发，
+       因为 WXSS 里 var() 嵌进 gradient 会被整条丢弃；小程序没有 color-mix，故用固定 rgba。 */
+    "--mptk-c-toast-stripe": "repeating-linear-gradient(45deg, rgba(0, 0, 0, .02) 0 2px, transparent 2px 4px)",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
@@ -345,6 +358,18 @@ export default {
     "--mptk-c-toast-icon-error": "#FF999D",
     "--mptk-c-toast-icon-warning": "#ffd089",
     "--mptk-c-toast-icon-info": "#B3CDFF",
+    /* Toast tone 卡面暗档：同样是固定不透明实色（暗档 soft 的 .12 rgba 压在 #181313 上的结果），
+       描边压暗一档；折叠不渗色，与明档同名同数。 */
+    "--mptk-c-toast-tone-success-bg": "#1b2a23",
+    "--mptk-c-toast-tone-success-border": "#3f7a46",
+    "--mptk-c-toast-tone-error-bg": "#341c1c",
+    "--mptk-c-toast-tone-error-border": "#9c474b",
+    "--mptk-c-toast-tone-warning-bg": "#332815",
+    "--mptk-c-toast-tone-warning-border": "#a87933",
+    "--mptk-c-toast-tone-info-bg": "#22212f",
+    "--mptk-c-toast-tone-info-border": "#5569a8",
+    /* 暗档斜纹：白 .02 压在深色实底上，与明档同名同数；暗纹 2px / 明底 2px。 */
+    "--mptk-c-toast-stripe": "repeating-linear-gradient(45deg, rgba(255, 255, 255, .02) 0 2px, transparent 2px 4px)",
     "--mptk-control-blue": "@blue",                                 // 控件色·蓝：color 属性可选值
     "--mptk-control-green": "@green",                               // 控件色·绿：color 属性可选值
     "--mptk-control-orange": "@orange",                             // 控件色·橙：color 属性可选值
