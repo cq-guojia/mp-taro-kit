@@ -1,8 +1,9 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 19:30:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: done · 2026-11-27 19:31:03 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Sealed**: 2026-11-27 19:31:03 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
      The `- **Tags**: …` line is inserted at the top by new --tags; omitted when there are no tags
@@ -141,3 +142,4 @@
 - 2026-11-27 18:17:14 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 卡片圆角与四边内边距各降一号 16→12px（radius-lg→md / space-4→3），标题说明间距确认 2px 未动；277/277 全绿、产物核对落盘，未提交等真机看
 - 2026-11-27 18:22:43 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 卡面加极浅 45° 斜纹（2px条/4px隔、明黑3%/暗白3%），整条渐变作为 token 下发避开小程序 color-mix 限制；277/277 全绿、WXSS 产物核对原样保留，未提交等真机看
 - 2026-11-27 19:30:51 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 默认时长对齐 sonner-native 4 秒（commands.ts opts.duration ?? 4000）；demo 配置区与双按钮逐按钮外观定稿；277/277 全绿、产物核对通过，用户验收通过待结案
+- 2026-11-27 19:31:03 · close · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · sealed: Toast 功能与 demo 定稿：配置区、双按钮逐按钮外观/icon/事件、4 秒默认时长对齐 sonner-native；277/277 全绿、产物核对与 guard/codelint/demo build 全过；用户验收通过。改动未提交（用户未要求）。
