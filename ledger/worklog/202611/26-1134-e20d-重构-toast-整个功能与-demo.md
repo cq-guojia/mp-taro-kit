@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 11:40:46 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 11:51:29 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -24,6 +24,8 @@
 - **门禁**：`kit.config.mjs` 改完跑 `pnpm gen:config`；按 `build → test → guard → demo build:weapp → 产物核对` 顺序；`codelint` 全过；双端真机验证前不宣称可用。
 
 ## Next
+
+平铺间距已按用户目测从 14px 改 7px（展开仍 8px），产物确认 `?8:7`，272/272 全绿。改动未提交，等用户看间距效果后再定。若验收通过，用户说「结束/关闭任务」后走 `close`。
 
 四项真机反馈已修（展开间距 / action 卡片重叠 / 全局堆叠配置 / 顶部 16px），272/272 全绿、产物核对通过。用户真机验收：折叠展开间距是否合适、撤销按钮卡片不再重叠、点堆叠后已有 Toast 立即变堆叠、顶部间距与左右一致。首版与像素复刻两笔已提交，本轮修复尚未提交。
 
@@ -50,6 +52,7 @@
 
 - 2026-11-26 架构 + 前端双重复核（只读，两个独立 agent）：① 现有 Dialog 的 owner 是「发起页唯一」，不是「当前页唯一」——`navigateTo` 后弹窗留在旧页、Promise 悬挂；照搬会让 Toast 在隐藏页渲染或过期才出现。修正为 scope 交接 + 当前页唯一渲染。② `ensureMounted` 只看全局计数，不证明当前页有宿主；修正为按 scope 校验。③ ReactNode / `onClick` 进全局 store 会把旧页闭包留在 `Symbol.for` 单例里、跨页点击打到错误页面；修正为 descriptor 载荷 + 命令层回调 + `isCurrent` 守卫。④ `expiresAt` 不能在 render 期改 store；timer 幂等 + effect 兜底。⑤ 宿主卸载禁止全局 clear，只按 owner 清。⑥ `createKitApp` 的 hosts 不在 fingerprint 内，重复配置会覆盖注册表，接入时避免隐式全局单写。前端侧：⑦ 不实测 `toastHeights`，用固定档高 + CSS transition；⑧ 安全区用 `safeAreaState()` 注入，`env()`仅兜底；⑨ 展开态透明层显式 `catchMove={false}` + 逐类 pointer-events；⑩ 不提供声明式 Toast，故不加 `markCardEdgeOutOfFlow`；⑪ demo 页不打 `section`（`tests/ui.test.mjs:773-775` 会红）；⑫ 避免 `var()` fallback / `inset` / 简写等 Skyline 会静默丢弃的写法。
 - 2026-11-26 实施期踩坑：`demo/src/pages/toast/index.tsx` 与 `index.config.ts` 上一轮只建了空文件占位（0 字节），Node test 只读 catalog 声明、不编译页面所以没暴露；`pnpm --filter mp-taro-kit-demo build:weapp` 以 Rollup `MISSING_EXPORT: "default" is not exported by src/pages/toast/index.tsx` 抓出。按 dialog 页结构补齐三例（基础四 tone + 关闭叉 / 推四条堆叠 / action+onAction 撤销）后 demo build=0。教训：新增演示页的编译只有 demo build 能验，`build+test+guard` 全绿不等于演示站能看。
+- 2026-11-27 用户目测四项修复 OK 后继续调样式：确认 Toast 默认 icon 是库自绘 SVG（CSS mask data URI，四种 tone 各一；传 `icon` 则用图标字体名覆盖）、关闭叉复用项目既有 `CloseGlyph` 自绘、action 按钮是自定义 `{key,text,tone?}` + `onAction(key)` 回调的独立 View（不是库 Button，样式复刻 sonner-native 胶囊）。平铺相邻间距 14px→7px（展开仍 8px），产物确认 `?8:7`。期间 demo build 再次卡死超时（dist 被清到只剩 project.config.json），移走残留文件后单独重跑 11 秒通过；全门禁 272/272、codelint、guard 绿。
 - 2026-11-27 四项真机反馈：① 折叠展开后间距没了、② 撤销按钮卡片叠一起、③ 堆叠是整体还是每条传、④ 顶部贴太近。核源码：①②③ 分别对应固定 70px 档高算 y（原版用 `allToastHeights` 实测）、`enableStacking` 实为 **Toaster 级 prop**（toaster.tsx 放 StableToastContext，不是每条 toast 字段）、offset 默认 0 但用户要求顶部再留与左右一致的 16px。修：ToastView 挂 `domId`，ToastHost 用 `createSelectorQuery + boundingClientRect` 实测每张高度（沿用 Segmented.tsx 模式，首帧 70 兜底），y 按原版 `calculateToastPosition` 公式用实测高度算；UIState.toastExpansion 加 `stacking/visibleToasts/configSnapshot`，新增 `setToastConfig/getToastConfig` 全局命令，showToast 显式传这两项即更新全局（不再由第一条决定）；resetUIForTests 重置配置而 clearToasts 不重置（原版清空 store 不动 Toaster 配置）；顶部/底部 inset 加 `edge=16`；demo 基础/action 示例显式关堆叠，避免被上一次配置污染。回归测试 3 条，272/272 全绿、codelint 8 文件、guard、demo build 全绿，产物核对 createSelectorQuery/boundingClientRect/setToastConfig/enableStacking 真实落盘。
 - 2026-11-27 用户要 1/4/5 与 sonner-native 完全一致，不再肉眼挑差异。逐条核源码：① `isExpanded` 在 `toastStore` 按 channel 存、默认 false、点击走无参 `toggleExpand()` 全局切换、`collapse()` 带 100ms 冷却、展开暂停该 channel 全部 timer、收起按剩余时间恢复、关闭到剩 ≤1 条自动收起、清空 store 重置；④ `visibleToasts` 只在 `enableStacking` 时裁剪（`isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts`），平铺不限；⑤ 移除一条后余项靠 `withTiming(calculatedPosition, {duration: 600, easing: easeOutQuart})` 补位，不是瞬移。按此实现：UIState 加 `toastExpansion`（expanded/listeners/collapseAt）全局一份；commands 加 `subscribe/get/setToastExpansion`，展开清 closeTimer、收起按 `expiresAt` 剩余重排、自动收起绕过冷却；ToastHost 换全局订阅、`visibleToasts` 只在 stacking slice；卡片改绝对定位 + y 写进 `transform` + `transition: transform 600ms easeOutQuart`，进出场动画去掉 transform 只留 opacity（避免覆盖 inline transform 跳位）。产物复现：展开时 timer 从 3→0 且 150ms 后仍 3 条 open、收起后恢复、剩1条自动收起；demo 产物 `common.wxss` 含 transform transition、`common.js` 含展开控制。回归测试 3 条（展开态/自动收起/位置补间+裁剪），269/269 全绿，codelint/guard/demo build 全绿。期间 demo build 曾卡死 25 分钟并把 demo/dist 删到只剩 project.config.json，safe-delete 垫片对"文件已不存在"报错；移走残留文件后单独重跑 12 秒通过。
 - 2026-11-26 真机反馈三问（按钮点一次不能点 / 关一条下面不上移 / 白底看不清）。前两条同根因，用 dist 产物复现：`showToast` 预排 `finishTimer=duration+160`，但 `closeToast()` 先 `clearToastTimers()` 把 finish 也清了，且 `duration=0` 根本没排 timer → 条目永久停在 `exiting`，透明节点在 fixed 全屏宿主里吞点击、占位不塌陷。治根因：finish 改由「关闭成功」驱动，新增 `toastFinishTimers` 独立 map，`closeToast()` 关闭成功后排 300ms finish timer；`showToast` 只排 close timer；`hideToast` 只处理 open→exiting，对已在退场中的条目不干预（否则会清掉排队中的 finish——测试抓出并修正）；clearToasts/reset 同步清 finish timers。回归测试两条：关闭 360ms 后空栈、关上面一条后只剩第二条。产物复现：关第一条后立即 `[exiting,open]`、360ms 后 `[open]` 且 id 只剩第二条。全门禁 264/264、guard/codelint/demo build 全绿。
@@ -83,3 +86,4 @@
 - 2026-11-26 15:01:48 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 修复真机反馈的按钮失效与不补位：根因是 closeToast 清掉 finish timer 导致 exiting 节点永久残留；改为关闭成功驱动独立 finish timer，补两条回归测试，产物复现关闭后只剩第二条；264/264 全绿
 - 2026-11-27 11:04:12 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 1/4/5 按 sonner-native 源码对齐：展开态全局一份并暂停/恢复计时+剩1自动收起+100ms冷却，visibleToasts 只在堆叠裁剪，移除后 transform 600ms 补位；产物复现行为、269/269 全绿、demo build 恢复
 - 2026-11-27 11:40:46 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 四项真机反馈修复：实测卡片高度替换固定70（修展开间距与action卡片重叠）、enableStacking改Toaster级全局配置（修先显示再收起）、顶部安全区外加16px；272/272全绿，产物核对实测与配置命令落盘
+- 2026-11-27 11:51:29 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 提交 e353968 后调样式：平铺间距 14→7（展开仍8），产物确认；确认 icon 自绘 SVG/关闭叉复用 CloseGlyph/action 为自定义按钮非库 Button。272/272 全绿
