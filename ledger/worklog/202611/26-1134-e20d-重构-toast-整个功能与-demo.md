@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 16:01:22 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 16:38:18 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -25,7 +25,9 @@
 
 ## Next
 
-间距 8px；tone 图标字体库 + 圆环 **24px**（2px 描边 / 内图标 **10px**）；action 库 Button **xs + soft 半透明浅底描边 + radius lg**，与正文间距 **8px**（原 16px 减半）。273/273 全绿、产物核对 `48rpx` 圆环 / `20rpx` 内图标 / `margin-top:var(--mptk-space-2)` 落盘。改动未提交，等用户看效果。
+折叠边已按 sonner-native 原版修对：下层卡片改为 `scaleX` 横向收窄（每层 `2×8px/屏宽`、下限 80%、top 前端在 index 0 其余在末尾），替换写死的 `1 - index*0.04`；274/274 全绿、产物核对 `const Pt=8;function At(e,t,o,l){const n="top"===o?e:t-e-1,a=Pt*n*2;return Math.max(.8,1-a/l)}` 落盘。改动未提交，等用户看效果。
+
+样式（已提交 c268bdc）：间距 8px；tone 图标字体库 + 圆环 **24px**（2px 描边 / 内图标 **10px**）；action 库 Button **xs + soft 半透明浅底描边 + radius lg**，与正文间距 **8px**。产物核对 `48rpx` 圆环 / `20rpx` 内图标 / `margin-top:var(--mptk-space-2)` 落盘。
 
 平铺间距已按用户目测从 14px 改 7px（展开仍 8px），产物确认 `?8:7`，272/272 全绿。改动未提交，等用户看间距效果后再定。若验收通过，用户说「结束/关闭任务」后走 `close`。
 
@@ -96,4 +98,6 @@
 - 2026-11-27 13:31:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · tone 图标改 Dialog iconFramed 结构：27px 圆环+2px描边+15px内图标+四周4px间距；action 按钮 sm→xs。273/273 全绿，产物核对 size:xs 与 54rpx 圆环
 - 2026-11-27 15:55:33 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 尺寸定稿：圆环 24px/内图标 12px；按钮 xs + default/soft 半透明描边 + radius lg。产物核对 48rpx 圆环与按钮配置落盘，273/273 全绿
 - 2026-11-27 用户再调：按钮离正文间距太大，确认当前 16px（`--mptk-space-4`）后减半到 8px（`--mptk-space-2`）；圆环保持 24px，内图标 12→10px。改 `src/ui/feedback/toast/style/index.scss` 的 `.mptk-toast__action` / `.mptk-toast__icon`，测试同步 `font-size` 断言并补按钮间距断言，`docs/api/toast.md` 同步。产物核对 `.mptk-toast__icon{font-size:20rpx}` / `.mptk-toast__action{margin-top:var(--mptk-space-2)}` 真实落盘；273/273 全绿、codelint 5 文件、guard、demo build 全绿。改动未提交，等用户看效果。
+- 2026-11-28 用户报折叠边不对并问原版行为。重查 sonner-native main 源码：`position-utils.ts` 有 `effectiveEnableStacking = enableStacking && !isExpanded`（展开确实切非重叠布局、间距 `stackGap=8`）、`toast.tsx` 的 `isHiddenByLimit = enableStacking && distanceFromFront >= visibleToasts` 无 `isExpanded`（展开仍限 3 条，与原版一致）、`use-toast-animations.ts` 折叠只做 `scaleX = max(0.8, 1 - 2*stackGap*multiplier/屏宽)`、`constants.ts` stackGap=8/gap=14/visibleToasts=3。确认旧的 `scale = max(0.88, 1 - index*0.04)` 是真 bug。修 `src/ui/infra/ToastHost.tsx`：引入 `STACK_GAP=8` 与 `stackScaleX`（按位置决定前端方向、按屏宽算、下限 0.8），用 `Taro.getWindowInfo().windowWidth` 取屏宽，删写死等比缩放；新增回归测试，`docs/api/toast.md` 同步。产物核对 `const Pt=8;function At(e,t,o,l){…Math.max(.8,1-a/l)}` 与 `useState(()=>Taro.getWindowInfo().windowWidth)` 真实落盘；274/274 全绿、codelint 3 文件、guard、demo build 全绿。本轮只修边，未动展开条数限制，等用户看效果。
 - 2026-11-27 16:01:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮与正文间距 16→8px（space-4→space-2）、内图标 12→10px；产物核对 20rpx/space-2 落盘，273/273 全绿，未提交等验收
+- 2026-11-27 16:38:18 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 折叠边按 sonner-native 原版修对：scaleX 按屏宽算、下限 0.8、位置决定前端方向；274/274 全绿、产物核对公式落盘，未提交等验收
