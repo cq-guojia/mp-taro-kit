@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 15:55:33 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 16:01:22 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -25,7 +25,7 @@
 
 ## Next
 
-间距 8px；tone 图标字体库 + 圆环 **24px**（2px 描边 / 内图标 **12px**）；action 库 Button **xs + soft 半透明浅底描边 + radius lg**。273/273 全绿、产物核对 `size:"xs" variant:"soft" radius:"lg"` 与 `48rpx` 圆环落盘。改动未提交，等用户看效果。
+间距 8px；tone 图标字体库 + 圆环 **24px**（2px 描边 / 内图标 **10px**）；action 库 Button **xs + soft 半透明浅底描边 + radius lg**，与正文间距 **8px**（原 16px 减半）。273/273 全绿、产物核对 `48rpx` 圆环 / `20rpx` 内图标 / `margin-top:var(--mptk-space-2)` 落盘。改动未提交，等用户看效果。
 
 平铺间距已按用户目测从 14px 改 7px（展开仍 8px），产物确认 `?8:7`，272/272 全绿。改动未提交，等用户看间距效果后再定。若验收通过，用户说「结束/关闭任务」后走 `close`。
 
@@ -95,3 +95,5 @@
 - 2026-11-27 13:05:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 间距 7→8；tone 图标改 Dialog 同款字体库（gou/guanbi/warn/info），自绘 SVG 删除；action 改库 Button sm。273/273 全绿，产物核对图标名与 size:sm 落盘
 - 2026-11-27 13:31:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · tone 图标改 Dialog iconFramed 结构：27px 圆环+2px描边+15px内图标+四周4px间距；action 按钮 sm→xs。273/273 全绿，产物核对 size:xs 与 54rpx 圆环
 - 2026-11-27 15:55:33 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 尺寸定稿：圆环 24px/内图标 12px；按钮 xs + default/soft 半透明描边 + radius lg。产物核对 48rpx 圆环与按钮配置落盘，273/273 全绿
+- 2026-11-27 用户再调：按钮离正文间距太大，确认当前 16px（`--mptk-space-4`）后减半到 8px（`--mptk-space-2`）；圆环保持 24px，内图标 12→10px。改 `src/ui/feedback/toast/style/index.scss` 的 `.mptk-toast__action` / `.mptk-toast__icon`，测试同步 `font-size` 断言并补按钮间距断言，`docs/api/toast.md` 同步。产物核对 `.mptk-toast__icon{font-size:20rpx}` / `.mptk-toast__action{margin-top:var(--mptk-space-2)}` 真实落盘；273/273 全绿、codelint 5 文件、guard、demo build 全绿。改动未提交，等用户看效果。
+- 2026-11-27 16:01:22 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 按钮与正文间距 16→8px（space-4→space-2）、内图标 12→10px；产物核对 20rpx/space-2 落盘，273/273 全绿，未提交等验收
