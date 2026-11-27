@@ -230,7 +230,33 @@ test('Toast 位置补间：绝对定位 + transform transition，移除后 y 改
   assert.match(host, /y=\{y\}/, '每条 toast 的 y 必须写进 transform')
   assert.match(view, /position: 'absolute'/, '卡片必须绝对定位，flex 重排无法过渡')
   assert.match(css, /transition: transform var\(--mptk-c-toast-stack-dur\)/, '位置变化必须走 600ms 补间')
-  assert.match(host, /stacking \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, 'visibleToasts 只在堆叠时裁剪')
+  assert.match(host, /const stacked = foldingEnabled && !isExpanded/, '必须把「当前是否堆叠」提升为单一派生量')
+  assert.match(host, /stacked \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, 'visibleToasts 只在真正堆叠时裁剪')
+})
+
+test('Toast 折叠点开即平铺：所有布局决策统一由 stacked 派生，展开后不限条数', () => {
+  const host = read('../src/ui/infra/ToastHost.tsx')
+  assert.match(host, /enableStacking: foldingEnabled/, '配置层（是否支持折叠）与交互态必须拆开')
+  assert.match(host, /const stacked = foldingEnabled && !isExpanded/, '必须引入 stacked 单一真源')
+  assert.match(host, /stacked \? ordered\.slice\(0, Math\.max\(1, limit\)\) : ordered/, '展开后按平铺逻辑显示所有条')
+  assert.match(host, /scale = stacked \?/, '缩放认 stacked')
+  assert.match(host, /if \(stacked\) \{/, 'y 位置认 stacked')
+  assert.match(host, /zIndex=\{stacked \?/, '层级认 stacked')
+  assert.match(host, /onOpen=\{foldingEnabled \? toggle : undefined\}/, '点条目切换绑折叠能力，展开后仍可点条目收起')
+  assert.match(host, /isExpanded && foldingEnabled \? <View className="mptk-toast-outside"/, '外部收起层只在支持折叠且已展开时出现')
+  assert.doesNotMatch(host, /stacking && !isExpanded/, '不许再散落重复的组合判断')
+})
+
+test('Toast 折叠边按 sonner-native 横向收窄：按屏宽算 scaleX、下限 0.8、位置决定前端方向', () => {
+  const host = read('../src/ui/infra/ToastHost.tsx')
+  const view = read('../src/ui/feedback/toast/ToastView.tsx')
+  assert.match(host, /const STACK_GAP = 8/, '折叠露出边必须是 stackGap=8')
+  assert.match(host, /position === 'top' \? index : count - index - 1/, '前端方向必须按位置取：top 在 index 0，其余在末尾')
+  assert.match(host, /STACK_GAP \* multiplier \* 2/, '每层收窄量 = 2 × stackGap × 距前端层数')
+  assert.match(host, /Math\.max\(0\.8, 1 - narrowAmount \/ screenWidth\)/, '按屏宽换算且下限 0.8')
+  assert.match(host, /Taro\.getWindowInfo\(\)\.windowWidth/, '屏宽必须取真实窗口宽度')
+  assert.doesNotMatch(host, /index \* 0\.04/, '不许再用写死的等比缩放')
+  assert.match(view, /scaleX\(\$\{String\(scale\)\}\)/, '收窄必须落在 scaleX 上，不是整体 scale')
 })
 
 test('Toast 高度实测而非固定档高：带 action 的卡片也按真实高度排布', () => {
