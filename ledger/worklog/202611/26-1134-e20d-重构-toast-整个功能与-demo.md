@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 13:05:57 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 13:31:01 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -25,7 +25,7 @@
 
 ## Next
 
-间距最终 8px（7→8）；tone 图标改字体库（Dialog 同款 gou/guanbi/warn/info），action 改库 Button sm。273/273 全绿、产物核对图标名与 `size:"sm"` 落盘。改动未提交，等用户看效果。
+间距 8px；tone 图标改字体库 + 圆环（27px 圈 / 2px 描边 / 15px 内图标 / 四周 4px 间距）；action 改库 Button xs。273/273 全绿、产物核对 `size:"xs"` 与 `54rpx` 圆环落盘。改动未提交，等用户看效果。
 
 平铺间距已按用户目测从 14px 改 7px（展开仍 8px），产物确认 `?8:7`，272/272 全绿。改动未提交，等用户看间距效果后再定。若验收通过，用户说「结束/关闭任务」后走 `close`。
 
@@ -54,6 +54,7 @@
 
 - 2026-11-26 架构 + 前端双重复核（只读，两个独立 agent）：① 现有 Dialog 的 owner 是「发起页唯一」，不是「当前页唯一」——`navigateTo` 后弹窗留在旧页、Promise 悬挂；照搬会让 Toast 在隐藏页渲染或过期才出现。修正为 scope 交接 + 当前页唯一渲染。② `ensureMounted` 只看全局计数，不证明当前页有宿主；修正为按 scope 校验。③ ReactNode / `onClick` 进全局 store 会把旧页闭包留在 `Symbol.for` 单例里、跨页点击打到错误页面；修正为 descriptor 载荷 + 命令层回调 + `isCurrent` 守卫。④ `expiresAt` 不能在 render 期改 store；timer 幂等 + effect 兜底。⑤ 宿主卸载禁止全局 clear，只按 owner 清。⑥ `createKitApp` 的 hosts 不在 fingerprint 内，重复配置会覆盖注册表，接入时避免隐式全局单写。前端侧：⑦ 不实测 `toastHeights`，用固定档高 + CSS transition；⑧ 安全区用 `safeAreaState()` 注入，`env()`仅兜底；⑨ 展开态透明层显式 `catchMove={false}` + 逐类 pointer-events；⑩ 不提供声明式 Toast，故不加 `markCardEdgeOutOfFlow`；⑪ demo 页不打 `section`（`tests/ui.test.mjs:773-775` 会红）；⑫ 避免 `var()` fallback / `inset` / 简写等 Skyline 会静默丢弃的写法。
 - 2026-11-26 实施期踩坑：`demo/src/pages/toast/index.tsx` 与 `index.config.ts` 上一轮只建了空文件占位（0 字节），Node test 只读 catalog 声明、不编译页面所以没暴露；`pnpm --filter mp-taro-kit-demo build:weapp` 以 Rollup `MISSING_EXPORT: "default" is not exported by src/pages/toast/index.tsx` 抓出。按 dialog 页结构补齐三例（基础四 tone + 关闭叉 / 推四条堆叠 / action+onAction 撤销）后 demo build=0。教训：新增演示页的编译只有 demo build 能验，`build+test+guard` 全绿不等于演示站能看。
+- 2026-11-27 用户再调：tone 图标"太大、要带圈、圈是原 icon 的 3/4、图标与圈留约 4px 间距"。按 Dialog 的 `iconFramed` 结构（外层 slot 画 border 圆环 + 内层缩小字体图标）实现：ToastView 加 `.mptk-toast__icon-ring` 包裹 Icon，环 27px（内图标 15px = 原 20 的 3/4 + 四周各 4px + 2px 描边）、2px 描边、pill 圆角、间距 token space-3；内图标 15px。action 按钮 sm→xs。产物核对 `size:"xs"` 与 `.mptk-toast__icon-ring` 编译为 54rpx/4rpx 落盘。273/273 全绿、codelint/guard/demo build 全绿。demo build 再次因连续跑 build+demo 同批超时（第 4 次），单独重跑 11 秒恢复——这条门禁必须单独跑。
 - 2026-11-27 继续调样式：平铺间距 7→8（三元 `isExpanded ? 8 : 8` 简化为常数 8）；用户不要自绘 tone 图标，要求同 Dialog 的字体库带圈图标——ToastView 改用 `Icon` 组件 + `TONE_ICON` 映射（gou/guanbi/warn/info，与 `DIALOG_TYPE_ICON` 一致），tone class 只上色，删掉 CSS 里全部 data-URI mask；撤销按钮改库 `Button size="sm"`（默认 primary solid），外层 View 只拦冒泡、样式只留 margin，外观交 Button 自己管。产物核对 4 个图标名与 `size:"sm"` 真实落盘，toast 卡片无 mask-image（残留的 mask 是 Spinner 与 CloseGlyph 自己的）。273/273 全绿、codelint 4 文件、guard、demo build 全绿。
 - 2026-11-27 用户目测四项修复 OK 后继续调样式：确认 Toast 默认 icon 是库自绘 SVG（CSS mask data URI，四种 tone 各一；传 `icon` 则用图标字体名覆盖）、关闭叉复用项目既有 `CloseGlyph` 自绘、action 按钮是自定义 `{key,text,tone?}` + `onAction(key)` 回调的独立 View（不是库 Button，样式复刻 sonner-native 胶囊）。平铺相邻间距 14px→7px（展开仍 8px），产物确认 `?8:7`。期间 demo build 再次卡死超时（dist 被清到只剩 project.config.json），移走残留文件后单独重跑 11 秒通过；全门禁 272/272、codelint、guard 绿。
 - 2026-11-27 四项真机反馈：① 折叠展开后间距没了、② 撤销按钮卡片叠一起、③ 堆叠是整体还是每条传、④ 顶部贴太近。核源码：①②③ 分别对应固定 70px 档高算 y（原版用 `allToastHeights` 实测）、`enableStacking` 实为 **Toaster 级 prop**（toaster.tsx 放 StableToastContext，不是每条 toast 字段）、offset 默认 0 但用户要求顶部再留与左右一致的 16px。修：ToastView 挂 `domId`，ToastHost 用 `createSelectorQuery + boundingClientRect` 实测每张高度（沿用 Segmented.tsx 模式，首帧 70 兜底），y 按原版 `calculateToastPosition` 公式用实测高度算；UIState.toastExpansion 加 `stacking/visibleToasts/configSnapshot`，新增 `setToastConfig/getToastConfig` 全局命令，showToast 显式传这两项即更新全局（不再由第一条决定）；resetUIForTests 重置配置而 clearToasts 不重置（原版清空 store 不动 Toaster 配置）；顶部/底部 inset 加 `edge=16`；demo 基础/action 示例显式关堆叠，避免被上一次配置污染。回归测试 3 条，272/272 全绿、codelint 8 文件、guard、demo build 全绿，产物核对 createSelectorQuery/boundingClientRect/setToastConfig/enableStacking 真实落盘。
@@ -91,3 +92,4 @@
 - 2026-11-27 11:40:46 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 四项真机反馈修复：实测卡片高度替换固定70（修展开间距与action卡片重叠）、enableStacking改Toaster级全局配置（修先显示再收起）、顶部安全区外加16px；272/272全绿，产物核对实测与配置命令落盘
 - 2026-11-27 11:51:29 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 提交 e353968 后调样式：平铺间距 14→7（展开仍8），产物确认；确认 icon 自绘 SVG/关闭叉复用 CloseGlyph/action 为自定义按钮非库 Button。272/272 全绿
 - 2026-11-27 13:05:57 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 间距 7→8；tone 图标改 Dialog 同款字体库（gou/guanbi/warn/info），自绘 SVG 删除；action 改库 Button sm。273/273 全绿，产物核对图标名与 size:sm 落盘
+- 2026-11-27 13:31:01 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · tone 图标改 Dialog iconFramed 结构：27px 圆环+2px描边+15px内图标+四周4px间距；action 按钮 sm→xs。273/273 全绿，产物核对 size:xs 与 54rpx 圆环
