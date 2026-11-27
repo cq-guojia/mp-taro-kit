@@ -1,5 +1,6 @@
 {
   "tasks": {
+    "20261127-0952-55b1-演示站菜单显示与设置持久化": {"category": "功能建设", "created": "2026-11-27 09:52:42", "creator": "8d557c6d-7c93-43ac-8c73-5d623e82e1c6", "creator_name": "GuoJia-Agent", "finished": null, "owner": null, "owner_name": null, "started": null, "status": "open", "tags": ["演示站", "菜单", "设置", "存储"], "title": "演示站菜单显示与设置持久化", "updated": "2026-11-27 09:52:42", "worklog": "worklog/202611/27-0952-55b1-演示站菜单显示与设置持久化.md"}
   },
   "version": "20261022000000"
 }
