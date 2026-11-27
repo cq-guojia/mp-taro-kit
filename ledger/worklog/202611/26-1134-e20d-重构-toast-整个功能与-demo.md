@@ -1,7 +1,7 @@
 # 20261126-1134-e20d-重构-toast-整个功能与-demo: 重构 toast 整个功能与 demo
 
 - **Tags**: Toast, 演示站, 浮层反馈
-- **Status**: doing · 2026-11-27 18:22:43 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
+- **Status**: doing · 2026-11-27 19:30:51 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 - **Created**: 2026-11-26 11:34:24 · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6
 
 <!-- Header lines are maintained by the script, fixed order: Tags → Status → Created → Sealed.
@@ -24,6 +24,8 @@
 - **门禁**：`kit.config.mjs` 改完跑 `pnpm gen:config`；按 `build → test → guard → demo build:weapp → 产物核对` 顺序；`codelint` 全过；双端真机验证前不宣称可用。
 
 ## Next
+
+用户 2026-11-28 明确「其他没问题了……测试完了，目前没发现什么问题」，Toast 功能与 demo 验收通过，无待办。最后一轮把默认消失时长从 3000ms 对齐到 sonner-native 的 4000ms，其余不动；门禁 build → demo build → test 277/277 → guard → codelint 全绿，产物核对 `dist/ui/commands.js` 的 `opts.duration ?? 4000`。下一步：按用户指令更新 worklog 并 close 结案。
 
 默认位置改为底部 + 底部锚定修正：真机反馈底部 toast 只露半截。根因是 `ToastView.tsx` 写死 `top:0`，底部卡片从容器顶往下长（原版 `use-toast-animations.ts` 底部是 `bottom:0`）；且堆叠 y 分支沿用顶部算法（顶部前端 index 0 / y 正，底部前端在末尾 / y 负）。修：ToastView 加 `bottomAligned` 按 `bottom/center` 走 `bottom:0`；ToastHost 堆叠按 `position` 取前端与距离、bottom 取负 y。276/276 全绿、产物核对 `b?"bottom":0:"top":0` 与 `b="top"===k?i:-i` 落盘。默认位置改动本身（`commands.ts:255` / `ToastHost.tsx:75` 兜底 `'top'→'bottom'`、文档、行为断言）尚未提交，等用户真机确认。
 
@@ -77,7 +79,15 @@
 - 2026-11-26 真机反馈三问（按钮点一次不能点 / 关一条下面不上移 / 白底看不清）。前两条同根因，用 dist 产物复现：`showToast` 预排 `finishTimer=duration+160`，但 `closeToast()` 先 `clearToastTimers()` 把 finish 也清了，且 `duration=0` 根本没排 timer → 条目永久停在 `exiting`，透明节点在 fixed 全屏宿主里吞点击、占位不塌陷。治根因：finish 改由「关闭成功」驱动，新增 `toastFinishTimers` 独立 map，`closeToast()` 关闭成功后排 300ms finish timer；`showToast` 只排 close timer；`hideToast` 只处理 open→exiting，对已在退场中的条目不干预（否则会清掉排队中的 finish——测试抓出并修正）；clearToasts/reset 同步清 finish timers。回归测试两条：关闭 360ms 后空栈、关上面一条后只剩第二条。产物复现：关第一条后立即 `[exiting,open]`、360ms 后 `[open]` 且 id 只剩第二条。全门禁 264/264、guard/codelint/demo build 全绿。
 - 2026-11-26 用户退回首版观感（"白的一串、没折叠没动效、不信这么丑有人用"），要求像素级复刻不偷工减料。按 sonner-native 真实源码重建：`use-default-styles.ts`（padding 16 / radius 16 / marginHorizontal 16 / content gap 16 / title 600·20 / desc 14·20 / action 胶囊 999·1·6·14）、`toast.tsx`（shadow 0 4 12 rgba(0,0,0,.106)）、`use-colors.ts`（明 #fff/#232020/#4f4a4a/#e6e3e3/#f7f7f7，暗 #181313/#fff/#C0BEBE/#302B2B/#232020 + 四档 tone 图标色）、`constants.ts`（gap 14 / stackGap 8 / ESTIMATED_TOAST_HEIGHT 70 / duration 4000）、`animations.ts`+`animation-utils.ts`（进场 top −20 / bottom 50 淡入 300ms easeOutQuart；退场 ±150 淡出 easeInOutCubic）、`position-utils.ts`（折叠下层只露 stackGap、zIndex 递减）。色值/时长/间距/缓动全部进 `kit.config.mjs` 生成链（明暗同名同数），keyframes 内只写字面量（WXSS 固化表）；ToastView 自绘 tone 图标（CSS mask data URI，沿用 CloseGlyph 模式）；折叠层叠靠 `margin-top: -(70-8)` + scaleX 0.04 递减 + 内联 zIndex 递减（前面盖下层），展开按 stackGap 铺开。先提交 e0b053c（首版实现）再本轮复刻；全门禁 build/test263/guard/codelint/demo build 全绿，产物核对明暗 token (#fff/#181313 等)、阴影、四组进/退场 keyframes 位移真实落盘。Skyline/WebView 双端 box-shadow / mask 图标 / transform 动画仍需真机确认，未验前不宣称等价。
 
+- 2026-11-28 Toast demo 页改造：顶部加 dialog 同款 CellGroup/Segmented 配置区（显示：平铺/堆叠；位置：下方/上方），示例收成「普通」（4 个 tone 按钮）与「其他」（带关闭叉 / 带操作按钮 / 双按钮）两组；catalog 同步为 config + toast-basic + toast-other。
+- 2026-11-28 双按钮与逐按钮配置治根因：库契约 `ToastOptions.action` → `actions: readonly ToastActionDescriptor[]`，每项可配 `key/text/icon/type/variant/color`，统一尺寸走 `actionSize`（默认 xs），删掉未生效的 `tone?`；ToastView 逐项透传给库 Button，`onAction(key)` 按 key 分发事件。文档补字段表与示例，测试锁载荷与渲染透传；产物核对 `dist/ui/feedback/toast/ToastView.js` 与 `demo/dist/common.js` 的 `actionSize ?? "xs"`。
+- 2026-11-28 按钮与正文间距从 8px 降到 4px（`--mptk-space-2` → `--mptk-space-1`），按钮彼此间距仍 8px，不动全局 token；测试与文档同步，WXSS 产物核对 `margin-top:var(--mptk-space-1)`。
+- 2026-11-28 demo「稍后」按钮原用 ghost（无底无边）被用户否掉，改 `type:'primary', variant:'soft'`（蓝色浅底+描边）；图标从 `riqi`（日历）换成 `shijian1`（时间，见 `src/ui/icon/common/base/names.ts:39`）。
+- 2026-11-28 默认消失时长对齐原库：查 sonner-native `src/constants.ts` 的 `toastDefaultValues.duration = 4000`，本库原为 `commands.ts` 的 `?? 3000`；改为 4000，文档示例、更新日志与行为断言同步，其余未动。产物核对 `dist/ui/commands.js` 的 `opts.duration ?? 4000`。
+
 ## Conclusion
+
+用户 2026-11-28 验收通过（原话「其他没问题了……测试完了，目前没发现什么问题」），Toast 功能与 demo 定稿：配置区 + 双按钮 + 逐按钮外观 + 4 秒默认时长。所有改动尚未提交（用户未要求提交）；订单项均为本地工作树变更，可结案。
 
 首版（e0b053c）已提交推送；用户退回首版观感后，本轮按 sonner-native 真实源码做像素级复刻：卡片尺寸/色值/阴影/图标/进度条与折叠几何、进出场动画全部重建，色值等全部进配置生成链（非硬编码），产物核对真实落盘。Skyline/WebView 双端真机手感未验前不宣称与 Reanimated 等价。
 
@@ -130,3 +140,4 @@
 - 2026-11-27 18:05:19 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 折叠顺序统一新→旧：前端统一 index0（最新最宽最上层），缩放/位置/层级去掉按位置反向的分支；277/277 全绿、产物核对落盘，未提交等真机确认
 - 2026-11-27 18:17:14 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 卡片圆角与四边内边距各降一号 16→12px（radius-lg→md / space-4→3），标题说明间距确认 2px 未动；277/277 全绿、产物核对落盘，未提交等真机看
 - 2026-11-27 18:22:43 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 卡面加极浅 45° 斜纹（2px条/4px隔、明黑3%/暗白3%），整条渐变作为 token 下发避开小程序 color-mix 限制；277/277 全绿、WXSS 产物核对原样保留，未提交等真机看
+- 2026-11-27 19:30:51 · log · @GuoJia-Agent · 8d557c6d-7c93-43ac-8c73-5d623e82e1c6 · 默认时长对齐 sonner-native 4 秒（commands.ts opts.duration ?? 4000）；demo 配置区与双按钮逐按钮外观定稿；277/277 全绿、产物核对通过，用户验收通过待结案
